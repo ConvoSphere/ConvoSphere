@@ -35,6 +35,7 @@ class Sidebar:
             nav_items = [
                 {"id": "dashboard", "label": "Dashboard", "icon": "📊", "description": "Übersicht und Statistiken"},
                 {"id": "assistants", "label": "Assistenten", "icon": "🤖", "description": "AI-Assistenten verwalten"},
+                {"id": "chat", "label": "Chat", "icon": "💬", "description": "Chat mit AI-Assistenten"},
                 {"id": "conversations", "label": "Gespräche", "icon": "💬", "description": "Chat-Verlauf und Nachrichten"},
                 {"id": "tools", "label": "Tools", "icon": "🛠️", "description": "Tool-Bibliothek und Konfiguration"},
                 {"id": "mcp_tools", "label": "MCP Tools", "icon": "🔌", "description": "MCP Server und Tools verwalten"},

@@ -19,6 +19,7 @@ from .pages.mcp_tools import mcp_tools_page
 from .pages.settings import SettingsPage
 from .components.header import Header
 from .components.sidebar import Sidebar
+from .pages.chat import chat_page
 
 
 class AIAssistantApp:
@@ -173,6 +174,8 @@ class AIAssistantApp:
                 DashboardPage()
             elif page_name == "assistants":
                 AssistantsPage()
+            elif page_name == "chat":
+                chat_page
             elif page_name == "conversations":
                 ConversationsPage()
             elif page_name == "tools":
