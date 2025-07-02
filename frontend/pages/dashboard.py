@@ -116,4 +116,13 @@ class DashboardPage:
     
     def open_settings(self):
         """Handle open settings action."""
-        ui.notify("Einstellungen werden geöffnet...", type="info") 
+        ui.notify("Einstellungen werden geöffnet...", type="info")
+
+
+# Create page instance
+dashboard_page = DashboardPage()
+
+
+def create_page():
+    """Create and return the dashboard page."""
+    return dashboard_page 
