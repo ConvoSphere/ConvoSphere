@@ -1,0 +1,1 @@
+"""Core configuration and utilities for the AI Assistant Platform.""" 

@@ -1,0 +1,14 @@
+# Frontend Framework
+nicegui==1.4.21
+
+# Utilities
+python-dotenv==1.0.0
+loguru==0.7.2
+
+# Development
+ruff==0.1.6
+bandit==1.7.5
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1 
