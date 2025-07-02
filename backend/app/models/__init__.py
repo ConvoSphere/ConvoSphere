@@ -10,6 +10,7 @@ from .assistant import Assistant, AssistantStatus
 from .conversation import Conversation, Message, MessageRole, MessageType
 from .tool import Tool, ToolCategory
 from .audit import AuditLog, AuditEventType, AuditSeverity
+from .knowledge import Document, DocumentChunk, SearchQuery
 
 __all__ = [
     "Base",
@@ -26,4 +27,7 @@ __all__ = [
     "AuditLog",
     "AuditEventType",
     "AuditSeverity",
+    "Document",
+    "DocumentChunk",
+    "SearchQuery",
 ] 

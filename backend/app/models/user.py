@@ -8,6 +8,7 @@ and authentication functionality.
 from enum import Enum
 from typing import Optional
 from sqlalchemy import Column, String, Boolean, Enum as SQLEnum, Text
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
@@ -60,6 +61,8 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user")
     created_tools = relationship("Tool", back_populates="creator")
     audit_logs = relationship("AuditLog", back_populates="user")
+    documents = relationship("Document", back_populates="user")
+    search_queries = relationship("SearchQuery", back_populates="user")
     
     def __repr__(self) -> str:
         """String representation of the user."""
@@ -84,12 +87,14 @@ class User(Base):
                 "assistant:read", "assistant:write", "assistant:delete",
                 "conversation:read", "conversation:write", "conversation:delete",
                 "user:read", "user:write",
-                "tool:read", "tool:write"
+                "tool:read", "tool:write",
+                "knowledge:read", "knowledge:write", "knowledge:delete"
             ],
             UserRole.USER: [
                 "assistant:read", "assistant:write",
                 "conversation:read", "conversation:write",
-                "tool:read"
+                "tool:read",
+                "knowledge:read", "knowledge:write"
             ],
             UserRole.GUEST: [
                 "assistant:read",

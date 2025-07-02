@@ -53,6 +53,13 @@ class Settings(BaseSettings):
     weaviate_url: str = Field(default="http://localhost:8080", env="WEAVIATE_URL")
     weaviate_api_key: Optional[str] = Field(default=None, env="WEAVIATE_API_KEY")
     
+    # Knowledge Base Configuration
+    default_embedding_model: str = Field(default="text-embedding-ada-002", env="DEFAULT_EMBEDDING_MODEL")
+    default_chunk_size: int = Field(default=500, env="DEFAULT_CHUNK_SIZE")
+    default_chunk_overlap: int = Field(default=50, env="DEFAULT_CHUNK_OVERLAP")
+    max_chunk_size: int = Field(default=2000, env="MAX_CHUNK_SIZE")
+    min_chunk_size: int = Field(default=100, env="MIN_CHUNK_SIZE")
+    
     # File Storage
     upload_dir: str = Field(default="./uploads", env="UPLOAD_DIR")
     max_file_size: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
