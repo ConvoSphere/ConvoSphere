@@ -55,6 +55,12 @@ class User(Base):
     last_login = Column(String(50), nullable=True)  # ISO format string
     email_verified_at = Column(String(50), nullable=True)  # ISO format string
     
+    # Relationships
+    assistants = relationship("Assistant", back_populates="creator")
+    conversations = relationship("Conversation", back_populates="user")
+    created_tools = relationship("Tool", back_populates="creator")
+    audit_logs = relationship("AuditLog", back_populates="user")
+    
     def __repr__(self) -> str:
         """String representation of the user."""
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
