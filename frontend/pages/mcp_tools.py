@@ -84,8 +84,8 @@ class MCPToolsPage:
             self.create_add_server_dialog()
             self.create_tool_execute_dialog()
             
-            # Load initial data
-            asyncio.create_task(self.load_data())
+            # Load initial data - will be called when page is accessed
+            # asyncio.create_task(self.load_data())
     
     def create_add_server_dialog(self):
         """Create the add server dialog."""

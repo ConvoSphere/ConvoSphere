@@ -58,7 +58,7 @@ class Assistant(Base):
     # Metadata
     category = Column(String(100), nullable=True, index=True)
     tags = Column(JSON, default=list)  # List of tags
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    assistant_metadata = Column(JSON, default=dict)  # Additional metadata
     
     # Relationships
     creator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
@@ -140,7 +140,7 @@ class Assistant(Base):
             "tools_enabled": self.tools_enabled,
             "category": self.category,
             "tags": self.tags,
-            "metadata": self.metadata,
+            "metadata": self.assistant_metadata,
             "creator_id": str(self.creator_id),
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
