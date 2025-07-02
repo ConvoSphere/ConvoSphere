@@ -11,7 +11,7 @@ from typing import List, Optional, Dict, Any
 import json
 
 from nicegui import ui
-from nicegui.events import ValueChangeEventArguments
+from nicegui.events import ValueChangeEventArguments, UploadEventArguments
 
 from services.knowledge_service import knowledge_service
 from services.auth_service import auth_service
@@ -34,6 +34,11 @@ class KnowledgeBasePage:
         self.document_viewer = None
         self.upload_progress = None
         
+        # Advanced upload options
+        self.selected_engine = "auto"
+        self.processing_options = {}
+        self.show_advanced_options = False
+        
         self.create_page()
     
     def create_page(self):
@@ -50,6 +55,13 @@ class KnowledgeBasePage:
                         on_click=self.show_upload_dialog,
                         icon="upload"
                     ).classes("bg-blue-500 text-white")
+                    
+                    # Advanced Upload button
+                    ui.button(
+                        "Advanced Upload",
+                        on_click=self.show_advanced_upload_dialog,
+                        icon="upload"
+                    ).classes("bg-green-500 text-white")
                     
                     # Refresh button
                     ui.button(
@@ -440,6 +452,135 @@ class KnowledgeBasePage:
     async def on_search_change(self, e: ValueChangeEventArguments):
         """Handle search input change."""
         self.search_query = e.value
+    
+    async def show_advanced_upload_dialog(self):
+        """Show advanced upload dialog with Docling options."""
+        # Load processing engines and formats
+        self.processing_engines = await knowledge_service.get_processing_engines()
+        self.supported_formats = await knowledge_service.get_supported_formats()
+        
+        with ui.dialog() as dialog, ui.card().classes("w-96"):
+            ui.label("Advanced Document Upload").classes("text-lg font-semibold mb-4")
+            
+            with ui.column().classes("w-full gap-4"):
+                title_input = ui.input("Title").classes("w-full")
+                description_input = ui.input("Description").classes("w-full")
+                tags_input = ui.input("Tags (comma-separated)").classes("w-full")
+                
+                # Processing engine selection
+                engine_options = list(self.processing_engines.keys())
+                engine_select = ui.select(
+                    "Processing Engine",
+                    options=engine_options,
+                    value="auto"
+                ).classes("w-full")
+                
+                # Show engine information
+                with ui.expansion("Engine Information", icon="info").classes("w-full"):
+                    self.engine_info = ui.column().classes("w-full")
+                
+                # Advanced options toggle
+                ui.switch("Show Advanced Options", on_change=self.toggle_advanced_options).classes("w-full")
+                
+                # Advanced options (initially hidden)
+                with ui.column().classes("w-full").bind_visibility_from(self, "show_advanced_options"):
+                    ui.textarea("Processing Options (JSON)").classes("w-full").bind_value(self, "processing_options")
+                
+                file_upload = ui.upload(
+                    label="Select File",
+                    multiple=False,
+                    on_upload=self.handle_file_upload
+                ).classes("w-full")
+                
+                with ui.row().classes("w-full justify-end gap-2"):
+                    ui.button("Cancel", on_click=dialog.close).classes("bg-gray-500 text-white")
+                    ui.button("Upload", on_click=lambda: self.upload_document_advanced(dialog, title_input, description_input, tags_input, engine_select)).classes("bg-green-500 text-white")
+                
+                # Update engine info when selection changes
+                engine_select.on_change(lambda: self.update_engine_info(engine_select.value))
+                self.update_engine_info("auto")
+    
+    def update_engine_info(self, engine: str):
+        """Update engine information display."""
+        self.engine_info.clear()
+        
+        if engine in self.processing_engines:
+            engine_data = self.processing_engines[engine]
+            ui.label(f"Name: {engine_data.get('name', engine)}").classes("text-sm")
+            ui.label(f"Description: {engine_data.get('description', 'No description')}").classes("text-sm")
+            
+            formats = engine_data.get('supported_formats', [])
+            ui.label(f"Supported formats: {', '.join(formats)}").classes("text-sm")
+            
+            features = engine_data.get('features', [])
+            if features:
+                ui.label("Features:").classes("text-sm font-semibold")
+                for feature in features:
+                    ui.label(f"• {feature}").classes("text-sm ml-2")
+    
+    def toggle_advanced_options(self, value: bool):
+        """Toggle advanced options visibility."""
+        self.show_advanced_options = value
+    
+    async def handle_file_upload(self, e: UploadEventArguments):
+        """Handle file upload."""
+        # Store uploaded file data
+        self.uploaded_file = {
+            "name": e.name,
+            "content": e.content,
+            "type": e.type
+        }
+    
+    async def upload_document_advanced(self, dialog, title_input, description_input, tags_input, engine_select):
+        """Upload document with advanced options."""
+        if not hasattr(self, 'uploaded_file'):
+            ui.notify("Please select a file", type="error")
+            return
+        
+        try:
+            # Parse tags
+            tags = []
+            if tags_input.value:
+                tags = [tag.strip() for tag in tags_input.value.split(',') if tag.strip()]
+            
+            # Parse processing options
+            processing_options = {}
+            if self.processing_options:
+                try:
+                    import json
+                    processing_options = json.loads(self.processing_options)
+                except json.JSONDecodeError:
+                    ui.notify("Invalid processing options JSON", type="error")
+                    return
+            
+            # Create metadata
+            metadata = {
+                "title": title_input.value,
+                "description": description_input.value,
+                "tags": tags
+            }
+            
+            # Upload document with advanced options
+            result = await knowledge_service.upload_document_advanced(
+                self.uploaded_file,
+                metadata,
+                engine=engine_select.value,
+                processing_options=processing_options
+            )
+            
+            if result:
+                ui.notify("Document uploaded successfully", type="positive")
+                dialog.close()
+                await self.load_documents()
+            else:
+                ui.notify("Upload failed", type="negative")
+                
+        except Exception as e:
+            ui.notify(f"Upload error: {str(e)}", type="negative")
+    
+    async def on_page_load(self):
+        """Handle page load."""
+        await self.load_documents()
 
 
 # Create page instance

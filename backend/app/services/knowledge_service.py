@@ -23,6 +23,7 @@ from .weaviate_service import WeaviateService
 from .ai_service import AIService
 from .document_processor import document_processor
 from .embedding_service import embedding_service
+from .docling_processor import docling_processor
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ class KnowledgeService:
             with open(document.file_path, 'rb') as f:
                 file_content = f.read()
             
-            # Process document using document processor
+            # Process document using document processor (with Docling integration)
             result = document_processor.process_document(file_content, document.file_name)
             
             if not result['success']:
@@ -127,6 +128,16 @@ class KnowledgeService:
                     start_word=processed_chunk['start_word'],
                     end_word=processed_chunk['end_word']
                 )
+                
+                # Add Docling-specific metadata if available
+                if 'chunk_type' in processed_chunk:
+                    chunk.metadata = {
+                        'chunk_type': processed_chunk['chunk_type'],
+                        'page_number': processed_chunk.get('page_number'),
+                        'table_id': processed_chunk.get('table_id'),
+                        'figure_id': processed_chunk.get('figure_id')
+                    }
+                
                 chunks.append(chunk)
             
             # Generate embeddings for chunks
@@ -140,32 +151,49 @@ class KnowledgeService:
                     chunk.embedding_model = settings.default_embedding_model
                     chunk.embedding_created_at = datetime.utcnow()
                     
+                    # Enhanced metadata for Weaviate
+                    weaviate_metadata = {
+                        "title": document.title,
+                        "file_type": document.file_type,
+                        "chunk_index": chunk.chunk_index,
+                        "user_id": str(document.user_id),
+                        "processing_engine": result['metadata'].get('processing_engine', 'traditional')
+                    }
+                    
+                    # Add Docling-specific metadata
+                    if hasattr(chunk, 'metadata') and chunk.metadata:
+                        weaviate_metadata.update(chunk.metadata)
+                    
                     # Store in Weaviate
                     self.weaviate_service.add_document_chunk(
                         chunk_id=str(chunk.id),
                         document_id=str(document.id),
                         content=chunk.content,
                         embedding=embeddings[i],
-                        metadata={
-                            "title": document.title,
-                            "file_type": document.file_type,
-                            "chunk_index": chunk.chunk_index,
-                            "user_id": str(document.user_id)
-                        }
+                        metadata=weaviate_metadata
                     )
             
             # Save chunks to database
             self.db.add_all(chunks)
             
-            # Update document metadata
+            # Update document metadata with Docling information
             document.metadata.update(result['metadata'])
+            
+            # Add Docling-specific information
+            if 'tables' in result:
+                document.metadata['table_count'] = len(result['tables'])
+            if 'figures' in result:
+                document.metadata['figure_count'] = len(result['figures'])
+            if 'formulas' in result:
+                document.metadata['formula_count'] = len(result['formulas'])
+            
             document.status = "processed"
             document.processed_at = datetime.utcnow()
             document.chunk_count = len(chunks)
             
             self.db.commit()
             
-            logger.info(f"Successfully processed document {document_id} with {len(chunks)} chunks")
+            logger.info(f"Successfully processed document {document_id} with {len(chunks)} chunks using {result['metadata'].get('processing_engine', 'traditional')} engine")
             return True
             
         except Exception as e:
