@@ -15,10 +15,30 @@ RUN apt-get update \
         libpq-dev \
         curl \
         git \
+        # Document processing dependencies
+        poppler-utils \
+        tesseract-ocr \
+        tesseract-ocr-deu \
+        tesseract-ocr-eng \
+        libmagic1 \
+        # Image processing
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libwebp-dev \
+        # Audio processing
+        ffmpeg \
+        # Archive processing
+        unzip \
+        zip \
+        # Text processing
+        antiword \
+        catdoc \
+        odt2txt \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
