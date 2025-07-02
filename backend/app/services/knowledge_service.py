@@ -21,6 +21,8 @@ from ..models.user import User
 from ..core.config import settings
 from .weaviate_service import WeaviateService
 from .ai_service import AIService
+from .document_processor import document_processor
+from .embedding_service import embedding_service
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,7 @@ class KnowledgeService:
             self.db.rollback()
             raise
     
-    def process_document(self, document_id: str) -> bool:
+    async def process_document(self, document_id: str) -> bool:
         """Process a document by extracting text and creating chunks."""
         try:
             document = self.db.query(Document).filter(Document.id == document_id).first()
@@ -101,20 +103,41 @@ class KnowledgeService:
             document.status = "processing"
             self.db.commit()
             
-            # Extract text from document
-            text_content = self._extract_text_from_file(document.file_path, document.file_type)
-            if not text_content:
-                raise ValueError("No text content extracted from document")
+            # Read file content
+            with open(document.file_path, 'rb') as f:
+                file_content = f.read()
             
-            # Create chunks
-            chunks = self._create_chunks(text_content, document.id)
+            # Process document using document processor
+            result = document_processor.process_document(file_content, document.file_name)
+            
+            if not result['success']:
+                raise ValueError(f"Document processing failed: {result.get('error', 'Unknown error')}")
+            
+            # Create document chunks from processed chunks
+            processed_chunks = result['chunks']
+            chunks = []
+            
+            for i, processed_chunk in enumerate(processed_chunks):
+                chunk = DocumentChunk(
+                    id=uuid.uuid4(),
+                    document_id=document.id,
+                    chunk_index=i,
+                    content=processed_chunk['content'],
+                    token_count=processed_chunk['token_count'],
+                    start_word=processed_chunk['start_word'],
+                    end_word=processed_chunk['end_word']
+                )
+                chunks.append(chunk)
             
             # Generate embeddings for chunks
-            for chunk in chunks:
-                embedding = self._generate_embedding(chunk.content)
-                if embedding:
-                    chunk.embedding = embedding
-                    chunk.embedding_model = settings.DEFAULT_EMBEDDING_MODEL
+            chunk_texts = [chunk.content for chunk in chunks]
+            embeddings = await embedding_service.generate_embeddings(chunk_texts)
+            
+            # Add embeddings to chunks and store in Weaviate
+            for i, chunk in enumerate(chunks):
+                if i < len(embeddings) and embeddings[i]:
+                    chunk.embedding = embeddings[i]
+                    chunk.embedding_model = settings.default_embedding_model
                     chunk.embedding_created_at = datetime.utcnow()
                     
                     # Store in Weaviate
@@ -122,7 +145,7 @@ class KnowledgeService:
                         chunk_id=str(chunk.id),
                         document_id=str(document.id),
                         content=chunk.content,
-                        embedding=embedding,
+                        embedding=embeddings[i],
                         metadata={
                             "title": document.title,
                             "file_type": document.file_type,
@@ -131,12 +154,18 @@ class KnowledgeService:
                         }
                     )
             
-            # Update document status
+            # Save chunks to database
+            self.db.add_all(chunks)
+            
+            # Update document metadata
+            document.metadata.update(result['metadata'])
             document.status = "processed"
             document.processed_at = datetime.utcnow()
+            document.chunk_count = len(chunks)
+            
             self.db.commit()
             
-            logger.info(f"Successfully processed document {document_id}")
+            logger.info(f"Successfully processed document {document_id} with {len(chunks)} chunks")
             return True
             
         except Exception as e:
@@ -202,7 +231,7 @@ class KnowledgeService:
             self.db.rollback()
             return False
     
-    def search_documents(
+    async def search_documents(
         self,
         query: str,
         user_id: str,
@@ -211,8 +240,8 @@ class KnowledgeService:
     ) -> List[Dict[str, Any]]:
         """Search documents using semantic search."""
         try:
-            # Generate query embedding
-            query_embedding = self._generate_embedding(query)
+            # Generate query embedding using embedding service
+            query_embedding = await embedding_service.generate_single_embedding(query)
             if not query_embedding:
                 return []
             
@@ -241,7 +270,7 @@ class KnowledgeService:
             logger.error(f"Error searching documents: {e}")
             return []
     
-    def search_conversations(
+    async def search_conversations(
         self,
         query: str,
         user_id: str,
@@ -250,8 +279,8 @@ class KnowledgeService:
     ) -> List[Dict[str, Any]]:
         """Search conversations using semantic search."""
         try:
-            # Generate query embedding
-            query_embedding = self._generate_embedding(query)
+            # Generate query embedding using embedding service
+            query_embedding = await embedding_service.generate_single_embedding(query)
             if not query_embedding:
                 return []
             

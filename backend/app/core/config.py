@@ -60,9 +60,28 @@ class Settings(BaseSettings):
     max_chunk_size: int = Field(default=2000, env="MAX_CHUNK_SIZE")
     min_chunk_size: int = Field(default=100, env="MIN_CHUNK_SIZE")
     
+    # Document Processing
+    chunk_size: int = Field(default=500, env="CHUNK_SIZE")
+    chunk_overlap: int = Field(default=50, env="CHUNK_OVERLAP")
+    max_file_size: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
+    supported_file_types: List[str] = Field(
+        default=[
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "text/plain",
+            "text/markdown",
+            "text/html",
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/bmp",
+            "image/tiff"
+        ],
+        env="SUPPORTED_FILE_TYPES"
+    )
+    
     # File Storage
     upload_dir: str = Field(default="./uploads", env="UPLOAD_DIR")
-    max_file_size: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
     
     # Logging
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
