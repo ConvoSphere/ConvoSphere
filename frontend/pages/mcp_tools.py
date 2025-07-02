@@ -7,6 +7,7 @@ This page provides a user interface for managing MCP servers and tools.
 from typing import List, Dict, Any, Optional
 from nicegui import ui, app
 from dataclasses import dataclass
+import asyncio
 
 from ..services.api import api_client
 from ..services.auth_service import auth_service
@@ -84,7 +85,7 @@ class MCPToolsPage:
             self.create_tool_execute_dialog()
             
             # Load initial data
-            self.load_data()
+            asyncio.create_task(self.load_data())
     
     def create_add_server_dialog(self):
         """Create the add server dialog."""

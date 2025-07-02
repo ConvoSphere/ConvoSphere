@@ -80,8 +80,7 @@ class ChatPage:
                     # Search button
                     ui.button(
                         "Search",
-                        on_click=self.search_conversations,
-                        loading=self.is_searching
+                        on_click=self.search_conversations
                     ).classes("w-full mb-4 bg-blue-500 text-white")
                     
                     # Search results

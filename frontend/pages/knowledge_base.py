@@ -88,8 +88,7 @@ class KnowledgeBasePage:
                     # Search button
                     ui.button(
                         "Search",
-                        on_click=self.search_documents,
-                        loading=self.is_searching
+                        on_click=self.search_documents
                     ).classes("w-full mb-4 bg-blue-500 text-white")
                     
                     # Search results
