@@ -44,56 +44,98 @@ class AIAssistantApp:
         ui.page_meta("description", "AI Assistant Platform with multiple assistants and tools")
         ui.page_meta("viewport", "width=device-width, initial-scale=1")
         
-        # Add CSS
+        # Add CSS with improved styling for NiceGUI 2.20.0
         ui.add_head_html("""
         <style>
             .main-container {
                 display: flex;
                 height: 100vh;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             }
             .sidebar {
-                width: 250px;
+                width: 280px;
                 background: rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(10px);
                 border-right: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
             }
             .content-area {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
             }
             .header {
-                height: 60px;
+                height: 70px;
                 background: rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(10px);
                 border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                display: flex;
+                align-items: center;
+                padding: 0 20px;
             }
             .main-content {
                 flex: 1;
-                padding: 20px;
+                padding: 24px;
                 overflow-y: auto;
+                scroll-behavior: smooth;
             }
             .card {
-                background: rgba(255, 255, 255, 0.9);
-                border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 24px;
+                margin-bottom: 24px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+            }
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
             }
             .btn-primary {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 border: none;
                 color: white;
-                padding: 10px 20px;
-                border-radius: 8px;
+                padding: 12px 24px;
+                border-radius: 12px;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                font-weight: 600;
+                font-size: 14px;
             }
             .btn-primary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
             }
+            .nav-item {
+                padding: 12px 20px;
+                margin: 4px 12px;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                color: rgba(255, 255, 255, 0.8);
+            }
+            .nav-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            .nav-item.active {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                font-weight: 600;
+            }
+            .status-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+            }
+            .status-online { background: #10b981; }
+            .status-offline { background: #ef4444; }
+            .status-maintenance { background: #f59e0b; }
         </style>
         """)
         

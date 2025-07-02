@@ -14,7 +14,7 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.5.0",
     "litellm>=1.10.0",
-    "nicegui>=1.4.21",
+    "nicegui>=2.20.0",
     "sqlalchemy>=2.0.23",
     "weaviate-client>=3.25.3",
 ]

@@ -19,7 +19,7 @@ redis==5.0.1
 weaviate-client==3.25.3
 
 # Frontend
-nicegui==1.4.21
+nicegui==2.20.0
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0

@@ -1,0 +1,1 @@
+"""Frontend pages for the AI Assistant Platform.""" 

@@ -1,5 +1,5 @@
 # Frontend Framework
-nicegui==1.4.21
+nicegui==2.20.0
 
 # Utilities
 python-dotenv==1.0.0
