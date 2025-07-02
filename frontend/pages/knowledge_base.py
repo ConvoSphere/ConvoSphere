@@ -137,8 +137,8 @@ class KnowledgeBasePage:
             self.create_upload_dialog()
             self.create_settings_dialog()
             
-            # Load initial data
-            asyncio.create_task(self.load_documents())
+            # Load initial data - will be called when page is accessed
+            # asyncio.create_task(self.load_documents())
     
     def create_upload_dialog(self):
         """Create the document upload dialog."""
