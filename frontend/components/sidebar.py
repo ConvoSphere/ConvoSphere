@@ -37,6 +37,7 @@ class Sidebar:
                 {"id": "assistants", "label": "Assistenten", "icon": "🤖", "description": "AI-Assistenten verwalten"},
                 {"id": "conversations", "label": "Gespräche", "icon": "💬", "description": "Chat-Verlauf und Nachrichten"},
                 {"id": "tools", "label": "Tools", "icon": "🛠️", "description": "Tool-Bibliothek und Konfiguration"},
+                {"id": "mcp_tools", "label": "MCP Tools", "icon": "🔌", "description": "MCP Server und Tools verwalten"},
                 {"id": "analytics", "label": "Analytics", "icon": "📈", "description": "Nutzungsstatistiken und Berichte"},
                 {"id": "settings", "label": "Einstellungen", "icon": "⚙️", "description": "System- und Benutzereinstellungen"},
             ]

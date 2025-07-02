@@ -229,6 +229,35 @@ class APIClient:
     async def health_check(self) -> APIResponse:
         """Check API health."""
         return await self._make_request("GET", "/api/v1/health")
+    
+    # MCP API methods
+    async def get_mcp_servers(self) -> APIResponse:
+        """Get MCP servers."""
+        return await self._make_request("GET", "/api/v1/mcp/servers")
+    
+    async def add_mcp_server(self, server_data: Dict[str, Any]) -> APIResponse:
+        """Add MCP server."""
+        return await self._make_request("POST", "/api/v1/mcp/servers", data=server_data)
+    
+    async def remove_mcp_server(self, server_id: str) -> APIResponse:
+        """Remove MCP server."""
+        return await self._make_request("DELETE", f"/api/v1/mcp/servers/{server_id}")
+    
+    async def get_mcp_tools(self) -> APIResponse:
+        """Get MCP tools."""
+        return await self._make_request("GET", "/api/v1/mcp/tools")
+    
+    async def get_mcp_tool(self, tool_id: str) -> APIResponse:
+        """Get MCP tool."""
+        return await self._make_request("GET", f"/api/v1/mcp/tools/{tool_id}")
+    
+    async def execute_mcp_tool(self, tool_id: str, arguments: Dict[str, Any]) -> APIResponse:
+        """Execute MCP tool."""
+        return await self._make_request(
+            "POST",
+            f"/api/v1/mcp/tools/{tool_id}/execute",
+            data={"arguments": arguments}
+        )
 
 
 # Global API client instance
