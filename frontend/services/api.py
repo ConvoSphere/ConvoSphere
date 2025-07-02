@@ -124,6 +124,78 @@ class APIClient:
                     status_code=200
                 )
             
+            # Knowledge base mock responses
+            if method == "GET" and "knowledge/documents" in endpoint:
+                return APIResponse(
+                    success=True,
+                    data=[
+                        {
+                            "id": "1",
+                            "title": "API Documentation",
+                            "description": "Complete API reference",
+                            "file_name": "api_docs.pdf",
+                            "file_size": 1024000,
+                            "file_type": "application/pdf",
+                            "status": "processed",
+                            "created_at": "2024-01-15T10:30:00Z",
+                            "updated_at": "2024-01-15T10:35:00Z",
+                            "tags": ["api", "documentation"],
+                            "chunk_count": 45
+                        },
+                        {
+                            "id": "2",
+                            "title": "User Guide",
+                            "description": "User manual and tutorials",
+                            "file_name": "user_guide.md",
+                            "file_size": 256000,
+                            "file_type": "text/markdown",
+                            "status": "processed",
+                            "created_at": "2024-01-14T14:20:00Z",
+                            "updated_at": "2024-01-14T14:25:00Z",
+                            "tags": ["guide", "tutorial"],
+                            "chunk_count": 23
+                        }
+                    ],
+                    status_code=200
+                )
+            
+            if method == "GET" and "knowledge/search" in endpoint:
+                return APIResponse(
+                    success=True,
+                    data=[
+                        {
+                            "id": "1",
+                            "content": "This is a relevant search result about the query.",
+                            "score": 0.85,
+                            "document_id": "1",
+                            "chunk_id": "chunk_1"
+                        },
+                        {
+                            "id": "2",
+                            "content": "Another relevant result with lower score.",
+                            "score": 0.72,
+                            "document_id": "2",
+                            "chunk_id": "chunk_5"
+                        }
+                    ],
+                    status_code=200
+                )
+            
+            if method == "GET" and "search/conversations" in endpoint:
+                return APIResponse(
+                    success=True,
+                    data=[
+                        {
+                            "id": "1",
+                            "content": "Previous conversation about similar topic.",
+                            "score": 0.78,
+                            "conversation_id": "conv_1",
+                            "message_id": "msg_5"
+                        }
+                    ],
+                    status_code=200
+                )
+            
             # Default response
             return APIResponse(
                 success=True,
@@ -257,6 +329,61 @@ class APIClient:
             "POST",
             f"/api/v1/mcp/tools/{tool_id}/execute",
             data={"arguments": arguments}
+        )
+    
+    # Knowledge base endpoints
+    async def get_documents(self, skip: int = 0, limit: int = 100) -> APIResponse:
+        """Get documents from knowledge base."""
+        return await self._make_request(
+            "GET",
+            "/api/v1/knowledge/documents",
+            params={"skip": skip, "limit": limit}
+        )
+    
+    async def get_document(self, document_id: str) -> APIResponse:
+        """Get document by ID."""
+        return await self._make_request("GET", f"/api/v1/knowledge/documents/{document_id}")
+    
+    async def upload_document(self, file_data: Dict[str, Any], metadata: Dict[str, Any]) -> APIResponse:
+        """Upload document to knowledge base."""
+        return await self._make_request(
+            "POST",
+            "/api/v1/knowledge/documents/upload",
+            data={"file": file_data, "metadata": metadata}
+        )
+    
+    async def delete_document(self, document_id: str) -> APIResponse:
+        """Delete document from knowledge base."""
+        return await self._make_request("DELETE", f"/api/v1/knowledge/documents/{document_id}")
+    
+    async def download_document(self, document_id: str) -> APIResponse:
+        """Download document."""
+        return await self._make_request("GET", f"/api/v1/knowledge/documents/{document_id}/download")
+    
+    async def process_document(self, document_id: str) -> APIResponse:
+        """Process document for embedding."""
+        return await self._make_request(
+            "POST",
+            f"/api/v1/knowledge/documents/{document_id}/process"
+        )
+    
+    async def search_knowledge(self, query: str, limit: int = 10) -> APIResponse:
+        """Search knowledge base."""
+        return await self._make_request(
+            "GET",
+            "/api/v1/knowledge/search",
+            params={"query": query, "limit": limit}
+        )
+    
+    async def search_conversations(self, query: str, conversation_id: Optional[str] = None, limit: int = 10) -> APIResponse:
+        """Search conversations semantically."""
+        params = {"query": query, "limit": limit}
+        if conversation_id:
+            params["conversation_id"] = conversation_id
+        return await self._make_request(
+            "GET",
+            "/api/v1/search/conversations",
+            params=params
         )
 
 

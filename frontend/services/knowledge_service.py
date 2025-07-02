@@ -1,0 +1,266 @@
+"""
+Knowledge service for frontend.
+
+This module provides a service layer for knowledge base operations
+including document management, search, and RAG functionality.
+"""
+
+import asyncio
+from typing import List, Dict, Any, Optional
+from datetime import datetime
+
+from services.api import api_client
+
+
+class KnowledgeService:
+    """Service for knowledge base operations."""
+    
+    def __init__(self):
+        self.documents: List[Dict[str, Any]] = []
+        self.is_loading = False
+        self.search_results: List[Dict[str, Any]] = []
+        self.is_searching = False
+    
+    async def load_documents(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Load documents from knowledge base.
+        
+        Args:
+            skip: Number of documents to skip
+            limit: Maximum number of documents to return
+            
+        Returns:
+            List of documents
+        """
+        try:
+            self.is_loading = True
+            response = await api_client.get_documents(skip=skip, limit=limit)
+            
+            if response.success and response.data:
+                self.documents = response.data
+                return self.documents
+            else:
+                return []
+                
+        except Exception as e:
+            print(f"Error loading documents: {e}")
+            return []
+        finally:
+            self.is_loading = False
+    
+    async def get_document(self, document_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get document by ID.
+        
+        Args:
+            document_id: Document ID
+            
+        Returns:
+            Document data or None
+        """
+        try:
+            response = await api_client.get_document(document_id)
+            
+            if response.success and response.data:
+                return response.data
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Error getting document: {e}")
+            return None
+    
+    async def upload_document(self, file_data: Dict[str, Any], metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Upload document to knowledge base.
+        
+        Args:
+            file_data: File data
+            metadata: Document metadata
+            
+        Returns:
+            Uploaded document data or None
+        """
+        try:
+            response = await api_client.upload_document(file_data, metadata)
+            
+            if response.success and response.data:
+                # Add to local documents list
+                self.documents.append(response.data)
+                return response.data
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Error uploading document: {e}")
+            return None
+    
+    async def delete_document(self, document_id: str) -> bool:
+        """
+        Delete document from knowledge base.
+        
+        Args:
+            document_id: Document ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            response = await api_client.delete_document(document_id)
+            
+            if response.success:
+                # Remove from local documents list
+                self.documents = [doc for doc in self.documents if doc.get("id") != document_id]
+                return True
+            else:
+                return False
+                
+        except Exception as e:
+            print(f"Error deleting document: {e}")
+            return False
+    
+    async def download_document(self, document_id: str) -> Optional[bytes]:
+        """
+        Download document content.
+        
+        Args:
+            document_id: Document ID
+            
+        Returns:
+            Document content as bytes or None
+        """
+        try:
+            response = await api_client.download_document(document_id)
+            
+            if response.success and response.data:
+                return response.data
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Error downloading document: {e}")
+            return None
+    
+    async def process_document(self, document_id: str) -> bool:
+        """
+        Process document for embedding.
+        
+        Args:
+            document_id: Document ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            response = await api_client.process_document(document_id)
+            
+            if response.success:
+                # Update document status in local list
+                for doc in self.documents:
+                    if doc.get("id") == document_id:
+                        doc["status"] = "processed"
+                        doc["updated_at"] = datetime.now().isoformat()
+                        break
+                return True
+            else:
+                return False
+                
+        except Exception as e:
+            print(f"Error processing document: {e}")
+            return False
+    
+    async def search_knowledge(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search knowledge base.
+        
+        Args:
+            query: Search query
+            limit: Maximum number of results
+            
+        Returns:
+            List of search results
+        """
+        try:
+            self.is_searching = True
+            response = await api_client.search_knowledge(query, limit=limit)
+            
+            if response.success and response.data:
+                self.search_results = response.data
+                return self.search_results
+            else:
+                return []
+                
+        except Exception as e:
+            print(f"Error searching knowledge: {e}")
+            return []
+        finally:
+            self.is_searching = False
+    
+    async def search_conversations(self, query: str, conversation_id: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search conversations semantically.
+        
+        Args:
+            query: Search query
+            conversation_id: Optional conversation ID to limit search
+            limit: Maximum number of results
+            
+        Returns:
+            List of search results
+        """
+        try:
+            response = await api_client.search_conversations(query, conversation_id, limit)
+            
+            if response.success and response.data:
+                return response.data
+            else:
+                return []
+                
+        except Exception as e:
+            print(f"Error searching conversations: {e}")
+            return []
+    
+    def get_document_by_id(self, document_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get document from local cache by ID.
+        
+        Args:
+            document_id: Document ID
+            
+        Returns:
+            Document data or None
+        """
+        for doc in self.documents:
+            if doc.get("id") == document_id:
+                return doc
+        return None
+    
+    def filter_documents(self, status: Optional[str] = None, tags: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """
+        Filter documents by status and tags.
+        
+        Args:
+            status: Document status filter
+            tags: List of tags to filter by
+            
+        Returns:
+            Filtered list of documents
+        """
+        filtered = self.documents
+        
+        if status:
+            filtered = [doc for doc in filtered if doc.get("status") == status]
+        
+        if tags:
+            filtered = [doc for doc in filtered if any(tag in doc.get("tags", []) for tag in tags)]
+        
+        return filtered
+    
+    def clear_search_results(self):
+        """Clear search results."""
+        self.search_results = []
+        self.is_searching = False
+
+
+# Global knowledge service instance
+knowledge_service = KnowledgeService() 

@@ -13,7 +13,7 @@ import json
 from nicegui import ui
 from nicegui.events import ValueChangeEventArguments
 
-from services.api import api_client
+from services.knowledge_service import knowledge_service
 from services.auth_service import auth_service
 
 
@@ -196,17 +196,14 @@ class KnowledgeBasePage:
         try:
             self.is_loading = True
             
-            # Use the internal _make_request method for custom endpoints
-            response = await api_client._make_request(
-                "GET",
-                "/api/v1/knowledge/documents"
-            )
+            # Use knowledge service to load documents
+            documents = await knowledge_service.load_documents()
             
-            if response.success and response.data:
-                self.documents = response.data
+            if documents:
+                self.documents = documents
                 self.update_documents_list()
             else:
-                ui.notify(f"Error loading documents: {response.error}", type="error")
+                ui.notify("No documents found", type="info")
                 
         except Exception as e:
             ui.notify(f"Error loading documents: {str(e)}", type="error")
@@ -305,8 +302,9 @@ class KnowledgeBasePage:
         """Upload a document to the knowledge base."""
         try:
             self.is_uploading = True
-            self.upload_progress.visible = True
-            self.upload_progress.value = 0
+            if self.upload_progress:
+                self.upload_progress.visible = True
+                self.upload_progress.value = 0
             
             # Get form data
             file_input = self.upload_dialog.find_child(ui.upload)
@@ -326,34 +324,38 @@ class KnowledgeBasePage:
             # Simulate upload progress
             for i in range(10):
                 await asyncio.sleep(0.1)
-                self.upload_progress.value = (i + 1) / 10
+                if self.upload_progress:
+                    self.upload_progress.value = (i + 1) / 10
             
-            # Upload document
-            # In a real implementation, this would upload the file to the backend
-            response = await api_client._make_request(
-                "POST",
-                "/api/v1/knowledge/documents",
-                data={
-                    "title": title,
-                    "description": description,
-                    "tags": tags,
-                    "file_name": file.name,
-                    "file_size": len(file.content) if hasattr(file, 'content') else 0
-                }
-            )
+            # Prepare file data and metadata
+            file_data = {
+                "name": file.name,
+                "content": file.content if hasattr(file, 'content') else b"",
+                "size": len(file.content) if hasattr(file, 'content') else 0
+            }
             
-            if response.success:
+            metadata = {
+                "title": title,
+                "description": description,
+                "tags": tags
+            }
+            
+            # Upload document using knowledge service
+            result = await knowledge_service.upload_document(file_data, metadata)
+            
+            if result:
                 ui.notify("Document uploaded successfully", type="positive")
                 self.upload_dialog.close()
                 await self.load_documents()
             else:
-                ui.notify(f"Upload failed: {response.error}", type="error")
+                ui.notify("Upload failed", type="error")
                 
         except Exception as e:
             ui.notify(f"Error uploading document: {str(e)}", type="error")
         finally:
             self.is_uploading = False
-            self.upload_progress.visible = False
+            if self.upload_progress:
+                self.upload_progress.visible = False
     
     async def delete_document(self):
         """Delete the selected document."""
@@ -363,18 +365,19 @@ class KnowledgeBasePage:
         
         try:
             document_id = self.selected_document.get('id')
-            response = await api_client._make_request(
-                "DELETE",
-                f"/api/v1/knowledge/documents/{document_id}"
-            )
+            if not document_id:
+                ui.notify("Invalid document ID", type="error")
+                return
+                
+            success = await knowledge_service.delete_document(str(document_id))
             
-            if response.success:
+            if success:
                 ui.notify("Document deleted successfully", type="positive")
                 self.selected_document = None
                 await self.load_documents()
                 self.update_document_viewer()
             else:
-                ui.notify(f"Delete failed: {response.error}", type="error")
+                ui.notify("Delete failed", type="error")
                 
         except Exception as e:
             ui.notify(f"Error deleting document: {str(e)}", type="error")
@@ -387,16 +390,17 @@ class KnowledgeBasePage:
         
         try:
             document_id = self.selected_document.get('id')
-            response = await api_client._make_request(
-                "GET",
-                f"/api/v1/knowledge/documents/{document_id}/download"
-            )
+            if not document_id:
+                ui.notify("Invalid document ID", type="error")
+                return
+                
+            content = await knowledge_service.download_document(str(document_id))
             
-            if response.success:
+            if content:
                 # In a real implementation, this would trigger a file download
-                ui.notify("Download started", type="positive")
+                ui.notify("Document download started", type="positive")
             else:
-                ui.notify(f"Download failed: {response.error}", type="error")
+                ui.notify("Download failed", type="error")
                 
         except Exception as e:
             ui.notify(f"Error downloading document: {str(e)}", type="error")
@@ -404,24 +408,22 @@ class KnowledgeBasePage:
     async def search_documents(self):
         """Search documents in the knowledge base."""
         if not self.search_query.strip():
-            self.search_results = []
+            ui.notify("Please enter a search query", type="warning")
             return
-            
-        self.is_searching = True
+        
         try:
-            response = await api_client._make_request(
-                "POST",
-                "/api/v1/search/knowledge",
-                data={"query": self.search_query}
-            )
+            self.is_searching = True
+            results = await knowledge_service.search_knowledge(self.search_query)
             
-            if response.success and response.data:
-                self.search_results = response.data
+            if results:
+                self.search_results = results
+                ui.notify(f"Found {len(results)} results", type="positive")
             else:
-                ui.notify(f'Search failed: {response.error}', type='error')
+                self.search_results = []
+                ui.notify("No results found", type="info")
                 
         except Exception as e:
-            ui.notify(f'Search error: {str(e)}', type='error')
+            ui.notify(f"Error searching documents: {str(e)}", type="error")
         finally:
             self.is_searching = False
     
