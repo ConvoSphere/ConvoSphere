@@ -64,7 +64,7 @@ numpy==1.25.2
 # Text Processing & Embeddings
 sentence-transformers==2.2.2
 transformers==4.36.2
-torch==2.1.2
+torch==2.2.2
 tokenizers==0.15.0
 
 # File Storage
