@@ -6,6 +6,15 @@ This module provides the main navigation sidebar with menu items and user contro
 
 from nicegui import ui
 
+from pages.dashboard import create_page as create_dashboard
+from pages.assistants import create_page as create_assistants
+from pages.conversations import create_page as create_conversations
+from pages.chat import create_page as create_chat
+from pages.tools import create_page as create_tools
+from pages.mcp_tools import create_page as create_mcp_tools
+from pages.knowledge_base import create_page as create_knowledge_base
+from pages.settings import create_page as create_settings
+
 
 class Sidebar:
     """Sidebar component with navigation menu."""
@@ -41,6 +50,7 @@ class Sidebar:
                 {"id": "mcp_tools", "label": "MCP Tools", "icon": "🔌", "description": "MCP Server und Tools verwalten"},
                 {"id": "analytics", "label": "Analytics", "icon": "📈", "description": "Nutzungsstatistiken und Berichte"},
                 {"id": "settings", "label": "Einstellungen", "icon": "⚙️", "description": "System- und Benutzereinstellungen"},
+                {"id": "knowledge_base", "label": "Knowledge Base", "icon": "📚", "description": "Knowledge Base"},
             ]
             
             for item in nav_items:
@@ -80,4 +90,17 @@ class Sidebar:
     def start_conversation(self):
         """Handle start conversation action."""
         ui.notify("Gesprächsauswahl wird geöffnet...", type="info")
-        self.navigate_callback("conversations") 
+        self.navigate_callback("conversations")
+
+
+# Navigation routes
+routes = {
+    "/": create_dashboard,
+    "/assistants": create_assistants,
+    "/conversations": create_conversations,
+    "/chat": create_chat,
+    "/tools": create_tools,
+    "/mcp-tools": create_mcp_tools,
+    "/knowledge-base": create_knowledge_base,
+    "/settings": create_settings,
+} 

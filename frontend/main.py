@@ -16,6 +16,7 @@ from .pages.assistants import AssistantsPage
 from .pages.conversations import ConversationsPage
 from .pages.tools import ToolsPage
 from .pages.mcp_tools import mcp_tools_page
+from .pages.knowledge_base import knowledge_base_page
 from .pages.settings import SettingsPage
 from .components.header import Header
 from .components.sidebar import Sidebar
@@ -182,6 +183,8 @@ class AIAssistantApp:
                 ToolsPage()
             elif page_name == "mcp_tools":
                 mcp_tools_page
+            elif page_name == "knowledge_base":
+                knowledge_base_page
             elif page_name == "settings":
                 SettingsPage()
             else:
