@@ -19,6 +19,7 @@ import textract
 import magic
 
 from core.config import settings
+from .docling_processor import docling_processor
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,18 @@ class DocumentProcessor:
         try:
             file_type = self.detect_file_type(file_content, filename)
             
+            # Try Docling first if available and supported
+            if docling_processor.is_available():
+                supported_formats = docling_processor.get_supported_formats()
+                if file_type in supported_formats:
+                    logger.info(f"Using Docling for {file_type} file: {filename}")
+                    result = docling_processor.process_document(file_content, filename)
+                    if result['success']:
+                        return result['text']
+                    else:
+                        logger.warning(f"Docling processing failed for {filename}: {result.get('error')}")
+            
+            # Fallback to traditional processing
             if file_type == 'pdf':
                 return self._extract_pdf_text(file_content)
             elif file_type == 'docx':
@@ -304,6 +317,26 @@ class DocumentProcessor:
             Processing result with metadata and chunks
         """
         try:
+            file_type = self.detect_file_type(file_content, filename)
+            
+            # Try Docling first if available and supported
+            if docling_processor.is_available():
+                supported_formats = docling_processor.get_supported_formats()
+                if file_type in supported_formats:
+                    logger.info(f"Using Docling for advanced processing of {file_type} file: {filename}")
+                    result = docling_processor.process_document(file_content, filename)
+                    if result['success']:
+                        # Add additional metadata
+                        result['metadata'].update({
+                            'processing_engine': 'docling',
+                            'file_size': len(file_content),
+                            'processing_success': True
+                        })
+                        return result
+                    else:
+                        logger.warning(f"Docling processing failed for {filename}: {result.get('error')}")
+            
+            # Fallback to traditional processing
             # Extract text
             text = self.extract_text(file_content, filename)
             
@@ -320,11 +353,12 @@ class DocumentProcessor:
             
             # Calculate metadata
             metadata = {
-                'file_type': self.detect_file_type(file_content, filename),
+                'file_type': file_type,
                 'file_size': len(file_content),
                 'text_length': len(text),
                 'word_count': len(text.split()),
                 'chunk_count': len(chunks),
+                'processing_engine': 'traditional',
                 'processing_success': True
             }
             
@@ -332,6 +366,9 @@ class DocumentProcessor:
                 'success': True,
                 'text': text,
                 'chunks': chunks,
+                'tables': [],
+                'figures': [],
+                'formulas': [],
                 'metadata': metadata
             }
             
