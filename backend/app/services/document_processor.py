@@ -15,7 +15,6 @@ import PyPDF2
 from docx import Document
 import markdown
 from PIL import Image
-import textract
 import magic
 
 from core.config import settings
@@ -121,8 +120,7 @@ class DocumentProcessor:
             elif file_type == 'image':
                 return self._extract_image_text(file_content)
             else:
-                # Try textract as fallback
-                return self._extract_with_textract(file_content, filename)
+                return ""
                 
         except Exception as e:
             logger.error(f"Error extracting text from {filename}: {e}")
@@ -236,26 +234,6 @@ class DocumentProcessor:
             
         except Exception as e:
             logger.error(f"Error extracting image text: {e}")
-            return ""
-    
-    def _extract_with_textract(self, file_content: bytes, filename: str) -> str:
-        """Extract text using textract library."""
-        try:
-            # Save temporary file
-            temp_path = f"/tmp/{filename}"
-            with open(temp_path, 'wb') as f:
-                f.write(file_content)
-            
-            # Extract text
-            text = textract.process(temp_path).decode('utf-8')
-            
-            # Clean up
-            os.remove(temp_path)
-            
-            return text.strip()
-            
-        except Exception as e:
-            logger.error(f"Error extracting with textract: {e}")
             return ""
     
     def chunk_text(self, text: str) -> List[Dict[str, Any]]:

@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from nicegui import ui
 import asyncio
 
-from ..services.api import api_client
+from services.api import api_client
 
 
 class AssistantsPage:

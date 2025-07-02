@@ -9,8 +9,8 @@ from nicegui import ui, app
 from dataclasses import dataclass
 import asyncio
 
-from ..services.api import api_client
-from ..services.auth_service import auth_service
+from services.api import api_client
+from services.auth_service import auth_service
 
 
 @dataclass
