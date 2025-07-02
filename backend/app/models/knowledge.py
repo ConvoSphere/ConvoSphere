@@ -35,7 +35,7 @@ class Document(Base):
     
     # Metadata
     tags = Column(JSON, default=list)  # List of tags
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    knowledge_metadata = Column(JSON, default=dict)  # Additional metadata
     
     # User and timestamps
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
@@ -84,7 +84,7 @@ class DocumentChunk(Base):
     embedding_created_at = Column(DateTime, nullable=True)
     
     # Metadata
-    metadata = Column(JSON, default=dict)  # Additional chunk metadata
+    chunk_metadata = Column(JSON, default=dict)  # Additional chunk metadata
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

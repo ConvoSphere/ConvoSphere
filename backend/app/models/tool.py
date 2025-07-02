@@ -57,7 +57,7 @@ class Tool(Base):
     
     # Metadata
     tags = Column(JSON, default=list)  # List of tags
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    tool_metadata = Column(JSON, default=dict)  # Additional metadata
     
     # Relationships
     creator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
@@ -106,7 +106,7 @@ class Tool(Base):
             "required_permissions": self.required_permissions,
             "rate_limit": self.rate_limit,
             "tags": self.tags,
-            "metadata": self.metadata,
+            "metadata": self.tool_metadata,
             "creator_id": str(self.creator_id) if self.creator_id else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

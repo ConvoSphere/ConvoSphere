@@ -60,7 +60,7 @@ class Conversation(Base):
     total_tokens = Column(Integer, default=0, nullable=False)
     
     # Metadata
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    conversation_metadata = Column(JSON, default=dict)  # Additional metadata
     
     # Relationships
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
@@ -105,7 +105,7 @@ class Conversation(Base):
             "is_archived": self.is_archived,
             "message_count": self.message_count,
             "total_tokens": self.total_tokens,
-            "metadata": self.metadata,
+            "conversation_metadata": self.conversation_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -138,7 +138,7 @@ class Message(Base):
     model_used = Column(String(100), nullable=True)
     
     # Metadata
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    message_metadata = Column(JSON, default=dict)  # Additional metadata
     
     def __repr__(self) -> str:
         """String representation of the message."""
@@ -172,7 +172,7 @@ class Message(Base):
             "tool_output": self.tool_output,
             "tokens_used": self.tokens_used,
             "model_used": self.model_used,
-            "metadata": self.metadata,
+            "metadata": self.message_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         } 

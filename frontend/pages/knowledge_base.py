@@ -149,8 +149,7 @@ class KnowledgeBasePage:
             ui.label("Select Document").classes("font-medium mb-2")
             file_input = ui.upload(
                 label="Choose file",
-                multiple=False,
-                accept=".pdf,.txt,.doc,.docx,.md"
+                multiple=False
             ).classes("w-full mb-4")
             
             # Document metadata
