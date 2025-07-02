@@ -2,7 +2,7 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic-settings==2.3.0
 
 # AI & LLM
 litellm==1.10.0
@@ -52,7 +52,7 @@ markdown==3.5.1
 textract==1.6.4
 
 # Advanced Document Processing with Docling
-docling==0.1.0
+docling==2.39.0
 
 # Web Scraping & Search
 beautifulsoup4==4.8.2
