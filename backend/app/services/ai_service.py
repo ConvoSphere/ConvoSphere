@@ -10,6 +10,7 @@ from litellm import completion, acompletion
 from loguru import logger
 
 from app.core.config import settings
+from app.services.weaviate_service import weaviate_service
 
 
 class AIService:
@@ -149,19 +150,13 @@ class AIService:
         system_prompt: str,
         user_message: str,
         conversation_history: Optional[List[Dict[str, str]]] = None,
-        assistant_config: Optional[Dict[str, Any]] = None
+        assistant_config: Optional[Dict[str, Any]] = None,
+        rag_enabled: bool = True,
+        rag_limit: int = 3
     ) -> Dict[str, Any]:
         """
         Generate assistant response with context and configuration.
-        
-        Args:
-            system_prompt: Assistant's system prompt
-            user_message: Current user message
-            conversation_history: Previous conversation messages
-            assistant_config: Assistant configuration (model, temperature, etc.)
-            
-        Returns:
-            Dict[str, Any]: AI response with content and metadata
+        Optionally use RAG (Retrieval-Augmented Generation) with Weaviate.
         """
         # Build messages list
         messages = [{"role": "system", "content": system_prompt}]
@@ -173,18 +168,37 @@ class AIService:
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
+        # RAG: Fetch relevant knowledge and add to context
+        rag_context = ""
+        rag_metadata = None
+        if rag_enabled:
+            knowledge_results = weaviate_service.semantic_search_knowledge(user_message, limit=rag_limit)
+            if knowledge_results:
+                rag_context = "\n\n".join([k["content"] for k in knowledge_results if "content" in k])
+                rag_metadata = knowledge_results
+                if rag_context:
+                    # Add as system message for context
+                    messages.insert(1, {"role": "system", "content": f"Relevant knowledge:\n{rag_context}"})
+        
         # Extract assistant configuration
         model = assistant_config.get("model") if assistant_config else None
         temperature = assistant_config.get("temperature") if assistant_config else None
         max_tokens = assistant_config.get("max_tokens") if assistant_config else None
         
         # Generate response
-        return await self.generate_response(
+        result = await self.generate_response(
             messages=messages,
             model=model,
             temperature=temperature,
             max_tokens=max_tokens
         )
+        
+        # Attach RAG metadata if used
+        if rag_context:
+            result["rag_context"] = rag_context
+            result["rag_metadata"] = rag_metadata
+        
+        return result
     
     def get_available_models(self) -> List[Dict[str, Any]]:
         """
