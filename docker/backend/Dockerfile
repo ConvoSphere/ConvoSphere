@@ -39,7 +39,7 @@ RUN apt-get update \
 
 # Install Python dependencies
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
+RUN pip install --no-cache-dir --upgrade pip==24.0 \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy project
