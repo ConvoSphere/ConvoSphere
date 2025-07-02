@@ -13,8 +13,8 @@ import json
 from nicegui import ui
 from nicegui.events import ValueChangeEventArguments, UploadEventArguments
 
-from services.knowledge_service import knowledge_service
-from services.auth_service import auth_service
+from ..services.knowledge_service import knowledge_service
+from ..services.auth_service import auth_service
 
 
 class KnowledgeBasePage:

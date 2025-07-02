@@ -13,8 +13,8 @@ import json
 from nicegui import ui
 from nicegui.events import ValueChangeEventArguments
 
-from services.api import api_client
-from services.auth_service import auth_service
+from ..services.api import api_client
+from ..services.auth_service import auth_service
 
 
 class ChatPage:

@@ -8,8 +8,8 @@ from typing import List, Dict, Any, Optional
 from nicegui import ui, app
 from dataclasses import dataclass
 
-from services.api import api_client
-from services.auth_service import auth_service
+from ..services.api import api_client
+from ..services.auth_service import auth_service
 
 
 @dataclass

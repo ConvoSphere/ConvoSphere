@@ -9,7 +9,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from services.api import api_client
+from .api import api_client
 
 
 class KnowledgeService:
