@@ -55,7 +55,7 @@ textract==1.6.4
 docling==0.1.0
 
 # Web Scraping & Search
-beautifulsoup4==4.12.2
+beautifulsoup4==4.9.3
 requests==2.31.0
 
 # Data Processing
