@@ -48,28 +48,23 @@ class Router:
         if page_name not in self.page_handlers:
             ui.notify(f"Page '{page_name}' not found", type="error")
             return
-        
         # Store previous page
         self.previous_page = self.current_page
-        
         # Update current page
         self.current_page = page_name
-        
         # Store page state
         if kwargs:
             self.page_state[page_name] = kwargs
-        
         # Clear current content
         self._clear_content()
-        
         # Call page handler
         try:
             self.page_handlers[page_name](**kwargs)
         except Exception as e:
-            ui.notify(f"Error loading page '{page_name}': {str(e)}", type="error")
-            # Fallback to login page
-            self.navigate_to("login")
-        
+            if page_name != "login":
+                self.navigate_to("login")
+            else:
+                ui.notify(f"Fehler beim Laden der Login-Seite: {str(e)}", type="error")
         # Notify navigation callbacks
         self._notify_navigation_callbacks(page_name)
     
@@ -111,29 +106,39 @@ class Router:
             except Exception as e:
                 print(f"Error in navigation callback: {e}")
     
+    def _clear_app_container(self):
+        """Remove and recreate the main app container for exclusive layouts (e.g. AuthLayout)."""
+        from nicegui import ui
+        # Remove the existing .app-container if present
+        containers = ui.query('.app-container').elements
+        for el in containers:
+            el.delete()
+        # Create a new app-container for the next layout
+        ui.element('div').classes('app-container')
+    
     def _handle_login_page(self, **kwargs):
         """Handle login page."""
         from components.auth.auth_form import AuthForm
         from components.layout.page_layout import AuthLayout
-        
+        self._clear_app_container()
         layout = AuthLayout()
         layout.create_layout()
-        
         auth_form = AuthForm(form_type="login")
         auth_form.on_success = lambda: self.navigate_to("dashboard")
-        auth_form.create_form()
+        with layout.main_content:
+            auth_form.create_form()
     
     def _handle_register_page(self, **kwargs):
         """Handle register page."""
         from components.auth.auth_form import AuthForm
         from components.layout.page_layout import AuthLayout
-        
+        self._clear_app_container()
         layout = AuthLayout()
         layout.create_layout()
-        
         auth_form = AuthForm(form_type="register")
         auth_form.on_success = lambda: self.navigate_to("login")
-        auth_form.create_form()
+        with layout.main_content:
+            auth_form.create_form()
     
     def _handle_dashboard_page(self, **kwargs):
         """Handle dashboard page."""

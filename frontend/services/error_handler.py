@@ -277,4 +277,14 @@ async def handle_permission_error(error: Exception, action: str = ""):
 
 async def handle_server_error(error: Exception, action: str = ""):
     """Handle server error."""
-    await error_handler.handle_server_error(error, action) 
+    await error_handler.handle_server_error(error, action)
+
+
+async def handle_api_error(error: Exception, action: str = ""):
+    """Handle API error."""
+    await error_handler.handle_error(
+        error,
+        ErrorType.SERVER,
+        ErrorSeverity.ERROR,
+        {"action": action}
+    ) 
