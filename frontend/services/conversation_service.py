@@ -1,24 +1,32 @@
 """
-Conversation service for the frontend.
+Conversation service for the AI Assistant Platform.
 
-This module provides conversation management and chat state handling.
+This module provides conversation management functionality including
+CRUD operations, message handling, and conversation history.
 """
 
+import asyncio
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime
+
+from .api import api_client
+from .error_handler import handle_api_error, handle_network_error
+from utils.helpers import generate_id, format_timestamp, format_relative_time
 
 
 @dataclass
 class Message:
     """Message data model."""
     id: str
+    conversation_id: str
     content: str
-    role: str  # "user" or "assistant"
-    message_type: str = "text"
-    timestamp: str = ""
-    tokens_used: Optional[int] = None
-    model_used: Optional[str] = None
+    role: str  # user, assistant, system
+    message_type: str  # text, tool, file, error
+    timestamp: datetime
+    metadata: Optional[Dict[str, Any]] = None
+    tool_results: Optional[List[Dict[str, Any]]] = None
+    is_loading: bool = False
 
 
 @dataclass
@@ -26,35 +34,247 @@ class Conversation:
     """Conversation data model."""
     id: str
     title: str
-    description: Optional[str] = None
-    user_id: str = ""
-    assistant_id: str = ""
-    is_active: bool = True
-    is_archived: bool = False
+    assistant_id: str
+    assistant_name: str
+    status: str  # active, archived, deleted
+    created_at: datetime
+    updated_at: datetime
     message_count: int = 0
-    total_tokens: int = 0
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    last_message: Optional[str] = None
+    last_message_time: Optional[datetime] = None
 
 
 class ConversationService:
-    """Conversation service for managing chat conversations."""
+    """Service for managing conversations."""
     
     def __init__(self):
+        """Initialize the conversation service."""
         self.conversations: List[Conversation] = []
         self.current_conversation: Optional[Conversation] = None
-        self.current_messages: List[Message] = []
+        self.messages: Dict[str, List[Message]] = {}  # conversation_id -> messages
+        self.is_loading = False
     
-    def set_conversations(self, conversations_data: List[Dict[str, Any]]) -> None:
+    async def get_conversations(self, force_refresh: bool = False) -> List[Conversation]:
         """
-        Set conversations from API data.
+        Get all conversations.
         
         Args:
-            conversations_data: List of conversation data from API
+            force_refresh: Force refresh from API
+            
+        Returns:
+            List of conversations
         """
-        self.conversations = [
-            Conversation(**conversation_data) for conversation_data in conversations_data
-        ]
+        if not force_refresh and self.conversations:
+            return self.conversations
+        
+        self.is_loading = True
+        
+        try:
+            response = await api_client.get_conversations()
+            
+            if response.success and response.data:
+                self.conversations = []
+                for conv_data in response.data:
+                    conversation = self._create_conversation_from_data(conv_data)
+                    self.conversations.append(conversation)
+                
+                # Sort by updated_at (newest first)
+                self.conversations.sort(key=lambda x: x.updated_at, reverse=True)
+                
+                return self.conversations
+            else:
+                handle_api_error(response, "Laden der Konversationen")
+                return []
+                
+        except Exception as e:
+            handle_network_error(e, "Laden der Konversationen")
+            return []
+        finally:
+            self.is_loading = False
+    
+    async def create_conversation(self, assistant_id: str, title: Optional[str] = None) -> Optional[Conversation]:
+        """
+        Create new conversation.
+        
+        Args:
+            assistant_id: Assistant ID
+            title: Optional conversation title
+            
+        Returns:
+            Created conversation or None if failed
+        """
+        try:
+            # Get assistant name for title
+            assistant_name = "Unknown Assistant"
+            if not title:
+                # Try to get assistant name from assistant service
+                try:
+                    from .assistant_service import assistant_service
+                    assistant = assistant_service.get_assistant_by_name(assistant_id)
+                    if assistant:
+                        assistant_name = assistant.name
+                        title = f"Neue Konversation mit {assistant_name}"
+                    else:
+                        title = "Neue Konversation"
+                except:
+                    title = "Neue Konversation"
+            
+            response = await api_client.create_conversation(assistant_id, title)
+            
+            if response.success and response.data:
+                conversation = self._create_conversation_from_data(response.data)
+                self.conversations.insert(0, conversation)  # Add to beginning
+                self.messages[conversation.id] = []
+                return conversation
+            else:
+                handle_api_error(response, "Erstellen der Konversation")
+                return None
+                
+        except Exception as e:
+            handle_network_error(e, "Erstellen der Konversation")
+            return None
+    
+    async def get_conversation_messages(self, conversation_id: str, force_refresh: bool = False) -> List[Message]:
+        """
+        Get messages for a conversation.
+        
+        Args:
+            conversation_id: Conversation ID
+            force_refresh: Force refresh from API
+            
+        Returns:
+            List of messages
+        """
+        if not force_refresh and conversation_id in self.messages:
+            return self.messages[conversation_id]
+        
+        try:
+            response = await api_client.get_conversation_messages(conversation_id)
+            
+            if response.success and response.data:
+                messages = []
+                for msg_data in response.data:
+                    message = self._create_message_from_data(msg_data)
+                    messages.append(message)
+                
+                self.messages[conversation_id] = messages
+                return messages
+            else:
+                handle_api_error(response, f"Laden der Nachrichten für Konversation {conversation_id}")
+                return []
+                
+        except Exception as e:
+            handle_network_error(e, f"Laden der Nachrichten für Konversation {conversation_id}")
+            return []
+    
+    async def send_message(self, conversation_id: str, content: str) -> Optional[Message]:
+        """
+        Send message to conversation.
+        
+        Args:
+            conversation_id: Conversation ID
+            content: Message content
+            
+        Returns:
+            Sent message or None if failed
+        """
+        try:
+            # Create temporary message for immediate display
+            temp_message = Message(
+                id=generate_id("msg_"),
+                conversation_id=conversation_id,
+                content=content,
+                role="user",
+                message_type="text",
+                timestamp=datetime.now(),
+                is_loading=False
+            )
+            
+            # Add to local messages
+            if conversation_id not in self.messages:
+                self.messages[conversation_id] = []
+            self.messages[conversation_id].append(temp_message)
+            
+            # Send to API
+            response = await api_client.send_message(conversation_id, content)
+            
+            if response.success and response.data:
+                # Replace temp message with real one
+                real_message = self._create_message_from_data(response.data)
+                
+                # Update in local messages
+                for i, msg in enumerate(self.messages[conversation_id]):
+                    if msg.id == temp_message.id:
+                        self.messages[conversation_id][i] = real_message
+                        break
+                
+                # Update conversation
+                await self._update_conversation_after_message(conversation_id, real_message)
+                
+                return real_message
+            else:
+                # Remove temp message on failure
+                self.messages[conversation_id] = [msg for msg in self.messages[conversation_id] if msg.id != temp_message.id]
+                handle_api_error(response, "Senden der Nachricht")
+                return None
+                
+        except Exception as e:
+            handle_network_error(e, "Senden der Nachricht")
+            return None
+    
+    async def archive_conversation(self, conversation_id: str) -> bool:
+        """
+        Archive conversation.
+        
+        Args:
+            conversation_id: Conversation ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Update local conversation status
+            for conversation in self.conversations:
+                if conversation.id == conversation_id:
+                    conversation.status = "archived"
+                    break
+            
+            # TODO: Implement API call for archiving
+            # response = await api_client.archive_conversation(conversation_id)
+            
+            return True
+        except Exception as e:
+            handle_network_error(e, f"Archivieren der Konversation {conversation_id}")
+            return False
+    
+    async def delete_conversation(self, conversation_id: str) -> bool:
+        """
+        Delete conversation.
+        
+        Args:
+            conversation_id: Conversation ID
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Remove from local lists
+            self.conversations = [c for c in self.conversations if c.id != conversation_id]
+            
+            if conversation_id in self.messages:
+                del self.messages[conversation_id]
+            
+            # Clear current conversation if it's the same
+            if self.current_conversation and self.current_conversation.id == conversation_id:
+                self.current_conversation = None
+            
+            # TODO: Implement API call for deletion
+            # response = await api_client.delete_conversation(conversation_id)
+            
+            return True
+        except Exception as e:
+            handle_network_error(e, f"Löschen der Konversation {conversation_id}")
+            return False
     
     def get_conversation_by_id(self, conversation_id: str) -> Optional[Conversation]:
         """
@@ -64,209 +284,149 @@ class ConversationService:
             conversation_id: Conversation ID
             
         Returns:
-            Optional[Conversation]: Conversation if found
+            Conversation or None if not found
         """
         for conversation in self.conversations:
             if conversation.id == conversation_id:
                 return conversation
         return None
     
+    def search_conversations(self, query: str) -> List[Conversation]:
+        """
+        Search conversations by title or content.
+        
+        Args:
+            query: Search query
+            
+        Returns:
+            List of matching conversations
+        """
+        query_lower = query.lower()
+        matching_conversations = []
+        
+        for conversation in self.conversations:
+            # Check title
+            if query_lower in conversation.title.lower():
+                matching_conversations.append(conversation)
+                continue
+            
+            # Check last message
+            if conversation.last_message and query_lower in conversation.last_message.lower():
+                matching_conversations.append(conversation)
+                continue
+            
+            # Check messages in conversation
+            if conversation.id in self.messages:
+                for message in self.messages[conversation.id]:
+                    if query_lower in message.content.lower():
+                        matching_conversations.append(conversation)
+                        break
+        
+        return matching_conversations
+    
     def get_active_conversations(self) -> List[Conversation]:
         """
-        Get active conversations.
+        Get only active conversations.
         
         Returns:
-            List[Conversation]: List of active conversations
+            List of active conversations
         """
-        return [c for c in self.conversations if c.is_active and not c.is_archived]
+        return [c for c in self.conversations if c.status == "active"]
     
     def get_archived_conversations(self) -> List[Conversation]:
         """
-        Get archived conversations.
+        Get only archived conversations.
         
         Returns:
-            List[Conversation]: List of archived conversations
+            List of archived conversations
         """
-        return [c for c in self.conversations if c.is_archived]
+        return [c for c in self.conversations if c.status == "archived"]
     
-    def set_current_conversation(self, conversation: Conversation) -> None:
+    async def _update_conversation_after_message(self, conversation_id: str, message: Message):
         """
-        Set current conversation.
+        Update conversation after new message.
         
         Args:
-            conversation: Conversation to set as current
-        """
-        self.current_conversation = conversation
-        self.current_messages = []  # Clear messages, will be loaded separately
-    
-    def get_current_conversation(self) -> Optional[Conversation]:
-        """
-        Get current conversation.
-        
-        Returns:
-            Optional[Conversation]: Current conversation
-        """
-        return self.current_conversation
-    
-    def set_messages(self, messages_data: List[Dict[str, Any]]) -> None:
-        """
-        Set messages for current conversation.
-        
-        Args:
-            messages_data: List of message data from API
-        """
-        self.current_messages = [
-            Message(**message_data) for message_data in messages_data
-        ]
-    
-    def get_messages(self) -> List[Message]:
-        """
-        Get current conversation messages.
-        
-        Returns:
-            List[Message]: List of messages
-        """
-        return self.current_messages
-    
-    def add_message(self, message: Message) -> None:
-        """
-        Add message to current conversation.
-        
-        Args:
-            message: Message to add
-        """
-        self.current_messages.append(message)
-        
-        # Update conversation message count
-        if self.current_conversation:
-            self.current_conversation.message_count += 1
-            if message.tokens_used:
-                self.current_conversation.total_tokens += message.tokens_used
-    
-    def add_user_message(self, content: str) -> Message:
-        """
-        Add user message to current conversation.
-        
-        Args:
-            content: Message content
-            
-        Returns:
-            Message: Created message
-        """
-        message = Message(
-            id=f"user_{len(self.current_messages)}",
-            content=content,
-            role="user",
-            message_type="text",
-            timestamp=datetime.now().isoformat()
-        )
-        self.add_message(message)
-        return message
-    
-    def add_assistant_message(
-        self,
-        content: str,
-        tokens_used: Optional[int] = None,
-        model_used: Optional[str] = None
-    ) -> Message:
-        """
-        Add assistant message to current conversation.
-        
-        Args:
-            content: Message content
-            tokens_used: Number of tokens used
-            model_used: Model used for response
-            
-        Returns:
-            Message: Created message
-        """
-        message = Message(
-            id=f"assistant_{len(self.current_messages)}",
-            content=content,
-            role="assistant",
-            message_type="text",
-            timestamp=datetime.now().isoformat(),
-            tokens_used=tokens_used,
-            model_used=model_used
-        )
-        self.add_message(message)
-        return message
-    
-    def clear_messages(self) -> None:
-        """Clear current conversation messages."""
-        self.current_messages = []
-    
-    def add_conversation(self, conversation: Conversation) -> None:
-        """
-        Add conversation to list.
-        
-        Args:
-            conversation: Conversation to add
-        """
-        self.conversations.append(conversation)
-    
-    def remove_conversation(self, conversation_id: str) -> None:
-        """
-        Remove conversation from list.
-        
-        Args:
-            conversation_id: Conversation ID to remove
-        """
-        self.conversations = [c for c in self.conversations if c.id != conversation_id]
-        
-        # Clear current conversation if it was removed
-        if self.current_conversation and self.current_conversation.id == conversation_id:
-            self.current_conversation = None
-            self.current_messages = []
-    
-    def update_conversation(self, conversation_id: str, updates: Dict[str, Any]) -> bool:
-        """
-        Update conversation data.
-        
-        Args:
-            conversation_id: Conversation ID to update
-            updates: Updates to apply
-            
-        Returns:
-            bool: True if updated successfully
+            conversation_id: Conversation ID
+            message: New message
         """
         for conversation in self.conversations:
             if conversation.id == conversation_id:
-                for key, value in updates.items():
-                    if hasattr(conversation, key):
-                        setattr(conversation, key, value)
+                conversation.updated_at = message.timestamp
+                conversation.last_message = message.content
+                conversation.last_message_time = message.timestamp
+                conversation.message_count = len(self.messages.get(conversation_id, []))
                 
-                # Update current conversation if it was updated
-                if self.current_conversation and self.current_conversation.id == conversation_id:
-                    self.current_conversation = conversation
-                
-                return True
-        
-        return False
+                # Move to top of list
+                self.conversations.remove(conversation)
+                self.conversations.insert(0, conversation)
+                break
     
-    def get_conversation_title(self, conversation: Conversation) -> str:
+    def _create_conversation_from_data(self, data: Dict[str, Any]) -> Conversation:
         """
-        Get conversation title or generate one.
+        Create Conversation object from API data.
         
         Args:
-            conversation: Conversation object
+            data: API response data
             
         Returns:
-            str: Conversation title
+            Conversation object
         """
-        if conversation.title and conversation.title != "New Conversation":
-            return conversation.title
+        return Conversation(
+            id=data.get("id", generate_id("conv_")),
+            title=data.get("title", "Neue Konversation"),
+            assistant_id=data.get("assistant_id", ""),
+            assistant_name=data.get("assistant_name", "Unknown Assistant"),
+            status=data.get("status", "active"),
+            created_at=datetime.fromisoformat(data["created_at"]) if data.get("created_at") else datetime.now(),
+            updated_at=datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else datetime.now(),
+            message_count=data.get("message_count", 0),
+            last_message=data.get("last_message"),
+            last_message_time=datetime.fromisoformat(data["last_message_time"]) if data.get("last_message_time") else None
+        )
+    
+    def _create_message_from_data(self, data: Dict[str, Any]) -> Message:
+        """
+        Create Message object from API data.
         
-        # Generate title from first message
-        if self.current_messages:
-            first_message = self.current_messages[0]
-            if first_message.role == "user":
-                title = first_message.content[:50]
-                if len(first_message.content) > 50:
-                    title += "..."
-                return title
+        Args:
+            data: API response data
+            
+        Returns:
+            Message object
+        """
+        return Message(
+            id=data.get("id", generate_id("msg_")),
+            conversation_id=data.get("conversation_id", ""),
+            content=data.get("content", ""),
+            role=data.get("role", "user"),
+            message_type=data.get("message_type", "text"),
+            timestamp=datetime.fromisoformat(data["timestamp"]) if data.get("timestamp") else datetime.now(),
+            metadata=data.get("metadata"),
+            tool_results=data.get("tool_results"),
+            is_loading=False
+        )
+    
+    def get_conversation_stats(self) -> Dict[str, Any]:
+        """
+        Get conversation statistics.
         
-        return "New Conversation"
+        Returns:
+            Dictionary with statistics
+        """
+        total = len(self.conversations)
+        active = len(self.get_active_conversations())
+        archived = len(self.get_archived_conversations())
+        
+        total_messages = sum(len(messages) for messages in self.messages.values())
+        
+        return {
+            "total_conversations": total,
+            "active_conversations": active,
+            "archived_conversations": archived,
+            "total_messages": total_messages,
+            "average_messages_per_conversation": total_messages / total if total > 0 else 0
+        }
 
 
 # Global conversation service instance

@@ -1,599 +1,457 @@
 """
-Chat Interface Page.
+Chat page for the AI Assistant Platform.
 
-This page provides a modern chat interface for conversations with AI assistants,
-including real-time messaging, tool execution, and conversation management.
+This module provides the main chat interface with real-time messaging,
+conversation management, and assistant integration.
 """
 
 import asyncio
 from datetime import datetime
-from typing import List, Optional, Dict, Any
-import json
+from typing import List, Dict, Any, Optional
 
-from nicegui import ui
+from nicegui import ui, app
 from nicegui.events import ValueChangeEventArguments
 
-from services.api import api_client
 from services.auth_service import auth_service
+from services.assistant_service import assistant_service
+from services.conversation_service import conversation_service
+from services.websocket_service import websocket_service
+from services.error_handler import handle_api_error, handle_network_error
+from components.common.loading_spinner import create_loading_spinner
+from components.common.error_message import create_error_message, ErrorSeverity
+from utils.helpers import format_timestamp, format_relative_time
+from utils.constants import API_BASE_URL
 
 
 class ChatPage:
-    """Chat interface page."""
+    """Chat page with real-time messaging."""
     
     def __init__(self):
-        self.current_conversation_id: Optional[int] = None
-        self.current_assistant_id: Optional[int] = None
-        self.messages: List[Dict[str, Any]] = []
-        self.assistants: List[Dict[str, Any]] = []
-        self.tools: List[Dict[str, Any]] = []
-        self.conversations: List[Dict[str, Any]] = []
+        """Initialize chat page."""
+        self.current_conversation_id = None
+        self.current_assistant = None
+        self.messages = []
         self.is_loading = False
-        self.is_typing = False
-        self.search_query = ""
-        self.search_results: List[Dict[str, Any]] = []
-        self.is_searching = False
+        self.is_sending = False
+        
+        # UI Components
+        self.messages_container = None
+        self.input_container = None
+        self.conversation_header = None
+        self.loading_spinner = None
+        self.error_component = None
+        self.message_input = None
+        self.send_button = None
         
         # WebSocket connection
-        self.websocket = None
+        self.websocket_connected = False
         
-        # UI elements
-        self.conversations_list = None
-        self.messages_container = None
-        self.message_input = None
-        self.assistant_selector = None
-        
-        self.create_page()
+        self.create_chat_interface()
+        self.initialize_chat()
     
-    def create_page(self):
-        """Create the chat page layout."""
-        with ui.column().classes("w-full h-full"):
+    def create_chat_interface(self):
+        """Create the chat interface UI."""
+        with ui.column().classes("h-screen flex flex-col"):
             # Header
-            with ui.row().classes("w-full p-4 bg-white border-b border-gray-200"):
-                with ui.row().classes("flex-1 items-center gap-4"):
-                    ui.label("Chat").classes("text-2xl font-bold")
-                    
-                    # Assistant selector
-                    self.assistant_selector = ui.select(
-                        label="Select Assistant",
-                        options=[],
-                        on_change=self.on_assistant_change
-                    ).classes("w-64")
-                    
-                    # New conversation button
-                    ui.button("New Chat", on_click=self.start_new_conversation).classes("bg-blue-500 text-white")
-                
-                with ui.row().classes("items-center gap-2"):
-                    ui.button("Settings", on_click=self.show_settings).classes("bg-gray-500 text-white")
+            self.create_conversation_header()
             
-            # Main chat area
-            with ui.row().classes("w-full h-full flex-1 gap-0"):
-                # Conversations sidebar
-                with ui.column().classes("w-80 bg-gray-50 border-r border-gray-200 p-4"):
-                    ui.label("Conversations").classes("text-lg font-semibold mb-4")
-                    
-                    # Search conversations
-                    search_input = ui.input(
-                        "Search conversations...",
-                        on_change=self.on_search_change
-                    ).classes("w-full mb-4")
-                    
-                    # Search button
+            # Messages Area
+            with ui.element("div").classes("flex-1 overflow-hidden"):
+                self.messages_container = ui.element("div").classes(
+                    "h-full overflow-y-auto p-4 space-y-4"
+                )
+            
+            # Input Area
+            self.create_input_area()
+            
+            # Loading and Error States
+            self.loading_spinner = create_loading_spinner("Lade Konversation...", size="lg")
+            self.error_component = create_error_message("", dismissible=True)
+    
+    def create_conversation_header(self):
+        """Create conversation header."""
+        self.conversation_header = ui.element("div").classes(
+            "bg-white border-b border-gray-200 p-4"
+        )
+        
+        with self.conversation_header:
+            with ui.row().classes("items-center justify-between"):
+                with ui.element("div"):
+                    ui.label("Chat").classes("text-lg font-semibold text-gray-900")
+                    ui.label("Wähle eine Konversation aus").classes("text-sm text-gray-600")
+                
+                with ui.row().classes("space-x-2"):
                     ui.button(
-                        "Search",
-                        on_click=self.search_conversations
-                    ).classes("w-full mb-4 bg-blue-500 text-white")
+                        "Neue Konversation",
+                        icon="add",
+                        on_click=self.create_new_conversation
+                    ).classes("bg-blue-600 text-white")
                     
-                    # Search results
-                    if self.search_results:
-                        with ui.expansion("Search Results", icon="search").classes("mb-4"):
-                            with ui.column().classes("space-y-2"):
-                                for result in self.search_results:
-                                    with ui.card().classes("w-full"):
-                                        ui.label(f"Score: {result.get('score', 0):.3f}").classes("text-sm text-gray-600")
-                                        ui.label(result.get('content', '')).classes("text-sm")
-                    
-                    # Conversations list
-                    self.conversations_list = ui.column().classes("w-full flex-1 overflow-y-auto")
-                    
-                    # Load conversations button
-                    ui.button("Load More", on_click=self.load_conversations).classes("w-full mt-4 bg-gray-500 text-white")
+                    ui.button(
+                        "Konversationen",
+                        icon="list",
+                        on_click=self.show_conversations
+                    ).classes("bg-gray-600 text-white")
+    
+    def create_input_area(self):
+        """Create message input area."""
+        self.input_container = ui.element("div").classes(
+            "bg-white border-t border-gray-200 p-4"
+        )
+        
+        with self.input_container:
+            with ui.row().classes("items-end space-x-2"):
+                # Message input
+                self.message_input = ui.textarea(
+                    placeholder="Nachricht eingeben...",
+                    rows=1,
+                    on_keydown=self.handle_keydown
+                ).classes("flex-1 resize-none")
                 
-                # Chat area
-                with ui.column().classes("flex-1 flex flex-col"):
-                    # Messages area
-                    with ui.column().classes("flex-1 p-4 overflow-y-auto") as messages_area:
-                        self.messages_container = messages_area
-                    
-                    # Input area
-                    with ui.row().classes("p-4 border-t border-gray-200 bg-white"):
-                        with ui.row().classes("w-full items-end gap-2"):
-                            # Message input
-                            self.message_input = ui.textarea(
-                                placeholder="Type your message...",
-                                rows=1,
-                                auto_grow=True,
-                                on_keydown=self.on_message_keydown
-                            ).classes("flex-1 min-h-[40px] max-h-[120px]")
-                            
-                            # Send button
-                            ui.button(
-                                "Send",
-                                on_click=self.send_message,
-                                icon="send"
-                            ).classes("bg-blue-500 text-white px-6 py-2")
-                            
-                            # Tools button
-                            ui.button(
-                                "Tools",
-                                on_click=self.show_tools,
-                                icon="build"
-                            ).classes("bg-gray-500 text-white px-4 py-2")
-            
-            # Create dialogs
-            self.create_settings_dialog()
-            self.create_tools_dialog()
-            self.create_new_conversation_dialog()
-            
-            # Load initial data
-            asyncio.create_task(self.load_initial_data())
+                # Send button
+                self.send_button = ui.button(
+                    "Senden",
+                    icon="send",
+                    on_click=self.send_message
+                ).classes("bg-blue-600 text-white px-4 py-2")
     
-    def create_settings_dialog(self):
-        """Create the settings dialog."""
-        with ui.dialog() as self.settings_dialog, ui.card().classes("w-96"):
-            ui.label("Chat Settings").classes("text-lg font-semibold mb-4")
-            
-            # Model settings
-            ui.label("AI Model").classes("font-medium mb-2")
-            model_select = ui.select(
-                options=["gpt-4", "gpt-3.5-turbo", "claude-3", "gemini-pro"],
-                value="gpt-4"
-            ).classes("w-full mb-4")
-            
-            # Temperature setting
-            ui.label("Creativity (Temperature)").classes("font-medium mb-2")
-            temperature_slider = ui.slider(min=0, max=2, step=0.1, value=0.7).classes("w-full mb-4")
-            
-            # Max tokens
-            ui.label("Max Tokens").classes("font-medium mb-2")
-            max_tokens_input = ui.number(min=100, max=4000, value=2000).classes("w-full mb-4")
-            
-            with ui.row().classes("w-full justify-end gap-2"):
-                ui.button("Cancel", on_click=self.settings_dialog.close).classes("bg-gray-500")
-                ui.button("Save", on_click=self.save_settings).classes("bg-blue-500")
-    
-    def create_tools_dialog(self):
-        """Create the tools dialog."""
-        with ui.dialog() as self.tools_dialog, ui.card().classes("w-96"):
-            ui.label("Available Tools").classes("text-lg font-semibold mb-4")
-            
-            # Assistant info
-            if self.current_assistant_id:
-                assistant = next((a for a in self.assistants if a['id'] == self.current_assistant_id), None)
-                if assistant:
-                    ui.label(f"Assistant: {assistant.get('name', 'Unknown Assistant')}").classes("text-sm text-gray-600 mb-4")
-            
-            self.tools_list = ui.column().classes("w-full max-h-64 overflow-y-auto")
-            
-            with ui.row().classes("w-full justify-end gap-2"):
-                ui.button("Close", on_click=self.tools_dialog.close).classes("bg-gray-500")
-                ui.button("Refresh", on_click=self.load_assistant_tools).classes("bg-blue-500")
-    
-    def create_new_conversation_dialog(self):
-        """Create the new conversation dialog."""
-        with ui.dialog() as self.new_conversation_dialog, ui.card().classes("w-96"):
-            ui.label("Start New Conversation").classes("text-lg font-semibold mb-4")
-            
-            # Assistant selection
-            ui.label("Select Assistant").classes("font-medium mb-2")
-            assistant_select = ui.select(
-                options=[(a['id'], a['name']) for a in self.assistants],
-                value=self.current_assistant_id
-            ).classes("w-full mb-4")
-            
-            # Title input
-            ui.label("Conversation Title (Optional)").classes("font-medium mb-2")
-            title_input = ui.input("New Conversation").classes("w-full mb-4")
-            
-            with ui.row().classes("w-full justify-end gap-2"):
-                ui.button("Cancel", on_click=self.new_conversation_dialog.close).classes("bg-gray-500")
-                ui.button("Create", on_click=self.create_conversation).classes("bg-blue-500")
-    
-    async def load_initial_data(self):
-        """Load initial data for the chat page."""
+    async def initialize_chat(self):
+        """Initialize chat with conversation data."""
         try:
-            self.is_loading = True
+            # Get conversation ID from storage or URL
+            self.current_conversation_id = app.storage.user.get("current_conversation_id")
             
-            # Load assistants
-            assistants_response = await api_client.get_assistants()
-            if assistants_response.success and assistants_response.data:
-                self.assistants = assistants_response.data
-                if self.assistants:
-                    self.current_assistant_id = self.assistants[0]['id']
-                self.update_assistant_selector()
+            if not self.current_conversation_id:
+                # Try to get from URL parameters
+                # This would need to be implemented based on your routing
+                await self.create_new_conversation()
+                return
             
-            # Load conversations
-            await self.load_conversations()
+            # Load conversation and messages
+            await self.load_conversation()
             
-            # Load tools
-            tools_response = await api_client.get_tools()
-            if tools_response.success and tools_response.data:
-                self.tools = tools_response.data
-                
         except Exception as e:
-            ui.notify(f"Error loading data: {str(e)}", type="error")
+            handle_network_error(e, "Initialisierung des Chats")
+            self.error_component.update_message(
+                f"Fehler bei der Chat-Initialisierung: {str(e)}",
+                ErrorSeverity.ERROR
+            )
+            self.error_component.show()
+    
+    async def load_conversation(self):
+        """Load conversation and messages."""
+        if not self.current_conversation_id:
+            return
+        
+        self.is_loading = True
+        self.loading_spinner.show()
+        self.error_component.hide()
+        
+        try:
+            # Load conversation details
+            conversation = conversation_service.get_conversation_by_id(self.current_conversation_id)
+            if not conversation:
+                conversation = await conversation_service.get_conversation(self.current_conversation_id)
+            
+            if conversation:
+                self.current_assistant = await assistant_service.get_assistant(conversation.assistant_id)
+                self.update_conversation_header(conversation)
+                
+                # Load messages
+                self.messages = await conversation_service.get_conversation_messages(
+                    self.current_conversation_id
+                )
+                self.display_messages()
+                
+                # Connect to WebSocket for real-time updates
+                await self.connect_websocket()
+            else:
+                self.error_component.update_message(
+                    "Konversation nicht gefunden",
+                    ErrorSeverity.ERROR
+                )
+                self.error_component.show()
+        
+        except Exception as e:
+            handle_network_error(e, "Laden der Konversation")
+            self.error_component.update_message(
+                f"Fehler beim Laden der Konversation: {str(e)}",
+                ErrorSeverity.ERROR
+            )
+            self.error_component.show()
+        
         finally:
             self.is_loading = False
+            self.loading_spinner.hide()
     
-    def update_assistant_selector(self):
-        """Update the assistant selector options."""
-        if self.assistant_selector:
-            options = [(a['id'], a['name']) for a in self.assistants]
-            self.assistant_selector.options = options
-            if options and not self.current_assistant_id:
-                self.current_assistant_id = options[0][0]
-                self.assistant_selector.value = self.current_assistant_id
-    
-    async def load_conversations(self):
-        """Load user conversations."""
-        try:
-            conversations_response = await api_client.get_conversations()
-            if conversations_response.success and conversations_response.data:
-                self.conversations = conversations_response.data
-                self.update_conversations_list()
-            else:
-                ui.notify(f"Error loading conversations: {conversations_response.error}", type="error")
-        except Exception as e:
-            ui.notify(f"Error loading conversations: {str(e)}", type="error")
-    
-    def update_conversations_list(self):
-        """Update the conversations list display."""
-        if not self.conversations_list:
-            return
+    def update_conversation_header(self, conversation):
+        """Update conversation header with conversation details."""
+        self.conversation_header.clear()
         
-        # Clear existing conversations
-        self.conversations_list.clear()
-        
-        # Add conversations
-        for conversation in self.conversations:
-            with self.conversations_list:
-                with ui.card().classes("w-full p-3 cursor-pointer hover:bg-blue-50").on("click", lambda c=conversation: self.select_conversation(str(c['id']))):
-                    with ui.column().classes("w-full"):
-                        ui.label(conversation.get('title', 'Untitled')).classes("font-semibold text-sm")
-                        ui.label(conversation.get('assistant_name', 'Unknown Assistant')).classes("text-xs text-gray-600")
-                        
-                        with ui.row().classes("w-full justify-between items-center mt-2"):
-                            ui.label(f"{conversation.get('message_count', 0)} messages").classes("text-xs text-gray-500")
-                            ui.label(conversation.get('updated_at', 'Unknown')).classes("text-xs text-gray-500")
-    
-    async def select_conversation(self, conversation_id: str):
-        """Select a conversation to load."""
-        try:
-            self.current_conversation_id = int(conversation_id)
-            
-            # Load messages
-            messages_response = await api_client.get_conversation_messages(conversation_id)
-            if messages_response.success and messages_response.data:
-                self.messages = messages_response.data
-                self.update_messages_display()
-            else:
-                ui.notify(f"Error loading messages: {messages_response.error}", type="error")
+        with self.conversation_header:
+            with ui.row().classes("items-center justify-between"):
+                with ui.element("div"):
+                    ui.label(conversation.title).classes("text-lg font-semibold text-gray-900")
+                    assistant_name = self.current_assistant.name if self.current_assistant else "Unbekannter Assistent"
+                    ui.label(f"mit {assistant_name}").classes("text-sm text-gray-600")
                 
-        except Exception as e:
-            ui.notify(f"Error selecting conversation: {str(e)}", type="error")
+                with ui.row().classes("space-x-2"):
+                    ui.button(
+                        "Archivieren",
+                        icon="archive",
+                        on_click=lambda: self.archive_conversation()
+                    ).classes("bg-gray-600 text-white")
+                    
+                    ui.button(
+                        "Löschen",
+                        icon="delete",
+                        on_click=lambda: self.delete_conversation()
+                    ).classes("bg-red-600 text-white")
     
-    def update_messages_display(self):
-        """Update the messages display."""
-        if not self.messages_container:
-            return
-        
-        # Clear existing messages
+    def display_messages(self):
+        """Display messages in the chat interface."""
         self.messages_container.clear()
         
-        # Add messages
-        for message in self.messages:
+        if not self.messages:
             with self.messages_container:
+                with ui.element("div").classes("text-center py-8"):
+                    ui.icon("chat_bubble_outline").classes("w-12 h-12 text-gray-400 mx-auto mb-2")
+                    ui.label("Keine Nachrichten vorhanden").classes("text-gray-500")
+                    ui.label("Starte eine Konversation mit deinem Assistenten").classes("text-sm text-gray-400")
+            return
+        
+        with self.messages_container:
+            for message in self.messages:
                 self.create_message_bubble(message)
-    
-    def create_message_bubble(self, message: Dict[str, Any]):
-        """Create a message bubble for display."""
-        is_user = message.get('role', 'user') == "user"
         
-        with ui.row().classes(f"w-full justify-{'end' if is_user else 'start'} mb-4"):
-            with ui.column().classes("max-w-3xl"):
-                # Message bubble
-                bubble_classes = "p-3 rounded-lg"
-                if is_user:
-                    bubble_classes += " bg-blue-500 text-white"
-                else:
-                    bubble_classes += " bg-gray-200"
-                
-                with ui.card().classes(bubble_classes):
-                    if message.get('tool_result'):
-                        self.create_tool_result_display(message)
-                    else:
-                        ui.label(message.get('content', '')).classes("whitespace-pre-wrap")
-                
-                # Timestamp
-                timestamp = message.get('timestamp', '')
-                if timestamp:
-                    try:
-                        dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                        time_str = dt.strftime("%H:%M")
-                    except:
-                        time_str = timestamp
-                else:
-                    time_str = "Unknown"
-                
-                ui.label(time_str).classes("text-xs text-gray-500 mt-1")
+        # Scroll to bottom
+        self.scroll_to_bottom()
     
-    def create_tool_result_display(self, message: Dict[str, Any]):
-        """Create a tool result display."""
-        metadata = message.get('metadata', {}) or {}
+    def create_message_bubble(self, message):
+        """Create a message bubble."""
+        is_user = message.role == "user"
         
-        with ui.column().classes("w-full"):
-            # Tool header
-            tool_name = metadata.get("tool_name", "Unknown Tool")
-            ui.label(f"🔧 {tool_name}").classes("font-semibold text-sm mb-2")
-            
-            # Tool result
-            if isinstance(message.get('content', ''), dict):
-                result_data = message.get('content', {})
-            else:
-                result_data = {"result": message.get('content', 'Success')}
-            
-            # Display result in a formatted way
-            if isinstance(result_data, dict):
-                for key, value in result_data.items():
-                    if key != "tool_name":
-                        ui.label(f"{key}: {value}").classes("text-sm")
-            else:
-                ui.label(str(result_data)).classes("text-sm")
+        with ui.element("div").classes(
+            "flex",
+            "justify-end" if is_user else "justify-start"
+        ):
+            with ui.element("div").classes(
+                "max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
+                "bg-blue-600 text-white" if is_user else "bg-gray-200 text-gray-900"
+            ):
+                # Message content
+                ui.label(message.content).classes("text-sm")
+                
+                # Message metadata
+                with ui.row().classes("items-center justify-between mt-1"):
+                    ui.label(format_relative_time(message.timestamp)).classes(
+                        "text-xs",
+                        "text-blue-200" if is_user else "text-gray-500"
+                    )
+                    
+                    if message.tool_results:
+                        ui.icon("build").classes(
+                            "w-4 h-4",
+                            "text-blue-200" if is_user else "text-gray-500"
+                        )
     
     async def send_message(self):
-        """Send a message to the current conversation."""
-        if not self.message_input or not self.message_input.value.strip():
+        """Send a message."""
+        if not self.message_input.value or self.is_sending:
             return
         
-        if not self.current_conversation_id:
-            ui.notify("Please select a conversation first", type="warning")
-            return
+        message_content = self.message_input.value.strip()
+        self.message_input.value = ""
+        self.is_sending = True
+        self.send_button.disable()
         
         try:
-            self.is_typing = True
-            content = self.message_input.value.strip()
-            
-            # Add user message to display immediately
+            # Add user message to UI immediately
             user_message = {
-                'id': len(self.messages) + 1,
-                'content': content,
-                'role': 'user',
-                'timestamp': datetime.now().isoformat(),
-                'conversation_id': self.current_conversation_id
+                "id": f"temp_{datetime.now().timestamp()}",
+                "content": message_content,
+                "role": "user",
+                "timestamp": datetime.now(),
+                "is_loading": False
             }
             self.messages.append(user_message)
-            self.update_messages_display()
+            self.display_messages()
             
-            # Clear input
-            self.message_input.value = ""
-            
-            # Search knowledge base for RAG context
-            knowledge_results = await self.search_knowledge_base()
-            
-            # Send message to backend
-            response = await api_client.send_message(
-                str(self.current_conversation_id),
-                content
-            )
-            
-            if response.success:
-                # The response will come through WebSocket or be added here
-                pass
-            else:
-                ui.notify(f"Error sending message: {response.error}", type="error")
+            # Send message to API
+            if self.current_conversation_id:
+                sent_message = await conversation_service.send_message(
+                    self.current_conversation_id,
+                    message_content
+                )
                 
+                if sent_message:
+                    # Update message in list
+                    for i, msg in enumerate(self.messages):
+                        if msg["id"] == user_message["id"]:
+                            self.messages[i] = sent_message
+                            break
+                    
+                    self.display_messages()
+                else:
+                    # Remove failed message
+                    self.messages = [msg for msg in self.messages if msg["id"] != user_message["id"]]
+                    self.display_messages()
+                    
+                    self.error_component.update_message(
+                        "Fehler beim Senden der Nachricht",
+                        ErrorSeverity.ERROR
+                    )
+                    self.error_component.show()
+            
         except Exception as e:
-            ui.notify(f"Error sending message: {str(e)}", type="error")
+            handle_network_error(e, "Senden der Nachricht")
+            self.error_component.update_message(
+                f"Fehler beim Senden der Nachricht: {str(e)}",
+                ErrorSeverity.ERROR
+            )
+            self.error_component.show()
+        
         finally:
-            self.is_typing = False
+            self.is_sending = False
+            self.send_button.enable()
     
-    def scroll_to_bottom(self):
-        """Scroll messages to bottom."""
-        # This would scroll the messages container to the bottom
-        pass
+    def handle_keydown(self, event):
+        """Handle keydown events in message input."""
+        if event.key == "Enter" and not event.shift_key:
+            event.preventDefault()
+            asyncio.create_task(self.send_message())
     
-    def on_assistant_change(self, e: ValueChangeEventArguments):
-        """Handle assistant selection change."""
-        self.current_assistant_id = e.value
-        # Update current conversation if needed
-        pass
+    async def connect_websocket(self):
+        """Connect to WebSocket for real-time updates."""
+        try:
+            if self.current_conversation_id:
+                await websocket_service.connect(self.current_conversation_id)
+                self.websocket_connected = True
+                
+                # Set up message handler
+                websocket_service.on_message(self.handle_websocket_message)
+        except Exception as e:
+            handle_network_error(e, "WebSocket-Verbindung")
     
-    def start_new_conversation(self):
-        """Start a new conversation."""
-        self.new_conversation_dialog.open()
+    def handle_websocket_message(self, message_data):
+        """Handle incoming WebSocket messages."""
+        try:
+            # Add assistant message to UI
+            assistant_message = {
+                "id": message_data.get("id"),
+                "content": message_data.get("content", ""),
+                "role": "assistant",
+                "timestamp": datetime.now(),
+                "tool_results": message_data.get("tool_results"),
+                "is_loading": False
+            }
+            
+            self.messages.append(assistant_message)
+            self.display_messages()
+            
+        except Exception as e:
+            handle_network_error(e, "Verarbeitung der WebSocket-Nachricht")
     
-    async def create_conversation(self, assistant_id: str = None, title: str = None):
+    async def create_new_conversation(self):
         """Create a new conversation."""
         try:
-            if not assistant_id:
-                assistant_id = str(self.current_assistant_id) if self.current_assistant_id else None
-            if not title:
-                title = "New Conversation"
-                
-            if not assistant_id:
-                ui.notify("Please select an assistant first", type="warning")
+            # Get first available assistant
+            assistants = assistant_service.get_active_assistants()
+            if not assistants:
+                self.error_component.update_message(
+                    "Keine aktiven Assistenten verfügbar",
+                    ErrorSeverity.WARNING
+                )
+                self.error_component.show()
                 return
-                
-            response = await api_client.create_conversation(assistant_id, title)
             
-            if response.success and response.data:
-                conversation = response.data
-                self.conversations.insert(0, conversation)
-                self.current_conversation_id = int(conversation['id'])
-                self.messages = []
-                
-                self.update_conversations_list()
-                self.update_messages_display()
-                self.new_conversation_dialog.close()
-                
-                ui.notify("New conversation created", type="positive")
+            assistant = assistants[0]
+            conversation = await conversation_service.create_conversation(assistant.id)
+            
+            if conversation:
+                self.current_conversation_id = conversation.id
+                app.storage.user["current_conversation_id"] = conversation.id
+                await self.load_conversation()
             else:
-                ui.notify(f"Error creating conversation: {response.error}", type="error")
-                
+                self.error_component.update_message(
+                    "Fehler beim Erstellen der Konversation",
+                    ErrorSeverity.ERROR
+                )
+                self.error_component.show()
+        
         except Exception as e:
-            ui.notify(f"Error creating conversation: {str(e)}", type="error")
+            handle_network_error(e, "Erstellen der Konversation")
+            self.error_component.update_message(
+                f"Fehler beim Erstellen der Konversation: {str(e)}",
+                ErrorSeverity.ERROR
+            )
+            self.error_component.show()
     
-    def show_settings(self):
-        """Show settings dialog."""
-        self.settings_dialog.open()
+    def show_conversations(self):
+        """Navigate to conversations page."""
+        ui.navigate.to("/conversations")
     
-    def save_settings(self):
-        """Save chat settings."""
-        # Save settings logic here
-        self.settings_dialog.close()
-        ui.notify("Settings saved", type="positive")
-    
-    def show_tools(self):
-        """Show tools dialog."""
-        self.tools_dialog.open()
-        asyncio.create_task(self.load_assistant_tools())
-    
-    async def load_assistant_tools(self):
-        """Load tools available for the current assistant."""
-        try:
-            if not self.current_conversation_id:
-                ui.notify("Please select a conversation first", type="warning")
-                return
-            
-            # Get assistant details to see configured tools
-            assistant = next((a for a in self.assistants if a['id'] == self.current_assistant_id), None)
-            if not assistant:
-                ui.notify("Error loading assistant details", type="error")
-                return
-            
-            configured_tools = assistant.get("tools_config", [])
-            
-            # Clear existing tools
-            if self.tools_list:
-                self.tools_list.clear()
-            
-            # Load all available tools
-            all_tools = []
-            
-            # Regular tools
-            tools_response = await api_client.get_tools()
-            if tools_response.success and tools_response.data:
-                all_tools.extend(tools_response.data)
-            
-            # MCP tools
-            mcp_tools_response = await api_client.get_mcp_tools()
-            if mcp_tools_response.success and mcp_tools_response.data:
-                all_tools.extend(mcp_tools_response.data)
-            
-            # Filter tools for this assistant
-            available_tools = []
-            for tool in all_tools:
-                if tool['id'] in configured_tools or not configured_tools:
-                    available_tools.append(tool)
-            
-            # Display tools
-            if self.tools_list:
-                for tool in available_tools:
-                    with self.tools_list:
-                        with ui.card().classes("w-full p-3 mb-2"):
-                            with ui.row().classes("w-full justify-between items-center"):
-                                ui.label(tool.get('name', 'Unknown Tool')).classes("font-semibold")
-                                ui.button(
-                                    "Use",
-                                    on_click=lambda t=tool: self.use_tool(t),
-                                    size="sm"
-                                ).classes("bg-blue-500 text-white")
-                            
-                            ui.label(tool.get('description', 'No description')).classes("text-sm text-gray-600")
-                            
-                            if tool.get('category'):
-                                ui.label(f"Category: {tool['category']}").classes("text-xs text-gray-500")
-            
-        except Exception as e:
-            ui.notify(f"Error loading tools: {str(e)}", type="error")
-    
-    def use_tool(self, tool: Dict[str, Any]):
-        """Use a tool in the current conversation."""
+    async def archive_conversation(self):
+        """Archive current conversation."""
         if not self.current_conversation_id:
-            ui.notify("Please select a conversation first", type="warning")
             return
         
-        # For now, just show a notification
-        ui.notify(f"Tool {tool['name']} would be executed here", type="info")
-        self.tools_dialog.close()
+        try:
+            success = await conversation_service.archive_conversation(self.current_conversation_id)
+            if success:
+                ui.navigate.to("/conversations")
+            else:
+                self.error_component.update_message(
+                    "Fehler beim Archivieren der Konversation",
+                    ErrorSeverity.ERROR
+                )
+                self.error_component.show()
+        
+        except Exception as e:
+            handle_network_error(e, "Archivieren der Konversation")
+            self.error_component.update_message(
+                f"Fehler beim Archivieren der Konversation: {str(e)}",
+                ErrorSeverity.ERROR
+            )
+            self.error_component.show()
     
-    async def search_conversations(self):
-        """Search conversations using semantic search"""
-        if not self.search_query.strip():
-            self.search_results = []
+    async def delete_conversation(self):
+        """Delete current conversation."""
+        if not self.current_conversation_id:
             return
-            
-        self.is_searching = True
+        
         try:
-            # Use the internal _make_request method for custom endpoints
-            response = await api_client._make_request(
-                "POST",
-                "/api/v1/search/conversations",
-                data={
-                    "query": self.search_query,
-                    "conversation_id": self.current_conversation_id
-                }
-            )
-            
-            if response.success and response.data:
-                self.search_results = response.data
+            success = await conversation_service.delete_conversation(self.current_conversation_id)
+            if success:
+                ui.navigate.to("/conversations")
             else:
-                ui.notify(f'Search failed: {response.error}', type='error')
-                
+                self.error_component.update_message(
+                    "Fehler beim Löschen der Konversation",
+                    ErrorSeverity.ERROR
+                )
+                self.error_component.show()
+        
         except Exception as e:
-            ui.notify(f'Search error: {str(e)}', type='error')
-        finally:
-            self.is_searching = False
-    
-    async def search_knowledge_base(self):
-        """Search knowledge base for RAG context"""
-        if not self.search_query.strip():
-            return []
-            
-        try:
-            # Use the internal _make_request method for custom endpoints
-            response = await api_client._make_request(
-                "POST",
-                "/api/v1/search/knowledge",
-                data={"query": self.search_query}
+            handle_network_error(e, "Löschen der Konversation")
+            self.error_component.update_message(
+                f"Fehler beim Löschen der Konversation: {str(e)}",
+                ErrorSeverity.ERROR
             )
-            
-            if response.success and response.data:
-                return response.data
-            else:
-                ui.notify(f'Knowledge search failed: {response.error}', type='error')
-                return []
-                
-        except Exception as e:
-            ui.notify(f'Knowledge search error: {str(e)}', type='error')
-            return []
+            self.error_component.show()
     
-    async def on_search_change(self, e: ValueChangeEventArguments):
-        """Handle search input change"""
-        self.search_query = e.value
-    
-    async def on_message_keydown(self, e):
-        """Handle message input keydown"""
-        if e.key == 'Enter' and not e.shift:
-            await self.send_message()
+    def scroll_to_bottom(self):
+        """Scroll messages container to bottom."""
+        # This would need to be implemented based on your UI framework
+        pass
 
 
-# Create page instance
-chat_page = ChatPage()
+def create_chat_page():
+    """Create and return the chat page."""
+    return ChatPage()
 
-async def setup():
-    """Setup the chat page."""
-    pass
 
-def create_page():
-    """Create the chat page."""
-    return setup() 
+# Register the page
+@ui.page("/chat")
+def chat_page():
+    """Chat page route."""
+    return create_chat_page() 

@@ -6,7 +6,7 @@ the frontend application.
 """
 
 import re
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Any
 from .constants import MAX_FILE_SIZE, SUPPORTED_FILE_TYPES
 
 
@@ -362,4 +362,249 @@ def validate_hex_color(color: str) -> Tuple[bool, Optional[str]]:
     if not re.match(hex_pattern, color):
         return False, "Farbe muss im Hex-Format sein (#RRGGBB oder #RRGGBBAA)"
     
-    return True, None 
+    return True, None
+
+
+def validate_assistant_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate assistant creation/update data.
+    
+    Args:
+        data: Assistant data to validate
+        
+    Returns:
+        Dictionary with validation result
+    """
+    errors = []
+    
+    # Validate name
+    if not data.get("name"):
+        errors.append("Assistenten-Name ist erforderlich")
+    elif len(data["name"]) < 2:
+        errors.append("Assistenten-Name muss mindestens 2 Zeichen lang sein")
+    elif len(data["name"]) > 100:
+        errors.append("Assistenten-Name darf maximal 100 Zeichen lang sein")
+    
+    # Validate description
+    if not data.get("description"):
+        errors.append("Beschreibung ist erforderlich")
+    elif len(data["description"]) < 10:
+        errors.append("Beschreibung muss mindestens 10 Zeichen lang sein")
+    elif len(data["description"]) > 500:
+        errors.append("Beschreibung darf maximal 500 Zeichen lang sein")
+    
+    # Validate model
+    valid_models = ["gpt-4", "gpt-3.5-turbo", "claude-3", "gemini-pro"]
+    if data.get("model") not in valid_models:
+        errors.append(f"Ungültiges Modell. Gültige Modelle: {', '.join(valid_models)}")
+    
+    # Validate temperature
+    temperature = data.get("temperature", 0.7)
+    if not isinstance(temperature, (int, float)) or temperature < 0 or temperature > 2:
+        errors.append("Temperature muss zwischen 0 und 2 liegen")
+    
+    # Validate max_tokens
+    max_tokens = data.get("max_tokens", 4096)
+    if not isinstance(max_tokens, int) or max_tokens < 100 or max_tokens > 8000:
+        errors.append("Max Tokens muss zwischen 100 und 8000 liegen")
+    
+    # Validate tools (if provided)
+    if "tools" in data and not isinstance(data["tools"], list):
+        errors.append("Tools muss eine Liste sein")
+    
+    # Validate status (if provided)
+    if "status" in data and data["status"] not in ["active", "inactive"]:
+        errors.append("Status muss 'active' oder 'inactive' sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_conversation_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate conversation creation/update data.
+    
+    Args:
+        data: Conversation data to validate
+        
+    Returns:
+        Dictionary with validation result
+    """
+    errors = []
+    
+    # Validate assistant_id
+    if not data.get("assistant_id"):
+        errors.append("Assistant ID ist erforderlich")
+    
+    # Validate title (if provided)
+    if "title" in data and data["title"]:
+        if len(data["title"]) > 200:
+            errors.append("Titel darf maximal 200 Zeichen lang sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_message_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate message data.
+    
+    Args:
+        data: Message data to validate
+        
+    Returns:
+        Dictionary with validation result
+    """
+    errors = []
+    
+    # Validate content
+    if not data.get("content"):
+        errors.append("Nachrichteninhalt ist erforderlich")
+    elif len(data["content"]) > 10000:
+        errors.append("Nachrichteninhalt darf maximal 10000 Zeichen lang sein")
+    
+    # Validate conversation_id
+    if not data.get("conversation_id"):
+        errors.append("Konversations-ID ist erforderlich")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_tool_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate tool data.
+    
+    Args:
+        data: Tool data to validate
+        
+    Returns:
+        Dictionary with validation result
+    """
+    errors = []
+    
+    # Validate name
+    if not data.get("name"):
+        errors.append("Tool-Name ist erforderlich")
+    elif len(data["name"]) < 2:
+        errors.append("Tool-Name muss mindestens 2 Zeichen lang sein")
+    elif len(data["name"]) > 100:
+        errors.append("Tool-Name darf maximal 100 Zeichen lang sein")
+    
+    # Validate description
+    if not data.get("description"):
+        errors.append("Tool-Beschreibung ist erforderlich")
+    elif len(data["description"]) < 10:
+        errors.append("Tool-Beschreibung muss mindestens 10 Zeichen lang sein")
+    elif len(data["description"]) > 500:
+        errors.append("Tool-Beschreibung darf maximal 500 Zeichen lang sein")
+    
+    # Validate category
+    if "category" in data and data["category"]:
+        if len(data["category"]) > 50:
+            errors.append("Kategorie darf maximal 50 Zeichen lang sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_knowledge_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate knowledge base data.
+    
+    Args:
+        data: Knowledge data to validate
+        
+    Returns:
+        Dictionary with validation result
+    """
+    errors = []
+    
+    # Validate title
+    if not data.get("title"):
+        errors.append("Titel ist erforderlich")
+    elif len(data["title"]) < 2:
+        errors.append("Titel muss mindestens 2 Zeichen lang sein")
+    elif len(data["title"]) > 200:
+        errors.append("Titel darf maximal 200 Zeichen lang sein")
+    
+    # Validate content
+    if not data.get("content"):
+        errors.append("Inhalt ist erforderlich")
+    elif len(data["content"]) < 10:
+        errors.append("Inhalt muss mindestens 10 Zeichen lang sein")
+    
+    # Validate category (if provided)
+    if "category" in data and data["category"]:
+        if len(data["category"]) > 50:
+            errors.append("Kategorie darf maximal 50 Zeichen lang sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def sanitize_input(text: str, max_length: int = 1000) -> str:
+    """
+    Sanitize user input text.
+    
+    Args:
+        text: Text to sanitize
+        max_length: Maximum allowed length
+        
+    Returns:
+        Sanitized text
+    """
+    if not text:
+        return ""
+    
+    # Remove null bytes and control characters
+    text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
+    
+    # Trim whitespace
+    text = text.strip()
+    
+    # Limit length
+    if len(text) > max_length:
+        text = text[:max_length]
+    
+    return text
+
+
+def validate_file_upload(filename: str, file_size: int, allowed_extensions: List[str] = None, max_size_mb: int = 10) -> Tuple[bool, str]:
+    """
+    Validate file upload.
+    
+    Args:
+        filename: Name of the uploaded file
+        file_size: Size of the file in bytes
+        allowed_extensions: List of allowed file extensions
+        max_size_mb: Maximum file size in MB
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    if not filename:
+        return False, "Dateiname ist erforderlich"
+    
+    # Check file extension
+    if allowed_extensions:
+        file_ext = filename.lower().split('.')[-1] if '.' in filename else ''
+        if file_ext not in allowed_extensions:
+            return False, f"Ungültiger Dateityp. Erlaubte Typen: {', '.join(allowed_extensions)}"
+    
+    # Check file size
+    max_size_bytes = max_size_mb * 1024 * 1024
+    if file_size > max_size_bytes:
+        return False, f"Datei zu groß. Maximale Größe: {max_size_mb}MB"
+    
+    return True, "" 
