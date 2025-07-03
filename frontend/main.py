@@ -46,8 +46,6 @@ class AIAssistantApp:
         """Setup the main user interface."""
         # Configure page
         ui.page_title("AI Assistant Platform")
-        ui.page_meta("description", "AI Assistant Platform with multiple assistants and tools")
-        ui.page_meta("viewport", "width=device-width, initial-scale=1")
         
         # Add CSS with improved styling for NiceGUI 2.20.0
         ui.add_head_html("""

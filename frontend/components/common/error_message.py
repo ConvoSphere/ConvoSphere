@@ -50,23 +50,20 @@ class ErrorMessage:
     def create_error_message(self):
         """Create the error message UI."""
         self.container = ui.element("div").classes(
-            "rounded-md p-4 mb-4",
-            self._get_severity_classes()
+            f"rounded-md p-4 mb-4 {self._get_severity_classes()}"
         )
         
         with self.container:
             with ui.row().classes("flex items-start"):
                 # Icon
                 ui.icon(self._get_icon()).classes(
-                    "flex-shrink-0 w-5 h-5 mt-0.5",
-                    self._get_icon_classes()
+                    f"flex-shrink-0 w-5 h-5 mt-0.5 {self._get_icon_classes()}"
                 )
                 
                 # Message
                 with ui.element("div").classes("ml-3 flex-1"):
                     self.message_label = ui.label(self.message).classes(
-                        "text-sm font-medium",
-                        self._get_text_classes()
+                        f"text-sm font-medium {self._get_text_classes()}"
                     )
                 
                 # Dismiss button
@@ -75,8 +72,7 @@ class ErrorMessage:
                         icon="close",
                         on_click=self.dismiss
                     ).classes(
-                        "ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex h-8 w-8",
-                        self._get_dismiss_classes()
+                        f"ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex h-8 w-8 {self._get_dismiss_classes()}"
                     )
     
     def _get_severity_classes(self) -> str:
@@ -147,7 +143,7 @@ class ErrorMessage:
         
         if self.message_label:
             self.message_label.text = message
-            self.message_label.classes(self._get_text_classes())
+            self.message_label.classes(f"text-sm font-medium {self._get_text_classes()}")
     
     def dismiss(self):
         """Dismiss the error message."""
