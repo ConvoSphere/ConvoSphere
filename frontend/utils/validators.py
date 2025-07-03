@@ -8,6 +8,7 @@ the frontend application.
 import re
 from typing import Optional, Tuple, List, Dict, Any
 from .constants import MAX_FILE_SIZE, SUPPORTED_FILE_TYPES
+from datetime import datetime
 
 
 def validate_email(email: str) -> Tuple[bool, Optional[str]]:
@@ -315,7 +316,6 @@ def validate_date_format(date_string: str, format_str: str = "%Y-%m-%d") -> Tupl
         return False, "Datum ist erforderlich"
     
     try:
-        from datetime import datetime
         datetime.strptime(date_string, format_str)
         return True, None
     except ValueError:
@@ -607,4 +607,501 @@ def validate_file_upload(filename: str, file_size: int, allowed_extensions: List
     if file_size > max_size_bytes:
         return False, f"Datei zu groß. Maximale Größe: {max_size_mb}MB"
     
-    return True, "" 
+    return True, ""
+
+
+def validate_user_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate user profile data.
+    
+    Args:
+        data: User data dictionary
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    # Required fields
+    required_fields = ["first_name", "last_name", "username", "email"]
+    for field in required_fields:
+        if not data.get(field):
+            errors.append(f"{field} ist erforderlich")
+    
+    # Username validation
+    if data.get("username"):
+        username = data["username"]
+        if len(username) < 3:
+            errors.append("Benutzername muss mindestens 3 Zeichen lang sein")
+        if len(username) > 30:
+            errors.append("Benutzername darf maximal 30 Zeichen lang sein")
+        if not re.match(r"^[a-zA-Z0-9_-]+$", username):
+            errors.append("Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten")
+    
+    # Email validation
+    if data.get("email"):
+        email = data["email"]
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            errors.append("Ungültige E-Mail-Adresse")
+    
+    # Name validation
+    if data.get("first_name"):
+        first_name = data["first_name"]
+        if len(first_name) < 2:
+            errors.append("Vorname muss mindestens 2 Zeichen lang sein")
+        if len(first_name) > 50:
+            errors.append("Vorname darf maximal 50 Zeichen lang sein")
+    
+    if data.get("last_name"):
+        last_name = data["last_name"]
+        if len(last_name) < 2:
+            errors.append("Nachname muss mindestens 2 Zeichen lang sein")
+        if len(last_name) > 50:
+            errors.append("Nachname darf maximal 50 Zeichen lang sein")
+    
+    # Bio validation
+    if data.get("bio"):
+        bio = data["bio"]
+        if len(bio) > 500:
+            errors.append("Bio darf maximal 500 Zeichen lang sein")
+    
+    # Website validation
+    if data.get("website"):
+        website = data["website"]
+        if not re.match(r"^https?://.+", website):
+            errors.append("Website muss mit http:// oder https:// beginnen")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_password(password: str) -> Dict[str, Any]:
+    """
+    Validate password strength.
+    
+    Args:
+        password: Password to validate
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if len(password) < 8:
+        errors.append("Passwort muss mindestens 8 Zeichen lang sein")
+    
+    if len(password) > 128:
+        errors.append("Passwort darf maximal 128 Zeichen lang sein")
+    
+    if not re.search(r"[a-z]", password):
+        errors.append("Passwort muss mindestens einen Kleinbuchstaben enthalten")
+    
+    if not re.search(r"[A-Z]", password):
+        errors.append("Passwort muss mindestens einen Großbuchstaben enthalten")
+    
+    if not re.search(r"\d", password):
+        errors.append("Passwort muss mindestens eine Zahl enthalten")
+    
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        errors.append("Passwort muss mindestens ein Sonderzeichen enthalten")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "strength": calculate_password_strength(password)
+    }
+
+
+def calculate_password_strength(password: str) -> str:
+    """
+    Calculate password strength.
+    
+    Args:
+        password: Password to evaluate
+        
+    Returns:
+        Password strength level
+    """
+    score = 0
+    
+    # Length
+    if len(password) >= 8:
+        score += 1
+    if len(password) >= 12:
+        score += 1
+    if len(password) >= 16:
+        score += 1
+    
+    # Character types
+    if re.search(r"[a-z]", password):
+        score += 1
+    if re.search(r"[A-Z]", password):
+        score += 1
+    if re.search(r"\d", password):
+        score += 1
+    if re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        score += 1
+    
+    # Complexity
+    if len(set(password)) >= len(password) * 0.8:
+        score += 1
+    
+    if score <= 3:
+        return "schwach"
+    elif score <= 5:
+        return "mittel"
+    elif score <= 7:
+        return "stark"
+    else:
+        return "sehr stark"
+
+
+def validate_email(email: str) -> Dict[str, Any]:
+    """
+    Validate email address.
+    
+    Args:
+        email: Email address to validate
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not email:
+        errors.append("E-Mail-Adresse ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    # Basic format check
+    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+        errors.append("Ungültige E-Mail-Adresse")
+    
+    # Length check
+    if len(email) > 254:
+        errors.append("E-Mail-Adresse ist zu lang")
+    
+    # Domain check
+    if "@" in email:
+        domain = email.split("@")[1]
+        if len(domain) > 253:
+            errors.append("Domain ist zu lang")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_username(username: str) -> Dict[str, Any]:
+    """
+    Validate username.
+    
+    Args:
+        username: Username to validate
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not username:
+        errors.append("Benutzername ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    if len(username) < 3:
+        errors.append("Benutzername muss mindestens 3 Zeichen lang sein")
+    
+    if len(username) > 30:
+        errors.append("Benutzername darf maximal 30 Zeichen lang sein")
+    
+    if not re.match(r"^[a-zA-Z0-9_-]+$", username):
+        errors.append("Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten")
+    
+    # Check for reserved usernames
+    reserved_usernames = [
+        "admin", "administrator", "root", "system", "user", "guest",
+        "test", "demo", "example", "support", "help", "info"
+    ]
+    if username.lower() in reserved_usernames:
+        errors.append("Dieser Benutzername ist reserviert")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_file_upload(filename: str, file_size: int, allowed_types: List[str], max_size: int) -> Dict[str, Any]:
+    """
+    Validate file upload.
+    
+    Args:
+        filename: Name of the file
+        file_size: Size of the file in bytes
+        allowed_types: List of allowed file extensions
+        max_size: Maximum file size in bytes
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    # Check file size
+    if file_size > max_size:
+        max_size_mb = max_size / (1024 * 1024)
+        errors.append(f"Datei ist zu groß. Maximale Größe: {max_size_mb:.1f} MB")
+    
+    # Check file extension
+    if "." in filename:
+        extension = filename.split(".")[-1].lower()
+        if extension not in [ext.lower() for ext in allowed_types]:
+            errors.append(f"Dateityp nicht erlaubt. Erlaubte Typen: {', '.join(allowed_types)}")
+    else:
+        errors.append("Datei hat keine Erweiterung")
+    
+    # Check filename
+    if len(filename) > 255:
+        errors.append("Dateiname ist zu lang")
+    
+    if not re.match(r"^[a-zA-Z0-9._-]+$", filename):
+        errors.append("Dateiname enthält ungültige Zeichen")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_url(url: str) -> Dict[str, Any]:
+    """
+    Validate URL.
+    
+    Args:
+        url: URL to validate
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not url:
+        errors.append("URL ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    # Basic URL format check
+    url_pattern = r"^https?://(?:[-\w.])+(?:[:\d]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$"
+    if not re.match(url_pattern, url):
+        errors.append("Ungültige URL")
+    
+    # Length check
+    if len(url) > 2048:
+        errors.append("URL ist zu lang")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_phone_number(phone: str) -> Dict[str, Any]:
+    """
+    Validate phone number.
+    
+    Args:
+        phone: Phone number to validate
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not phone:
+        errors.append("Telefonnummer ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    # Remove common separators
+    clean_phone = re.sub(r"[\s\-\(\)\+]", "", phone)
+    
+    # Check if it's all digits
+    if not clean_phone.isdigit():
+        errors.append("Telefonnummer darf nur Zahlen enthalten")
+    
+    # Check length (international format)
+    if len(clean_phone) < 10 or len(clean_phone) > 15:
+        errors.append("Telefonnummer muss zwischen 10 und 15 Ziffern haben")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_date(date_str: str, format_str: str = "%Y-%m-%d") -> Dict[str, Any]:
+    """
+    Validate date string.
+    
+    Args:
+        date_str: Date string to validate
+        format_str: Expected date format
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not date_str:
+        errors.append("Datum ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    try:
+        datetime.strptime(date_str, format_str)
+    except ValueError:
+        errors.append(f"Datum muss im Format {format_str} sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def validate_number(value: str, min_val: float = None, max_val: float = None) -> Dict[str, Any]:
+    """
+    Validate number input.
+    
+    Args:
+        value: Number string to validate
+        min_val: Minimum allowed value
+        max_val: Maximum allowed value
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    if not value:
+        errors.append("Wert ist erforderlich")
+        return {"valid": False, "errors": errors}
+    
+    try:
+        num_value = float(value)
+    except ValueError:
+        errors.append("Wert muss eine Zahl sein")
+        return {"valid": False, "errors": errors}
+    
+    if min_val is not None and num_value < min_val:
+        errors.append(f"Wert muss mindestens {min_val} sein")
+    
+    if max_val is not None and num_value > max_val:
+        errors.append(f"Wert darf maximal {max_val} sein")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "value": num_value
+    }
+
+
+def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -> Dict[str, Any]:
+    """
+    Validate required fields in a data dictionary.
+    
+    Args:
+        data: Data dictionary to validate
+        required_fields: List of required field names
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    for field in required_fields:
+        if not data.get(field):
+            errors.append(f"{field} ist erforderlich")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    }
+
+
+def sanitize_input(input_str: str, max_length: int = 1000) -> str:
+    """
+    Sanitize user input.
+    
+    Args:
+        input_str: Input string to sanitize
+        max_length: Maximum allowed length
+        
+    Returns:
+        Sanitized string
+    """
+    if not input_str:
+        return ""
+    
+    # Remove null bytes
+    sanitized = input_str.replace("\x00", "")
+    
+    # Trim whitespace
+    sanitized = sanitized.strip()
+    
+    # Limit length
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
+    
+    return sanitized
+
+
+def validate_json_schema(data: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Validate data against a JSON schema.
+    
+    Args:
+        data: Data to validate
+        schema: JSON schema definition
+        
+    Returns:
+        Validation result with valid flag and errors list
+    """
+    errors = []
+    
+    # This is a simplified schema validation
+    # In a real implementation, you might want to use a proper JSON schema library
+    
+    if "required" in schema:
+        for field in schema["required"]:
+            if field not in data or data[field] is None:
+                errors.append(f"{field} ist erforderlich")
+    
+    if "properties" in schema:
+        for field, field_schema in schema["properties"].items():
+            if field in data:
+                value = data[field]
+                
+                # Type validation
+                if "type" in field_schema:
+                    expected_type = field_schema["type"]
+                    if expected_type == "string" and not isinstance(value, str):
+                        errors.append(f"{field} muss ein String sein")
+                    elif expected_type == "number" and not isinstance(value, (int, float)):
+                        errors.append(f"{field} muss eine Zahl sein")
+                    elif expected_type == "boolean" and not isinstance(value, bool):
+                        errors.append(f"{field} muss ein Boolean sein")
+                
+                # Length validation for strings
+                if isinstance(value, str) and "maxLength" in field_schema:
+                    if len(value) > field_schema["maxLength"]:
+                        errors.append(f"{field} ist zu lang")
+                
+                # Min/Max validation for numbers
+                if isinstance(value, (int, float)):
+                    if "minimum" in field_schema and value < field_schema["minimum"]:
+                        errors.append(f"{field} ist zu klein")
+                    if "maximum" in field_schema and value > field_schema["maximum"]:
+                        errors.append(f"{field} ist zu groß")
+    
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors
+    } 
