@@ -11,16 +11,18 @@ from nicegui import ui, app
 from loguru import logger
 
 # Import pages and components
-from .pages.dashboard import DashboardPage
-from .pages.assistants import AssistantsPage
-from .pages.conversations import ConversationsPage
-from .pages.tools import ToolsPage
-from .pages.mcp_tools import mcp_tools_page
-from .pages.knowledge_base import knowledge_base_page
-from .pages.settings import SettingsPage
+from .pages import (
+    create_dashboard_page,
+    create_assistants_page,
+    create_conversations_page,
+    create_tools_page,
+    create_knowledge_base_page,
+    create_settings_page,
+    create_chat_page
+)
+from .pages.mcp_tools import create_page as create_mcp_tools
 from .components.header import Header
 from .components.sidebar import Sidebar
-from .pages.chat import chat_page
 
 
 class AIAssistantApp:
@@ -172,21 +174,21 @@ class AIAssistantApp:
         # Load page content
         with self.content_container:
             if page_name == "dashboard":
-                DashboardPage()
+                create_dashboard_page()
             elif page_name == "assistants":
-                AssistantsPage()
+                create_assistants_page()
             elif page_name == "chat":
-                chat_page
+                create_chat_page()
             elif page_name == "conversations":
-                ConversationsPage()
+                create_conversations_page()
             elif page_name == "tools":
-                ToolsPage()
+                create_tools_page()
             elif page_name == "mcp_tools":
-                mcp_tools_page
+                create_mcp_tools()
             elif page_name == "knowledge_base":
-                knowledge_base_page
+                create_knowledge_base_page()
             elif page_name == "settings":
-                SettingsPage()
+                create_settings_page()
             else:
                 ui.label(f"Page '{page_name}' not found").classes("text-red-500")
 

@@ -14,16 +14,14 @@ import mimetypes
 import logging
 
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 
 from ..models.knowledge import Document, DocumentChunk, SearchQuery
-from ..models.user import User
 from ..core.config import settings
 from .weaviate_service import WeaviateService
 from .ai_service import AIService
 from .document_processor import document_processor
 from .embedding_service import embedding_service
-from .docling_processor import docling_processor
 
 logger = logging.getLogger(__name__)
 

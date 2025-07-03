@@ -6,9 +6,8 @@ including PDF understanding, OCR, visual language models, and more.
 """
 
 import os
-import io
 import logging
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 import tempfile
 

@@ -129,4 +129,11 @@ SEARCH_CONFIG = {
     "max_results": 10,
     "search_delay": 300,  # ms
     "highlight_length": 100
-} 
+}
+
+SUPPORTED_AVATAR_TYPES = [
+    "image/png",
+    "image/jpeg",
+    "image/svg+xml",
+    "image/webp"
+] 

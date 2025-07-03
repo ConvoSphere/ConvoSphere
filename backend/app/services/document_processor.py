@@ -5,16 +5,14 @@ This module provides functionality for processing different document types,
 extracting text content, and preparing documents for embedding generation.
 """
 
-import os
 import io
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 from pathlib import Path
 
 import PyPDF2
 from docx import Document
 import markdown
-from PIL import Image
 import magic
 
 from app.core.config import settings

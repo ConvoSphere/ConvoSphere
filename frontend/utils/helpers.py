@@ -26,14 +26,15 @@ def format_timestamp(timestamp: datetime, format_str: str = "%d.%m.%Y %H:%M") ->
     """
     if not timestamp:
         return ""
-    
-    if isinstance(timestamp, str):
+    ts = timestamp
+    if isinstance(ts, str):
         try:
-            timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            if ts.endswith('Z'):
+                ts = ts[:-1] + '+00:00'
+            ts = datetime.fromisoformat(ts)
         except ValueError:
-            return timestamp
-    
-    return timestamp.strftime(format_str)
+            return ts
+    return ts.strftime(format_str)
 
 
 def format_relative_time(timestamp: datetime) -> str:
@@ -48,15 +49,16 @@ def format_relative_time(timestamp: datetime) -> str:
     """
     if not timestamp:
         return ""
-    
-    if isinstance(timestamp, str):
+    ts = timestamp
+    if isinstance(ts, str):
         try:
-            timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            if ts.endswith('Z'):
+                ts = ts[:-1] + '+00:00'
+            ts = datetime.fromisoformat(ts)
         except ValueError:
-            return timestamp
-    
+            return ts
     now = datetime.now()
-    diff = now - timestamp
+    diff = now - ts
     
     if diff.days > 0:
         if diff.days == 1:
@@ -64,7 +66,7 @@ def format_relative_time(timestamp: datetime) -> str:
         elif diff.days < 7:
             return f"vor {diff.days} Tagen"
         else:
-            return format_timestamp(timestamp)
+            return format_timestamp(ts)
     
     hours = diff.seconds // 3600
     if hours > 0:
@@ -83,7 +85,7 @@ def format_relative_time(timestamp: datetime) -> str:
     return "Gerade eben"
 
 
-def format_file_size(size_bytes: int) -> str:
+def format_file_size(size_bytes: float) -> str:
     """
     Format file size in human readable format.
     
@@ -393,4 +395,19 @@ def format_duration(seconds: int) -> str:
     else:
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
-        return f"{hours}h {minutes}m" 
+        return f"{hours}h {minutes}m"
+
+
+def format_number(value: object) -> str:
+    """
+    Format a number with thousands separator (German style: 1.234.567,8).
+    Args:
+        value: The number to format (int or float)
+    Returns:
+        Formatted number as string
+    """
+    if isinstance(value, int):
+        return f"{value:,}".replace(",", ".")
+    elif isinstance(value, float):
+        return f"{value:,.1f}".replace(",", ".")
+    return str(value) 

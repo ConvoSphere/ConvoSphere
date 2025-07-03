@@ -6,8 +6,7 @@ and metadata for the retrieval-augmented generation system.
 """
 
 from datetime import datetime
-from typing import List, Optional
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, JSON, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid

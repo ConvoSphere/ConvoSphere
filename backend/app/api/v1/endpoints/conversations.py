@@ -9,7 +9,7 @@ from ....core.security import get_current_user
 from ....models.user import User
 from ....schemas.conversation import (
     ConversationCreate, ConversationUpdate, ConversationResponse, ConversationListResponse,
-    ConversationSearchParams, MessageCreate, MessageUpdate, MessageResponse
+    MessageCreate, MessageResponse
 )
 from ....services.conversation_service import ConversationService
 

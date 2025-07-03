@@ -7,7 +7,7 @@ providing a consistent interface for tool execution and management.
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class ToolParameter(BaseModel):

@@ -40,7 +40,8 @@ class AdvancedKnowledgeBasePage:
         self.search_dialog = None
         
         self.create_knowledge_base_page()
-        self.load_documents()
+        # Nach dem UI-Aufbau Dokumente laden
+        ui.timer(0.1, self.load_documents, once=True)
     
     def create_knowledge_base_page(self):
         """Create the advanced knowledge base page UI."""
@@ -122,17 +123,17 @@ class AdvancedKnowledgeBasePage:
                 
                 # Category filter
                 self.category_select = ui.select(
-                    "Kategorie",
                     options=["all"] + knowledge_service.get_document_categories(),
                     value="all",
+                    label="Kategorie",
                     on_change=self.handle_category_filter
                 ).classes("w-48")
                 
                 # Status filter
                 self.status_select = ui.select(
-                    "Status",
                     options=["all"] + [s.value for s in DocumentStatus],
                     value="all",
+                    label="Status",
                     on_change=self.handle_status_filter
                 ).classes("w-48")
                 
@@ -204,13 +205,22 @@ class AdvancedKnowledgeBasePage:
                 # Search input
                 search_input = ui.input(
                     placeholder="Suchbegriff eingeben...",
-                    on_keydown=lambda e: self.perform_search(e, search_input.value, dialog) if e.key == "Enter" else None
+                    label="Suche"
                 ).classes("w-full")
+                
+                # Register keydown event after creation
+                search_input.on("keydown", lambda e: self.perform_search(e, search_input.value, dialog) if e.key == "Enter" else None)
                 
                 # Search filters
                 with ui.row().classes("space-x-4"):
-                    ui.select("Kategorie", options=["alle"] + knowledge_service.get_document_categories()).classes("flex-1")
-                    ui.select("Status", options=["alle"] + [s.value for s in DocumentStatus]).classes("flex-1")
+                    ui.select(
+                        options=["alle"] + knowledge_service.get_document_categories(),
+                        label="Kategorie"
+                    ).classes("flex-1")
+                    ui.select(
+                        options=["alle"] + [s.value for s in DocumentStatus],
+                        label="Status"
+                    ).classes("flex-1")
                     ui.number("Max. Ergebnisse", value=20).classes("w-32")
                 
                 # Search button
@@ -665,5 +675,6 @@ class AdvancedKnowledgeBasePage:
             ui.notify(f"Fehler beim Laden der Chunks: {str(e)}", type="error")
 
 
-# Global advanced knowledge base page instance
-advanced_knowledge_base_page = AdvancedKnowledgeBasePage() 
+def create_page():
+    """Create and return a knowledge base page instance."""
+    return AdvancedKnowledgeBasePage() 

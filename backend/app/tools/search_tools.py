@@ -4,7 +4,7 @@ Search tools for the AI Assistant Platform.
 This module provides tools for web search and Wikipedia search functionality.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from .base import BaseTool
 
 

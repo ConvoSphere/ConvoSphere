@@ -5,7 +5,6 @@ This module provides the base SQLAlchemy model with common fields and functional
 used across all database entities in the AI Assistant Platform.
 """
 
-from datetime import datetime
 from typing import Any
 from sqlalchemy import Column, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base

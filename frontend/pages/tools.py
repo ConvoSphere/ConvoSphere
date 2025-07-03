@@ -37,8 +37,11 @@ class AdvancedToolsPage:
         self.create_tool_dialog = None
         self.execute_tool_dialog = None
         
+        # Create UI components
         self.create_tools_page()
-        self.load_tools()
+        
+        # Lade Tools nach dem Rendern asynchron
+        ui.timer(0.1, self.load_tools, once=True)
     
     def create_tools_page(self):
         """Create the advanced tools page UI."""
@@ -120,17 +123,17 @@ class AdvancedToolsPage:
                 
                 # Category filter
                 self.category_select = ui.select(
-                    "Kategorie",
                     options=["all"] + tool_service.get_tool_categories(),
                     value="all",
+                    label="Kategorie",
                     on_change=self.handle_category_filter
                 ).classes("w-48")
                 
                 # Type filter
                 self.type_select = ui.select(
-                    "Typ",
                     options=["all"] + [t.value for t in ToolType],
                     value="all",
+                    label="Typ",
                     on_change=self.handle_type_filter
                 ).classes("w-48")
                 
@@ -161,15 +164,15 @@ class AdvancedToolsPage:
                 # Type and status
                 with ui.row().classes("space-x-4"):
                     type_select = ui.select(
-                        "Typ *",
                         options=[t.value for t in ToolType],
-                        value=ToolType.FUNCTION.value
+                        value=ToolType.FUNCTION.value,
+                        label="Typ *"
                     ).classes("flex-1")
                     
                     status_select = ui.select(
-                        "Status",
                         options=[s.value for s in ToolStatus],
-                        value=ToolStatus.ACTIVE.value
+                        value=ToolStatus.ACTIVE.value,
+                        label="Status"
                     ).classes("flex-1")
                 
                 # Version and author
@@ -243,7 +246,10 @@ class AdvancedToolsPage:
         with self.parameters_container:
             with ui.row().classes("items-center space-x-2"):
                 ui.input("Name").classes("w-32")
-                ui.select("Typ", options=["string", "number", "boolean", "array", "object"]).classes("w-32")
+                ui.select(
+                    options=["string", "number", "boolean", "array", "object"],
+                    label="Typ"
+                ).classes("w-32")
                 ui.input("Beschreibung").classes("flex-1")
                 ui.switch("Erforderlich").classes("w-20")
                 ui.button(

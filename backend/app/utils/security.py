@@ -2,10 +2,9 @@
 
 import re
 import html
-from typing import List, Optional
-from fastapi import Request, HTTPException, status, Depends
+from typing import List
+from fastapi import Request, HTTPException, status
 from app.core.redis_client import get_redis
-import time
 
 RATE_LIMIT = 100  # requests
 RATE_PERIOD = 60  # seconds

@@ -1,273 +1,275 @@
 """
-WebSocket service for real-time communication.
+WebSocket service for real-time communication with the backend.
 
-This module provides WebSocket functionality for real-time chat
-and notifications in the AI Assistant Platform.
+This module provides WebSocket client functionality for real-time
+chat, notifications, and live updates.
 """
 
-import json
 import asyncio
-from typing import Optional, Dict, Any, Callable, List
+import json
+import logging
+from typing import Dict, Any, Optional, Callable, List
 from dataclasses import dataclass
-from datetime import datetime
+from enum import Enum
 
 try:
     import websockets
+    from websockets.client import WebSocketClientProtocol
 except ImportError:
     websockets = None
+    WebSocketClientProtocol = None
+
+
+class WebSocketEventType(Enum):
+    """WebSocket event types."""
+    MESSAGE = "message"
+    NOTIFICATION = "notification"
+    STATUS_UPDATE = "status_update"
+    ERROR = "error"
+    CONNECTED = "connected"
+    DISCONNECTED = "disconnected"
 
 
 @dataclass
-class WebSocketMessage:
-    """WebSocket message data model."""
-    type: str
-    data: Dict[str, Any]
-    timestamp: datetime
-    conversation_id: Optional[str] = None
+class WebSocketEvent:
+    """WebSocket event wrapper."""
+    event_type: WebSocketEventType
+    data: Optional[Dict[str, Any]] = None
+    timestamp: Optional[float] = None
 
 
 class WebSocketService:
     """WebSocket service for real-time communication."""
     
-    def __init__(self, base_url: str = "ws://localhost:8000"):
-        """Initialize the WebSocket service."""
-        self.base_url = base_url.rstrip("/")
-        self.websocket: Optional[websockets.WebSocketServerProtocol] = None
-        self.is_connected = False
-        self.conversation_id: Optional[str] = None
-        self.message_handlers: List[Callable[[WebSocketMessage], None]] = []
-        self.error_handlers: List[Callable[[str], None]] = []
-        self.connection_handlers: List[Callable[[bool], None]] = []
+    def __init__(self, backend_url: str = "ws://localhost:8000"):
+        self.backend_url = backend_url.replace("http://", "ws://").replace("https://", "wss://")
+        self.websocket: Optional[WebSocketClientProtocol] = None
+        self.connected = False
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 5
         self.reconnect_delay = 1.0
         
-    async def connect(self, conversation_id: str, token: str) -> bool:
-        """
-        Connect to WebSocket for a specific conversation.
+        # Event handlers
+        self.event_handlers: Dict[WebSocketEventType, List[Callable]] = {
+            event_type: [] for event_type in WebSocketEventType
+        }
         
-        Args:
-            conversation_id: Conversation ID to connect to
-            token: Authentication token
-            
-        Returns:
-            bool: True if connection successful, False otherwise
-        """
+        # Connection state
+        self.connection_task: Optional[asyncio.Task] = None
+        self.heartbeat_task: Optional[asyncio.Task] = None
+        
+        # Logging
+        self.logger = logging.getLogger(__name__)
+    
+    def add_event_handler(self, event_type: WebSocketEventType, handler: Callable):
+        """Add event handler."""
+        if event_type not in self.event_handlers:
+            self.event_handlers[event_type] = []
+        self.event_handlers[event_type].append(handler)
+    
+    def remove_event_handler(self, event_type: WebSocketEventType, handler: Callable):
+        """Remove event handler."""
+        if event_type in self.event_handlers and handler in self.event_handlers[event_type]:
+            self.event_handlers[event_type].remove(handler)
+    
+    async def connect(self, token: Optional[str] = None):
+        """Connect to WebSocket server."""
         if not websockets:
-            print("WebSocket support not available")
+            self.logger.error("WebSocket library not available")
             return False
         
         try:
-            # Close existing connection
-            await self.disconnect()
+            # Prepare connection URL
+            ws_url = f"{self.backend_url}/ws"
+            if token:
+                ws_url += f"?token={token}"
             
-            # Build WebSocket URL
-            ws_url = f"{self.base_url}/api/v1/chat/ws/{conversation_id}"
+            self.logger.info(f"Connecting to WebSocket: {ws_url}")
             
-            # Connect with authentication
+            # Connect to WebSocket
             self.websocket = await websockets.connect(
                 ws_url,
-                extra_headers={"Authorization": f"Bearer {token}"}
+                ping_interval=30,
+                ping_timeout=10,
+                close_timeout=10
             )
             
-            self.conversation_id = conversation_id
-            self.is_connected = True
+            self.connected = True
             self.reconnect_attempts = 0
             
-            # Notify connection handlers
-            for handler in self.connection_handlers:
-                try:
-                    handler(True)
-                except Exception as e:
-                    print(f"Connection handler error: {e}")
+            # Start message handling
+            self.connection_task = asyncio.create_task(self._handle_messages())
+            self.heartbeat_task = asyncio.create_task(self._heartbeat())
             
-            # Start message listener
-            asyncio.create_task(self._listen_for_messages())
+            # Emit connected event
+            await self._emit_event(WebSocketEventType.CONNECTED, {"status": "connected"})
             
-            print(f"WebSocket connected to conversation {conversation_id}")
+            self.logger.info("WebSocket connected successfully")
             return True
             
         except Exception as e:
-            print(f"WebSocket connection failed: {e}")
-            self.is_connected = False
+            self.logger.error(f"WebSocket connection failed: {e}")
+            await self._emit_event(WebSocketEventType.ERROR, {"error": str(e)})
             return False
     
     async def disconnect(self):
-        """Disconnect from WebSocket."""
+        """Disconnect from WebSocket server."""
+        self.connected = False
+        
+        # Cancel tasks
+        if self.connection_task:
+            self.connection_task.cancel()
+        if self.heartbeat_task:
+            self.heartbeat_task.cancel()
+        
+        # Close WebSocket
         if self.websocket:
             try:
                 await self.websocket.close()
             except Exception as e:
-                print(f"Error closing WebSocket: {e}")
-            finally:
-                self.websocket = None
-                self.is_connected = False
-                self.conversation_id = None
-                
-                # Notify connection handlers
-                for handler in self.connection_handlers:
-                    try:
-                        handler(False)
-                    except Exception as e:
-                        print(f"Connection handler error: {e}")
-    
-    async def send_message(self, content: str, message_type: str = "text") -> bool:
-        """
-        Send message through WebSocket.
+                self.logger.error(f"Error closing WebSocket: {e}")
         
-        Args:
-            content: Message content
-            message_type: Type of message (text, tool, etc.)
-            
-        Returns:
-            bool: True if message sent successfully, False otherwise
-        """
-        if not self.is_connected or not self.websocket:
+        # Emit disconnected event
+        await self._emit_event(WebSocketEventType.DISCONNECTED, {"status": "disconnected"})
+        
+        self.logger.info("WebSocket disconnected")
+    
+    async def send_message(self, message_type: str, data: Dict[str, Any]):
+        """Send message through WebSocket."""
+        if not self.connected or not self.websocket:
+            self.logger.error("WebSocket not connected")
             return False
         
         try:
             message = {
-                "type": "message",
-                "content": content,
-                "message_type": message_type,
-                "conversation_id": self.conversation_id,
-                "timestamp": datetime.now().isoformat()
+                "type": message_type,
+                "data": data,
+                "timestamp": asyncio.get_event_loop().time()
             }
             
             await self.websocket.send(json.dumps(message))
             return True
             
         except Exception as e:
-            print(f"Error sending WebSocket message: {e}")
-            await self._handle_connection_error()
+            self.logger.error(f"Error sending message: {e}")
             return False
     
-    async def send_tool_request(self, tool_id: str, arguments: Dict[str, Any]) -> bool:
-        """
-        Send tool execution request.
-        
-        Args:
-            tool_id: Tool ID to execute
-            arguments: Tool arguments
-            
-        Returns:
-            bool: True if request sent successfully, False otherwise
-        """
-        if not self.is_connected or not self.websocket:
-            return False
-        
-        try:
-            message = {
-                "type": "tool_request",
-                "tool_id": tool_id,
-                "arguments": arguments,
-                "conversation_id": self.conversation_id,
-                "timestamp": datetime.now().isoformat()
-            }
-            
-            await self.websocket.send(json.dumps(message))
-            return True
-            
-        except Exception as e:
-            print(f"Error sending tool request: {e}")
-            await self._handle_connection_error()
-            return False
+    async def send_chat_message(self, conversation_id: str, content: str, message_type: str = "text"):
+        """Send chat message."""
+        return await self.send_message("chat_message", {
+            "conversation_id": conversation_id,
+            "content": content,
+            "message_type": message_type
+        })
     
-    async def _listen_for_messages(self):
-        """Listen for incoming WebSocket messages."""
-        if not self.websocket:
-            return
-        
+    async def send_typing_indicator(self, conversation_id: str, is_typing: bool):
+        """Send typing indicator."""
+        return await self.send_message("typing_indicator", {
+            "conversation_id": conversation_id,
+            "is_typing": is_typing
+        })
+    
+    async def _handle_messages(self):
+        """Handle incoming WebSocket messages."""
         try:
             async for message in self.websocket:
                 try:
-                    # Parse message
                     data = json.loads(message)
-                    ws_message = WebSocketMessage(
-                        type=data.get("type", "unknown"),
-                        data=data.get("data", {}),
-                        timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
-                        conversation_id=data.get("conversation_id")
+                    event_type = data.get("type", "message")
+                    event_data = data.get("data", {})
+                    
+                    # Map event type to enum
+                    if event_type == "message":
+                        ws_event_type = WebSocketEventType.MESSAGE
+                    elif event_type == "notification":
+                        ws_event_type = WebSocketEventType.NOTIFICATION
+                    elif event_type == "status_update":
+                        ws_event_type = WebSocketEventType.STATUS_UPDATE
+                    elif event_type == "error":
+                        ws_event_type = WebSocketEventType.ERROR
+                    else:
+                        ws_event_type = WebSocketEventType.MESSAGE
+                    
+                    # Create event
+                    event = WebSocketEvent(
+                        event_type=ws_event_type,
+                        data=event_data,
+                        timestamp=data.get("timestamp")
                     )
                     
-                    # Handle message
-                    await self._handle_message(ws_message)
+                    # Emit event
+                    await self._emit_event(ws_event_type, event_data)
                     
                 except json.JSONDecodeError as e:
-                    print(f"Error parsing WebSocket message: {e}")
+                    self.logger.error(f"Invalid JSON message: {e}")
                 except Exception as e:
-                    print(f"Error handling WebSocket message: {e}")
+                    self.logger.error(f"Error handling message: {e}")
                     
         except websockets.exceptions.ConnectionClosed:
-            print("WebSocket connection closed")
-            await self._handle_connection_error()
+            self.logger.info("WebSocket connection closed")
+            await self._handle_disconnection()
         except Exception as e:
-            print(f"WebSocket listener error: {e}")
-            await self._handle_connection_error()
+            self.logger.error(f"WebSocket error: {e}")
+            await self._handle_disconnection()
     
-    async def _handle_message(self, message: WebSocketMessage):
-        """Handle incoming WebSocket message."""
-        # Notify message handlers
-        for handler in self.message_handlers:
-            try:
-                handler(message)
-            except Exception as e:
-                print(f"Message handler error: {e}")
-    
-    async def _handle_connection_error(self):
-        """Handle WebSocket connection errors."""
-        self.is_connected = False
+    async def _handle_disconnection(self):
+        """Handle WebSocket disconnection."""
+        self.connected = False
         
-        # Notify error handlers
-        for handler in self.error_handlers:
-            try:
-                handler("WebSocket connection lost")
-            except Exception as e:
-                print(f"Error handler error: {e}")
+        # Emit disconnected event
+        await self._emit_event(WebSocketEventType.DISCONNECTED, {"status": "disconnected"})
         
         # Attempt reconnection
         if self.reconnect_attempts < self.max_reconnect_attempts:
-            await self._attempt_reconnect()
+            self.reconnect_attempts += 1
+            self.logger.info(f"Attempting reconnection {self.reconnect_attempts}/{self.max_reconnect_attempts}")
+            
+            await asyncio.sleep(self.reconnect_delay)
+            await self.connect()
+        else:
+            self.logger.error("Max reconnection attempts reached")
     
-    async def _attempt_reconnect(self):
-        """Attempt to reconnect to WebSocket."""
-        self.reconnect_attempts += 1
-        delay = self.reconnect_delay * (2 ** (self.reconnect_attempts - 1))  # Exponential backoff
+    async def _heartbeat(self):
+        """Send heartbeat to keep connection alive."""
+        while self.connected:
+            try:
+                await asyncio.sleep(30)  # Send heartbeat every 30 seconds
+                if self.connected:
+                    await self.send_message("heartbeat", {"timestamp": asyncio.get_event_loop().time()})
+            except Exception as e:
+                self.logger.error(f"Heartbeat error: {e}")
+                break
+    
+    async def _emit_event(self, event_type: WebSocketEventType, data: Dict[str, Any]):
+        """Emit event to all handlers."""
+        event = WebSocketEvent(
+            event_type=event_type,
+            data=data,
+            timestamp=asyncio.get_event_loop().time()
+        )
         
-        print(f"Attempting WebSocket reconnection {self.reconnect_attempts}/{self.max_reconnect_attempts} in {delay}s")
-        
-        await asyncio.sleep(delay)
-        
-        # TODO: Implement reconnection logic
-        # This would require storing the connection parameters
-        print("Reconnection not implemented yet")
+        # Call all handlers for this event type
+        handlers = self.event_handlers.get(event_type, [])
+        for handler in handlers:
+            try:
+                if asyncio.iscoroutinefunction(handler):
+                    await handler(event)
+                else:
+                    handler(event)
+            except Exception as e:
+                self.logger.error(f"Error in event handler: {e}")
     
-    def add_message_handler(self, handler: Callable[[WebSocketMessage], None]):
-        """Add message handler."""
-        self.message_handlers.append(handler)
+    def is_connected(self) -> bool:
+        """Check if WebSocket is connected."""
+        return self.connected and self.websocket is not None
     
-    def add_error_handler(self, handler: Callable[[str], None]):
-        """Add error handler."""
-        self.error_handlers.append(handler)
-    
-    def add_connection_handler(self, handler: Callable[[bool], None]):
-        """Add connection status handler."""
-        self.connection_handlers.append(handler)
-    
-    def remove_message_handler(self, handler: Callable[[WebSocketMessage], None]):
-        """Remove message handler."""
-        if handler in self.message_handlers:
-            self.message_handlers.remove(handler)
-    
-    def remove_error_handler(self, handler: Callable[[str], None]):
-        """Remove error handler."""
-        if handler in self.error_handlers:
-            self.error_handlers.remove(handler)
-    
-    def remove_connection_handler(self, handler: Callable[[bool], None]):
-        """Remove connection status handler."""
-        if handler in self.connection_handlers:
-            self.connection_handlers.remove(handler)
+    async def wait_for_connection(self, timeout: float = 10.0):
+        """Wait for WebSocket connection."""
+        start_time = asyncio.get_event_loop().time()
+        while not self.connected:
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise TimeoutError("WebSocket connection timeout")
+            await asyncio.sleep(0.1)
 
 
 # Global WebSocket service instance

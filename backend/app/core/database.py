@@ -6,7 +6,7 @@ and utility functions for the AI Assistant Platform.
 """
 
 from typing import Generator
-from sqlalchemy import create_engine, text, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool
@@ -68,7 +68,7 @@ def init_db() -> None:
     """Initialize database tables."""
     try:
         # Import all models to ensure they are registered
-        from app.models import Base, User, Assistant, Conversation, Message, Tool, AuditLog
+        from app.models import Base
         
         # Create all tables
         Base.metadata.create_all(bind=engine)

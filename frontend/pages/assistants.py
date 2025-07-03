@@ -547,8 +547,8 @@ class AssistantsPage:
         self.display_assistants()
 
 
-def create_assistants_page():
-    """Create and return the assistants page."""
+def create_page():
+    """Create and return an assistants page instance."""
     return AssistantsPage()
 
 
@@ -556,4 +556,4 @@ def create_assistants_page():
 @ui.page("/assistants")
 def assistants_page():
     """Assistants page route."""
-    return create_assistants_page() 
+    return create_page() 

@@ -4,10 +4,8 @@ Authentication endpoints for user login, registration, and token management.
 This module provides the authentication API endpoints for the AI Assistant Platform.
 """
 
-from datetime import timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from loguru import logger

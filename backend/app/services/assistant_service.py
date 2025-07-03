@@ -11,7 +11,6 @@ from sqlalchemy import and_, or_
 from loguru import logger
 
 from app.models.assistant import Assistant, AssistantStatus
-from app.models.user import User
 
 
 class AssistantService:

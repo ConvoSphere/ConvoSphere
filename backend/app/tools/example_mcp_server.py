@@ -7,10 +7,9 @@ the MCP integration in the AI Assistant Platform.
 
 import json
 import asyncio
-from typing import Dict, Any, List
+from typing import Dict, Any
 from dataclasses import dataclass
 from datetime import datetime
-import aiohttp
 from aiohttp import web
 from loguru import logger
 

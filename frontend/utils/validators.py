@@ -1104,4 +1104,26 @@ def validate_json_schema(data: Dict[str, Any], schema: Dict[str, Any]) -> Dict[s
     return {
         "valid": len(errors) == 0,
         "errors": errors
-    } 
+    }
+
+
+def validate_document_data(data: dict) -> dict:
+    """
+    Validate document data for upload or update.
+    Args:
+        data: dict with document fields (filename, file_type, file_size, ...)
+    Returns:
+        dict: {"valid": bool, "errors": list[str]}
+    """
+    errors = []
+    if not data.get("filename"):
+        errors.append("Dateiname ist erforderlich.")
+    if not data.get("file_type"):
+        errors.append("Dateityp ist erforderlich.")
+    if not isinstance(data.get("file_size"), int) or data.get("file_size", 0) <= 0:
+        errors.append("Dateigröße muss größer als 0 sein.")
+    if "description" in data and data["description"] and len(data["description"]) > 500:
+        errors.append("Beschreibung darf maximal 500 Zeichen lang sein.")
+    if "tags" in data and data["tags"] is not None and not isinstance(data["tags"], list):
+        errors.append("Tags müssen eine Liste sein.")
+    return {"valid": not errors, "errors": errors} 

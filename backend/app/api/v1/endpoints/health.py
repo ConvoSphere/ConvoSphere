@@ -5,7 +5,7 @@ This module provides health check and status endpoints for monitoring
 the AI Assistant Platform.
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from loguru import logger
 
 from app.core.config import settings

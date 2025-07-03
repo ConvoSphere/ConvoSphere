@@ -305,5 +305,6 @@ class MCPToolsPage:
             ui.notify(f"Error executing tool: {e}", type="error")
 
 
-# Create page instance
-mcp_tools_page = MCPToolsPage() 
+def create_page():
+    """Create and return an MCP tools page instance."""
+    return MCPToolsPage() 

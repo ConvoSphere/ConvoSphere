@@ -6,11 +6,11 @@ using various embedding models and managing embedding operations.
 """
 
 import logging
+import math
 from typing import List, Dict, Any, Optional
 import asyncio
 
 from litellm import completion
-import numpy as np
 
 from app.core.config import settings
 
@@ -117,13 +117,12 @@ class EmbeddingService:
             Similarity score between 0 and 1
         """
         try:
-            vec1 = np.array(embedding1)
-            vec2 = np.array(embedding2)
+            # Calculate dot product
+            dot_product = sum(a * b for a, b in zip(embedding1, embedding2))
             
-            # Calculate cosine similarity
-            dot_product = np.dot(vec1, vec2)
-            norm1 = np.linalg.norm(vec1)
-            norm2 = np.linalg.norm(vec2)
+            # Calculate norms (vector lengths)
+            norm1 = math.sqrt(sum(x * x for x in embedding1))
+            norm2 = math.sqrt(sum(x * x for x in embedding2))
             
             if norm1 == 0 or norm2 == 0:
                 return 0.0

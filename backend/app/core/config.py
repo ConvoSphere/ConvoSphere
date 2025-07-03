@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     
     # Internationalization
     default_language: str = Field(default="de", description="Default language")
-    supported_languages: List[str] = Field(default=["de", "en", "fr", "es"], description="Supported languages")
+    supported_languages: List[str] = Field(default=["de", "en", "fr", "es"], description="Supported languages", env="SUPPORTED_LANGUAGES")
     
     # Email Configuration
     smtp_host: Optional[str] = Field(default=None, description="SMTP host")
@@ -106,7 +106,10 @@ class Settings(BaseSettings):
     def parse_supported_languages(cls, v):
         """Parse supported languages from comma-separated string."""
         if isinstance(v, str):
-            return [lang.strip() for lang in v.split(",")]
+            try:
+                return [lang.strip() for lang in v.split(",") if lang.strip()]
+            except Exception:
+                return ["de", "en", "fr", "es"]
         return v
     
     @field_validator("secret_key")

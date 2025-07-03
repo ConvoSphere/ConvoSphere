@@ -12,7 +12,6 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
-from app.core.redis_client import get_redis
 
 from .config import settings
 

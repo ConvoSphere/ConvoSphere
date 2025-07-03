@@ -6,7 +6,7 @@ that can be used by AI assistants.
 """
 
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from sqlalchemy import Column, String, Text, Boolean, JSON, Enum as SQLEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

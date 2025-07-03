@@ -6,7 +6,6 @@ and REST endpoints for chat management.
 """
 
 import json
-import asyncio
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel

@@ -8,14 +8,13 @@ typing indicators, and chat state management.
 import json
 import asyncio
 from typing import Dict, Set, Optional
-from fastapi import WebSocket, WebSocketDisconnect, Depends, HTTPException
-from fastapi.security import HTTPBearer
+from fastapi import WebSocket, WebSocketDisconnect, Depends
 from sqlalchemy.orm import Session
 
 from ....core.database import get_db
 from ....core.security import get_current_user_ws
 from ....models.user import User
-from ....models.conversation import Conversation, Message
+from ....models.conversation import Conversation
 from ....services.conversation_service import ConversationService
 from ....services.ai_service import AIService
 
@@ -91,7 +90,7 @@ class ConnectionManager:
                 if connection_id in self.active_connections:
                     try:
                         await self.active_connections[connection_id].send_text(message)
-                    except Exception as e:
+                    except Exception:
                         # Remove broken connection
                         del self.active_connections[connection_id]
                         self.conversation_connections[conversation_id].discard(connection_id)

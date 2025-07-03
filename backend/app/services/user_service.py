@@ -1,10 +1,9 @@
 """User service for managing users with enterprise features."""
 
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc, asc
+from sqlalchemy import and_, or_
 from datetime import datetime, timedelta
-import uuid
 from passlib.context import CryptContext
 
 from ..models.user import User, UserGroup, UserRole, UserStatus, AuthProvider
@@ -12,7 +11,7 @@ from ..schemas.user import (
     UserCreate, UserUpdate, UserResponse, UserListResponse, UserStats,
     UserGroupCreate, UserGroupUpdate, UserGroupResponse,
     UserBulkUpdate, UserGroupAssignment, UserSearchParams,
-    SSOUserCreate, UserProfileUpdate, UserPasswordUpdate
+    SSOUserCreate, UserPasswordUpdate
 )
 from ..core.security import verify_password, get_password_hash
 from ..utils.exceptions import (

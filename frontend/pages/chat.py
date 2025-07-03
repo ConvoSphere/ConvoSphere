@@ -445,8 +445,8 @@ class ChatPage:
         pass
 
 
-def create_chat_page():
-    """Create and return the chat page."""
+def create_page():
+    """Create and return a chat page instance."""
     return ChatPage()
 
 
@@ -454,4 +454,4 @@ def create_chat_page():
 @ui.page("/chat")
 def chat_page():
     """Chat page route."""
-    return create_chat_page() 
+    return create_page() 

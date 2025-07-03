@@ -6,7 +6,7 @@ system events, and security-related actions for compliance and monitoring.
 """
 
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from sqlalchemy import Column, String, Text, JSON, Enum as SQLEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

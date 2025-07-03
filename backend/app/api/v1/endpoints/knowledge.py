@@ -6,11 +6,10 @@ searching the knowledge base, and RAG functionality.
 """
 
 import os
-from typing import List, Optional, Dict, Any
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-import uuid
 from pathlib import Path
 
 from ....core.database import get_db
@@ -19,25 +18,11 @@ from ....models.user import User
 from ....services.knowledge_service import KnowledgeService
 from ....services.docling_processor import docling_processor
 from ....schemas.knowledge import (
-    DocumentCreate,
     DocumentResponse,
     DocumentList,
-    DocumentChunkResponse,
     SearchRequest,
     SearchResponse,
-    DocumentProcessRequest,
-    ProcessingOptions,
-    ProcessingEngineInfo,
-    SupportedFormats,
-    DocumentReprocessRequest,
-    DocumentReprocessResponse,
-    DocumentUploadAdvanced,
-    DocumentChunkInfo,
-    DocumentProcessingResult,
-    DocumentStatistics,
-    SearchHistoryItem,
-    SearchHistoryResponse,
-    KnowledgeBaseStats
+    ProcessingOptions
 )
 
 router = APIRouter()

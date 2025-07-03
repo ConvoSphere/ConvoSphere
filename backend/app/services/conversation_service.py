@@ -3,12 +3,8 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
-import uuid
-from datetime import datetime
 
 from app.models.conversation import Conversation, Message, MessageRole, MessageType
-from app.models.assistant import Assistant
-from app.models.user import User
 
 
 class ConversationService:

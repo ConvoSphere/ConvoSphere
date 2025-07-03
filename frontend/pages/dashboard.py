@@ -174,8 +174,8 @@ class DashboardPage:
                 # Assistant Stats
                 self.create_stat_card(
                     "Assistenten",
-                    self.assistant_stats.get("total", 0),
-                    f"{self.assistant_stats.get('active', 0)} aktiv",
+                    format_number(self.assistant_stats.get("total", 0)),
+                    f"{format_number(self.assistant_stats.get('active', 0))} aktiv",
                     "smart_toy",
                     "bg-blue-500"
                 )
@@ -183,8 +183,8 @@ class DashboardPage:
                 # Conversation Stats
                 self.create_stat_card(
                     "Konversationen",
-                    self.conversation_stats.get("total_conversations", 0),
-                    f"{self.conversation_stats.get('active_conversations', 0)} aktiv",
+                    format_number(self.conversation_stats.get("total_conversations", 0)),
+                    f"{format_number(self.conversation_stats.get('active_conversations', 0))} aktiv",
                     "chat",
                     "bg-green-500"
                 )
@@ -192,8 +192,8 @@ class DashboardPage:
                 # Message Stats
                 self.create_stat_card(
                     "Nachrichten",
-                    self.conversation_stats.get("total_messages", 0),
-                    f"{self.conversation_stats.get('average_messages_per_conversation', 0):.1f} pro Konversation",
+                    format_number(self.conversation_stats.get("total_messages", 0)),
+                    f"{format_number(self.conversation_stats.get('average_messages_per_conversation', 0))} pro Konversation",
                     "message",
                     "bg-purple-500"
                 )
@@ -202,19 +202,26 @@ class DashboardPage:
                 model_count = len(self.assistant_stats.get("models", []))
                 self.create_stat_card(
                     "Modelle",
-                    model_count,
+                    format_number(model_count),
                     "verschiedene AI-Modelle",
                     "psychology",
                     "bg-orange-500"
                 )
     
-    def create_stat_card(self, title: str, value: int, subtitle: str, icon: str, color_class: str):
-        """Create a statistics card."""
+    def create_stat_card(self, title: str, value: str, subtitle: str, icon: str, color_class: str):
+        """Create a statistics card.
+        Args:
+            title: Card title
+            value: Formatted value as string
+            subtitle: Subtitle
+            icon: Icon name
+            color_class: Tailwind color class
+        """
         with ui.card().classes("p-4"):
             with ui.row().classes("items-center justify-between"):
                 with ui.element("div"):
                     ui.label(title).classes("text-sm font-medium text-gray-600")
-                    ui.label(str(value)).classes("text-2xl font-bold text-gray-900")
+                    ui.label(value).classes("text-2xl font-bold text-gray-900")
                     ui.label(subtitle).classes("text-xs text-gray-500")
                 
                 ui.icon(icon).classes(f"w-8 h-8 {color_class} text-white rounded-lg p-1")
@@ -281,7 +288,7 @@ class DashboardPage:
                     ui.label(format_relative_time(conversation.updated_at)).classes("text-xs text-gray-400 mt-1")
                 
                 with ui.element("div").classes("text-right"):
-                    ui.label(f"{conversation.message_count} Nachrichten").classes("text-xs text-gray-500")
+                    ui.label(f"{format_number(conversation.message_count)} Nachrichten").classes("text-xs text-gray-500")
                     
                     with ui.row().classes("space-x-1 mt-2"):
                         ui.button(
@@ -378,4 +385,9 @@ def create_dashboard_page():
 @ui.page("/dashboard")
 def dashboard_page():
     """Dashboard page route."""
-    return create_dashboard_page() 
+    return create_dashboard_page()
+
+
+def create_page():
+    """Create and return a dashboard page instance."""
+    return DashboardPage() 

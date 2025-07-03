@@ -5,9 +5,7 @@ This module provides MCP client functionality to connect to MCP servers
 and use their tools within the AI Assistant Platform.
 """
 
-import asyncio
-import json
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 import aiohttp

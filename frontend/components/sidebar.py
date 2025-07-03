@@ -5,15 +5,16 @@ This module provides the main navigation sidebar with menu items and user contro
 """
 
 from nicegui import ui
-
-from pages.dashboard import create_page as create_dashboard
-from pages.assistants import create_page as create_assistants
-from pages.conversations import create_page as create_conversations
-from pages.chat import create_page as create_chat
-from pages.tools import create_page as create_tools
+from pages import (
+    create_dashboard_page,
+    create_assistants_page,
+    create_conversations_page,
+    create_tools_page,
+    create_knowledge_base_page,
+    create_settings_page,
+    create_chat_page
+)
 from pages.mcp_tools import create_page as create_mcp_tools
-from pages.knowledge_base import create_page as create_knowledge_base
-from pages.settings import create_page as create_settings
 
 
 class Sidebar:
@@ -95,12 +96,12 @@ class Sidebar:
 
 # Navigation routes
 routes = {
-    "/": create_dashboard,
-    "/assistants": create_assistants,
-    "/conversations": create_conversations,
-    "/chat": create_chat,
-    "/tools": create_tools,
+    "/": create_dashboard_page,
+    "/assistants": create_assistants_page,
+    "/conversations": create_conversations_page,
+    "/chat": create_chat_page,
+    "/tools": create_tools_page,
     "/mcp-tools": create_mcp_tools,
-    "/knowledge-base": create_knowledge_base,
-    "/settings": create_settings,
+    "/knowledge-base": create_knowledge_base_page,
+    "/settings": create_settings_page,
 } 

@@ -35,8 +35,11 @@ class AdvancedSettingsPage:
         self.settings_container = None
         self.admin_container = None
         
+        # Create UI components
         self.create_settings_page()
-        self.load_user_data()
+        
+        # Load user data after UI setup
+        ui.timer(0.1, self.load_user_data, once=True)
     
     def create_settings_page(self):
         """Create the advanced settings page UI."""
@@ -524,4 +527,10 @@ class AdvancedSettingsPage:
 
 
 # Global advanced settings page instance
-advanced_settings_page = AdvancedSettingsPage() 
+advanced_settings_page = AdvancedSettingsPage()
+
+SettingsPage = AdvancedSettingsPage
+
+def create_page():
+    """Create and return a settings page instance."""
+    return AdvancedSettingsPage() 

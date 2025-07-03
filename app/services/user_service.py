@@ -1,0 +1,1 @@
+verified_users = query.filter(User.is_verified).count() 
