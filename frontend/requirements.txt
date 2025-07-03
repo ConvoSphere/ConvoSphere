@@ -2,7 +2,7 @@
 nicegui==2.20.0
 
 # HTTP Client
-aiohttp==3.9.1
+aiohttp>=3.10.2
 
 # WebSocket Support
 websockets==12.0
