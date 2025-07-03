@@ -1,593 +1,669 @@
 """
-Knowledge Base Management Page.
+Advanced Knowledge Base Page for the AI Assistant Platform.
 
-This page provides a comprehensive interface for managing the knowledge base
-used for RAG (Retrieval-Augmented Generation) in the AI assistant platform.
+This module provides comprehensive knowledge base functionality including
+document management, search, processing, and embedding integration.
 """
 
-import asyncio
-from datetime import datetime
-from typing import List, Optional, Dict, Any
-import json
-
 from nicegui import ui
-from nicegui.events import ValueChangeEventArguments, UploadEventArguments
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+import asyncio
 
-from services.knowledge_service import knowledge_service
-from services.auth_service import auth_service
+from services.knowledge_service import knowledge_service, Document, DocumentStatus, DocumentType, SearchResult
+from components.common.loading_spinner import create_loading_spinner
+from components.common.error_message import create_error_message
+from utils.helpers import generate_id, format_timestamp, format_file_size
+from utils.validators import validate_document_data
 
 
-class KnowledgeBasePage:
-    """Knowledge base management page."""
+class AdvancedKnowledgeBasePage:
+    """Advanced knowledge base management page component."""
     
     def __init__(self):
-        self.documents: List[Dict[str, Any]] = []
+        """Initialize the advanced knowledge base page."""
+        self.documents: List[Document] = []
+        self.search_results: List[SearchResult] = []
         self.is_loading = False
-        self.is_uploading = False
-        self.search_query = ""
-        self.search_results: List[Dict[str, Any]] = []
         self.is_searching = False
-        self.selected_document = None
+        self.error_message = None
+        self.selected_category = "all"
+        self.selected_status = "all"
+        self.search_query = ""
         
-        # UI elements
-        self.documents_list = None
-        self.document_viewer = None
-        self.upload_progress = None
+        # UI components
+        self.container = None
+        self.documents_container = None
+        self.stats_container = None
+        self.search_container = None
+        self.upload_dialog = None
+        self.search_dialog = None
         
-        # Advanced upload options
-        self.selected_engine = "auto"
-        self.processing_options = {}
-        self.show_advanced_options = False
-        
-        self.create_page()
+        self.create_knowledge_base_page()
+        self.load_documents()
     
-    def create_page(self):
-        """Create the knowledge base page layout."""
-        with ui.column().classes("w-full h-full"):
+    def create_knowledge_base_page(self):
+        """Create the advanced knowledge base page UI."""
+        self.container = ui.element("div").classes("p-6")
+        
+        with self.container:
             # Header
-            with ui.row().classes("w-full p-4 bg-white border-b border-gray-200"):
-                with ui.row().classes("flex-1 items-center gap-4"):
+            self.create_header()
+            
+            # Statistics
+            self.create_statistics()
+            
+            # Search and filters
+            self.create_search_and_filters()
+            
+            # Documents list
+            self.create_documents_list()
+            
+            # Dialogs
+            self.upload_dialog = self.create_upload_dialog_ui()
+            self.search_dialog = self.create_search_dialog_ui()
+    
+    def create_header(self):
+        """Create the page header."""
+        with ui.element("div").classes("mb-6"):
+            with ui.row().classes("items-center justify-between"):
+                with ui.column():
                     ui.label("Knowledge Base").classes("text-2xl font-bold")
-                    
-                    # Upload button
+                    ui.label("Verwalte und durchsuche deine Dokumente").classes("text-gray-600")
+                
+                with ui.row().classes("space-x-2"):
                     ui.button(
-                        "Upload Document",
-                        on_click=self.show_upload_dialog,
-                        icon="upload"
-                    ).classes("bg-blue-500 text-white")
+                        "Durchsuchen",
+                        icon="search",
+                        on_click=self.show_search_dialog
+                    ).classes("bg-green-600 text-white")
                     
-                    # Advanced Upload button
                     ui.button(
-                        "Advanced Upload",
-                        on_click=self.show_advanced_upload_dialog,
-                        icon="upload"
-                    ).classes("bg-green-500 text-white")
-                    
-                    # Refresh button
+                        "Dokument hochladen",
+                        icon="upload",
+                        on_click=self.show_upload_dialog
+                    ).classes("bg-blue-600 text-white")
+    
+    def create_statistics(self):
+        """Create document statistics display."""
+        self.stats_container = ui.element("div").classes("mb-6")
+        
+        with self.stats_container:
+            with ui.row().classes("grid grid-cols-1 md:grid-cols-4 gap-4"):
+                # Total documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Gesamt").classes("text-sm text-gray-600")
+                    ui.label("0").classes("text-2xl font-bold text-blue-600")
+                
+                # Completed documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Verarbeitet").classes("text-sm text-gray-600")
+                    ui.label("0").classes("text-2xl font-bold text-green-600")
+                
+                # Processing documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("In Verarbeitung").classes("text-sm text-gray-600")
+                    ui.label("0").classes("text-2xl font-bold text-orange-600")
+                
+                # Total size
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Gesamtgröße").classes("text-sm text-gray-600")
+                    ui.label("0 MB").classes("text-2xl font-bold text-purple-600")
+    
+    def create_search_and_filters(self):
+        """Create search and filters section."""
+        with ui.element("div").classes("mb-6 bg-white border rounded-lg p-4"):
+            with ui.row().classes("items-center space-x-4"):
+                # Search
+                self.search_input = ui.input(
+                    placeholder="Dokumente durchsuchen...",
+                    on_change=self.handle_search
+                ).classes("flex-1")
+                
+                # Category filter
+                self.category_select = ui.select(
+                    "Kategorie",
+                    options=["all"] + knowledge_service.get_document_categories(),
+                    value="all",
+                    on_change=self.handle_category_filter
+                ).classes("w-48")
+                
+                # Status filter
+                self.status_select = ui.select(
+                    "Status",
+                    options=["all"] + [s.value for s in DocumentStatus],
+                    value="all",
+                    on_change=self.handle_status_filter
+                ).classes("w-48")
+                
+                # Refresh button
+                ui.button(
+                    icon="refresh",
+                    on_click=self.load_documents
+                ).classes("w-10 h-10 bg-gray-100 text-gray-600")
+    
+    def create_documents_list(self):
+        """Create the documents list display."""
+        self.documents_container = ui.element("div").classes("grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6")
+    
+    def create_upload_dialog_ui(self):
+        """Create the advanced document upload dialog."""
+        with ui.dialog() as dialog, ui.card().classes("w-full max-w-2xl"):
+            ui.label("Dokument hochladen").classes("text-lg font-medium mb-4")
+            
+            # Upload form
+            with ui.column().classes("space-y-4"):
+                # File upload
+                self.file_upload = ui.upload(
+                    label="Datei auswählen",
+                    multiple=False,
+                    on_upload=self.handle_file_upload
+                ).props("accept=.pdf,.docx,.txt,.md,.html,.json,.csv,.jpg,.jpeg,.png,.mp3,.mp4")
+                
+                # Document metadata
+                with ui.row().classes("space-x-4"):
+                    name_input = ui.input("Name *").classes("flex-1")
+                    category_input = ui.input("Kategorie").classes("flex-1")
+                
+                description_input = ui.textarea("Beschreibung").classes("w-full")
+                tags_input = ui.input("Tags (kommagetrennt)").classes("w-full")
+                
+                # Processing options
+                with ui.expansion("Verarbeitungsoptionen", icon="settings"):
+                    with ui.column().classes("space-y-2"):
+                        ui.switch("Automatische Kategorisierung").classes("w-full")
+                        ui.switch("Tags extrahieren").classes("w-full")
+                        ui.switch("Metadaten extrahieren").classes("w-full")
+                
+                # Buttons
+                with ui.row().classes("justify-end space-x-2"):
                     ui.button(
-                        "Refresh",
-                        on_click=self.load_documents,
-                        icon="refresh"
+                        "Abbrechen",
+                        on_click=dialog.close
                     ).classes("bg-gray-500 text-white")
-                
-                with ui.row().classes("items-center gap-2"):
-                    ui.button("Settings", on_click=self.show_settings).classes("bg-gray-500 text-white")
-            
-            # Main content area
-            with ui.row().classes("w-full h-full flex-1 gap-0"):
-                # Documents sidebar
-                with ui.column().classes("w-80 bg-gray-50 border-r border-gray-200 p-4"):
-                    ui.label("Documents").classes("text-lg font-semibold mb-4")
                     
-                    # Search documents
-                    search_input = ui.input(
-                        "Search documents...",
-                        on_change=self.on_search_change
-                    ).classes("w-full mb-4")
-                    
-                    # Search button
                     ui.button(
-                        "Search",
-                        on_click=self.search_documents
-                    ).classes("w-full mb-4 bg-blue-500 text-white")
-                    
-                    # Search results
-                    if self.search_results:
-                        with ui.expansion("Search Results", icon="search").classes("mb-4"):
-                            with ui.column().classes("space-y-2"):
-                                for result in self.search_results:
-                                    with ui.card().classes("w-full"):
-                                        ui.label(f"Score: {result.get('score', 0):.3f}").classes("text-sm text-gray-600")
-                                        ui.label(result.get('content', '')).classes("text-sm")
-                    
-                    # Documents list
-                    self.documents_list = ui.column().classes("w-full flex-1 overflow-y-auto")
-                    
-                    # Load documents button
-                    ui.button("Load More", on_click=self.load_documents).classes("w-full mt-4 bg-gray-500 text-white")
+                        "Hochladen",
+                        on_click=lambda: self.upload_document(
+                            name_input.value,
+                            description_input.value,
+                            category_input.value,
+                            tags_input.value,
+                            dialog
+                        )
+                    ).classes("bg-blue-600 text-white")
+        
+        return dialog
+    
+    def create_search_dialog_ui(self):
+        """Create the advanced search dialog."""
+        with ui.dialog() as dialog, ui.card().classes("w-full max-w-4xl"):
+            ui.label("Dokumente durchsuchen").classes("text-lg font-medium mb-4")
+            
+            with ui.column().classes("space-y-4"):
+                # Search input
+                search_input = ui.input(
+                    placeholder="Suchbegriff eingeben...",
+                    on_keydown=lambda e: self.perform_search(e, search_input.value, dialog) if e.key == "Enter" else None
+                ).classes("w-full")
                 
-                # Document viewer area
-                with ui.column().classes("flex-1 flex flex-col"):
-                    # Document header
-                    with ui.row().classes("p-4 border-b border-gray-200 bg-white"):
-                        if self.selected_document:
-                            with ui.row().classes("flex-1 items-center gap-4"):
-                                ui.label(f"Document: {self.selected_document.get('title', 'Untitled')}").classes("text-lg font-semibold")
-                                
-                                # Document actions
-                                ui.button(
-                                    "Delete",
-                                    on_click=self.delete_document,
-                                    icon="delete"
-                                ).classes("bg-red-500 text-white")
-                                
-                                ui.button(
-                                    "Download",
-                                    on_click=self.download_document,
-                                    icon="download"
-                                ).classes("bg-green-500 text-white")
-                        else:
-                            ui.label("Select a document to view").classes("text-lg text-gray-500")
-                    
-                    # Document content
-                    with ui.column().classes("flex-1 p-4 overflow-y-auto") as content_area:
-                        self.document_viewer = content_area
-            
-            # Create dialogs
-            self.create_upload_dialog()
-            self.create_settings_dialog()
-            
-            # Load initial data - will be called when page is accessed
-            # asyncio.create_task(self.load_documents())
-    
-    def create_upload_dialog(self):
-        """Create the document upload dialog."""
-        with ui.dialog() as self.upload_dialog, ui.card().classes("w-96"):
-            ui.label("Upload Document").classes("text-lg font-semibold mb-4")
-            
-            # File input
-            ui.label("Select Document").classes("font-medium mb-2")
-            file_input = ui.upload(
-                label="Choose file",
-                multiple=False
-            ).classes("w-full mb-4")
-            
-            # Document metadata
-            ui.label("Document Title").classes("font-medium mb-2")
-            title_input = ui.input("Untitled Document").classes("w-full mb-4")
-            
-            ui.label("Description (Optional)").classes("font-medium mb-2")
-            description_input = ui.textarea("").classes("w-full mb-4")
-            
-            ui.label("Tags (Optional)").classes("font-medium mb-2")
-            tags_input = ui.input("tag1, tag2, tag3").classes("w-full mb-4")
-            
-            # Upload progress
-            self.upload_progress = ui.linear_progress().classes("w-full mb-4")
-            self.upload_progress.visible = False
-            
-            with ui.row().classes("w-full justify-end gap-2"):
-                ui.button("Cancel", on_click=self.upload_dialog.close).classes("bg-gray-500")
-                ui.button("Upload", on_click=self.upload_document).classes("bg-blue-500")
-    
-    def create_settings_dialog(self):
-        """Create the knowledge base settings dialog."""
-        with ui.dialog() as self.settings_dialog, ui.card().classes("w-96"):
-            ui.label("Knowledge Base Settings").classes("text-lg font-semibold mb-4")
-            
-            # Chunk size setting
-            ui.label("Chunk Size").classes("font-medium mb-2")
-            chunk_size_input = ui.number(
-                min=100, max=2000, value=500, step=50
-            ).classes("w-full mb-4")
-            
-            # Overlap setting
-            ui.label("Chunk Overlap").classes("font-medium mb-2")
-            overlap_input = ui.number(
-                min=0, max=500, value=50, step=10
-            ).classes("w-full mb-4")
-            
-            # Embedding model
-            ui.label("Embedding Model").classes("font-medium mb-2")
-            model_select = ui.select(
-                options=["text-embedding-ada-002", "text-embedding-3-small", "text-embedding-3-large"],
-                value="text-embedding-ada-002"
-            ).classes("w-full mb-4")
-            
-            # Auto-refresh setting
-            auto_refresh = ui.checkbox("Auto-refresh documents").classes("w-full mb-4")
-            
-            with ui.row().classes("w-full justify-end gap-2"):
-                ui.button("Cancel", on_click=self.settings_dialog.close).classes("bg-gray-500")
-                ui.button("Save", on_click=self.save_settings).classes("bg-blue-500")
+                # Search filters
+                with ui.row().classes("space-x-4"):
+                    ui.select("Kategorie", options=["alle"] + knowledge_service.get_document_categories()).classes("flex-1")
+                    ui.select("Status", options=["alle"] + [s.value for s in DocumentStatus]).classes("flex-1")
+                    ui.number("Max. Ergebnisse", value=20).classes("w-32")
+                
+                # Search button
+                ui.button(
+                    "Suchen",
+                    icon="search",
+                    on_click=lambda: self.perform_search(None, search_input.value, dialog)
+                ).classes("bg-green-600 text-white")
+                
+                # Results container
+                self.search_results_container = ui.element("div").classes("space-y-4")
+        
+        return dialog
     
     async def load_documents(self):
-        """Load documents from the knowledge base."""
+        """Load documents from the API."""
+        self.is_loading = True
+        
         try:
-            self.is_loading = True
+            self.documents = await knowledge_service.get_documents(force_refresh=True)
+            self.display_documents()
+            self.update_statistics()
             
-            # Use knowledge service to load documents
-            documents = await knowledge_service.load_documents()
-            
-            if documents:
-                self.documents = documents
-                self.update_documents_list()
-            else:
-                ui.notify("No documents found", type="info")
-                
         except Exception as e:
-            ui.notify(f"Error loading documents: {str(e)}", type="error")
+            self.error_message = f"Fehler beim Laden der Dokumente: {str(e)}"
+            self.display_error()
         finally:
             self.is_loading = False
     
-    def update_documents_list(self):
-        """Update the documents list display."""
-        if not self.documents_list:
+    def display_documents(self):
+        """Display documents in the grid."""
+        self.documents_container.clear()
+        
+        # Apply filters
+        filtered_documents = self.filter_documents()
+        
+        if not filtered_documents:
+            with self.documents_container:
+                ui.label("Keine Dokumente gefunden").classes("col-span-full text-center text-gray-500 py-8")
             return
         
-        # Clear existing documents
-        self.documents_list.clear()
-        
-        # Add documents
-        for document in self.documents:
-            with self.documents_list:
-                with ui.card().classes("w-full p-3 cursor-pointer hover:bg-blue-50").on("click", lambda d=document: self.select_document(d)):
-                    with ui.column().classes("w-full"):
-                        ui.label(document.get('title', 'Untitled')).classes("font-semibold text-sm")
-                        ui.label(document.get('description', 'No description')).classes("text-xs text-gray-600")
-                        
-                        with ui.row().classes("w-full justify-between items-center mt-2"):
-                            ui.label(f"{document.get('chunk_count', 0)} chunks").classes("text-xs text-gray-500")
-                            ui.label(document.get('uploaded_at', 'Unknown')).classes("text-xs text-gray-500")
-                        
-                        # Document status
-                        status = document.get('status', 'unknown')
-                        status_color = {
-                            'processed': 'text-green-600',
-                            'processing': 'text-yellow-600',
-                            'error': 'text-red-600',
-                            'unknown': 'text-gray-600'
-                        }.get(status, 'text-gray-600')
-                        
-                        ui.label(f"Status: {status}").classes(f"text-xs {status_color}")
+        with self.documents_container:
+            for document in filtered_documents:
+                self.create_document_card(document)
     
-    def select_document(self, document: Dict[str, Any]):
-        """Select a document to view."""
-        self.selected_document = document
-        self.update_document_viewer()
+    def filter_documents(self) -> List[Document]:
+        """Filter documents based on current filters."""
+        filtered = self.documents
+        
+        # Category filter
+        if self.selected_category != "all":
+            filtered = [d for d in filtered if d.category == self.selected_category]
+        
+        # Status filter
+        if self.selected_status != "all":
+            filtered = [d for d in filtered if d.status.value == self.selected_status]
+        
+        # Search filter
+        if self.search_query:
+            query_lower = self.search_query.lower()
+            filtered = [
+                d for d in filtered
+                if query_lower in d.name.lower() or 
+                   (d.description and query_lower in d.description.lower())
+            ]
+        
+        return filtered
     
-    def update_document_viewer(self):
-        """Update the document viewer display."""
-        if not self.document_viewer or not self.selected_document:
-            return
+    def update_statistics(self):
+        """Update statistics display."""
+        stats = knowledge_service.get_document_stats()
         
-        # Clear existing content
-        self.document_viewer.clear()
-        
-        # Add document content
-        with self.document_viewer:
-            # Document metadata
-            with ui.card().classes("w-full p-4 mb-4"):
-                ui.label("Document Information").classes("text-lg font-semibold mb-2")
+        self.stats_container.clear()
+        with self.stats_container:
+            with ui.row().classes("grid grid-cols-1 md:grid-cols-4 gap-4"):
+                # Total documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Gesamt").classes("text-sm text-gray-600")
+                    ui.label(str(stats["total_documents"])).classes("text-2xl font-bold text-blue-600")
                 
-                with ui.row().classes("w-full gap-4"):
-                    with ui.column().classes("flex-1"):
-                        ui.label(f"Title: {self.selected_document.get('title', 'Untitled')}").classes("text-sm")
-                        ui.label(f"Description: {self.selected_document.get('description', 'No description')}").classes("text-sm")
-                        ui.label(f"File Type: {self.selected_document.get('file_type', 'Unknown')}").classes("text-sm")
-                    
-                    with ui.column().classes("flex-1"):
-                        ui.label(f"Uploaded: {self.selected_document.get('uploaded_at', 'Unknown')}").classes("text-sm")
-                        ui.label(f"Chunks: {self.selected_document.get('chunk_count', 0)}").classes("text-sm")
-                        ui.label(f"Status: {self.selected_document.get('status', 'Unknown')}").classes("text-sm")
+                # Completed documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Verarbeitet").classes("text-sm text-gray-600")
+                    ui.label(str(stats["completed_documents"])).classes("text-2xl font-bold text-green-600")
                 
-                # Tags
-                tags = self.selected_document.get('tags', [])
-                if tags:
-                    with ui.row().classes("w-full mt-2"):
-                        ui.label("Tags: ").classes("text-sm")
-                        for tag in tags:
-                            ui.label(tag).classes("bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1")
+                # Processing documents
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("In Verarbeitung").classes("text-sm text-gray-600")
+                    ui.label(str(stats["processing_documents"])).classes("text-2xl font-bold text-orange-600")
+                
+                # Total size
+                with ui.element("div").classes("bg-white border rounded-lg p-4"):
+                    ui.label("Gesamtgröße").classes("text-sm text-gray-600")
+                    ui.label(stats["total_size_formatted"]).classes("text-2xl font-bold text-purple-600")
+    
+    def create_document_card(self, document: Document):
+        """Create a document card."""
+        with ui.element("div").classes("bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"):
+            # Header with status
+            with ui.row().classes("items-center justify-between mb-4"):
+                # Document name and type
+                with ui.column():
+                    ui.label(document.name).classes("font-semibold text-lg")
+                    with ui.row().classes("items-center space-x-2"):
+                        ui.icon(self.get_file_icon(document.file_type)).classes("w-4 h-4 text-gray-500")
+                        ui.label(document.file_type.value.upper()).classes("text-sm text-gray-500")
+                
+                # Status indicator
+                self.create_status_indicator(document.status)
             
-            # Document chunks
-            chunks = self.selected_document.get('chunks', [])
-            if chunks:
-                ui.label("Document Chunks").classes("text-lg font-semibold mb-2")
+            # Document info
+            with ui.column().classes("space-y-2 mb-4"):
+                # File size and upload date
+                with ui.row().classes("items-center justify-between text-sm text-gray-600"):
+                    ui.label(f"Größe: {format_file_size(document.file_size)}")
+                    ui.label(f"Hochgeladen: {format_timestamp(document.uploaded_at)}")
                 
-                for i, chunk in enumerate(chunks):
-                    with ui.card().classes("w-full p-3 mb-2"):
-                        with ui.row().classes("w-full justify-between items-center mb-2"):
-                            ui.label(f"Chunk {i+1}").classes("font-semibold text-sm")
-                            ui.label(f"Tokens: {chunk.get('token_count', 0)}").classes("text-xs text-gray-500")
-                        
-                        ui.label(chunk.get('content', '')).classes("text-sm whitespace-pre-wrap")
-            else:
-                ui.label("No chunks available").classes("text-gray-500 text-center p-4")
+                # Processing date if available
+                if document.processed_at:
+                    with ui.row().classes("items-center justify-between text-sm text-gray-600"):
+                        ui.label("Verarbeitet:")
+                        ui.label(format_timestamp(document.processed_at))
+                
+                # Description if available
+                if document.description:
+                    ui.label(document.description).classes("text-sm text-gray-700 mt-2")
+            
+            # Actions
+            with ui.row().classes("space-x-2"):
+                # Download button
+                if document.status == DocumentStatus.COMPLETED:
+                    ui.button(
+                        "Herunterladen",
+                        icon="download",
+                        on_click=lambda: self.download_document(document)
+                    ).classes("bg-blue-500 text-white text-xs")
+                
+                # View chunks button
+                if document.chunks:
+                    ui.button(
+                        "Chunks anzeigen",
+                        icon="list",
+                        on_click=lambda: self.view_document_chunks(document)
+                    ).classes("bg-green-500 text-white text-xs")
+                
+                # Reprocess button
+                if document.status in [DocumentStatus.COMPLETED, DocumentStatus.FAILED]:
+                    ui.button(
+                        "Neu verarbeiten",
+                        icon="refresh",
+                        on_click=lambda: self.reprocess_document(document)
+                    ).classes("bg-orange-500 text-white text-xs")
+                
+                # Edit button
+                ui.button(
+                    "Bearbeiten",
+                    icon="edit",
+                    on_click=lambda: self.edit_document(document)
+                ).classes("bg-gray-500 text-white text-xs")
+                
+                # Delete button
+                ui.button(
+                    "Löschen",
+                    icon="delete",
+                    on_click=lambda: self.delete_document(document)
+                ).classes("bg-red-500 text-white text-xs")
+    
+    def create_status_indicator(self, status: DocumentStatus):
+        """Create status indicator."""
+        status_config = {
+            DocumentStatus.UPLOADING: {
+                "color": "bg-yellow-100 text-yellow-800",
+                "icon": "upload",
+                "text": "Wird hochgeladen"
+            },
+            DocumentStatus.PROCESSING: {
+                "color": "bg-blue-100 text-blue-800",
+                "icon": "sync",
+                "text": "Wird verarbeitet"
+            },
+            DocumentStatus.COMPLETED: {
+                "color": "bg-green-100 text-green-800",
+                "icon": "check_circle",
+                "text": "Abgeschlossen"
+            },
+            DocumentStatus.FAILED: {
+                "color": "bg-red-100 text-red-800",
+                "icon": "error",
+                "text": "Fehlgeschlagen"
+            },
+            DocumentStatus.DELETED: {
+                "color": "bg-gray-100 text-gray-800",
+                "icon": "delete",
+                "text": "Gelöscht"
+            }
+        }
+        
+        config = status_config.get(status, status_config[DocumentStatus.FAILED])
+        
+        with ui.column().classes("items-end"):
+            with ui.row().classes(f"items-center space-x-2 px-3 py-1 rounded-full {config['color']}"):
+                ui.icon(config["icon"]).classes("w-4 h-4")
+                ui.label(config["text"]).classes("text-xs font-medium")
+    
+    def get_file_icon(self, doc_type: DocumentType) -> str:
+        """Get appropriate icon for file type."""
+        icon_map = {
+            DocumentType.PDF: "picture_as_pdf",
+            DocumentType.DOCX: "description",
+            DocumentType.TXT: "article",
+            DocumentType.MD: "code",
+            DocumentType.HTML: "code",
+            DocumentType.JSON: "data_object",
+            DocumentType.CSV: "table_chart",
+            DocumentType.IMAGE: "image",
+            DocumentType.AUDIO: "audiotrack",
+            DocumentType.VIDEO: "video_file"
+        }
+        
+        return icon_map.get(doc_type, "insert_drive_file")
+    
+    def display_error(self):
+        """Display error message."""
+        self.documents_container.clear()
+        with self.documents_container:
+            create_error_message(self.error_message)
+    
+    def handle_search(self, event):
+        """Handle search input change."""
+        self.search_query = event.value
+        self.display_documents()
+    
+    def handle_category_filter(self, event):
+        """Handle category filter change."""
+        self.selected_category = event.value
+        self.display_documents()
+    
+    def handle_status_filter(self, event):
+        """Handle status filter change."""
+        self.selected_status = event.value
+        self.display_documents()
     
     def show_upload_dialog(self):
         """Show the upload dialog."""
         self.upload_dialog.open()
     
-    async def upload_document(self):
-        """Upload a document to the knowledge base."""
-        try:
-            self.is_uploading = True
-            if self.upload_progress:
-                self.upload_progress.visible = True
-                self.upload_progress.value = 0
-            
-            # Get form data
-            file_input = self.upload_dialog.find_child(ui.upload)
-            title_input = self.upload_dialog.find_child(ui.input)
-            description_input = self.upload_dialog.find_child(ui.textarea)
-            tags_input = self.upload_dialog.find_child(ui.input, lambda x: x != title_input)
-            
-            if not file_input or not file_input.files:
-                ui.notify("Please select a file to upload", type="warning")
-                return
-            
-            file = file_input.files[0]
-            title = title_input.value if title_input else "Untitled Document"
-            description = description_input.value if description_input else ""
-            tags = [tag.strip() for tag in tags_input.value.split(',')] if tags_input and tags_input.value else []
-            
-            # Simulate upload progress
-            for i in range(10):
-                await asyncio.sleep(0.1)
-                if self.upload_progress:
-                    self.upload_progress.value = (i + 1) / 10
-            
-            # Prepare file data and metadata
-            file_data = {
-                "name": file.name,
-                "content": file.content if hasattr(file, 'content') else b"",
-                "size": len(file.content) if hasattr(file, 'content') else 0
-            }
-            
-            metadata = {
-                "title": title,
-                "description": description,
-                "tags": tags
-            }
-            
-            # Upload document using knowledge service
-            result = await knowledge_service.upload_document(file_data, metadata)
-            
-            if result:
-                ui.notify("Document uploaded successfully", type="positive")
-                self.upload_dialog.close()
-                await self.load_documents()
-            else:
-                ui.notify("Upload failed", type="error")
-                
-        except Exception as e:
-            ui.notify(f"Error uploading document: {str(e)}", type="error")
-        finally:
-            self.is_uploading = False
-            if self.upload_progress:
-                self.upload_progress.visible = False
+    def show_search_dialog(self):
+        """Show the search dialog."""
+        self.search_dialog.open()
     
-    async def delete_document(self):
-        """Delete the selected document."""
-        if not self.selected_document:
-            ui.notify("Please select a document to delete", type="warning")
-            return
-        
-        try:
-            document_id = self.selected_document.get('id')
-            if not document_id:
-                ui.notify("Invalid document ID", type="error")
-                return
-                
-            success = await knowledge_service.delete_document(str(document_id))
-            
-            if success:
-                ui.notify("Document deleted successfully", type="positive")
-                self.selected_document = None
-                await self.load_documents()
-                self.update_document_viewer()
-            else:
-                ui.notify("Delete failed", type="error")
-                
-        except Exception as e:
-            ui.notify(f"Error deleting document: {str(e)}", type="error")
-    
-    async def download_document(self):
-        """Download the selected document."""
-        if not self.selected_document:
-            ui.notify("Please select a document to download", type="warning")
-            return
-        
-        try:
-            document_id = self.selected_document.get('id')
-            if not document_id:
-                ui.notify("Invalid document ID", type="error")
-                return
-                
-            content = await knowledge_service.download_document(str(document_id))
-            
-            if content:
-                # In a real implementation, this would trigger a file download
-                ui.notify("Document download started", type="positive")
-            else:
-                ui.notify("Download failed", type="error")
-                
-        except Exception as e:
-            ui.notify(f"Error downloading document: {str(e)}", type="error")
-    
-    async def search_documents(self):
-        """Search documents in the knowledge base."""
-        if not self.search_query.strip():
-            ui.notify("Please enter a search query", type="warning")
-            return
-        
-        try:
-            self.is_searching = True
-            results = await knowledge_service.search_knowledge(self.search_query)
-            
-            if results:
-                self.search_results = results
-                ui.notify(f"Found {len(results)} results", type="positive")
-            else:
-                self.search_results = []
-                ui.notify("No results found", type="info")
-                
-        except Exception as e:
-            ui.notify(f"Error searching documents: {str(e)}", type="error")
-        finally:
-            self.is_searching = False
-    
-    def show_settings(self):
-        """Show settings dialog."""
-        self.settings_dialog.open()
-    
-    def save_settings(self):
-        """Save knowledge base settings."""
-        # Save settings logic here
-        self.settings_dialog.close()
-        ui.notify("Settings saved", type="positive")
-    
-    async def on_search_change(self, e: ValueChangeEventArguments):
-        """Handle search input change."""
-        self.search_query = e.value
-    
-    async def show_advanced_upload_dialog(self):
-        """Show advanced upload dialog with Docling options."""
-        # Load processing engines and formats
-        self.processing_engines = await knowledge_service.get_processing_engines()
-        self.supported_formats = await knowledge_service.get_supported_formats()
-        
-        with ui.dialog() as dialog, ui.card().classes("w-96"):
-            ui.label("Advanced Document Upload").classes("text-lg font-semibold mb-4")
-            
-            with ui.column().classes("w-full gap-4"):
-                title_input = ui.input("Title").classes("w-full")
-                description_input = ui.input("Description").classes("w-full")
-                tags_input = ui.input("Tags (comma-separated)").classes("w-full")
-                
-                # Processing engine selection
-                engine_options = list(self.processing_engines.keys())
-                engine_select = ui.select(
-                    "Processing Engine",
-                    options=engine_options,
-                    value="auto"
-                ).classes("w-full")
-                
-                # Show engine information
-                with ui.expansion("Engine Information", icon="info").classes("w-full"):
-                    self.engine_info = ui.column().classes("w-full")
-                
-                # Advanced options toggle
-                ui.switch("Show Advanced Options", on_change=self.toggle_advanced_options).classes("w-full")
-                
-                # Advanced options (initially hidden)
-                with ui.column().classes("w-full").bind_visibility_from(self, "show_advanced_options"):
-                    ui.textarea("Processing Options (JSON)").classes("w-full").bind_value(self, "processing_options")
-                
-                file_upload = ui.upload(
-                    label="Select File",
-                    multiple=False,
-                    on_upload=self.handle_file_upload
-                ).classes("w-full")
-                
-                with ui.row().classes("w-full justify-end gap-2"):
-                    ui.button("Cancel", on_click=dialog.close).classes("bg-gray-500 text-white")
-                    ui.button("Upload", on_click=lambda: self.upload_document_advanced(dialog, title_input, description_input, tags_input, engine_select)).classes("bg-green-500 text-white")
-                
-                # Update engine info when selection changes
-                engine_select.on_change(lambda: self.update_engine_info(engine_select.value))
-                self.update_engine_info("auto")
-    
-    def update_engine_info(self, engine: str):
-        """Update engine information display."""
-        self.engine_info.clear()
-        
-        if engine in self.processing_engines:
-            engine_data = self.processing_engines[engine]
-            ui.label(f"Name: {engine_data.get('name', engine)}").classes("text-sm")
-            ui.label(f"Description: {engine_data.get('description', 'No description')}").classes("text-sm")
-            
-            formats = engine_data.get('supported_formats', [])
-            ui.label(f"Supported formats: {', '.join(formats)}").classes("text-sm")
-            
-            features = engine_data.get('features', [])
-            if features:
-                ui.label("Features:").classes("text-sm font-semibold")
-                for feature in features:
-                    ui.label(f"• {feature}").classes("text-sm ml-2")
-    
-    def toggle_advanced_options(self, value: bool):
-        """Toggle advanced options visibility."""
-        self.show_advanced_options = value
-    
-    async def handle_file_upload(self, e: UploadEventArguments):
+    def handle_file_upload(self, event):
         """Handle file upload."""
-        # Store uploaded file data
-        self.uploaded_file = {
-            "name": e.name,
-            "content": e.content,
-            "type": e.type
-        }
+        # This would handle the file upload event
+        pass
     
-    async def upload_document_advanced(self, dialog, title_input, description_input, tags_input, engine_select):
-        """Upload document with advanced options."""
-        if not hasattr(self, 'uploaded_file'):
-            ui.notify("Please select a file", type="error")
-            return
-        
+    async def upload_document(
+        self,
+        name: str,
+        description: str,
+        category: str,
+        tags: str,
+        dialog
+    ):
+        """Upload a document."""
         try:
+            # Validate input
+            if not name:
+                ui.notify("Name ist erforderlich", type="error")
+                return
+            
             # Parse tags
-            tags = []
-            if tags_input.value:
-                tags = [tag.strip() for tag in tags_input.value.split(',') if tag.strip()]
+            tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
             
-            # Parse processing options
-            processing_options = {}
-            if self.processing_options:
-                try:
-                    import json
-                    processing_options = json.loads(self.processing_options)
-                except json.JSONDecodeError:
-                    ui.notify("Invalid processing options JSON", type="error")
-                    return
-            
-            # Create metadata
-            metadata = {
-                "title": title_input.value,
-                "description": description_input.value,
-                "tags": tags
+            # Create document data
+            document_data = {
+                "name": name,
+                "description": description,
+                "category": category,
+                "tags": tag_list
             }
             
-            # Upload document with advanced options
-            result = await knowledge_service.upload_document_advanced(
-                self.uploaded_file,
-                metadata,
-                engine=engine_select.value,
-                processing_options=processing_options
-            )
+            # Validate document data
+            validation = validate_document_data(document_data)
+            if not validation["valid"]:
+                ui.notify(f"Dokument-Validierung fehlgeschlagen: {validation['errors']}", type="error")
+                return
             
-            if result:
-                ui.notify("Document uploaded successfully", type="positive")
+            # Upload document
+            document = await knowledge_service.upload_document(document_data)
+            
+            if document:
+                ui.notify("Dokument erfolgreich hochgeladen", type="positive")
                 dialog.close()
                 await self.load_documents()
             else:
-                ui.notify("Upload failed", type="negative")
+                ui.notify("Fehler beim Hochladen des Dokuments", type="error")
                 
         except Exception as e:
-            ui.notify(f"Upload error: {str(e)}", type="negative")
+            ui.notify(f"Fehler beim Hochladen des Dokuments: {str(e)}", type="error")
     
-    async def on_page_load(self):
-        """Handle page load."""
-        await self.load_documents()
+    async def perform_search(self, event, query: str, dialog):
+        """Perform document search."""
+        if not query.strip():
+            return
+        
+        self.is_searching = True
+        
+        try:
+            results = await knowledge_service.search_documents(query)
+            
+            # Display results
+            self.search_results_container.clear()
+            
+            if results:
+                with self.search_results_container:
+                    for result in results:
+                        self.create_search_result_item(result)
+            else:
+                with self.search_results_container:
+                    ui.label("Keine Ergebnisse gefunden").classes("text-gray-500 text-center py-4")
+                    
+        except Exception as e:
+            ui.notify(f"Fehler bei der Suche: {str(e)}", type="error")
+        finally:
+            self.is_searching = False
+    
+    def create_search_result_item(self, result: SearchResult):
+        """Create a search result item."""
+        with ui.element("div").classes("border rounded p-4 bg-gray-50"):
+            with ui.row().classes("items-center justify-between mb-2"):
+                ui.label(result.document_name).classes("font-medium")
+                ui.label(f"Score: {result.score:.2f}").classes("text-sm text-gray-600")
+            
+            # Highlighted content
+            content = result.content[:200] + "..." if len(result.content) > 200 else result.content
+            ui.label(content).classes("text-sm text-gray-700 mb-2")
+            
+            # Metadata
+            with ui.row().classes("items-center justify-between text-xs text-gray-500"):
+                ui.label(f"Chunk {result.chunk_index}")
+                ui.label(f"Position {result.start_position}-{result.end_position}")
+    
+    async def edit_document(self, document: Document):
+        """Edit a document."""
+        with ui.dialog() as dialog, ui.card().classes("w-full max-w-lg"):
+            ui.label(f"Dokument bearbeiten: {document.name}").classes("text-lg font-medium mb-4")
+            
+            with ui.column().classes("space-y-4"):
+                name_input = ui.input("Name", value=document.name).classes("w-full")
+                description_input = ui.textarea("Beschreibung", value=document.description or "").classes("w-full")
+                category_input = ui.input("Kategorie", value=document.category or "").classes("w-full")
+                tags_input = ui.input("Tags", value=", ".join(document.tags or [])).classes("w-full")
+                
+                with ui.row().classes("justify-end space-x-2"):
+                    ui.button("Abbrechen", on_click=dialog.close).classes("bg-gray-500 text-white")
+                    ui.button(
+                        "Speichern",
+                        on_click=lambda: self.save_document_edit(
+                            document.id,
+                            name_input.value,
+                            description_input.value,
+                            category_input.value,
+                            tags_input.value,
+                            dialog
+                        )
+                    ).classes("bg-blue-600 text-white")
+    
+    async def save_document_edit(
+        self,
+        document_id: str,
+        name: str,
+        description: str,
+        category: str,
+        tags: str,
+        dialog
+    ):
+        """Save document edit."""
+        try:
+            tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
+            
+            document_data = {
+                "name": name,
+                "description": description,
+                "category": category,
+                "tags": tag_list
+            }
+            
+            document = await knowledge_service.update_document(document_id, document_data)
+            
+            if document:
+                ui.notify("Dokument erfolgreich aktualisiert", type="positive")
+                dialog.close()
+                await self.load_documents()
+            else:
+                ui.notify("Fehler beim Aktualisieren des Dokuments", type="error")
+                
+        except Exception as e:
+            ui.notify(f"Fehler beim Aktualisieren: {str(e)}", type="error")
+    
+    async def delete_document(self, document: Document):
+        """Delete a document."""
+        try:
+            success = await knowledge_service.delete_document(document.id)
+            
+            if success:
+                ui.notify("Dokument erfolgreich gelöscht", type="positive")
+                await self.load_documents()
+            else:
+                ui.notify("Fehler beim Löschen des Dokuments", type="error")
+                
+        except Exception as e:
+            ui.notify(f"Fehler beim Löschen des Dokuments: {str(e)}", type="error")
+    
+    async def download_document(self, document: Document):
+        """Download a document."""
+        ui.notify("Download-Funktionalität wird implementiert", type="info")
+    
+    async def reprocess_document(self, document: Document):
+        """Reprocess a document."""
+        try:
+            success = await knowledge_service.reprocess_document(document.id)
+            
+            if success:
+                ui.notify("Dokument wird neu verarbeitet", type="positive")
+                await self.load_documents()
+            else:
+                ui.notify("Fehler bei der Neuverarbeitung", type="error")
+                
+        except Exception as e:
+            ui.notify(f"Fehler bei der Neuverarbeitung: {str(e)}", type="error")
+    
+    async def view_document_chunks(self, document: Document):
+        """View document chunks."""
+        try:
+            chunks = await knowledge_service.get_document_chunks(document.id)
+            
+            with ui.dialog() as dialog, ui.card().classes("w-full max-w-4xl"):
+                ui.label(f"Chunks: {document.name}").classes("text-lg font-medium mb-4")
+                
+                with ui.column().classes("space-y-4 max-h-96 overflow-y-auto"):
+                    for chunk in chunks:
+                        with ui.element("div").classes("border rounded p-3 bg-gray-50"):
+                            with ui.row().classes("items-center justify-between mb-2"):
+                                ui.label(f"Chunk {chunk.chunk_index}").classes("font-medium")
+                                ui.label(f"Position {chunk.start_position}-{chunk.end_position}").classes("text-sm text-gray-600")
+                            
+                            ui.label(chunk.content).classes("text-sm")
+                
+                ui.button("Schließen", on_click=dialog.close).classes("bg-blue-600 text-white")
+                
+        except Exception as e:
+            ui.notify(f"Fehler beim Laden der Chunks: {str(e)}", type="error")
 
 
-# Create page instance
-knowledge_base_page = KnowledgeBasePage()
-
-async def setup():
-    """Setup the knowledge base page."""
-    pass
-
-def create_page():
-    """Create the knowledge base page."""
-    return setup() 
+# Global advanced knowledge base page instance
+advanced_knowledge_base_page = AdvancedKnowledgeBasePage() 
