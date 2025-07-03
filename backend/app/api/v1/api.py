@@ -4,12 +4,13 @@ Main API router for v1 endpoints.
 This module combines all API routers into a single router for the v1 API.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from app.utils.security import rate_limiter
 
 from .endpoints import auth, users, assistants, conversations, tools, health, chat, mcp, search, knowledge
 
 # Create main API router
-api_router = APIRouter()
+api_router = APIRouter(dependencies=[Depends(rate_limiter)])
 
 # Include all endpoint routers
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])

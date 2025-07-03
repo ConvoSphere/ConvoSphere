@@ -3,7 +3,32 @@
 import re
 import html
 from typing import List, Optional
+from fastapi import Request, HTTPException, status, Depends
+from app.core.redis_client import get_redis
+import time
 
+RATE_LIMIT = 100  # requests
+RATE_PERIOD = 60  # seconds
+
+async def rate_limiter(request: Request):
+    """
+    Simple Redis-based rate limiter (100 req/min per IP).
+    Raises HTTP 429 if limit exceeded.
+    """
+    client_ip = request.client.host
+    key = f"rate_limit:{client_ip}"
+    redis = await get_redis()
+    current = await redis.get(key)
+    if current is None:
+        await redis.set(key, 1, ex=RATE_PERIOD)
+    else:
+        current = int(current)
+        if current >= RATE_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Try again later."
+            )
+        await redis.incr(key)
 
 def sanitize_input(text: str) -> str:
     """

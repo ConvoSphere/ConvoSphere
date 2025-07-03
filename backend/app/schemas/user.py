@@ -4,7 +4,7 @@ Pydantic schemas for user management with enterprise features.
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from uuid import UUID
 
 from ..models.user import UserRole, UserStatus, AuthProvider
@@ -41,8 +41,7 @@ class UserGroupResponse(UserGroupBase):
     updated_at: Optional[datetime]
     user_count: Optional[int] = Field(None, description="Number of users in the group")
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserBase(BaseModel):
@@ -82,10 +81,11 @@ class UserCreate(UserBase):
     sso_attributes: Optional[Dict[str, Any]] = Field(None, description="SSO attributes")
     group_ids: Optional[List[UUID]] = Field(None, description="Group IDs to assign")
     
-    @validator('password')
-    def validate_password(cls, v, values):
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v, info):
         """Validate password is provided for local authentication."""
-        auth_provider = values.get('auth_provider', AuthProvider.LOCAL)
+        auth_provider = info.data.get('auth_provider', AuthProvider.LOCAL)
         if auth_provider == AuthProvider.LOCAL and not v:
             raise ValueError('Password is required for local authentication')
         return v
@@ -123,7 +123,8 @@ class UserPasswordUpdate(BaseModel):
     current_password: str = Field(..., min_length=1, description="Current password")
     new_password: str = Field(..., min_length=8, description="New password")
     
-    @validator('new_password')
+    @field_validator('new_password')
+    @classmethod
     def validate_new_password(cls, v):
         """Validate new password strength."""
         if len(v) < 8:
@@ -157,8 +158,7 @@ class UserResponse(UserBase):
     is_active: bool
     is_locked: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserListResponse(BaseModel):
@@ -183,7 +183,7 @@ class UserGroupAssignment(BaseModel):
     """Schema for assigning users to groups."""
     user_ids: List[UUID] = Field(..., description="User IDs to assign")
     group_ids: List[UUID] = Field(..., description="Group IDs to assign users to")
-    operation: str = Field("add", regex="^(add|remove)$", description="Operation: add or remove")
+    operation: str = Field("add", pattern="^(add|remove)$", description="Operation: add or remove")
 
 
 class UserSearchParams(BaseModel):

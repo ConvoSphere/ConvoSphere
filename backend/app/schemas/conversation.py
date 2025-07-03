@@ -5,7 +5,7 @@ Pydantic schemas for Conversation and Message management (enterprise-ready).
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from ..models.conversation import MessageRole, MessageType
 
@@ -35,8 +35,7 @@ class MessageResponse(MessageBase):
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Conversation Schemas ---
 
@@ -77,8 +76,7 @@ class ConversationResponse(ConversationBase):
     updated_at: Optional[datetime]
     messages: Optional[List[MessageResponse]] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ConversationListResponse(BaseModel):
     conversations: List[ConversationResponse]

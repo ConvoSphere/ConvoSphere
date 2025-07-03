@@ -17,7 +17,7 @@ import markdown
 from PIL import Image
 import magic
 
-from core.config import settings
+from app.core.config import settings
 from .docling_processor import docling_processor
 
 logger = logging.getLogger(__name__)
@@ -40,8 +40,8 @@ class DocumentProcessor:
     }
     
     def __init__(self):
-        self.chunk_size = settings.CHUNK_SIZE
-        self.chunk_overlap = settings.CHUNK_OVERLAP
+        self.chunk_size = settings.chunk_size
+        self.chunk_overlap = settings.chunk_overlap
     
     def detect_file_type(self, file_content: bytes, filename: str) -> str:
         """

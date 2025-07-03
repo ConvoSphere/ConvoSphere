@@ -1,6 +1,7 @@
 """Helper utilities for the AI Assistant Platform."""
 
 import uuid
+import re
 from datetime import datetime
 from typing import Optional
 
@@ -74,9 +75,11 @@ def sanitize_filename(filename: str) -> str:
     Returns:
         str: Sanitized filename
     """
-    import re
-    # Remove or replace unsafe characters
-    sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    if not filename or not filename.strip():
+        return 'unnamed'
+    
+    # Remove or replace unsafe characters and spaces
+    sanitized = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
     # Remove leading/trailing spaces and dots
     sanitized = sanitized.strip('. ')
     # Limit length
@@ -84,4 +87,40 @@ def sanitize_filename(filename: str) -> str:
         name, ext = sanitized.rsplit('.', 1) if '.' in sanitized else (sanitized, '')
         sanitized = name[:255-len(ext)-1] + ('.' + ext if ext else '')
     
-    return sanitized or 'unnamed' 
+    return sanitized or 'unnamed'
+
+
+def validate_email(email: str) -> bool:
+    """
+    Validate email address format.
+    
+    Args:
+        email: Email address to validate
+        
+    Returns:
+        bool: True if email is valid, False otherwise
+    """
+    if not isinstance(email, str) or not email:
+        return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
+
+def validate_password_strength(password: str, min_length: int = 8) -> bool:
+    """
+    Validate password strength.
+    Args:
+        password: Password string
+        min_length: Minimum length required
+    Returns:
+        bool: True if password is strong, False otherwise
+    """
+    if not isinstance(password, str) or len(password) < min_length:
+        return False
+    if not any(c.isupper() for c in password):
+        return False
+    if not any(c.islower() for c in password):
+        return False
+    if not any(c.isdigit() for c in password):
+        return False
+    return True 

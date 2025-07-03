@@ -20,7 +20,7 @@ except ImportError:
     DOCLING_AVAILABLE = False
     logging.warning("Docling not available. Install with: pip install docling")
 
-from core.config import settings
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ class DoclingProcessor:
                 'metadata': {}
             }
     
-    def _extract_docling_content(self, doc: DoclingDocument, filename: str) -> Dict[str, Any]:
+    def _extract_docling_content(self, doc: 'DoclingDocument', filename: str) -> Dict[str, Any]:
         """
         Extract content and metadata from Docling document.
         
@@ -205,7 +205,7 @@ class DoclingProcessor:
                 'metadata': {}
             }
     
-    def _create_chunks_from_docling(self, doc: DoclingDocument) -> List[Dict[str, Any]]:
+    def _create_chunks_from_docling(self, doc: 'DoclingDocument') -> List[Dict[str, Any]]:
         """
         Create chunks from Docling document with advanced features.
         

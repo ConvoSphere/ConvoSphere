@@ -69,7 +69,8 @@ services:
       dockerfile: docker/backend/Dockerfile
     container_name: chatassistant_backend
     environment:
-      - DATABASE_URL=postgresql://chatassistant:chatassistant_password@postgres:5433/chatassistant
+      - DEBUG=true
+      - DATABASE_URL=postgresql://chatassistant:chatassistant_password@postgres:5432/chatassistant
       - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=http://weaviate:8080
     volumes:

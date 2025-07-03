@@ -19,7 +19,8 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     verify_token,
-    get_current_user_id
+    get_current_user_id,
+    log_security_event
 )
 from app.models.user import User, UserRole
 from app.core.config import settings
@@ -83,6 +84,12 @@ async def login(
     
     if not user or not verify_password(user_credentials.password, user.hashed_password):
         logger.warning(f"Failed login attempt for email: {user_credentials.email}")
+        log_security_event(
+            event_type="USER_LOGIN_FAILED",
+            user_id=None,
+            description=f"Failed login attempt for {user_credentials.email}",
+            severity="warning"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -103,6 +110,13 @@ async def login(
     # Update last login
     user.last_login = "2024-01-01T00:00:00Z"  # TODO: Use proper datetime
     db.commit()
+    
+    log_security_event(
+        event_type="USER_LOGIN",
+        user_id=user.id,
+        description=f"User {user.email} logged in successfully",
+        severity="info"
+    )
     
     logger.info(f"User logged in successfully: {user.email}")
     
@@ -157,7 +171,6 @@ async def register(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         role=UserRole.USER,  # Default role
-        is_active=True,
         is_verified=False
     )
     
@@ -278,4 +291,12 @@ async def get_current_user_info(
         role=user.role.value,
         is_active=user.is_active,
         is_verified=user.is_verified
-    ) 
+    )
+
+# Example for permission denied:
+# log_security_event(
+#     event_type="PERMISSION_DENIED",
+#     user_id=user.id if user else None,
+#     description="Permission denied for endpoint X",
+#     severity="warning"
+# ) 

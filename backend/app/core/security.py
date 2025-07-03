@@ -12,6 +12,7 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
+from app.core.redis_client import get_redis
 
 from .config import settings
 
@@ -20,6 +21,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT token scheme
 security = HTTPBearer()
+
+BLACKLIST_PREFIX = "jwt_blacklist:"
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -223,14 +226,30 @@ def log_security_event(
     details: Optional[dict] = None
 ) -> None:
     """
-    Log a security event.
-    
-    Args:
-        event_type: Type of security event
-        user_id: User ID involved in the event
-        description: Event description
-        severity: Event severity level
-        details: Additional event details
+    Log a security event to the audit log table.
     """
-    # TODO: Implement audit logging
-    logger.info(f"Security event: {event_type} - {description}") 
+    from app.models.audit import AuditLog, AuditEventType, AuditSeverity
+    from app.core.database import get_db
+    db = next(get_db())
+    try:
+        log = AuditLog(
+            event_type=AuditEventType(event_type),
+            severity=AuditSeverity(severity),
+            user_id=user_id,
+            description=description,
+            details=details or {}
+        )
+        db.add(log)
+        db.commit()
+    except Exception as e:
+        logger.error(f"Failed to log security event: {e}")
+    finally:
+        db.close()
+
+# Example usage for audit logging:
+# log_security_event(
+#     event_type="USER_LOGIN",
+#     user_id=user.id,
+#     description="User logged in successfully",
+#     severity="info"
+# ) 

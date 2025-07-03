@@ -1,6 +1,6 @@
 # AI Assistant Platform Makefile
 
-.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check
+.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean
 
 # Default target
 help:
@@ -27,6 +27,13 @@ help:
 	@echo "Utilities:"
 	@echo "  clean          Clean up temporary files"
 	@echo "  help           Show this help message"
+	@echo ""
+	@echo "Documentation:"
+	@echo "  docs-install   Install documentation dependencies"
+	@echo "  docs-serve     Serve documentation"
+	@echo "  docs-build     Build documentation"
+	@echo "  docs-deploy    Deploy documentation"
+	@echo "  docs-clean     Clean documentation build files"
 
 # Development
 install:
@@ -143,4 +150,20 @@ setup:
 	@echo "Waiting for services to start..."
 	sleep 10
 	make migrate
-	@echo "Setup complete! Access the application at http://localhost:3000" 
+	@echo "Setup complete! Access the application at http://localhost:3000"
+
+# Documentation
+docs-install:
+	cd docs && pip install -r requirements-docs.txt
+
+docs-serve:
+	cd docs && mkdocs serve
+
+docs-build:
+	cd docs && mkdocs build
+
+docs-deploy:
+	cd docs && mkdocs gh-deploy
+
+docs-clean:
+	rm -rf docs/site/ 

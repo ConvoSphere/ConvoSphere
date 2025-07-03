@@ -21,12 +21,23 @@ from ....services.docling_processor import docling_processor
 from ....schemas.knowledge import (
     DocumentCreate,
     DocumentResponse,
-    DocumentListResponse,
+    DocumentList,
+    DocumentChunkResponse,
     SearchRequest,
     SearchResponse,
     DocumentProcessRequest,
-    DocumentList,
-    ProcessingOptions
+    ProcessingOptions,
+    ProcessingEngineInfo,
+    SupportedFormats,
+    DocumentReprocessRequest,
+    DocumentReprocessResponse,
+    DocumentUploadAdvanced,
+    DocumentChunkInfo,
+    DocumentProcessingResult,
+    DocumentStatistics,
+    SearchHistoryItem,
+    SearchHistoryResponse,
+    KnowledgeBaseStats
 )
 
 router = APIRouter()

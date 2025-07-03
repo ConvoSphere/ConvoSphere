@@ -16,6 +16,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from loguru import logger
 
 from app.core.config import settings
+from app.core.database import init_db, check_db_connection, get_db_info
+from app.core.redis_client import init_redis, close_redis, check_redis_connection, get_redis_info
+from app.core.weaviate_client import init_weaviate, close_weaviate, check_weaviate_connection, get_weaviate_info, create_schema_if_not_exists
 from app.api.v1.api import api_router
 
 
@@ -27,17 +30,48 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.environment}")
     logger.info(f"Debug mode: {settings.debug}")
     
-    # TODO: Initialize database connection
-    # TODO: Initialize Redis connection
-    # TODO: Initialize Weaviate connection
+    try:
+        # Initialize database
+        logger.info("Initializing database...")
+        init_db()
+        if not check_db_connection():
+            logger.error("Database connection failed")
+            raise RuntimeError("Database connection failed")
+        logger.info("Database initialized successfully")
+        
+        # Initialize Redis
+        logger.info("Initializing Redis...")
+        await init_redis()
+        if not await check_redis_connection():
+            logger.error("Redis connection failed")
+            raise RuntimeError("Redis connection failed")
+        logger.info("Redis initialized successfully")
+        
+        # Initialize Weaviate
+        logger.info("Initializing Weaviate...")
+        init_weaviate()
+        if not check_weaviate_connection():
+            logger.error("Weaviate connection failed")
+            raise RuntimeError("Weaviate connection failed")
+        create_schema_if_not_exists()
+        logger.info("Weaviate initialized successfully")
+        
+        logger.info("All services initialized successfully")
+        
+    except Exception as e:
+        logger.error(f"Failed to initialize services: {e}")
+        raise
     
     yield
     
     # Shutdown
     logger.info("Shutting down AI Assistant Platform...")
-    # TODO: Close database connections
-    # TODO: Close Redis connections
-    # TODO: Close Weaviate connections
+    try:
+        await close_redis()
+        close_weaviate()
+        logger.info("All services closed successfully")
+    except Exception as e:
+        logger.error(f"Error during shutdown: {e}")
 
 
 def create_application() -> FastAPI:

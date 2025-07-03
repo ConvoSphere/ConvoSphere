@@ -1,334 +1,282 @@
-# ChatAssistant Platform
+# AI Assistant Platform Documentation
 
-A comprehensive AI assistant platform with advanced document processing capabilities, built with Python, FastAPI, NiceGUI, and modern AI technologies.
+This directory contains the comprehensive documentation for the AI Assistant Platform, built with [MkDocs](https://www.mkdocs.org/) and the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme.
 
-## Features
+## 📚 Documentation Structure
 
-### Core Platform
-- **Multi-Assistant Support**: Create and manage multiple AI assistants with different personalities and capabilities
-- **Real-time Chat**: WebSocket-based real-time chat interface with streaming responses
-- **Tool Integration**: Extensible tool system with MCP (Model Context Protocol) support
-- **Knowledge Base**: Advanced document processing and semantic search with RAG capabilities
-- **User Management**: Role-based access control (RBAC) with JWT authentication
-- **Multilingual Support**: Internationalization (i18n) support for multiple languages
+```
+docs/
+├── mkdocs.yml              # MkDocs configuration
+├── index.md                # Homepage
+├── requirements-docs.txt   # Documentation dependencies
+├── stylesheets/            # Custom CSS styles
+│   └── extra.css
+├── javascripts/            # Custom JavaScript
+│   └── mathjax.js
+├── getting-started/        # Getting started guides
+├── architecture/           # System architecture
+├── development/            # Development guides
+├── api/                    # API documentation
+├── features/               # Feature documentation
+├── deployment/             # Deployment guides
+└── project/                # Project information
+```
 
-### Advanced Document Processing
-- **Docling Integration**: Advanced document processing with OCR, ASR, and vision models
-- **Multiple Processing Engines**: Support for traditional and Docling processing engines
-- **Intelligent Chunking**: Context-aware document chunking with metadata preservation
-- **Table & Figure Extraction**: Automatic extraction of tables, figures, and formulas
-- **Page Layout Understanding**: Advanced layout analysis for complex documents
-- **Audio Transcription**: Automatic speech recognition (ASR) for audio files
-- **Image Analysis**: Vision model integration for image content analysis
-
-### AI Capabilities
-- **LiteLLM Integration**: Unified interface for multiple LLM providers
-- **Semantic Search**: Vector-based search using Weaviate
-- **RAG (Retrieval-Augmented Generation)**: Enhanced responses with knowledge base context
-- **Streaming Responses**: Real-time streaming of AI responses
-- **Context Management**: Intelligent conversation context handling
-
-### Security & Performance
-- **JWT Authentication**: Secure token-based authentication
-- **Role-Based Access Control**: Granular permissions system
-- **Database Security**: SQLAlchemy with PostgreSQL
-- **API Rate Limiting**: Built-in rate limiting and throttling
-- **Error Handling**: Comprehensive error handling and logging
-
-## Technology Stack
-
-### Backend
-- **FastAPI**: Modern, fast web framework for building APIs
-- **SQLAlchemy**: SQL toolkit and ORM
-- **PostgreSQL**: Primary database
-- **Weaviate**: Vector database for semantic search
-- **LiteLLM**: Unified LLM interface
-- **Docling**: Advanced document processing
-- **Pydantic**: Data validation and settings management
-- **Alembic**: Database migrations
-
-### Frontend
-- **NiceGUI**: Modern Python web framework for building UIs
-- **WebSocket**: Real-time communication
-- **Tailwind CSS**: Utility-first CSS framework
-- **Internationalization**: Multi-language support
-
-### Infrastructure
-- **Docker**: Containerization
-- **Docker Compose**: Multi-container orchestration
-- **Nginx**: Reverse proxy and load balancer
-- **PostgreSQL**: Database container
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- Docker and Docker Compose
-- Git
+
+- Python 3.8+
+- pip
 
 ### Installation
 
-1. **Clone the repository**
+1. **Install documentation dependencies:**
    ```bash
-   git clone https://github.com/yourusername/chatassistant.git
-   cd chatassistant
+   cd docs
+   pip install -r requirements-docs.txt
    ```
 
-2. **Set up environment variables**
+2. **Serve documentation locally:**
    ```bash
-   cp env.example .env
-   # Edit .env with your configuration
+   mkdocs serve
    ```
 
-3. **Start with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
+3. **Open your browser:**
+   Navigate to http://127.0.0.1:8000
 
-4. **Access the application**
-   - Frontend: http://localhost:8080
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+### Using Makefile Commands
 
-### Manual Setup
-
-1. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   pip install -r frontend/requirements.txt
-   ```
-
-2. **Set up database**
-   ```bash
-   cd backend
-   alembic upgrade head
-   ```
-
-3. **Start services**
-   ```bash
-   # Terminal 1: Backend
-   cd backend
-   python main.py
-   
-   # Terminal 2: Frontend
-   cd frontend
-   python main.py
-   ```
-
-## Advanced Document Processing with Docling
-
-The platform includes advanced document processing capabilities powered by Docling:
-
-### Supported Formats
-- **Documents**: PDF, DOCX, TXT, MD, HTML
-- **Images**: JPG, PNG, TIFF, BMP
-- **Audio**: MP3, WAV, M4A, FLAC
-- **Video**: MP4, AVI, MOV (audio extraction)
-
-### Processing Features
-- **OCR (Optical Character Recognition)**: Extract text from scanned documents and images
-- **ASR (Automatic Speech Recognition)**: Transcribe audio files to text
-- **Vision Models**: Analyze image content and extract information
-- **Table Extraction**: Identify and extract structured data from tables
-- **Figure Recognition**: Detect and analyze figures, charts, and diagrams
-- **Formula Recognition**: Extract mathematical formulas and equations
-- **Page Layout Analysis**: Understand document structure and formatting
-
-### Usage
-
-#### Basic Upload
-```python
-# Simple document upload
-document = await knowledge_service.upload_document(file_data, metadata)
-```
-
-#### Advanced Upload with Docling
-```python
-# Advanced upload with specific processing options
-document = await knowledge_service.upload_document_advanced(
-    file_data,
-    metadata,
-    engine="docling",
-    processing_options={
-        "ocr": True,
-        "asr": True,
-        "vision": True,
-        "tables": True,
-        "figures": True
-    }
-)
-```
-
-#### Document Reprocessing
-```python
-# Reprocess document with different engine
-success = await knowledge_service.reprocess_document(
-    document_id,
-    engine="docling",
-    processing_options={"ocr": True, "tables": True}
-)
-```
-
-### API Endpoints
-
-#### Processing Engines
-- `GET /api/v1/knowledge/processing/engines` - Get available processing engines
-- `GET /api/v1/knowledge/processing/supported-formats` - Get supported formats
-
-#### Advanced Upload
-- `POST /api/v1/knowledge/documents/upload-advanced` - Upload with processing options
-- `POST /api/v1/knowledge/documents/{id}/reprocess` - Reprocess document
-
-## API Documentation
-
-### Authentication
-All API endpoints require JWT authentication. Include the token in the Authorization header:
-```
-Authorization: Bearer <your-jwt-token>
-```
-
-### Key Endpoints
-
-#### Authentication
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/refresh` - Refresh token
-
-#### Assistants
-- `GET /api/v1/assistants` - List assistants
-- `POST /api/v1/assistants` - Create assistant
-- `GET /api/v1/assistants/{id}` - Get assistant details
-
-#### Conversations
-- `GET /api/v1/conversations` - List conversations
-- `POST /api/v1/conversations` - Create conversation
-- `GET /api/v1/conversations/{id}/messages` - Get conversation messages
-
-#### Knowledge Base
-- `GET /api/v1/knowledge/documents` - List documents
-- `POST /api/v1/knowledge/documents/upload` - Upload document
-- `POST /api/v1/knowledge/documents/upload-advanced` - Advanced upload
-- `GET /api/v1/knowledge/search` - Search knowledge base
-
-#### Tools
-- `GET /api/v1/tools` - List available tools
-- `POST /api/v1/tools` - Create custom tool
-
-## Configuration
-
-### Environment Variables
+From the project root, you can use the following Makefile commands:
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost/chatassistant
+# Install documentation dependencies
+make docs-install
 
-# Security
-SECRET_KEY=your-secret-key
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+# Serve documentation locally
+make docs-serve
 
-# AI Services
-LITELLM_API_KEY=your-litellm-key
-DEFAULT_LLM_MODEL=gpt-3.5-turbo
-DEFAULT_EMBEDDING_MODEL=text-embedding-ada-002
+# Build documentation
+make docs-build
 
-# Weaviate
-WEAVIATE_URL=http://localhost:8080
-WEAVIATE_API_KEY=your-weaviate-key
+# Deploy to GitHub Pages
+make docs-deploy
 
-# Docling
-DOCLING_API_KEY=your-docling-key
-DOCLING_MODEL=docling-v2.39.0
-
-# File Storage
-UPLOAD_DIR=./uploads
-MAX_FILE_SIZE=10485760  # 10MB
+# Clean build files
+make docs-clean
 ```
 
-### Docker Configuration
+## 📖 Documentation Sections
 
-The platform includes Docker configurations for easy deployment:
+### Getting Started
+- **Quick Start**: Get up and running in minutes
+- **Installation**: Detailed installation instructions
+- **Configuration**: Environment and service setup
 
-- `docker-compose.yml` - Main orchestration file
-- `docker/backend/Dockerfile` - Backend container
-- `docker/frontend/Dockerfile` - Frontend container
-- `docker/nginx/` - Nginx configuration
-- `docker/postgres/` - Database initialization
+### Architecture
+- **Overview**: High-level system architecture
+- **Backend**: FastAPI backend design
+- **Frontend**: Frontend architecture (planned)
+- **Database**: Database design and schema
 
-## Development
+### Development
+- **Setup**: Development environment setup
+- **Testing**: Running tests and test coverage
+- **Contributing**: How to contribute to the project
+- **Code Style**: Coding standards and conventions
 
-### Project Structure
+### API Reference
+- **Overview**: API design principles
+- **Authentication**: Authentication and authorization
+- **Endpoints**: Complete API endpoint reference
+- **Models**: Data models and schemas
+
+### Features
+- **AI Integration**: AI provider integration details
+- **Internationalization**: Multi-language support
+- **Security**: Security features and best practices
+- **Tools**: Tool integration and execution
+
+### Deployment
+- **Docker**: Containerized deployment
+- **Production**: Production deployment guide
+- **Monitoring**: Monitoring and observability
+
+### Project
+- **Status**: Current project status and progress
+- **Roadmap**: Development roadmap and timeline
+- **Changelog**: Version history and changes
+
+## 🎨 Customization
+
+### Styling
+
+Custom styles are defined in `stylesheets/extra.css`:
+
+- Custom color scheme
+- Feature cards
+- Status badges
+- Timeline styling
+- Responsive design
+- Dark mode support
+
+### JavaScript
+
+Custom JavaScript functionality in `javascripts/mathjax.js`:
+
+- MathJax configuration for mathematical expressions
+- Custom initialization scripts
+
+### Configuration
+
+The main configuration is in `mkdocs.yml`:
+
+- Site metadata
+- Theme configuration
+- Navigation structure
+- Markdown extensions
+- Plugins
+
+## 🔧 Development
+
+### Adding New Pages
+
+1. Create a new Markdown file in the appropriate directory
+2. Add the page to the navigation in `mkdocs.yml`
+3. Follow the existing documentation style
+
+### Styling Guidelines
+
+- Use consistent heading hierarchy (H1 → H2 → H3)
+- Include code examples with syntax highlighting
+- Use admonitions for important information
+- Add links to related documentation
+- Include screenshots for UI elements
+
+### Code Examples
+
+Use fenced code blocks with language specification:
+
+```python
+def example_function():
+    """Example function with docstring."""
+    return "Hello, World!"
 ```
-chatassistant/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── api/            # API endpoints
-│   │   │   ├── core/           # Core configuration
-│   │   │   ├── models/         # Database models
-│   │   │   ├── services/       # Business logic
-│   │   │   ├── schemas/        # Pydantic schemas
-│   │   │   └── tools/          # Tool implementations
-│   │   ├── alembic/            # Database migrations
-│   │   └── tests/              # Backend tests
-│   ├── frontend/               # NiceGUI frontend
-│   │   ├── components/         # UI components
-│   │   ├── pages/             # Page implementations
-│   │   ├── services/          # Frontend services
-│   │   └── i18n/              # Internationalization
-│   ├── docker/                # Docker configurations
-│   └── docs/                  # Documentation
-└── scripts/               # Utility scripts
-```
 
-### Running Tests
+### Admonitions
+
+Use admonitions for important information:
+
+!!! info "Information"
+    This is an informational note.
+
+!!! warning "Warning"
+    This is a warning message.
+
+!!! danger "Danger"
+    This is a danger message.
+
+!!! success "Success"
+    This is a success message.
+
+## 📦 Building and Deployment
+
+### Local Build
+
 ```bash
-# Backend tests
-cd backend
-pytest
+# Build the documentation
+mkdocs build
 
-# Frontend tests (if implemented)
-cd frontend
-pytest
+# The built site will be in the `site/` directory
 ```
 
-### Code Quality
+### GitHub Pages Deployment
+
 ```bash
-# Format code
-black backend/ frontend/
+# Deploy to GitHub Pages
+mkdocs gh-deploy
 
-# Lint code
-flake8 backend/ frontend/
-
-# Type checking
-mypy backend/ frontend/
+# This will build and deploy to the `gh-pages` branch
 ```
 
-## Contributing
+### Custom Domain
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+To use a custom domain:
 
-## License
+1. Add the domain to `mkdocs.yml`:
+   ```yaml
+   site_url: https://your-domain.com
+   ```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+2. Create a `CNAME` file in the `docs/` directory with your domain
 
-## Support
+3. Deploy with `mkdocs gh-deploy`
 
-For support and questions:
-- Create an issue on GitHub
-- Check the documentation
-- Review the API docs at `/docs`
+## 🔍 Search and Navigation
 
-## Roadmap
+### Search Features
 
-- [ ] Enhanced MCP tool support
-- [ ] Advanced analytics and reporting
-- [ ] Multi-tenant architecture
-- [ ] Advanced caching strategies
-- [ ] Performance optimizations
-- [ ] Additional AI model integrations
-- [ ] Mobile application
-- [ ] Advanced workflow automation 
+- Full-text search across all pages
+- Search suggestions
+- Search result highlighting
+- Keyboard shortcuts (Ctrl+K)
+
+### Navigation
+
+- Hierarchical navigation structure
+- Breadcrumb navigation
+- Previous/Next page navigation
+- Table of contents for each page
+
+## 📱 Responsive Design
+
+The documentation is fully responsive and works on:
+
+- Desktop computers
+- Tablets
+- Mobile phones
+- Print media
+
+## 🌙 Dark Mode
+
+The documentation supports both light and dark modes:
+
+- Automatic detection based on system preferences
+- Manual toggle in the header
+- Consistent styling across both themes
+
+## 🔗 External Links
+
+- [MkDocs Documentation](https://www.mkdocs.org/)
+- [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
+- [PyMdown Extensions](https://facelessuser.github.io/pymdown-extensions/)
+
+## 🤝 Contributing to Documentation
+
+We welcome contributions to improve the documentation:
+
+1. **Report Issues**: Create an issue for documentation problems
+2. **Suggest Improvements**: Propose new sections or improvements
+3. **Submit Changes**: Create pull requests with documentation updates
+4. **Review Changes**: Help review documentation pull requests
+
+### Documentation Standards
+
+- Write clear, concise content
+- Use proper grammar and spelling
+- Include code examples where appropriate
+- Keep information up to date
+- Follow the existing style guide
+
+## 📄 License
+
+The documentation is licensed under the same license as the project (MIT License).
+
+---
+
+For questions about the documentation, please:
+
+- Check the [MkDocs documentation](https://www.mkdocs.org/)
+- Review existing documentation for examples
+- Create an issue for specific problems
+- Contact the development team 
