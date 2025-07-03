@@ -531,6 +531,45 @@ The platform consists of several main areas:
 - **Notification**: Advance notice of maintenance
 - **Status Updates**: Real-time maintenance status
 
+# Light & Dark Mode Design System (ConvoSphere)
+
+ConvoSphere supports both light and dark mode for optimal accessibility and user experience. The design system is based on the following principles:
+
+## Color Palettes
+
+### Light Mode
+- **Background:** White Smoke (#F7F9FB)
+- **Primary:** Deep Indigo (#23224A)
+- **Secondary:** Soft Azure (#5BC6E8)
+- **Accent:** Accent Lime (#B6E74B)
+- **Surface:** Warm Sand (#F5E9DD)
+- **Text:** Slate Grey (#23224A, #7A869A for secondary text)
+
+### Dark Mode
+- **Background:** Deep Indigo (#23224A)
+- **Secondary Background:** #1A1A33
+- **Primary:** Soft Azure (#5BC6E8)
+- **Accent:** Accent Lime (#B6E74B)
+- **Surface:** #2D2D4D
+- **Text:** White Smoke (#F7F9FB) for main text, Soft Azure or Slate Grey for secondary info
+
+## Design Principles
+- Color values are harmonized, not simply inverted
+- Accent colors remain consistent, with possible saturation adjustment in dark mode
+- Contrast is optimized for accessibility (WCAG AA/AAA)
+- Surfaces are layered in dark mode for depth
+- Transparency is used subtly for overlays and hovers
+- Icons and illustrations are adaptive and theme-aware
+
+## Example: Chat Window
+- In light mode, user bubbles use Soft Azure, AI bubbles use Warm Sand
+- In dark mode, user bubbles use Soft Azure (darkened), AI bubbles use #2D2D4D
+- Accent Lime is used for active elements in both modes
+
+## Technical Note
+- Theme switching is implemented via CSS variables and a theme switcher
+- All UI components use these variables for consistent theming
+
 ---
 
 *This user manual provides comprehensive guidance for using the AI Assistant Platform. For technical documentation, please refer to the developer guides.* 

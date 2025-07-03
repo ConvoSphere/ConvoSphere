@@ -8,7 +8,6 @@ and error handling.
 import asyncio
 from typing import Optional
 from nicegui import ui
-from nicegui.events import ValueChangeEventArguments
 
 from services.auth_service import auth_service
 from services.api import api_client
@@ -92,33 +91,33 @@ class RegisterPage:
                 
                 # Divider
                 with ui.element("div").classes("my-6"):
-                    ui.element("div").classes("relative"):
-                        ui.element("div").classes("absolute inset-0 flex items-center"):
+                    with ui.element("div").classes("relative"):
+                        with ui.element("div").classes("absolute inset-0 flex items-center"):
                             ui.element("div").classes("w-full border-t border-gray-300")
-                        ui.element("div").classes("relative flex justify-center text-sm"):
-                            ui.element("span").classes("px-2 bg-white text-gray-500").text("oder")
+                        with ui.element("div").classes("relative flex justify-center text-sm"):
+                            ui.label("oder").classes("px-2 bg-white text-gray-500")
                 
                 # Login link
                 with ui.element("div").classes("text-center"):
                     ui.html("<span style='color: #6b7280;'>Bereits ein Konto? </span>")
                     ui.link("Jetzt anmelden", "#login").classes("text-green-600 hover:text-green-500 font-medium")
     
-    def on_username_change(self, e: ValueChangeEventArguments):
+    def on_username_change(self, e):
         """Handle username input change."""
         self.username = e.value
         self.clear_error()
     
-    def on_email_change(self, e: ValueChangeEventArguments):
+    def on_email_change(self, e):
         """Handle email input change."""
         self.email = e.value
         self.clear_error()
     
-    def on_password_change(self, e: ValueChangeEventArguments):
+    def on_password_change(self, e):
         """Handle password input change."""
         self.password = e.value
         self.clear_error()
     
-    def on_confirm_password_change(self, e: ValueChangeEventArguments):
+    def on_confirm_password_change(self, e):
         """Handle confirm password input change."""
         self.confirm_password = e.value
         self.clear_error()

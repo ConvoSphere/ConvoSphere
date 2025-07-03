@@ -1,9 +1,11 @@
 """
-Sidebar component for the AI Assistant Platform.
+Sidebar component for navigation and menu items.
 
-This module provides the main navigation sidebar with menu items and user controls.
+This module provides a reusable sidebar component with navigation
+links and collapsible functionality.
 """
 
+from typing import Optional, Callable
 from nicegui import ui
 from pages import (
     create_dashboard_page,
@@ -17,81 +19,136 @@ from pages import (
 from pages.mcp_tools import create_page as create_mcp_tools
 
 
-class Sidebar:
-    """Sidebar component with navigation menu."""
+def create_sidebar(
+    collapsed: bool = False,
+    current_page: str = "",
+    on_navigation: Optional[Callable] = None
+) -> ui.element:
+    """
+    Create a sidebar component.
     
-    def __init__(self, navigate_callback):
-        """Initialize the sidebar component."""
-        self.navigate_callback = navigate_callback
-        self.current_page = "dashboard"
-        self.setup_sidebar()
-    
-    def setup_sidebar(self):
-        """Setup the sidebar layout and navigation."""
-        # Logo and title
-        with ui.element("div").classes("p-6 border-b border-white border-opacity-20"):
-            ui.html("<div style='display: flex; align-items: center; gap-3;'>")
-            ui.html("<div style='width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;'>")
-            ui.html("<span style='color: white; font-size: 20px; font-weight: bold;'>AI</span>")
-            ui.html("</div>")
-            ui.html("<div>")
-            ui.html("<h2 style='margin: 0; font-size: 18px; font-weight: 700; color: white;'>Assistant</h2>")
-            ui.html("<p style='margin: 0; font-size: 12px; color: rgba(255, 255, 255, 0.7);'>Platform</p>")
-            ui.html("</div>")
-            ui.html("</div>")
+    Args:
+        collapsed: Whether the sidebar is collapsed
+        current_page: Current active page
+        on_navigation: Callback for navigation
         
-        # Navigation menu
-        with ui.element("div").classes("flex-1 p-4"):
-            nav_items = [
-                {"id": "dashboard", "label": "Dashboard", "icon": "📊", "description": "Übersicht und Statistiken"},
-                {"id": "assistants", "label": "Assistenten", "icon": "🤖", "description": "AI-Assistenten verwalten"},
-                {"id": "chat", "label": "Chat", "icon": "💬", "description": "Chat mit AI-Assistenten"},
-                {"id": "conversations", "label": "Gespräche", "icon": "💬", "description": "Chat-Verlauf und Nachrichten"},
-                {"id": "tools", "label": "Tools", "icon": "🛠️", "description": "Tool-Bibliothek und Konfiguration"},
-                {"id": "mcp_tools", "label": "MCP Tools", "icon": "🔌", "description": "MCP Server und Tools verwalten"},
-                {"id": "analytics", "label": "Analytics", "icon": "📈", "description": "Nutzungsstatistiken und Berichte"},
-                {"id": "settings", "label": "Einstellungen", "icon": "⚙️", "description": "System- und Benutzereinstellungen"},
-                {"id": "knowledge_base", "label": "Knowledge Base", "icon": "📚", "description": "Knowledge Base"},
-            ]
+    Returns:
+        ui.element: The sidebar component
+    """
+    sidebar_class = "w-16" if collapsed else "w-64"
+    
+    with ui.element("aside").classes(f"{sidebar_class} bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 transition-all duration-300") as sidebar:
+        with ui.element("div").classes("h-full flex flex-col"):
+            # Navigation items
+            with ui.element("nav").classes("flex-1 px-2 py-4 space-y-2"):
+                _create_nav_items(collapsed, current_page, on_navigation)
             
-            for item in nav_items:
-                is_active = self.current_page == item["id"]
-                with ui.element("div").classes(f"nav-item {'active' if is_active else ''}"):
-                    ui.html(f"<div style='display: flex; align-items: center; gap-3; cursor: pointer;' onclick='window.navigateToPage(\"{item['id']}\")'>")
-                    ui.html(f"<span style='font-size: 18px;'>{item['icon']}</span>")
-                    ui.html(f"<div>")
-                    ui.html(f"<p style='margin: 0; font-weight: 600;'>{item['label']}</p>")
-                    ui.html(f"<p style='margin: 0; font-size: 12px; opacity: 0.7;'>{item['description']}</p>")
-                    ui.html(f"</div>")
-                    ui.html(f"</div>")
+            # Bottom section
+            with ui.element("div").classes("p-2 border-t border-gray-200 dark:border-gray-700"):
+                _create_bottom_section(collapsed)
+    
+    return sidebar
+
+
+def _create_nav_items(collapsed: bool, current_page: str, on_navigation: Optional[Callable]):
+    """Create navigation menu items."""
+    nav_items = [
+        {
+            "id": "dashboard",
+            "label": "Dashboard",
+            "icon": "dashboard",
+            "href": "#dashboard"
+        },
+        {
+            "id": "chat",
+            "label": "Chat",
+            "icon": "chat",
+            "href": "#chat"
+        },
+        {
+            "id": "conversations",
+            "label": "Konversationen",
+            "icon": "forum",
+            "href": "#conversations"
+        },
+        {
+            "id": "assistants",
+            "label": "Assistenten",
+            "icon": "smart_toy",
+            "href": "#assistants"
+        },
+        {
+            "id": "tools",
+            "label": "Tools",
+            "icon": "build",
+            "href": "#tools"
+        },
+        {
+            "id": "knowledge",
+            "label": "Wissensdatenbank",
+            "icon": "library_books",
+            "href": "#knowledge"
+        },
+        {
+            "id": "mcp",
+            "label": "MCP Tools",
+            "icon": "extension",
+            "href": "#mcp"
+        }
+    ]
+    
+    for item in nav_items:
+        is_active = current_page == item["id"]
+        _create_nav_item(item, collapsed, is_active, on_navigation)
+
+
+def _create_nav_item(item: dict, collapsed: bool, is_active: bool, on_navigation: Optional[Callable]):
+    """Create a single navigation item."""
+    active_class = "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300" if is_active else "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+    
+    with ui.element("div").classes(f"group"):
+        with ui.element("a").classes(f"flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors {active_class}") as nav_link:
+            # Icon
+            ui.icon(item["icon"]).classes("mr-3 h-5 w-5")
+            
+            # Label (hidden when collapsed)
+            if not collapsed:
+                ui.label(item["label"])
+            
+            # Tooltip for collapsed state
+            if collapsed:
+                nav_link.tooltip(item["label"])
         
-        # Bottom section - System status and quick actions
-        with ui.element("div").classes("p-4 border-t border-white border-opacity-20"):
-            # System status
-            with ui.element("div").classes("mb-4"):
-                ui.html("<p style='margin: 0 0 8px 0; font-size: 12px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.5px;'>System Status</p>")
-                ui.html("<div style='display: flex; align-items: center; gap-2;'>")
-                ui.html("<span class='status-indicator status-online'></span>")
-                ui.html("<span style='font-size: 14px; color: white;'>Alle Systeme online</span>")
-                ui.html("</div>")
+        # Click handler
+        if on_navigation:
+            nav_link.on("click", lambda: on_navigation(item["id"]))
+
+
+def _create_bottom_section(collapsed: bool):
+    """Create the bottom section of the sidebar."""
+    # User info (only shown when not collapsed)
+    if not collapsed:
+        with ui.element("div").classes("flex items-center px-2 py-2"):
+            # User avatar
+            ui.element("div").classes("h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium").text = "U"
             
-            # Quick actions
-            with ui.element("div"):
-                ui.html("<p style='margin: 0 0 8px 0; font-size: 12px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.5px;'>Schnellaktionen</p>")
-                
-                with ui.column().classes("gap-2"):
-                    ui.button("Neuer Assistent", on_click=self.create_assistant).classes("w-full bg-white bg-opacity-20 border border-white border-opacity-30 text-white hover:bg-opacity-30 text-sm")
-                    ui.button("Gespräch starten", on_click=self.start_conversation).classes("w-full bg-white bg-opacity-20 border border-white border-opacity-30 text-white hover:bg-opacity-30 text-sm")
+            # User info
+            with ui.element("div").classes("ml-3"):
+                ui.label("Benutzer").classes("text-sm font-medium text-gray-700 dark:text-gray-300")
+                ui.label("user@example.com").classes("text-xs text-gray-500 dark:text-gray-400")
     
-    def create_assistant(self):
-        """Handle create assistant action."""
-        ui.notify("Assistenten-Erstellung wird geöffnet...", type="info")
-        self.navigate_callback("assistants")
-    
-    def start_conversation(self):
-        """Handle start conversation action."""
-        ui.notify("Gesprächsauswahl wird geöffnet...", type="info")
-        self.navigate_callback("conversations")
+    # Collapse/expand button
+    with ui.element("div").classes("mt-2"):
+        ui.button(
+            icon="chevron_left" if not collapsed else "chevron_right",
+            on_click=lambda: _handle_sidebar_toggle()
+        ).classes("w-full p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md")
+
+
+def _handle_sidebar_toggle():
+    """Handle sidebar toggle."""
+    # This would need to be implemented with proper state management
+    ui.notify("Sidebar-Toggle wird implementiert", type="info")
 
 
 # Navigation routes

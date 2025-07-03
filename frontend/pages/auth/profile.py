@@ -7,7 +7,6 @@ This module provides user profile management and settings.
 import asyncio
 from typing import Optional, Dict, Any
 from nicegui import ui
-from nicegui.events import ValueChangeEventArguments
 
 from services.auth_service import auth_service
 from services.api import api_client
@@ -33,7 +32,7 @@ class ProfilePage:
         self.success_message = ""
         
         self.create_profile_page()
-        self.load_user_data()
+        # self.load_user_data()
     
     def create_profile_page(self):
         """Create the profile page layout."""
@@ -88,7 +87,6 @@ class ProfilePage:
                             ui.label("Über mich").classes("block text-sm font-medium text-gray-700 mb-2")
                             self.bio_input = ui.textarea(
                                 placeholder="Erzähle etwas über dich...",
-                                rows=3,
                                 on_change=self.on_bio_change
                             ).classes("w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent")
                         
@@ -115,7 +113,6 @@ class ProfilePage:
                                     ("de", "Deutsch"),
                                     ("en", "English")
                                 ],
-                                value="de",
                                 on_change=self.on_language_change
                             ).classes("w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent")
                         
@@ -128,7 +125,6 @@ class ProfilePage:
                                     ("dark", "Dunkel"),
                                     ("auto", "Automatisch")
                                 ],
-                                value="light",
                                 on_change=self.on_theme_change
                             ).classes("w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent")
                         
@@ -156,37 +152,37 @@ class ProfilePage:
             self.error_label = ui.label("").classes("text-red-600 text-sm hidden mt-4")
             self.success_label = ui.label("").classes("text-green-600 text-sm hidden mt-4")
     
-    def on_username_change(self, e: ValueChangeEventArguments):
+    def on_username_change(self, e):
         """Handle username input change."""
         self.user_data["username"] = e.value
         self.clear_messages()
     
-    def on_email_change(self, e: ValueChangeEventArguments):
+    def on_email_change(self, e):
         """Handle email input change."""
         self.user_data["email"] = e.value
         self.clear_messages()
     
-    def on_first_name_change(self, e: ValueChangeEventArguments):
+    def on_first_name_change(self, e):
         """Handle first name input change."""
         self.user_data["first_name"] = e.value
         self.clear_messages()
     
-    def on_last_name_change(self, e: ValueChangeEventArguments):
+    def on_last_name_change(self, e):
         """Handle last name input change."""
         self.user_data["last_name"] = e.value
         self.clear_messages()
     
-    def on_bio_change(self, e: ValueChangeEventArguments):
+    def on_bio_change(self, e):
         """Handle bio input change."""
         self.user_data["bio"] = e.value
         self.clear_messages()
     
-    def on_language_change(self, e: ValueChangeEventArguments):
+    def on_language_change(self, e):
         """Handle language selection change."""
         self.user_data["language"] = e.value
         self.clear_messages()
     
-    def on_theme_change(self, e: ValueChangeEventArguments):
+    def on_theme_change(self, e):
         """Handle theme selection change."""
         self.user_data["theme"] = e.value
         self.clear_messages()

@@ -43,7 +43,8 @@ class DashboardPage:
         self.error_component = None
         
         self.create_dashboard()
-        self.load_dashboard_data()
+        # Defer async call to avoid blocking
+        ui.timer(0.1, lambda: asyncio.create_task(self.load_dashboard_data()))
     
     def create_dashboard(self):
         """Create the dashboard UI."""
@@ -56,7 +57,7 @@ class DashboardPage:
                     ui.button(
                         "Aktualisieren",
                         icon="refresh",
-                        on_click=self.load_dashboard_data
+                        on_click=lambda: asyncio.create_task(self.load_dashboard_data())
                     ).classes("bg-blue-600 text-white")
                     
                     ui.button(

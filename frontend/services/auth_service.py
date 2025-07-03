@@ -1,51 +1,23 @@
 """
-Authentication service for the AI Assistant Platform.
+Authentication service for user login, registration, and session management.
 
-This module provides authentication functionality including login,
-registration, and token management.
+This module provides authentication functionality using the API client
+with proper error handling and session management.
 """
 
 import asyncio
 from typing import Optional, Dict, Any
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from nicegui import app
+from nicegui import ui
 
-from .api import api_client
-
-
-@dataclass
-class User:
-    """User data model."""
-    id: str
-    username: str
-    email: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    display_name: Optional[str] = None
-    role: str = "user"
-    is_active: bool = True
-    is_verified: bool = False
-    created_at: Optional[datetime] = None
-
-
-@dataclass
-class AuthToken:
-    """Authentication token data model."""
-    access_token: str
-    refresh_token: str
-    token_type: str
-    expires_in: int
-    expires_at: datetime
+from services.api_client import api_client
 
 
 class AuthService:
-    """Authentication service."""
+    """Authentication service for user management."""
     
     def __init__(self):
         """Initialize the authentication service."""
-        self.current_user: Optional[User] = None
-        self.token: Optional[AuthToken] = None
+        self.current_user: Optional[Dict[str, Any]] = None
         self.is_authenticated = False
     
     async def login(self, email: str, password: str) -> bool:
@@ -60,48 +32,34 @@ class AuthService:
             bool: True if login successful, False otherwise
         """
         try:
+            # Validate input
+            if not email or not password:
+                return False
+            
+            # Make API request
             response = await api_client.login(email, password)
             
-            if response.success and response.data:
-                # Extract token data
-                token_data = response.data
-                self.token = AuthToken(
-                    access_token=token_data["access_token"],
-                    refresh_token=token_data["refresh_token"],
-                    token_type=token_data["token_type"],
-                    expires_in=token_data["expires_in"],
-                    expires_at=datetime.now() + timedelta(seconds=token_data["expires_in"])
-                )
+            if response.get("success"):
+                # Store authentication token
+                token = response.get("access_token")
+                if token:
+                    api_client.set_auth_token(token)
                 
-                # Set token in API client
-                api_client.set_token(self.token.access_token)
-                
-                # Get user data
-                await self.get_current_user()
-                
-                self.is_authenticated = True
-                
-                # Store in app storage
-                app.storage.user.update({
-                    "token": self.token.access_token,
-                    "user": {
-                        "id": self.current_user.id,
-                        "email": self.current_user.email,
-                        "username": self.current_user.username,
-                        "first_name": self.current_user.first_name,
-                        "last_name": self.current_user.last_name,
-                        "role": self.current_user.role,
-                        "is_active": self.current_user.is_active,
-                        "is_verified": self.current_user.is_verified
-                    }
-                })
+                # Store user information
+                user_data = response.get("user")
+                if user_data:
+                    self.current_user = user_data
+                    self.is_authenticated = True
                 
                 return True
             else:
+                # Handle login error
+                error_message = response.get("error", "Login failed")
+                ui.notify(error_message, type="negative")
                 return False
                 
         except Exception as e:
-            print(f"Login error: {e}")
+            ui.notify(f"Login error: {str(e)}", type="negative")
             return False
     
     async def register(self, user_data: Dict[str, Any]) -> bool:
@@ -115,43 +73,27 @@ class AuthService:
             bool: True if registration successful, False otherwise
         """
         try:
-            response = await api_client.register(user_data)
-            return response.success
-        except Exception as e:
-            print(f"Registration error: {e}")
-            return False
-    
-    async def get_current_user(self) -> Optional[User]:
-        """
-        Get current authenticated user.
-        
-        Returns:
-            User: Current user data or None if not authenticated
-        """
-        try:
-            response = await api_client.get_current_user()
+            # Validate required fields
+            required_fields = ["email", "username", "password", "first_name", "last_name"]
+            for field in required_fields:
+                if not user_data.get(field):
+                    ui.notify(f"Field '{field}' is required", type="negative")
+                    return False
             
-            if response.success and response.data:
-                user_data = response.data
-                self.current_user = User(
-                    id=user_data["id"],
-                    username=user_data["username"],
-                    email=user_data["email"],
-                    first_name=user_data.get("first_name"),
-                    last_name=user_data.get("last_name"),
-                    display_name=user_data.get("display_name"),
-                    role=user_data.get("role", "user"),
-                    is_active=user_data.get("is_active", True),
-                    is_verified=user_data.get("is_verified", False),
-                    created_at=datetime.fromisoformat(user_data["created_at"]) if user_data.get("created_at") else None
-                )
-                return self.current_user
+            # Make API request
+            response = await api_client.register(user_data)
+            
+            if response.get("success"):
+                return True
             else:
-                return None
+                # Handle registration error
+                error_message = response.get("error", "Registration failed")
+                ui.notify(error_message, type="negative")
+                return False
                 
         except Exception as e:
-            print(f"Get current user error: {e}")
-            return None
+            ui.notify(f"Registration error: {str(e)}", type="negative")
+            return False
     
     async def logout(self) -> bool:
         """
@@ -161,137 +103,146 @@ class AuthService:
             bool: True if logout successful, False otherwise
         """
         try:
+            # Make API request
             response = await api_client.logout()
             
             # Clear local state regardless of API response
             self.current_user = None
-            self.token = None
             self.is_authenticated = False
-            api_client.clear_token()
+            api_client.clear_auth_token()
             
-            # Clear app storage
-            app.storage.user.clear()
+            return True
             
-            return response.success
         except Exception as e:
-            print(f"Logout error: {e}")
             # Clear local state even if API call fails
             self.current_user = None
-            self.token = None
             self.is_authenticated = False
-            api_client.clear_token()
-            app.storage.user.clear()
-            return True
-    
-    def is_token_expired(self) -> bool:
-        """
-        Check if current token is expired.
-        
-        Returns:
-            bool: True if token is expired, False otherwise
-        """
-        if not self.token:
-            return True
-        
-        return datetime.now() >= self.token.expires_at
-    
-    async def refresh_token(self) -> bool:
-        """
-        Refresh authentication token.
-        
-        Returns:
-            bool: True if refresh successful, False otherwise
-        """
-        if not self.token:
-            return False
-        
-        try:
-            # TODO: Implement refresh token endpoint
-            # response = await api_client.refresh_token(self.token.refresh_token)
+            api_client.clear_auth_token()
             
-            # For now, just return False to force re-login
-            return False
-                
-        except Exception as e:
-            print(f"Token refresh error: {e}")
+            ui.notify(f"Logout error: {str(e)}", type="warning")
             return False
     
-    def get_user_display_name(self) -> str:
+    async def get_current_user(self) -> Optional[Dict[str, Any]]:
         """
-        Get user display name.
+        Get current user information.
         
         Returns:
-            str: User display name
+            Dict containing user information or None if not authenticated
         """
-        if not self.current_user:
-            return "Guest"
-        
-        if self.current_user.display_name:
-            return self.current_user.display_name
-        
-        if self.current_user.first_name and self.current_user.last_name:
-            return f"{self.current_user.first_name} {self.current_user.last_name}"
-        
-        return self.current_user.username
+        try:
+            if not self.is_authenticated:
+                return None
+            
+            response = await api_client.get_current_user()
+            
+            if response.get("success"):
+                user_data = response.get("user")
+                if user_data:
+                    self.current_user = user_data
+                    return user_data
+            
+            return None
+            
+        except Exception as e:
+            ui.notify(f"Error fetching user data: {str(e)}", type="negative")
+            return None
     
-    def has_role(self, role: str) -> bool:
+    def is_user_authenticated(self) -> bool:
         """
-        Check if user has specific role.
+        Check if user is currently authenticated.
+        
+        Returns:
+            bool: True if user is authenticated, False otherwise
+        """
+        return self.is_authenticated and self.current_user is not None
+    
+    def get_user_info(self) -> Optional[Dict[str, Any]]:
+        """
+        Get current user information from local state.
+        
+        Returns:
+            Dict containing user information or None if not authenticated
+        """
+        return self.current_user if self.is_authenticated else None
+    
+    async def refresh_session(self) -> bool:
+        """
+        Refresh user session.
+        
+        Returns:
+            bool: True if session refresh successful, False otherwise
+        """
+        try:
+            if not self.is_authenticated:
+                return False
+            
+            user_data = await self.get_current_user()
+            return user_data is not None
+            
+        except Exception as e:
+            ui.notify(f"Session refresh error: {str(e)}", type="negative")
+            return False
+    
+    def validate_email(self, email: str) -> bool:
+        """
+        Validate email format.
         
         Args:
-            role: Role to check
+            email: Email to validate
             
         Returns:
-            bool: True if user has role
+            bool: True if email is valid, False otherwise
         """
-        if not self.current_user:
-            return False
-        
-        return self.current_user.role == role
+        import re
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(pattern, email) is not None
     
-    def is_admin(self) -> bool:
+    def validate_password(self, password: str) -> tuple[bool, str]:
         """
-        Check if user is admin.
+        Validate password strength.
         
+        Args:
+            password: Password to validate
+            
         Returns:
-            bool: True if user is admin
+            tuple: (is_valid, error_message)
         """
-        return self.has_role("admin")
+        if len(password) < 8:
+            return False, "Password must be at least 8 characters long"
+        
+        if not any(c.isupper() for c in password):
+            return False, "Password must contain at least one uppercase letter"
+        
+        if not any(c.islower() for c in password):
+            return False, "Password must contain at least one lowercase letter"
+        
+        if not any(c.isdigit() for c in password):
+            return False, "Password must contain at least one number"
+        
+        return True, ""
     
-    def load_from_storage(self) -> bool:
+    def validate_username(self, username: str) -> tuple[bool, str]:
         """
-        Load authentication state from storage.
+        Validate username format.
         
+        Args:
+            username: Username to validate
+            
         Returns:
-            bool: True if loaded successfully
+            tuple: (is_valid, error_message)
         """
-        try:
-            user_data = app.storage.user.get("user")
-            token = app.storage.user.get("token")
-            
-            if user_data and token:
-                # Set token in API client
-                api_client.set_token(token)
-                
-                # Create user object
-                self.current_user = User(
-                    id=user_data["id"],
-                    email=user_data["email"],
-                    username=user_data["username"],
-                    first_name=user_data.get("first_name"),
-                    last_name=user_data.get("last_name"),
-                    display_name=user_data.get("display_name"),
-                    role=user_data["role"],
-                    is_active=user_data["is_active"],
-                    is_verified=user_data["is_verified"]
-                )
-                
-                self.is_authenticated = True
-                return True
-            
-            return False
-        except Exception:
-            return False
+        if len(username) < 3:
+            return False, "Username must be at least 3 characters long"
+        
+        if len(username) > 30:
+            return False, "Username must be less than 30 characters"
+        
+        import re
+        pattern = r'^[a-zA-Z0-9_-]+$'
+        if not re.match(pattern, username):
+            return False, "Username can only contain letters, numbers, underscores, and hyphens"
+        
+        return True, ""
 
 
 # Global auth service instance

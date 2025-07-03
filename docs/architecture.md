@@ -413,6 +413,65 @@ The data layer consists of multiple specialized databases and storage systems op
 4. **Alerting**: Proactive monitoring and alerting
 5. **Dashboards**: Real-time monitoring dashboards
 
+# ConvoSphere Design System: Light & Dark Mode
+
+## Color Palettes
+
+### Light Mode
+- **Background:** White Smoke (#F7F9FB)
+- **Primary:** Deep Indigo (#23224A)
+- **Secondary:** Soft Azure (#5BC6E8)
+- **Accent:** Accent Lime (#B6E74B)
+- **Surface:** Warm Sand (#F5E9DD)
+- **Text:** Slate Grey (#23224A, #7A869A for secondary text)
+
+### Dark Mode
+- **Background:** Deep Indigo (#23224A)
+- **Secondary Background:** #1A1A33
+- **Primary:** Soft Azure (#5BC6E8)
+- **Accent:** Accent Lime (#B6E74B)
+- **Surface:** #2D2D4D
+- **Text:** White Smoke (#F7F9FB) for main text, Soft Azure or Slate Grey for secondary info
+- **Shadow/Hover:** Soft Azure with reduced opacity
+
+## Design Principles for Both Modes
+- **Adjust color values, do not invert:**
+  - Use harmonious equivalents instead of inversion (e.g., darken or omit Warm Sand in dark mode)
+- **Consistent accent colors:**
+  - Accent Lime remains in both modes, reduce saturation in dark mode if needed
+- **Optimize contrast:**
+  - Ensure sufficient contrast for light text on dark backgrounds (at least AA, ideally AAA per WCAG)
+  - In light mode, ensure Soft Azure is not too pale on white
+- **Surface and depth:**
+  - In dark mode, layer surfaces (various dark greys) for hierarchy
+- **Use transparency subtly:**
+  - For overlays, hover states, or modals
+- **Illustrations and icons:**
+  - Adaptive, e.g., outline icons or SVGs that dynamically adjust colors
+
+## Example Application: Chat Window
+
+**Light:**
+- Background: White Smoke
+- Text: Deep Indigo
+- User bubble: Soft Azure with Deep Indigo text
+- AI bubble: Warm Sand with Deep Indigo text
+- Accent (e.g., active button): Accent Lime
+
+**Dark:**
+- Background: Deep Indigo
+- Text: White Smoke
+- User bubble: Soft Azure (slightly darkened) with Deep Indigo or White Smoke text
+- AI bubble: #2D2D4D with Soft Azure or White Smoke text
+- Accent: Accent Lime (slightly reduced brightness)
+
+## Technical Implementation
+- Two color palettes in the design system (light/dark)
+- Toggle function (theme switcher) sets CSS variables in the `<head>`
+- Components use only CSS variables
+- SVGs/icons adapt via `currentColor` or dynamically to the theme
+- Contrast and readability are checked according to WCAG
+
 ---
 
 *This architecture guide provides a comprehensive overview of the AI Assistant Platform's technical design. For implementation details, please refer to the specific component documentation.* 
