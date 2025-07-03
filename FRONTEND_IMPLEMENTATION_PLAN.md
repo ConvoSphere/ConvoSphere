@@ -281,9 +281,9 @@ python -m nicegui build
 ## 📅 Timeline
 
 ```
-Woche 1: Authentication & API     [🔄 In Progress]
-Woche 2: Core Features           [📋 Planned]
-Woche 3: Advanced Chat           [📋 Planned]
+Woche 1: Authentication & API     [✅ Completed]
+Woche 2: Core Features           [✅ Completed]
+Woche 3: Advanced Chat           [🔄 In Progress]
 Woche 4: Knowledge Base          [📋 Planned]
 Woche 5: User Management         [📋 Planned]
 Woche 6: UX/UI Polish            [📋 Planned]
