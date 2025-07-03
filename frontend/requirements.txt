@@ -1,6 +1,12 @@
 # Frontend Framework
 nicegui==2.20.0
 
+# HTTP Client
+httpx==0.25.2
+
+# WebSocket Support
+websockets==12.0
+
 # Utilities
 python-dotenv==1.0.0
 loguru==0.7.2
