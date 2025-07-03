@@ -1,0 +1,119 @@
+{
+  "common": {
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "update": "Update",
+    "create": "Create",
+    "search": "Search",
+    "upload": "Upload",
+    "download": "Download",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "confirm": "Confirm"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "chat": "Chat",
+    "assistants": "Assistants",
+    "knowledge_base": "Knowledge Base",
+    "tools": "Tools",
+    "settings": "Settings",
+    "admin": "Admin",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "header": {
+    "welcome": "Welcome, {name}!",
+    "notifications": "Notifications",
+    "user_menu": "User Menu"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "forgot_password": "Forgot password?",
+    "remember_me": "Remember me",
+    "logout": "Logout",
+    "login_success": "Login successful",
+    "login_failed": "Login failed",
+    "registration_success": "Registration successful",
+    "registration_failed": "Registration failed"
+  },
+  "chat": {
+    "new_conversation": "New Conversation",
+    "send": "Send",
+    "type_message": "Type a message...",
+    "attach_file": "Attach file",
+    "assistant_typing": "Assistant is typing...",
+    "message_sent": "Message sent",
+    "message_failed": "Message failed",
+    "conversation_list": "Conversations",
+    "search_conversations": "Search conversations"
+  },
+  "assistants": {
+    "create_assistant": "Create Assistant",
+    "edit_assistant": "Edit Assistant",
+    "delete_assistant": "Delete Assistant",
+    "assistant_name": "Assistant Name",
+    "description": "Description",
+    "model": "Model",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "actions": "Actions"
+  },
+  "knowledge": {
+    "upload_document": "Upload Document",
+    "search_documents": "Search Documents",
+    "document_list": "Document List",
+    "no_documents": "No documents found",
+    "processing": "Processing...",
+    "delete_document": "Delete Document"
+  },
+  "tools": {
+    "tool_list": "Tool List",
+    "execute_tool": "Execute Tool",
+    "tool_name": "Tool Name",
+    "parameters": "Parameters",
+    "result": "Result",
+    "run": "Run"
+  },
+  "settings": {
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "theme": "Theme",
+    "language": "Language",
+    "notifications": "Notifications",
+    "save_changes": "Save Changes"
+  },
+  "validation": {
+    "required": "{field} is required",
+    "invalid_email": "Invalid email format",
+    "min_length": "Minimum length is {min}",
+    "max_length": "Maximum length is {max}"
+  },
+  "messages": {
+    "welcome": "Welcome to the AI Assistant Platform!",
+    "goodbye": "Goodbye!",
+    "error_occurred": "An error occurred. Please try again.",
+    "saved_successfully": "Saved successfully!"
+  }
+} 

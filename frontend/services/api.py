@@ -9,15 +9,8 @@ import json
 import asyncio
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
-from urllib.parse import urljoin
 
-try:
-    import httpx
-    from loguru import logger
-except ImportError:
-    # Fallback for development without dependencies
-    httpx = None
-    logger = None
+from .http_client import http_client
 
 
 @dataclass
@@ -32,25 +25,17 @@ class APIResponse:
 class APIClient:
     """API client for backend communication."""
     
-    def __init__(self, base_url: str = "http://backend:8000"):
-        self.base_url = base_url.rstrip("/")
-        self.token: Optional[str] = None
-        self.headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-        self.client: Optional[httpx.AsyncClient] = None
+    def __init__(self):
+        """Initialize the API client."""
+        self.client = http_client
     
     def set_token(self, token: str):
         """Set authentication token."""
-        self.token = token
-        self.headers["Authorization"] = f"Bearer {token}"
+        self.client.set_auth_token(token)
     
     def clear_token(self):
         """Clear authentication token."""
-        self.token = None
-        if "Authorization" in self.headers:
-            del self.headers["Authorization"]
+        self.client.clear_auth_token()
     
     async def _make_request(
         self,
@@ -71,137 +56,36 @@ class APIClient:
         Returns:
             APIResponse: Response wrapper
         """
-        # Fallback to mock responses if httpx is not available
-        if not httpx:
-            return await self._mock_request(method, endpoint, data, params)
-        
         try:
-            url = urljoin(self.base_url, endpoint)
-            
-            # Create client if not exists
-            if not self.client:
-                self.client = httpx.AsyncClient(timeout=30.0)
-            
-            # Prepare headers
-            headers = self.headers.copy()
-            if self.token:
-                headers["Authorization"] = f"Bearer {self.token}"
-            
-            # Make request
-            if logger:
-                logger.debug(f"Making {method} request to {url}")
-            
-            response = await self.client.request(
-                method=method,
-                url=url,
-                headers=headers,
-                json=data if data else None,
-                params=params if params else None
-            )
-            
-            # Handle response
-            if response.status_code < 400:
-                try:
-                    response_data = response.json() if response.content else None
-                except json.JSONDecodeError:
-                    response_data = response.text
-                
-                return APIResponse(
-                    success=True,
-                    data=response_data,
-                    status_code=response.status_code
-                )
+            if method == "GET":
+                response_data = await self.client.get(endpoint, params=params)
+            elif method == "POST":
+                response_data = await self.client.post(endpoint, data=data)
+            elif method == "PUT":
+                response_data = await self.client.put(endpoint, data=data)
+            elif method == "DELETE":
+                response_data = await self.client.delete(endpoint)
+            elif method == "PATCH":
+                response_data = await self.client.patch(endpoint, data=data)
             else:
-                try:
-                    error_data = response.json()
-                    error_message = error_data.get("detail", response.text)
-                except json.JSONDecodeError:
-                    error_message = response.text
-                
-                if logger:
-                    logger.error(f"API request failed: {response.status_code} - {error_message}")
-                
                 return APIResponse(
                     success=False,
-                    error=error_message,
-                    status_code=response.status_code
+                    error=f"Unsupported HTTP method: {method}",
+                    status_code=0
                 )
+            
+            return APIResponse(
+                success=True,
+                data=response_data,
+                status_code=200
+            )
                 
-        except httpx.RequestError as e:
-            if logger:
-                logger.error(f"Request error: {e}")
-            return APIResponse(
-                success=False,
-                error=f"Network error: {str(e)}",
-                status_code=0
-            )
         except Exception as e:
-            if logger:
-                logger.error(f"Unexpected error: {e}")
             return APIResponse(
                 success=False,
-                error=f"Unexpected error: {str(e)}",
+                error=f"Request failed: {str(e)}",
                 status_code=0
             )
-    
-    async def _mock_request(
-        self,
-        method: str,
-        endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None
-    ) -> APIResponse:
-        """Mock request for development without dependencies."""
-        await asyncio.sleep(0.1)  # Simulate network delay
-        
-        # Mock responses for development
-        if method == "GET" and "health" in endpoint:
-            return APIResponse(
-                success=True,
-                data={"status": "healthy", "version": "1.0.0"},
-                status_code=200
-            )
-        
-        if method == "POST" and "auth/login" in endpoint:
-            return APIResponse(
-                success=True,
-                data={
-                    "access_token": "mock_token_123",
-                    "refresh_token": "mock_refresh_123",
-                    "token_type": "bearer",
-                    "expires_in": 1800
-                },
-                status_code=200
-            )
-        
-        if method == "GET" and "assistants" in endpoint:
-            return APIResponse(
-                success=True,
-                data=[
-                    {
-                        "id": "1",
-                        "name": "General Assistant",
-                        "description": "A helpful AI assistant",
-                        "status": "active",
-                        "model": "gpt-4"
-                    },
-                    {
-                        "id": "2", 
-                        "name": "Code Helper",
-                        "description": "Specialized in programming",
-                        "status": "active",
-                        "model": "gpt-4"
-                    }
-                ],
-                status_code=200
-            )
-        
-        # Default response
-        return APIResponse(
-            success=True,
-            data={"message": "Mock API call successful"},
-            status_code=200
-        )
     
     # Authentication endpoints
     async def login(self, email: str, password: str) -> APIResponse:

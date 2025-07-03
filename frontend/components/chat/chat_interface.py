@@ -11,12 +11,13 @@ from datetime import datetime
 from nicegui import ui
 
 from services.api_client import api_client
+from services.websocket_service import websocket_service
 
 
 class ChatMessage:
     """Chat message data model."""
     
-    def __init__(self, content: str, sender: str, timestamp: datetime, message_type: str = "text"):
+    def __init__(self, content: str, sender: str, timestamp: datetime, message_type: str = "text", message_id: Optional[str] = None):
         """
         Initialize a chat message.
         
@@ -25,12 +26,13 @@ class ChatMessage:
             sender: Message sender (user or assistant)
             timestamp: Message timestamp
             message_type: Type of message (text, image, file, etc.)
+            message_id: Unique message ID
         """
         self.content = content
         self.sender = sender
         self.timestamp = timestamp
         self.message_type = message_type
-        self.id = f"{sender}_{timestamp.timestamp()}"
+        self.id = message_id or f"{sender}_{timestamp.timestamp()}"
 
 
 class ChatInterface:
@@ -48,9 +50,100 @@ class ChatInterface:
         self.current_input = ""
         self.is_loading = False
         self.selected_assistant = "general"
+        self.websocket_connected = False
+        self.typing_users: set = set()
+        
+        # Initialize WebSocket handlers
+        self._setup_websocket_handlers()
         
         # Load initial messages
         asyncio.create_task(self.load_messages())
+        
+        # Connect to WebSocket if conversation_id is provided
+        if self.conversation_id:
+            asyncio.create_task(self._connect_websocket())
+    
+    def _setup_websocket_handlers(self):
+        """Setup WebSocket message handlers."""
+        @websocket_service.on_message("message")
+        async def handle_chat_message(data: Dict[str, Any]):
+            """Handle incoming chat message."""
+            message = ChatMessage(
+                content=data.get("content", ""),
+                sender=data.get("user_id", "unknown"),
+                timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
+                message_id=data.get("id")
+            )
+            
+            # Add message to UI
+            self.messages.append(message)
+            self._add_message_to_ui(message)
+            
+            # Scroll to bottom
+            await self._scroll_to_bottom()
+        
+        @websocket_service.on_message("typing")
+        async def handle_typing_indicator(data: Dict[str, Any]):
+            """Handle typing indicator."""
+            user_id = data.get("user_id")
+            is_typing = data.get("is_typing", False)
+            
+            if is_typing:
+                self.typing_users.add(user_id)
+            else:
+                self.typing_users.discard(user_id)
+            
+            self._update_typing_indicator()
+        
+        @websocket_service.on_message("connection_established")
+        async def handle_connection_established(data: Dict[str, Any]):
+            """Handle WebSocket connection established."""
+            self.websocket_connected = True
+            ui.notify("Verbunden mit Chat-Server", type="positive")
+        
+        websocket_service.on_connect(self._on_websocket_connect)
+        websocket_service.on_disconnect(self._on_websocket_disconnect)
+    
+    async def _connect_websocket(self):
+        """Connect to WebSocket for real-time chat."""
+        try:
+            await websocket_service.connect(f"/api/v1/websocket/{self.conversation_id}")
+            if self.conversation_id:
+                await websocket_service.join_conversation(int(self.conversation_id))
+        except Exception as e:
+            ui.notify(f"WebSocket-Verbindung fehlgeschlagen: {str(e)}", type="negative")
+    
+    async def _on_websocket_connect(self):
+        """Handle WebSocket connection."""
+        self.websocket_connected = True
+        ui.notify("Echtzeit-Chat verbunden", type="positive")
+        self._create_chat_header()  # Update status dot
+    
+    async def _on_websocket_disconnect(self):
+        """Handle WebSocket disconnection."""
+        self.websocket_connected = False
+        ui.notify("Echtzeit-Chat getrennt", type="warning")
+        self._create_chat_header()  # Update status dot
+    
+    def _update_typing_indicator(self):
+        """Update typing indicator in UI."""
+        # Show typing indicator below messages area
+        if hasattr(self, 'typing_indicator_element'):
+            self.typing_indicator_element.clear()
+        if self.typing_users:
+            users_text = ", ".join(self.typing_users)
+            with ui.element("div") as typing_el:
+                typing_el.classes("flex items-center space-x-2 mt-2 mb-2")
+                ui.spinner("dots").classes("h-4 w-4")
+                ui.html(f"<span style='font-size: 13px; color: var(--color-text-secondary);'>{users_text} schreibt...</span>")
+            self.typing_indicator_element = typing_el
+        else:
+            self.typing_indicator_element = ui.element("div")  # empty
+    
+    async def _scroll_to_bottom(self):
+        """Scroll messages area to bottom."""
+        # TODO: Implement scroll to bottom functionality
+        pass
     
     def create_chat_interface(self) -> ui.element:
         """
@@ -76,6 +169,10 @@ class ChatInterface:
         with ui.element("div").classes("flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"):
             with ui.element("div").classes("flex items-center space-x-3"):
                 ui.icon("chat").classes("h-6 w-6 text-blue-600 dark:text-blue-400")
+                # Connection status indicator
+                status_color = "#22c55e" if self.websocket_connected else "#ef4444"
+                status_title = "Verbunden" if self.websocket_connected else "Getrennt"
+                ui.html(f'<span title="{status_title}" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{status_color};margin-left:4px;"></span>')
                 with ui.element("div"):
                     ui.html("<h2 style='font-size: 18px; font-weight: 600; color: var(--color-text);'>Chat</h2>")
                     ui.html("<p style='font-size: 14px; color: var(--color-text-secondary);'>Konversation mit AI-Assistenten</p>")
@@ -173,7 +270,6 @@ class ChatInterface:
     def _add_message_to_ui(self, message: ChatMessage):
         """Add a message to the UI."""
         is_user = message.sender == "user"
-        
         with self.messages_container:
             with ui.element("div").classes(f"flex {'justify-end' if is_user else 'justify-start'}"):
                 with ui.element("div").classes(f"max-w-xs lg:max-w-md {'bg-blue-600 text-white' if is_user else 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'} rounded-lg px-4 py-2 shadow-sm"):
@@ -183,6 +279,11 @@ class ChatInterface:
                     # Message timestamp
                     time_str = message.timestamp.strftime("%H:%M")
                     ui.html(f"<p style='font-size: 11px; opacity: 0.7; margin-top: 4px; text-align: {'right' if is_user else 'left'};'>{time_str}</p>")
+        # Show feedback for new message
+        if is_user:
+            ui.notify("Nachricht gesendet", type="positive")
+        else:
+            ui.notify("Neue Nachricht empfangen", type="info")
     
     def _handle_input_change(self, e):
         """Handle input change."""
@@ -281,7 +382,7 @@ class ChatInterface:
         try:
             if self.conversation_id:
                 # Load messages for specific conversation
-                response = await api_client.get_messages(self.conversation_id)
+                response = await api_client.get_messages(int(self.conversation_id))
                 # TODO: Process response and add messages
             else:
                 # Load recent messages or start new conversation

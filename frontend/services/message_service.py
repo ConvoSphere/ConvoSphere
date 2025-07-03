@@ -1,8 +1,8 @@
 """
-Message service for handling chat messages and conversation state.
+Message service for chat functionality.
 
-This module provides functionality for managing messages, conversations,
-and real-time chat features.
+This module provides message management, AI integration, and real-time
+chat capabilities using WebSocket connections.
 """
 
 import asyncio
@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass, field
 from enum import Enum
 
-from .api import api_client
+from .api_client import api_client
 from .error_handler import handle_api_error, handle_network_error
 from utils.helpers import generate_id, format_timestamp
 from utils.validators import validate_message_data, sanitize_input
@@ -73,13 +73,13 @@ class ToolResult:
 
 @dataclass
 class Message:
-    """Chat message model."""
-    id: Optional[int] = None
-    conversation_id: Optional[int] = None
-    content: str = ""
-    role: MessageRole = MessageRole.USER
-    timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    """Message data model."""
+    id: str
+    content: str
+    role: str  # "user" or "assistant"
+    message_type: str = "text"
+    timestamp: Optional[datetime] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -112,227 +112,276 @@ class AdvancedMessage:
 
 
 class MessageService:
-    """Service for managing messages and conversations."""
+    """Service for managing chat messages and AI interactions."""
     
     def __init__(self):
-        """Initialize message service."""
-        self.conversations: Dict[int, Conversation] = {}
-        self.current_conversation_id: Optional[int] = None
-        self.message_handlers: List[callable] = []
-        self.conversation_handlers: List[callable] = []
+        """Initialize the message service."""
+        self.current_conversation_id: Optional[str] = None
+        self.messages: List[Message] = []
+        self.is_connected = False
+        self.is_typing = False
         
-        # Register WebSocket handlers
-        websocket_service.on_message("chat_message")(self._handle_chat_message)
-        websocket_service.on_message("typing_indicator")(self._handle_typing_indicator)
+        # Setup WebSocket handlers
+        self._setup_websocket_handlers()
     
-    def on_message(self, handler: callable):
-        """Register message handler."""
-        self.message_handlers.append(handler)
-    
-    def on_conversation_update(self, handler: callable):
-        """Register conversation update handler."""
-        self.conversation_handlers.append(handler)
-    
-    async def load_conversations(self) -> List[Conversation]:
-        """Load user conversations from API."""
-        try:
-            response = await api_client.get_conversations()
-            conversations = []
-            
-            for conv_data in response.get("items", []):
-                conversation = Conversation(
-                    id=conv_data.get("id"),
-                    title=conv_data.get("title", ""),
-                    assistant_id=conv_data.get("assistant_id"),
-                    created_at=datetime.fromisoformat(conv_data.get("created_at", "")),
-                    updated_at=datetime.fromisoformat(conv_data.get("updated_at", ""))
-                )
-                conversations.append(conversation)
-                self.conversations[conversation.id] = conversation
-            
-            return conversations
-            
-        except Exception as e:
-            print(f"Error loading conversations: {e}")
-            return []
-    
-    async def load_messages(self, conversation_id: int) -> List[Message]:
-        """Load messages for a conversation."""
-        try:
-            response = await api_client.get_messages(conversation_id)
-            messages = []
-            
-            for msg_data in response.get("items", []):
-                message = Message(
-                    id=msg_data.get("id"),
-                    conversation_id=conversation_id,
-                    content=msg_data.get("content", ""),
-                    role=MessageRole(msg_data.get("role", "user")),
-                    timestamp=datetime.fromisoformat(msg_data.get("created_at", "")),
-                    metadata=msg_data.get("metadata", {})
-                )
-                messages.append(message)
-            
-            # Update conversation messages
-            if conversation_id in self.conversations:
-                self.conversations[conversation_id].messages = messages
-            
-            return messages
-            
-        except Exception as e:
-            print(f"Error loading messages: {e}")
-            return []
-    
-    async def create_conversation(self, title: str, assistant_id: Optional[int] = None) -> Optional[Conversation]:
-        """Create new conversation."""
-        try:
-            response = await api_client.create_conversation(title, assistant_id)
-            
-            conversation = Conversation(
-                id=response.get("id"),
-                title=title,
-                assistant_id=assistant_id,
-                created_at=datetime.fromisoformat(response.get("created_at", "")),
-                updated_at=datetime.fromisoformat(response.get("updated_at", ""))
+    def _setup_websocket_handlers(self):
+        """Setup WebSocket message handlers."""
+        @websocket_service.on_message("message")
+        async def handle_message(data: Dict[str, Any]):
+            """Handle incoming message."""
+            message = Message(
+                id=data.get("id", ""),
+                content=data.get("content", ""),
+                role=data.get("role", "user"),
+                message_type=data.get("message_type", "text"),
+                timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
+                metadata=data.get("metadata")
             )
             
-            self.conversations[conversation.id] = conversation
-            self._notify_conversation_handlers()
+            # Add message to local list
+            self.messages.append(message)
             
-            return conversation
+            # Notify listeners
+            await self._notify_message_received(message)
+        
+        @websocket_service.on_message("typing")
+        async def handle_typing(data: Dict[str, Any]):
+            """Handle typing indicator."""
+            user_id = data.get("user_id")
+            is_typing = data.get("is_typing", False)
+            
+            if user_id and user_id != "assistant":  # Don't show typing for assistant
+                await self._notify_typing_changed(str(user_id), is_typing)
+        
+        @websocket_service.on_message("ai_response")
+        async def handle_ai_response(data: Dict[str, Any]):
+            """Handle AI response."""
+            message = Message(
+                id=data.get("id", ""),
+                content=data.get("content", ""),
+                role="assistant",
+                message_type=data.get("message_type", "text"),
+                timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
+                metadata=data.get("metadata")
+            )
+            
+            # Add message to local list
+            self.messages.append(message)
+            
+            # Notify listeners
+            await self._notify_message_received(message)
+        
+        websocket_service.on_connect(self._on_websocket_connect)
+        websocket_service.on_disconnect(self._on_websocket_disconnect)
+    
+    async def _on_websocket_connect(self):
+        """Handle WebSocket connection."""
+        self.is_connected = True
+        await self._notify_connection_changed(True)
+    
+    async def _on_websocket_disconnect(self):
+        """Handle WebSocket disconnection."""
+        self.is_connected = False
+        await self._notify_connection_changed(False)
+    
+    async def connect_to_conversation(self, conversation_id: str) -> bool:
+        """
+        Connect to a conversation for real-time chat.
+        
+        Args:
+            conversation_id: Conversation ID
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            self.current_conversation_id = conversation_id
+            
+            # Connect to WebSocket
+            await websocket_service.connect(f"/api/v1/chat/ws/{conversation_id}")
+            
+            # Load existing messages
+            await self.load_messages(conversation_id)
+            
+            return True
             
         except Exception as e:
-            print(f"Error creating conversation: {e}")
-            return None
+            print(f"Failed to connect to conversation: {e}")
+            return False
     
-    async def send_message(self, content: str, conversation_id: Optional[int] = None) -> Optional[Message]:
-        """Send message to conversation."""
-        conv_id = conversation_id or self.current_conversation_id
+    async def disconnect_from_conversation(self):
+        """Disconnect from current conversation."""
+        if self.current_conversation_id:
+            try:
+                await websocket_service.leave_conversation(int(self.current_conversation_id))
+                await websocket_service.disconnect()
+            except Exception as e:
+                print(f"Error disconnecting: {e}")
+            finally:
+                self.current_conversation_id = None
+                self.messages.clear()
+    
+    async def send_message(self, content: str, message_type: str = "text") -> Optional[Message]:
+        """
+        Send a message to the current conversation.
         
-        if not conv_id:
-            print("No conversation selected")
+        Args:
+            content: Message content
+            message_type: Type of message
+            
+        Returns:
+            Message: Sent message or None if failed
+        """
+        if not self.current_conversation_id:
+            raise ValueError("No active conversation")
+        
+        if not content.strip():
             return None
         
         try:
-            # Create message locally
+            # Create message object
             message = Message(
-                conversation_id=conv_id,
+                id=f"temp_{datetime.now().timestamp()}",
                 content=content,
-                role=MessageRole.USER,
+                role="user",
+                message_type=message_type,
                 timestamp=datetime.now()
             )
             
-            # Add to conversation
-            if conv_id in self.conversations:
-                self.conversations[conv_id].messages.append(message)
-                self.conversations[conv_id].updated_at = datetime.now()
+            # Add to local list immediately for UI responsiveness
+            self.messages.append(message)
             
-            # Send via API
-            response = await api_client.send_message(conv_id, content, "user")
-            message.id = response.get("id")
+            # Send via WebSocket if connected
+            if self.is_connected:
+                await websocket_service.send_chat_message(
+                    conversation_id=int(self.current_conversation_id),
+                    content=content,
+                    role="user"
+                )
+            else:
+                # Fallback to REST API
+                response = await api_client.send_message(
+                    conversation_id=int(self.current_conversation_id),
+                    content=content,
+                    role="user"
+                )
+                
+                if response.get("success"):
+                    # Update message with server response
+                    message.id = response.get("data", {}).get("id", message.id)
+                    message.timestamp = datetime.fromisoformat(
+                        response.get("data", {}).get("timestamp", datetime.now().isoformat())
+                    )
             
-            # Send via WebSocket for real-time
-            if websocket_service.connected:
-                await websocket_service.send_chat_message(conv_id, content, "user")
-            
-            # Notify handlers
-            self._notify_message_handlers(message)
+            # Notify listeners
+            await self._notify_message_sent(message)
             
             return message
             
         except Exception as e:
-            print(f"Error sending message: {e}")
+            print(f"Failed to send message: {e}")
+            # Remove message from local list if failed
+            if message in self.messages:
+                self.messages.remove(message)
             return None
     
-    async def delete_conversation(self, conversation_id: int) -> bool:
-        """Delete conversation."""
-        try:
-            await api_client.delete_conversation(conversation_id)
-            
-            if conversation_id in self.conversations:
-                del self.conversations[conversation_id]
-            
-            if self.current_conversation_id == conversation_id:
-                self.current_conversation_id = None
-            
-            self._notify_conversation_handlers()
-            return True
-            
-        except Exception as e:
-            print(f"Error deleting conversation: {e}")
-            return False
-    
-    def set_current_conversation(self, conversation_id: int):
-        """Set current conversation."""
-        self.current_conversation_id = conversation_id
+    async def load_messages(self, conversation_id: str, limit: int = 50) -> List[Message]:
+        """
+        Load messages for a conversation.
         
-        # Join WebSocket room
-        if websocket_service.connected:
-            asyncio.create_task(websocket_service.join_conversation(conversation_id))
+        Args:
+            conversation_id: Conversation ID
+            limit: Maximum number of messages to load
+            
+        Returns:
+            List[Message]: List of messages
+        """
+        try:
+            response = await api_client.get_messages(int(conversation_id), limit=limit)
+            
+            if response.get("success"):
+                messages_data = response.get("data", [])
+                self.messages = []
+                
+                for msg_data in messages_data:
+                    message = Message(
+                        id=msg_data.get("id", ""),
+                        content=msg_data.get("content", ""),
+                        role=msg_data.get("role", "user"),
+                        message_type=msg_data.get("message_type", "text"),
+                        timestamp=datetime.fromisoformat(msg_data.get("timestamp", datetime.now().isoformat())),
+                        metadata=msg_data.get("metadata")
+                    )
+                    self.messages.append(message)
+                
+                return self.messages
+            else:
+                print(f"Failed to load messages: {response.get('error')}")
+                return []
+                
+        except Exception as e:
+            print(f"Error loading messages: {e}")
+            return []
     
-    def get_current_conversation(self) -> Optional[Conversation]:
-        """Get current conversation."""
-        if self.current_conversation_id and self.current_conversation_id in self.conversations:
-            return self.conversations[self.current_conversation_id]
+    async def start_typing(self):
+        """Send typing indicator."""
+        if self.current_conversation_id and self.is_connected:
+            try:
+                await websocket_service.send_typing_indicator(
+                    conversation_id=int(self.current_conversation_id),
+                    is_typing=True
+                )
+                self.is_typing = True
+            except Exception as e:
+                print(f"Failed to send typing indicator: {e}")
+    
+    async def stop_typing(self):
+        """Stop typing indicator."""
+        if self.current_conversation_id and self.is_connected:
+            try:
+                await websocket_service.send_typing_indicator(
+                    conversation_id=int(self.current_conversation_id),
+                    is_typing=False
+                )
+                self.is_typing = False
+            except Exception as e:
+                print(f"Failed to stop typing indicator: {e}")
+    
+    def get_messages(self) -> List[Message]:
+        """Get all messages in current conversation."""
+        return self.messages.copy()
+    
+    def get_message_by_id(self, message_id: str) -> Optional[Message]:
+        """Get message by ID."""
+        for message in self.messages:
+            if message.id == message_id:
+                return message
         return None
     
-    def get_conversation_messages(self, conversation_id: int) -> List[Message]:
-        """Get messages for conversation."""
-        if conversation_id in self.conversations:
-            return self.conversations[conversation_id].messages
-        return []
+    def clear_messages(self):
+        """Clear all messages."""
+        self.messages.clear()
     
-    async def _handle_chat_message(self, data: Dict[str, Any]):
-        """Handle incoming chat message from WebSocket."""
-        conversation_id = data.get("conversation_id")
-        content = data.get("content", "")
-        role = data.get("role", "user")
-        
-        if conversation_id and conversation_id in self.conversations:
-            message = Message(
-                conversation_id=conversation_id,
-                content=content,
-                role=MessageRole(role),
-                timestamp=datetime.now()
-            )
-            
-            self.conversations[conversation_id].messages.append(message)
-            self.conversations[conversation_id].updated_at = datetime.now()
-            
-            # Notify handlers
-            self._notify_message_handlers(message)
+    # Event notification methods (to be implemented by UI components)
+    async def _notify_message_received(self, message: Message):
+        """Notify that a message was received."""
+        # TODO: Implement event system for UI updates
+        pass
     
-    async def _handle_typing_indicator(self, data: Dict[str, Any]):
-        """Handle typing indicator from WebSocket."""
-        conversation_id = data.get("conversation_id")
-        is_typing = data.get("is_typing", False)
-        
-        # Notify UI about typing status
-        for handler in self.message_handlers:
-            try:
-                await handler({
-                    "type": "typing_indicator",
-                    "conversation_id": conversation_id,
-                    "is_typing": is_typing
-                })
-            except Exception as e:
-                print(f"Error in typing indicator handler: {e}")
+    async def _notify_message_sent(self, message: Message):
+        """Notify that a message was sent."""
+        # TODO: Implement event system for UI updates
+        pass
     
-    def _notify_message_handlers(self, message: Message):
-        """Notify message handlers."""
-        for handler in self.message_handlers:
-            try:
-                asyncio.create_task(handler(message))
-            except Exception as e:
-                print(f"Error in message handler: {e}")
+    async def _notify_typing_changed(self, user_id: str, is_typing: bool):
+        """Notify typing status change."""
+        # TODO: Implement event system for UI updates
+        pass
     
-    def _notify_conversation_handlers(self):
-        """Notify conversation handlers."""
-        for handler in self.conversation_handlers:
-            try:
-                asyncio.create_task(handler())
-            except Exception as e:
-                print(f"Error in conversation handler: {e}")
+    async def _notify_connection_changed(self, connected: bool):
+        """Notify connection status change."""
+        # TODO: Implement event system for UI updates
+        pass
 
 
 # Global message service instance

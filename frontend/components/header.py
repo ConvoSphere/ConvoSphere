@@ -9,6 +9,7 @@ from typing import Optional, Callable
 from nicegui import ui
 
 from utils.theme_manager import theme_manager
+from utils.i18n_manager import i18n_manager
 
 
 def create_header(
@@ -50,6 +51,13 @@ def create_header(
                 
                 # Right side - Actions
                 with ui.element("div").classes("flex items-center space-x-4"):
+                    # Language switcher
+                    ui.label(i18n_manager.t("common.language")).classes("text-gray-700 dark:text-gray-200")
+                    ui.select(
+                        options=i18n_manager.get_supported_languages(),
+                        value=i18n_manager.get_current_language(),
+                        on_change=lambda e: i18n_manager.set_language(e.value)
+                    ).classes("w-28")
                     # Theme toggle
                     ui.button(
                         icon="dark_mode",

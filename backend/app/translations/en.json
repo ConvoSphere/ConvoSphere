@@ -1,0 +1,133 @@
+{
+  "common": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "updating": "Updating...",
+    "creating": "Creating...",
+    "searching": "Searching...",
+    "uploading": "Uploading...",
+    "processing": "Processing..."
+  },
+  "auth": {
+    "login_success": "Login successful",
+    "login_failed": "Login failed",
+    "logout_success": "Logout successful",
+    "registration_success": "Registration successful",
+    "registration_failed": "Registration failed",
+    "invalid_credentials": "Invalid email or password",
+    "account_disabled": "User account is disabled",
+    "email_already_registered": "Email already registered",
+    "username_already_taken": "Username already taken",
+    "password_too_weak": "Password is too weak",
+    "token_expired": "Access token has expired",
+    "token_invalid": "Invalid access token",
+    "permission_denied": "Permission denied",
+    "unauthorized": "Unauthorized access"
+  },
+  "user": {
+    "user_created": "User created successfully",
+    "user_updated": "User updated successfully",
+    "user_deleted": "User deleted successfully",
+    "user_not_found": "User not found",
+    "profile_updated": "Profile updated successfully",
+    "password_changed": "Password changed successfully",
+    "invalid_password": "Invalid password",
+    "email_updated": "Email updated successfully",
+    "username_updated": "Username updated successfully"
+  },
+  "assistant": {
+    "assistant_created": "Assistant created successfully",
+    "assistant_updated": "Assistant updated successfully",
+    "assistant_deleted": "Assistant deleted successfully",
+    "assistant_not_found": "Assistant not found",
+    "assistant_activated": "Assistant activated",
+    "assistant_deactivated": "Assistant deactivated",
+    "invalid_configuration": "Invalid assistant configuration",
+    "model_not_supported": "AI model not supported",
+    "temperature_invalid": "Temperature must be between 0.0 and 1.0",
+    "max_tokens_invalid": "Max tokens must be between 1 and 8192"
+  },
+  "conversation": {
+    "conversation_created": "Conversation created successfully",
+    "conversation_updated": "Conversation updated successfully",
+    "conversation_deleted": "Conversation deleted successfully",
+    "conversation_not_found": "Conversation not found",
+    "conversation_archived": "Conversation archived",
+    "conversation_restored": "Conversation restored",
+    "message_sent": "Message sent successfully",
+    "message_not_found": "Message not found",
+    "message_deleted": "Message deleted successfully",
+    "invalid_message": "Invalid message content"
+  },
+  "knowledge": {
+    "document_uploaded": "Document uploaded successfully",
+    "document_processed": "Document processed successfully",
+    "document_deleted": "Document deleted successfully",
+    "document_not_found": "Document not found",
+    "document_updated": "Document updated successfully",
+    "processing_failed": "Document processing failed",
+    "unsupported_format": "Unsupported document format",
+    "file_too_large": "File size exceeds limit",
+    "search_no_results": "No results found",
+    "search_failed": "Search failed"
+  },
+  "tools": {
+    "tool_executed": "Tool executed successfully",
+    "tool_failed": "Tool execution failed",
+    "tool_not_found": "Tool not found",
+    "tool_discovered": "Tool discovered successfully",
+    "invalid_parameters": "Invalid tool parameters",
+    "tool_timeout": "Tool execution timed out",
+    "tool_not_available": "Tool not available",
+    "mcp_server_error": "MCP server error"
+  },
+  "validation": {
+    "required_field": "{field} is required",
+    "invalid_email": "Invalid email format",
+    "invalid_username": "Username must be 3-50 characters long",
+    "invalid_password": "Password must be at least 8 characters long",
+    "passwords_not_match": "Passwords do not match",
+    "invalid_url": "Invalid URL format",
+    "invalid_date": "Invalid date format",
+    "field_too_long": "{field} is too long",
+    "field_too_short": "{field} is too short",
+    "invalid_format": "Invalid format"
+  },
+  "errors": {
+    "internal_server_error": "Internal server error",
+    "service_unavailable": "Service temporarily unavailable",
+    "bad_request": "Bad request",
+    "not_found": "Resource not found",
+    "method_not_allowed": "Method not allowed",
+    "request_timeout": "Request timeout",
+    "too_many_requests": "Too many requests",
+    "database_error": "Database error",
+    "network_error": "Network error",
+    "file_error": "File operation error"
+  },
+  "websocket": {
+    "connected": "Connected to chat",
+    "disconnected": "Disconnected from chat",
+    "connection_failed": "Connection failed",
+    "reconnecting": "Reconnecting...",
+    "message_sent": "Message sent",
+    "message_received": "Message received",
+    "typing_started": "Assistant is typing...",
+    "typing_stopped": "Assistant stopped typing"
+  },
+  "health": {
+    "service_healthy": "Service is healthy",
+    "service_unhealthy": "Service is unhealthy",
+    "database_connected": "Database connected",
+    "database_disconnected": "Database disconnected",
+    "redis_connected": "Redis connected",
+    "redis_disconnected": "Redis disconnected",
+    "weaviate_connected": "Weaviate connected",
+    "weaviate_disconnected": "Weaviate disconnected"
+  }
+} 

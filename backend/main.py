@@ -19,6 +19,7 @@ from app.core.config import settings
 from app.core.database import init_db, check_db_connection, get_db_info
 from app.core.redis_client import init_redis, close_redis, check_redis_connection, get_redis_info
 from app.core.weaviate_client import init_weaviate, close_weaviate, check_weaviate_connection, get_weaviate_info, create_schema_if_not_exists
+from app.core.i18n import I18nMiddleware, i18n_manager, t
 from app.api.v1.api import api_router
 
 
@@ -111,14 +112,19 @@ def create_application() -> FastAPI:
         allowed_hosts=["*"] if settings.debug else ["localhost", "127.0.0.1"]
     )
     
+    # Add i18n middleware
+    app.add_middleware(I18nMiddleware, i18n_manager=i18n_manager)
+    
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         """Handle HTTP exceptions."""
         logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
+        # Translate error message
+        translated_detail = t(f"errors.{exc.detail.lower().replace(' ', '_')}", request, fallback=exc.detail)
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": exc.detail, "status_code": exc.status_code}
+            content={"detail": translated_detail, "status_code": exc.status_code}
         )
     
     @app.exception_handler(RequestValidationError)
