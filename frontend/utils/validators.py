@@ -1,148 +1,420 @@
 """
-Validation functions for the AI Assistant Platform frontend.
+Validators for input validation and data sanitization.
 
-This module provides input validation functions used throughout
-the frontend application.
+This module provides comprehensive validation and sanitization
+functions for user inputs and data processing.
 """
 
 import re
-from typing import Optional, Tuple, List, Dict, Any
+import html
+from typing import Dict, Any, List, Optional, Union, Tuple
+from dataclasses import dataclass
+from enum import Enum
 from .constants import MAX_FILE_SIZE, SUPPORTED_FILE_TYPES
 from datetime import datetime
 
 
-def validate_email(email: str) -> Tuple[bool, Optional[str]]:
-    """
-    Validate email address format.
+class ValidationType(Enum):
+    """Validation types."""
+    REQUIRED = "required"
+    EMAIL = "email"
+    PASSWORD = "password"
+    LENGTH = "length"
+    PATTERN = "pattern"
+    RANGE = "range"
+    CUSTOM = "custom"
+
+
+@dataclass
+class ValidationRule:
+    """Validation rule definition."""
+    type: ValidationType
+    message: str
+    params: Dict[str, Any] = None
     
-    Args:
-        email: Email address to validate
+    def __post_init__(self):
+        if self.params is None:
+            self.params = {}
+
+
+@dataclass
+class ValidationResult:
+    """Validation result."""
+    valid: bool
+    errors: List[str] = None
+    sanitized_value: Any = None
+    
+    def __post_init__(self):
+        if self.errors is None:
+            self.errors = []
+
+
+class Validator:
+    """Input validation and sanitization."""
+    
+    def __init__(self):
+        """Initialize validator."""
+        # Common patterns
+        self.patterns = {
+            "email": r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+            "password": r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            "username": r"^[a-zA-Z0-9_-]{3,20}$",
+            "phone": r"^\+?[\d\s\-\(\)]{10,}$",
+            "url": r"^https?://[^\s/$.?#].[^\s]*$",
+            "date": r"^\d{4}-\d{2}-\d{2}$",
+            "time": r"^\d{2}:\d{2}(:\d{2})?$",
+            "datetime": r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$"
+        }
         
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    if not email:
-        return False, "E-Mail-Adresse ist erforderlich"
+        # Default validation rules
+        self.default_rules = {
+            "email": [
+                ValidationRule(ValidationType.REQUIRED, "Email is required"),
+                ValidationRule(ValidationType.EMAIL, "Invalid email format")
+            ],
+            "password": [
+                ValidationRule(ValidationType.REQUIRED, "Password is required"),
+                ValidationRule(ValidationType.PASSWORD, "Password must be at least 8 characters with uppercase, lowercase, number, and special character")
+            ],
+            "username": [
+                ValidationRule(ValidationType.REQUIRED, "Username is required"),
+                ValidationRule(ValidationType.PATTERN, "Username must be 3-20 characters, letters, numbers, underscore, or dash", {"pattern": "username"})
+            ]
+        }
     
-    # Basic email format validation
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    
-    if not re.match(email_pattern, email):
-        return False, "Ungültiges E-Mail-Format"
-    
-    # Check for common issues
-    if len(email) > 254:
-        return False, "E-Mail-Adresse ist zu lang"
-    
-    if email.count('@') != 1:
-        return False, "E-Mail-Adresse darf nur ein @-Zeichen enthalten"
-    
-    local_part, domain = email.split('@')
-    
-    if len(local_part) > 64:
-        return False, "Lokaler Teil der E-Mail-Adresse ist zu lang"
-    
-    if len(domain) > 253:
-        return False, "Domain-Teil der E-Mail-Adresse ist zu lang"
-    
-    return True, None
-
-
-def validate_password(password: str) -> Tuple[bool, Optional[str]]:
-    """
-    Validate password strength.
-    
-    Args:
-        password: Password to validate
+    def validate(
+        self,
+        value: Any,
+        rules: List[ValidationRule],
+        field_name: str = "field"
+    ) -> ValidationResult:
+        """
+        Validate a value against a list of rules.
         
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    if not password:
-        return False, "Passwort ist erforderlich"
-    
-    if len(password) < 8:
-        return False, "Passwort muss mindestens 8 Zeichen lang sein"
-    
-    if len(password) > 128:
-        return False, "Passwort ist zu lang (maximal 128 Zeichen)"
-    
-    # Check for at least one uppercase letter
-    if not re.search(r'[A-Z]', password):
-        return False, "Passwort muss mindestens einen Großbuchstaben enthalten"
-    
-    # Check for at least one lowercase letter
-    if not re.search(r'[a-z]', password):
-        return False, "Passwort muss mindestens einen Kleinbuchstaben enthalten"
-    
-    # Check for at least one digit
-    if not re.search(r'\d', password):
-        return False, "Passwort muss mindestens eine Zahl enthalten"
-    
-    # Check for at least one special character
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-        return False, "Passwort muss mindestens ein Sonderzeichen enthalten"
-    
-    return True, None
-
-
-def validate_username(username: str) -> Tuple[bool, Optional[str]]:
-    """
-    Validate username format.
-    
-    Args:
-        username: Username to validate
+        Args:
+            value: Value to validate
+            rules: List of validation rules
+            field_name: Name of the field being validated
+            
+        Returns:
+            ValidationResult with validation status and errors
+        """
+        result = ValidationResult(valid=True)
+        sanitized_value = value
         
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    if not username:
-        return False, "Benutzername ist erforderlich"
-    
-    if len(username) < 3:
-        return False, "Benutzername muss mindestens 3 Zeichen lang sein"
-    
-    if len(username) > 30:
-        return False, "Benutzername ist zu lang (maximal 30 Zeichen)"
-    
-    # Check for valid characters (alphanumeric, underscore, hyphen)
-    if not re.match(r'^[a-zA-Z0-9_-]+$', username):
-        return False, "Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten"
-    
-    # Check that username doesn't start or end with special characters
-    if username.startswith('_') or username.startswith('-'):
-        return False, "Benutzername darf nicht mit Unterstrichen oder Bindestrichen beginnen"
-    
-    if username.endswith('_') or username.endswith('-'):
-        return False, "Benutzername darf nicht mit Unterstrichen oder Bindestrichen enden"
-    
-    # Check for consecutive special characters
-    if re.search(r'[_-]{2,}', username):
-        return False, "Benutzername darf keine aufeinanderfolgenden Unterstriche oder Bindestriche enthalten"
-    
-    return True, None
-
-
-def validate_url(url: str) -> Tuple[bool, Optional[str]]:
-    """
-    Validate URL format.
-    
-    Args:
-        url: URL to validate
+        for rule in rules:
+            validation_result = self._apply_rule(value, rule, field_name)
+            
+            if not validation_result["valid"]:
+                result.valid = False
+                result.errors.append(validation_result["message"])
+            
+            if validation_result.get("sanitized_value") is not None:
+                sanitized_value = validation_result["sanitized_value"]
         
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    if not url:
-        return False, "URL ist erforderlich"
+        result.sanitized_value = sanitized_value
+        return result
     
-    # Basic URL pattern
-    url_pattern = r'^https?://(?:[-\w.])+(?:\:[0-9]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$'
+    def _apply_rule(
+        self,
+        value: Any,
+        rule: ValidationRule,
+        field_name: str
+    ) -> Dict[str, Any]:
+        """Apply a single validation rule."""
+        if rule.type == ValidationType.REQUIRED:
+            return self._validate_required(value, rule, field_name)
+        elif rule.type == ValidationType.EMAIL:
+            return self._validate_email(value, rule, field_name)
+        elif rule.type == ValidationType.PASSWORD:
+            return self._validate_password(value, rule, field_name)
+        elif rule.type == ValidationType.LENGTH:
+            return self._validate_length(value, rule, field_name)
+        elif rule.type == ValidationType.PATTERN:
+            return self._validate_pattern(value, rule, field_name)
+        elif rule.type == ValidationType.RANGE:
+            return self._validate_range(value, rule, field_name)
+        elif rule.type == ValidationType.CUSTOM:
+            return self._validate_custom(value, rule, field_name)
+        else:
+            return {"valid": True, "message": ""}
     
-    if not re.match(url_pattern, url):
-        return False, "Ungültiges URL-Format"
+    def _validate_required(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate required field."""
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} is required"
+            }
+        return {"valid": True}
     
-    return True, None
+    def _validate_email(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate email format."""
+        if not value:
+            return {"valid": True}
+        
+        if not re.match(self.patterns["email"], str(value)):
+            return {
+                "valid": False,
+                "message": rule.message or f"Invalid email format for {field_name}"
+            }
+        
+        return {
+            "valid": True,
+            "sanitized_value": str(value).lower().strip()
+        }
+    
+    def _validate_password(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate password strength."""
+        if not value:
+            return {"valid": True}
+        
+        password = str(value)
+        
+        # Check minimum length
+        if len(password) < 8:
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be at least 8 characters long"
+            }
+        
+        # Check for required character types
+        if not re.search(r"[a-z]", password):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must contain at least one lowercase letter"
+            }
+        
+        if not re.search(r"[A-Z]", password):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must contain at least one uppercase letter"
+            }
+        
+        if not re.search(r"\d", password):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must contain at least one number"
+            }
+        
+        if not re.search(r"[@$!%*?&]", password):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must contain at least one special character (@$!%*?&)"
+            }
+        
+        return {"valid": True}
+    
+    def _validate_length(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate string length."""
+        if not value:
+            return {"valid": True}
+        
+        value_str = str(value)
+        min_length = rule.params.get("min")
+        max_length = rule.params.get("max")
+        
+        if min_length and len(value_str) < min_length:
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be at least {min_length} characters long"
+            }
+        
+        if max_length and len(value_str) > max_length:
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be no more than {max_length} characters long"
+            }
+        
+        return {"valid": True}
+    
+    def _validate_pattern(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate against regex pattern."""
+        if not value:
+            return {"valid": True}
+        
+        pattern_name = rule.params.get("pattern")
+        custom_pattern = rule.params.get("custom_pattern")
+        
+        if pattern_name and pattern_name in self.patterns:
+            pattern = self.patterns[pattern_name]
+        elif custom_pattern:
+            pattern = custom_pattern
+        else:
+            return {"valid": True}
+        
+        if not re.match(pattern, str(value)):
+            return {
+                "valid": False,
+                "message": rule.message or f"Invalid format for {field_name}"
+            }
+        
+        return {"valid": True}
+    
+    def _validate_range(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate numeric range."""
+        if value is None:
+            return {"valid": True}
+        
+        try:
+            num_value = float(value)
+        except (ValueError, TypeError):
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be a number"
+            }
+        
+        min_val = rule.params.get("min")
+        max_val = rule.params.get("max")
+        
+        if min_val is not None and num_value < min_val:
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be at least {min_val}"
+            }
+        
+        if max_val is not None and num_value > max_val:
+            return {
+                "valid": False,
+                "message": rule.message or f"{field_name} must be no more than {max_val}"
+            }
+        
+        return {"valid": True}
+    
+    def _validate_custom(self, value: Any, rule: ValidationRule, field_name: str) -> Dict[str, Any]:
+        """Validate using custom function."""
+        custom_func = rule.params.get("function")
+        if not custom_func or not callable(custom_func):
+            return {"valid": True}
+        
+        try:
+            result = custom_func(value)
+            if isinstance(result, bool):
+                return {
+                    "valid": result,
+                    "message": rule.message or f"Invalid {field_name}"
+                }
+            elif isinstance(result, dict):
+                return result
+            else:
+                return {"valid": True}
+        except Exception as e:
+            return {
+                "valid": False,
+                "message": f"Validation error for {field_name}: {str(e)}"
+            }
+    
+    # Convenience methods for common validations
+    def validate_email(self, email: str) -> ValidationResult:
+        """Validate email address."""
+        return self.validate(email, self.default_rules["email"], "email")
+    
+    def validate_password(self, password: str) -> ValidationResult:
+        """Validate password strength."""
+        return self.validate(password, self.default_rules["password"], "password")
+    
+    def validate_username(self, username: str) -> ValidationResult:
+        """Validate username."""
+        return self.validate(username, self.default_rules["username"], "username")
+    
+    def validate_form_data(self, data: Dict[str, Any], schema: Dict[str, List[ValidationRule]]) -> Dict[str, ValidationResult]:
+        """Validate form data against schema."""
+        results = {}
+        
+        for field_name, rules in schema.items():
+            value = data.get(field_name)
+            results[field_name] = self.validate(value, rules, field_name)
+        
+        return results
+    
+    # Sanitization methods
+    def sanitize_string(self, value: str, max_length: Optional[int] = None) -> str:
+        """Sanitize string input."""
+        if not value:
+            return ""
+        
+        # Convert to string and strip whitespace
+        sanitized = str(value).strip()
+        
+        # HTML escape
+        sanitized = html.escape(sanitized)
+        
+        # Limit length
+        if max_length and len(sanitized) > max_length:
+            sanitized = sanitized[:max_length]
+        
+        return sanitized
+    
+    def sanitize_email(self, email: str) -> str:
+        """Sanitize email address."""
+        if not email:
+            return ""
+        
+        # Convert to lowercase and strip whitespace
+        sanitized = str(email).lower().strip()
+        
+        # Basic email validation
+        if re.match(self.patterns["email"], sanitized):
+            return sanitized
+        
+        return ""
+    
+    def sanitize_html(self, html_content: str, allowed_tags: Optional[List[str]] = None) -> str:
+        """Sanitize HTML content."""
+        if not html_content:
+            return ""
+        
+        # For now, just escape all HTML
+        # In a real implementation, you might use a library like bleach
+        return html.escape(html_content)
+    
+    def sanitize_filename(self, filename: str) -> str:
+        """Sanitize filename."""
+        if not filename:
+            return ""
+        
+        # Remove or replace dangerous characters
+        sanitized = re.sub(r'[<>:"/\\|?*]', '_', str(filename))
+        
+        # Remove leading/trailing dots and spaces
+        sanitized = sanitized.strip('. ')
+        
+        # Limit length
+        if len(sanitized) > 255:
+            name, ext = sanitized.rsplit('.', 1) if '.' in sanitized else (sanitized, '')
+            sanitized = name[:255-len(ext)-1] + ('.' + ext if ext else '')
+        
+        return sanitized
+
+
+# Global validator instance
+validator = Validator()
+
+
+# Convenience functions
+def validate_email(email: str) -> ValidationResult:
+    """Validate email address."""
+    return validator.validate_email(email)
+
+
+def validate_password(password: str) -> ValidationResult:
+    """Validate password strength."""
+    return validator.validate_password(password)
+
+
+def validate_username(username: str) -> ValidationResult:
+    """Validate username."""
+    return validator.validate_username(username)
+
+
+def sanitize_string(value: str, max_length: Optional[int] = None) -> str:
+    """Sanitize string input."""
+    return validator.sanitize_string(value, max_length)
+
+
+def sanitize_email(email: str) -> str:
+    """Sanitize email address."""
+    return validator.sanitize_email(email)
 
 
 def validate_file_size(file_size: int) -> Tuple[bool, Optional[str]]:
@@ -677,43 +949,6 @@ def validate_user_data(data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def validate_password(password: str) -> Dict[str, Any]:
-    """
-    Validate password strength.
-    
-    Args:
-        password: Password to validate
-        
-    Returns:
-        Validation result with valid flag and errors list
-    """
-    errors = []
-    
-    if len(password) < 8:
-        errors.append("Passwort muss mindestens 8 Zeichen lang sein")
-    
-    if len(password) > 128:
-        errors.append("Passwort darf maximal 128 Zeichen lang sein")
-    
-    if not re.search(r"[a-z]", password):
-        errors.append("Passwort muss mindestens einen Kleinbuchstaben enthalten")
-    
-    if not re.search(r"[A-Z]", password):
-        errors.append("Passwort muss mindestens einen Großbuchstaben enthalten")
-    
-    if not re.search(r"\d", password):
-        errors.append("Passwort muss mindestens eine Zahl enthalten")
-    
-    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        errors.append("Passwort muss mindestens ein Sonderzeichen enthalten")
-    
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors,
-        "strength": calculate_password_strength(password)
-    }
-
-
 def calculate_password_strength(password: str) -> str:
     """
     Calculate password strength.
@@ -756,122 +991,6 @@ def calculate_password_strength(password: str) -> str:
         return "stark"
     else:
         return "sehr stark"
-
-
-def validate_email(email: str) -> Dict[str, Any]:
-    """
-    Validate email address.
-    
-    Args:
-        email: Email address to validate
-        
-    Returns:
-        Validation result with valid flag and errors list
-    """
-    errors = []
-    
-    if not email:
-        errors.append("E-Mail-Adresse ist erforderlich")
-        return {"valid": False, "errors": errors}
-    
-    # Basic format check
-    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
-        errors.append("Ungültige E-Mail-Adresse")
-    
-    # Length check
-    if len(email) > 254:
-        errors.append("E-Mail-Adresse ist zu lang")
-    
-    # Domain check
-    if "@" in email:
-        domain = email.split("@")[1]
-        if len(domain) > 253:
-            errors.append("Domain ist zu lang")
-    
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors
-    }
-
-
-def validate_username(username: str) -> Dict[str, Any]:
-    """
-    Validate username.
-    
-    Args:
-        username: Username to validate
-        
-    Returns:
-        Validation result with valid flag and errors list
-    """
-    errors = []
-    
-    if not username:
-        errors.append("Benutzername ist erforderlich")
-        return {"valid": False, "errors": errors}
-    
-    if len(username) < 3:
-        errors.append("Benutzername muss mindestens 3 Zeichen lang sein")
-    
-    if len(username) > 30:
-        errors.append("Benutzername darf maximal 30 Zeichen lang sein")
-    
-    if not re.match(r"^[a-zA-Z0-9_-]+$", username):
-        errors.append("Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten")
-    
-    # Check for reserved usernames
-    reserved_usernames = [
-        "admin", "administrator", "root", "system", "user", "guest",
-        "test", "demo", "example", "support", "help", "info"
-    ]
-    if username.lower() in reserved_usernames:
-        errors.append("Dieser Benutzername ist reserviert")
-    
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors
-    }
-
-
-def validate_file_upload(filename: str, file_size: int, allowed_types: List[str], max_size: int) -> Dict[str, Any]:
-    """
-    Validate file upload.
-    
-    Args:
-        filename: Name of the file
-        file_size: Size of the file in bytes
-        allowed_types: List of allowed file extensions
-        max_size: Maximum file size in bytes
-        
-    Returns:
-        Validation result with valid flag and errors list
-    """
-    errors = []
-    
-    # Check file size
-    if file_size > max_size:
-        max_size_mb = max_size / (1024 * 1024)
-        errors.append(f"Datei ist zu groß. Maximale Größe: {max_size_mb:.1f} MB")
-    
-    # Check file extension
-    if "." in filename:
-        extension = filename.split(".")[-1].lower()
-        if extension not in [ext.lower() for ext in allowed_types]:
-            errors.append(f"Dateityp nicht erlaubt. Erlaubte Typen: {', '.join(allowed_types)}")
-    else:
-        errors.append("Datei hat keine Erweiterung")
-    
-    # Check filename
-    if len(filename) > 255:
-        errors.append("Dateiname ist zu lang")
-    
-    if not re.match(r"^[a-zA-Z0-9._-]+$", filename):
-        errors.append("Dateiname enthält ungültige Zeichen")
-    
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors
-    }
 
 
 def validate_url(url: str) -> Dict[str, Any]:
@@ -1024,33 +1143,6 @@ def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -
         "valid": len(errors) == 0,
         "errors": errors
     }
-
-
-def sanitize_input(input_str: str, max_length: int = 1000) -> str:
-    """
-    Sanitize user input.
-    
-    Args:
-        input_str: Input string to sanitize
-        max_length: Maximum allowed length
-        
-    Returns:
-        Sanitized string
-    """
-    if not input_str:
-        return ""
-    
-    # Remove null bytes
-    sanitized = input_str.replace("\x00", "")
-    
-    # Trim whitespace
-    sanitized = sanitized.strip()
-    
-    # Limit length
-    if len(sanitized) > max_length:
-        sanitized = sanitized[:max_length]
-    
-    return sanitized
 
 
 def validate_json_schema(data: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:

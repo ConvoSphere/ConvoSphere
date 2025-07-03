@@ -1,142 +1,28 @@
 """
-API client for handling HTTP requests to the backend.
+API client for communicating with the backend API.
 
-This module provides a centralized API client with request/response
-handling, authentication, and error management.
+This module provides a high-level API client that wraps the HTTP client
+and provides specific methods for each API endpoint.
 """
 
-import json
-import asyncio
 from typing import Optional, Dict, Any, List
-from nicegui import ui
+from .http_client import http_client
 
 
 class APIClient:
-    """Centralized API client for backend communication."""
+    """High-level API client for backend communication."""
     
-    def __init__(self, base_url: str = "http://localhost:8000"):
-        """
-        Initialize the API client.
-        
-        Args:
-            base_url: Base URL for the API
-        """
-        self.base_url = base_url.rstrip('/')
-        self.session_token: Optional[str] = None
-        self.headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
+    def __init__(self):
+        """Initialize the API client."""
+        self.client = http_client
     
     def set_auth_token(self, token: str):
         """Set authentication token."""
-        self.session_token = token
-        self.headers["Authorization"] = f"Bearer {token}"
+        self.client.set_auth_token(token)
     
     def clear_auth_token(self):
         """Clear authentication token."""
-        self.session_token = None
-        if "Authorization" in self.headers:
-            del self.headers["Authorization"]
-    
-    async def _make_request(
-        self,
-        method: str,
-        endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Make HTTP request to the API.
-        
-        Args:
-            method: HTTP method (GET, POST, PUT, DELETE)
-            endpoint: API endpoint
-            data: Request data
-            params: Query parameters
-            
-        Returns:
-            Dict containing response data
-            
-        Raises:
-            Exception: If request fails
-        """
-        url = f"{self.base_url}{endpoint}"
-        
-        try:
-            # Prepare request data
-            request_data = None
-            if data:
-                request_data = json.dumps(data)
-            
-            # Make request (simplified for NiceGUI)
-            # In a real implementation, you would use aiohttp or httpx
-            response = await self._simulate_request(method, url, request_data, params)
-            
-            return response
-            
-        except Exception as e:
-            raise Exception(f"API request failed: {str(e)}")
-    
-    async def _simulate_request(
-        self,
-        method: str,
-        url: str,
-        data: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Simulate API request for development.
-        
-        In production, replace this with actual HTTP client.
-        """
-        # Simulate network delay
-        await asyncio.sleep(0.1)
-        
-        # Mock responses for development
-        if method == "POST" and "/auth/login" in url:
-            if data and "test@example.com" in data and "password123" in data:
-                return {
-                    "success": True,
-                    "access_token": "mock_token_123",
-                    "token_type": "bearer",
-                    "user": {
-                        "id": 1,
-                        "email": "test@example.com",
-                        "username": "testuser",
-                        "first_name": "Test",
-                        "last_name": "User"
-                    }
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": "Invalid credentials"
-                }
-        
-        elif method == "POST" and "/auth/register" in url:
-            return {
-                "success": True,
-                "message": "User registered successfully"
-            }
-        
-        elif method == "GET" and "/users/me" in url:
-            return {
-                "success": True,
-                "user": {
-                    "id": 1,
-                    "email": "test@example.com",
-                    "username": "testuser",
-                    "first_name": "Test",
-                    "last_name": "User"
-                }
-            }
-        
-        else:
-            return {
-                "success": True,
-                "data": f"Mock response for {method} {url}"
-            }
+        self.client.clear_auth_token()
     
     # Authentication endpoints
     async def login(self, email: str, password: str) -> Dict[str, Any]:
@@ -145,128 +31,147 @@ class APIClient:
             "username": email,
             "password": password
         }
-        return await self._make_request("POST", "/auth/login", data)
+        return await self.client.post("/api/v1/auth/login", data=data)
     
-    async def register(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def register(self, email: str, password: str, full_name: str) -> Dict[str, Any]:
         """Register new user."""
-        return await self._make_request("POST", "/auth/register", user_data)
-    
-    async def logout(self) -> Dict[str, Any]:
-        """Logout user."""
-        response = await self._make_request("POST", "/auth/logout")
-        self.clear_auth_token()
-        return response
+        data = {
+            "email": email,
+            "password": password,
+            "full_name": full_name
+        }
+        return await self.client.post("/api/v1/auth/register", data=data)
     
     async def get_current_user(self) -> Dict[str, Any]:
-        """Get current user information."""
-        return await self._make_request("GET", "/users/me")
+        """Get current user profile."""
+        return await self.client.get("/api/v1/auth/me")
     
-    # User management endpoints
-    async def get_users(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Get list of users."""
-        return await self._make_request("GET", "/users", params=params)
+    async def refresh_token(self) -> Dict[str, Any]:
+        """Refresh authentication token."""
+        return await self.client.post("/api/v1/auth/refresh")
+    
+    # User management
+    async def get_users(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Get users list."""
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get("/api/v1/users", params=params)
     
     async def get_user(self, user_id: int) -> Dict[str, Any]:
-        """Get user by ID."""
-        return await self._make_request("GET", f"/users/{user_id}")
+        """Get specific user."""
+        return await self.client.get(f"/api/v1/users/{user_id}")
     
-    async def update_user(self, user_id: int, user_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_user(self, user_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
         """Update user."""
-        return await self._make_request("PUT", f"/users/{user_id}", user_data)
+        return await self.client.put(f"/api/v1/users/{user_id}", data=data)
     
     async def delete_user(self, user_id: int) -> Dict[str, Any]:
         """Delete user."""
-        return await self._make_request("DELETE", f"/users/{user_id}")
+        return await self.client.delete(f"/api/v1/users/{user_id}")
     
-    # Assistant endpoints
-    async def get_assistants(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Get list of assistants."""
-        return await self._make_request("GET", "/assistants", params=params)
-    
-    async def get_assistant(self, assistant_id: int) -> Dict[str, Any]:
-        """Get assistant by ID."""
-        return await self._make_request("GET", f"/assistants/{assistant_id}")
-    
-    async def create_assistant(self, assistant_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Create new assistant."""
-        return await self._make_request("POST", "/assistants", assistant_data)
-    
-    async def update_assistant(self, assistant_id: int, assistant_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Update assistant."""
-        return await self._make_request("PUT", f"/assistants/{assistant_id}", assistant_data)
-    
-    async def delete_assistant(self, assistant_id: int) -> Dict[str, Any]:
-        """Delete assistant."""
-        return await self._make_request("DELETE", f"/assistants/{assistant_id}")
-    
-    # Conversation endpoints
-    async def get_conversations(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Get list of conversations."""
-        return await self._make_request("GET", "/conversations", params=params)
+    # Conversations
+    async def get_conversations(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Get conversations list."""
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get("/api/v1/conversations", params=params)
     
     async def get_conversation(self, conversation_id: int) -> Dict[str, Any]:
-        """Get conversation by ID."""
-        return await self._make_request("GET", f"/conversations/{conversation_id}")
+        """Get specific conversation."""
+        return await self.client.get(f"/api/v1/conversations/{conversation_id}")
     
-    async def create_conversation(self, conversation_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_conversation(self, title: str, assistant_id: Optional[int] = None) -> Dict[str, Any]:
         """Create new conversation."""
-        return await self._make_request("POST", "/conversations", conversation_data)
+        data = {"title": title}
+        if assistant_id:
+            data["assistant_id"] = str(assistant_id)
+        return await self.client.post("/api/v1/conversations", data=data)
     
-    async def update_conversation(self, conversation_id: int, conversation_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_conversation(self, conversation_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
         """Update conversation."""
-        return await self._make_request("PUT", f"/conversations/{conversation_id}", conversation_data)
+        return await self.client.put(f"/api/v1/conversations/{conversation_id}", data=data)
     
     async def delete_conversation(self, conversation_id: int) -> Dict[str, Any]:
         """Delete conversation."""
-        return await self._make_request("DELETE", f"/conversations/{conversation_id}")
+        return await self.client.delete(f"/api/v1/conversations/{conversation_id}")
     
-    # Chat endpoints
-    async def send_message(self, conversation_id: int, message_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Send message to conversation."""
-        return await self._make_request("POST", f"/conversations/{conversation_id}/messages", message_data)
-    
-    async def get_messages(self, conversation_id: int, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    # Messages
+    async def get_messages(self, conversation_id: int, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
         """Get messages for conversation."""
-        return await self._make_request("GET", f"/conversations/{conversation_id}/messages", params=params)
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get(f"/api/v1/conversations/{conversation_id}/messages", params=params)
     
-    # Tool endpoints
-    async def get_tools(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Get list of tools."""
-        return await self._make_request("GET", "/tools", params=params)
+    async def send_message(self, conversation_id: int, content: str, role: str = "user") -> Dict[str, Any]:
+        """Send message to conversation."""
+        data = {
+            "content": content,
+            "role": role
+        }
+        return await self.client.post(f"/api/v1/conversations/{conversation_id}/messages", data=data)
+    
+    # Assistants
+    async def get_assistants(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Get assistants list."""
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get("/api/v1/assistants", params=params)
+    
+    async def get_assistant(self, assistant_id: int) -> Dict[str, Any]:
+        """Get specific assistant."""
+        return await self.client.get(f"/api/v1/assistants/{assistant_id}")
+    
+    async def create_assistant(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create new assistant."""
+        return await self.client.post("/api/v1/assistants", data=data)
+    
+    async def update_assistant(self, assistant_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update assistant."""
+        return await self.client.put(f"/api/v1/assistants/{assistant_id}", data=data)
+    
+    async def delete_assistant(self, assistant_id: int) -> Dict[str, Any]:
+        """Delete assistant."""
+        return await self.client.delete(f"/api/v1/assistants/{assistant_id}")
+    
+    # Tools
+    async def get_tools(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Get tools list."""
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get("/api/v1/tools", params=params)
     
     async def get_tool(self, tool_id: int) -> Dict[str, Any]:
-        """Get tool by ID."""
-        return await self._make_request("GET", f"/tools/{tool_id}")
+        """Get specific tool."""
+        return await self.client.get(f"/api/v1/tools/{tool_id}")
     
-    async def create_tool(self, tool_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_tool(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Create new tool."""
-        return await self._make_request("POST", "/tools", tool_data)
+        return await self.client.post("/api/v1/tools", data=data)
     
-    async def update_tool(self, tool_id: int, tool_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_tool(self, tool_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
         """Update tool."""
-        return await self._make_request("PUT", f"/tools/{tool_id}", tool_data)
+        return await self.client.put(f"/api/v1/tools/{tool_id}", data=data)
     
     async def delete_tool(self, tool_id: int) -> Dict[str, Any]:
         """Delete tool."""
-        return await self._make_request("DELETE", f"/tools/{tool_id}")
+        return await self.client.delete(f"/api/v1/tools/{tool_id}")
     
-    # Knowledge base endpoints
-    async def get_knowledge_documents(self, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Get list of knowledge documents."""
-        return await self._make_request("GET", "/knowledge", params=params)
+    # Knowledge Base
+    async def get_knowledge_documents(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
+        """Get knowledge documents."""
+        params = {"skip": skip, "limit": limit}
+        return await self.client.get("/api/v1/knowledge", params=params)
     
-    async def upload_document(self, file_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Upload knowledge document."""
-        return await self._make_request("POST", "/knowledge/upload", file_data)
+    async def upload_document(self, file_data: bytes, filename: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Upload document to knowledge base."""
+        # This would need special handling for file uploads
+        # For now, return a placeholder
+        return {"message": "File upload not implemented yet"}
     
-    async def delete_document(self, document_id: int) -> Dict[str, Any]:
-        """Delete knowledge document."""
-        return await self._make_request("DELETE", f"/knowledge/{document_id}")
+    async def search_knowledge(self, query: str, limit: int = 10) -> Dict[str, Any]:
+        """Search knowledge base."""
+        params = {"q": query, "limit": limit}
+        return await self.client.get("/api/v1/knowledge/search", params=params)
     
     # Health check
     async def health_check(self) -> Dict[str, Any]:
         """Check API health."""
-        return await self._make_request("GET", "/health")
+        return await self.client.get("/api/v1/health")
 
 
 # Global API client instance

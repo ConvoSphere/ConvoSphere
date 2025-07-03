@@ -1,8 +1,8 @@
 """
-Error handling service for the AI Assistant Platform.
+Error handler for consistent error management.
 
-This module provides centralized error handling and user-friendly
-error messages for the frontend application.
+This module provides centralized error handling with proper
+logging, user feedback, and error recovery strategies.
 """
 
 import asyncio
@@ -22,6 +22,17 @@ class ErrorSeverity(Enum):
     CRITICAL = "critical"
 
 
+class ErrorType(Enum):
+    """Error types for categorization."""
+    NETWORK = "network"
+    AUTHENTICATION = "authentication"
+    VALIDATION = "validation"
+    PERMISSION = "permission"
+    SERVER = "server"
+    CLIENT = "client"
+    UNKNOWN = "unknown"
+
+
 @dataclass
 class ErrorInfo:
     """Error information."""
@@ -37,205 +48,206 @@ class ErrorInfo:
 
 
 class ErrorHandler:
-    """Centralized error handling service."""
+    """Centralized error handler."""
     
     def __init__(self):
-        """Initialize the error handler."""
-        self.error_handlers: List[Callable[[ErrorInfo], None]] = []
-        self.error_history: List[ErrorInfo] = []
-        self.max_history = 100
-        
-    def handle_error(
+        """Initialize error handler."""
+        self.error_handlers: Dict[ErrorType, List[Callable]] = {
+            error_type: [] for error_type in ErrorType
+        }
+        self.global_handlers: List[Callable] = []
+        self.error_notifications: List[Dict[str, Any]] = []
+        self.max_notifications = 5
+    
+    def register_handler(self, error_type: ErrorType, handler: Callable):
+        """Register error handler for specific error type."""
+        if error_type not in self.error_handlers:
+            self.error_handlers[error_type] = []
+        self.error_handlers[error_type].append(handler)
+    
+    def register_global_handler(self, handler: Callable):
+        """Register global error handler."""
+        self.global_handlers.append(handler)
+    
+    async def handle_error(
         self,
-        message: str,
+        error: Exception,
+        error_type: ErrorType = ErrorType.UNKNOWN,
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        error_code: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-        show_notification: bool = True
+        context: Optional[Dict[str, Any]] = None
     ):
         """
-        Handle an error.
+        Handle an error with proper logging and user feedback.
         
         Args:
-            message: Error message
-            severity: Error severity level
-            error_code: Optional error code
-            details: Optional error details
-            show_notification: Whether to show notification
+            error: The exception that occurred
+            error_type: Type of error for categorization
+            severity: Severity level of the error
+            context: Additional context information
         """
-        error_info = ErrorInfo(
-            message=message,
-            severity=severity,
-            error_code=error_code,
-            details=details
-        )
+        error_info = {
+            "error": error,
+            "type": error_type,
+            "severity": severity,
+            "context": context or {},
+            "timestamp": asyncio.get_event_loop().time()
+        }
         
-        # Add to history
-        self.error_history.append(error_info)
-        if len(self.error_history) > self.max_history:
-            self.error_history.pop(0)
+        # Log error
+        self._log_error(error_info)
         
-        # Notify handlers
-        for handler in self.error_handlers:
+        # Call type-specific handlers
+        if error_type in self.error_handlers:
+            for handler in self.error_handlers[error_type]:
+                try:
+                    if asyncio.iscoroutinefunction(handler):
+                        await handler(error_info)
+                    else:
+                        handler(error_info)
+                except Exception as e:
+                    print(f"Error in error handler: {e}")
+        
+        # Call global handlers
+        for handler in self.global_handlers:
             try:
-                handler(error_info)
+                if asyncio.iscoroutinefunction(handler):
+                    await handler(error_info)
+                else:
+                    handler(error_info)
             except Exception as e:
-                print(f"Error handler failed: {e}")
+                print(f"Error in global error handler: {e}")
         
-        # Show notification if requested
-        if show_notification:
-            self._show_notification(error_info)
+        # Show user notification
+        await self._show_error_notification(error_info)
     
-    def handle_api_error(self, response, context: str = ""):
-        """
-        Handle API error response.
+    def _log_error(self, error_info: Dict[str, Any]):
+        """Log error information."""
+        error = error_info["error"]
+        error_type = error_info["type"]
+        severity = error_info["severity"]
+        context = error_info["context"]
         
-        Args:
-            response: API response object
-            context: Context where the error occurred
-        """
-        if not response.success:
-            message = response.error or "Unknown API error"
-            if context:
-                message = f"{context}: {message}"
-            
-            # Determine severity based on status code
-            if response.status_code >= 500:
-                severity = ErrorSeverity.CRITICAL
-            elif response.status_code >= 400:
-                severity = ErrorSeverity.ERROR
-            else:
-                severity = ErrorSeverity.WARNING
-            
-            self.handle_error(
-                message=message,
-                severity=severity,
-                error_code=f"API_{response.status_code}",
-                details={
-                    "status_code": response.status_code,
-                    "context": context
-                }
-            )
-    
-    def handle_network_error(self, error: Exception, context: str = ""):
-        """
-        Handle network-related errors.
-        
-        Args:
-            error: Network error exception
-            context: Context where the error occurred
-        """
-        message = f"Network error: {str(error)}"
+        log_message = f"[{severity.value.upper()}] {error_type.value}: {str(error)}"
         if context:
-            message = f"{context}: {message}"
+            log_message += f" | Context: {context}"
         
-        self.handle_error(
-            message=message,
-            severity=ErrorSeverity.ERROR,
-            error_code="NETWORK_ERROR",
-            details={
-                "error_type": type(error).__name__,
-                "context": context
-            }
-        )
+        print(log_message)
     
-    def handle_validation_error(self, field: str, message: str):
-        """
-        Handle validation errors.
-        
-        Args:
-            field: Field that failed validation
-            message: Validation message
-        """
-        self.handle_error(
-            message=f"Validation error in {field}: {message}",
-            severity=ErrorSeverity.WARNING,
-            error_code="VALIDATION_ERROR",
-            details={"field": field}
-        )
-    
-    def handle_authentication_error(self, message: str = "Authentication failed"):
-        """
-        Handle authentication errors.
-        
-        Args:
-            message: Authentication error message
-        """
-        self.handle_error(
-            message=message,
-            severity=ErrorSeverity.ERROR,
-            error_code="AUTH_ERROR"
-        )
-    
-    def handle_permission_error(self, resource: str = "resource"):
-        """
-        Handle permission errors.
-        
-        Args:
-            resource: Resource that requires permission
-        """
-        self.handle_error(
-            message=f"You don't have permission to access this {resource}",
-            severity=ErrorSeverity.ERROR,
-            error_code="PERMISSION_ERROR",
-            details={"resource": resource}
-        )
-    
-    def _show_notification(self, error_info: ErrorInfo):
+    async def _show_error_notification(self, error_info: Dict[str, Any]):
         """Show error notification to user."""
-        notification_type = error_info.severity.value
+        error = error_info["error"]
+        severity = error_info["severity"]
+        context = error_info["context"]
         
-        # Map severity to notification type
-        if error_info.severity == ErrorSeverity.INFO:
-            ui.notify(error_info.message, type="info")
-        elif error_info.severity == ErrorSeverity.WARNING:
-            ui.notify(error_info.message, type="warning")
-        elif error_info.severity == ErrorSeverity.ERROR:
-            ui.notify(error_info.message, type="negative")
-        elif error_info.severity == ErrorSeverity.CRITICAL:
-            ui.notify(error_info.message, type="negative")
-    
-    def add_error_handler(self, handler: Callable[[ErrorInfo], None]):
-        """Add error handler."""
-        self.error_handlers.append(handler)
-    
-    def remove_error_handler(self, handler: Callable[[ErrorInfo], None]):
-        """Remove error handler."""
-        if handler in self.error_handlers:
-            self.error_handlers.remove(handler)
-    
-    def get_error_history(self, severity: Optional[ErrorSeverity] = None) -> List[ErrorInfo]:
-        """
-        Get error history.
+        # Create user-friendly message
+        if severity == ErrorSeverity.INFO:
+            message = str(error)
+            color = "info"
+        elif severity == ErrorSeverity.WARNING:
+            message = f"Warnung: {str(error)}"
+            color = "warning"
+        elif severity == ErrorSeverity.ERROR:
+            message = f"Fehler: {str(error)}"
+            color = "negative"
+        else:  # CRITICAL
+            message = f"Kritischer Fehler: {str(error)}"
+            color = "negative"
         
-        Args:
-            severity: Filter by severity level
-            
-        Returns:
-            List of error information
-        """
-        if severity:
-            return [error for error in self.error_history if error.severity == severity]
-        return self.error_history.copy()
-    
-    def clear_error_history(self):
-        """Clear error history."""
-        self.error_history.clear()
-    
-    def get_error_summary(self) -> Dict[str, int]:
-        """
-        Get error summary by severity.
+        # Add context if available
+        if context.get("action"):
+            message = f"{context['action']} - {message}"
         
-        Returns:
-            Dictionary with error counts by severity
-        """
-        summary = {}
-        for severity in ErrorSeverity:
-            summary[severity.value] = len([
-                error for error in self.error_history 
-                if error.severity == severity
-            ])
-        return summary
+        # Create notification
+        notification = {
+            "message": message,
+            "color": color,
+            "timeout": 5000 if severity in [ErrorSeverity.INFO, ErrorSeverity.WARNING] else 10000,
+            "timestamp": error_info["timestamp"]
+        }
+        
+        # Add to notifications list
+        self.error_notifications.append(notification)
+        
+        # Limit number of notifications
+        if len(self.error_notifications) > self.max_notifications:
+            self.error_notifications.pop(0)
+        
+        # Show notification using NiceGUI
+        try:
+            ui.notify(
+                message,
+                type=color,
+                timeout=notification["timeout"]
+            )
+        except Exception as e:
+            print(f"Failed to show notification: {e}")
+    
+    async def handle_network_error(self, error: Exception, action: str = ""):
+        """Handle network-related errors."""
+        await self.handle_error(
+            error,
+            ErrorType.NETWORK,
+            ErrorSeverity.ERROR,
+            {"action": action}
+        )
+    
+    async def handle_auth_error(self, error: Exception, action: str = ""):
+        """Handle authentication errors."""
+        await self.handle_error(
+            error,
+            ErrorType.AUTHENTICATION,
+            ErrorSeverity.ERROR,
+            {"action": action}
+        )
+    
+    async def handle_validation_error(self, error: Exception, action: str = ""):
+        """Handle validation errors."""
+        await self.handle_error(
+            error,
+            ErrorType.VALIDATION,
+            ErrorSeverity.WARNING,
+            {"action": action}
+        )
+    
+    async def handle_permission_error(self, error: Exception, action: str = ""):
+        """Handle permission errors."""
+        await self.handle_error(
+            error,
+            ErrorType.PERMISSION,
+            ErrorSeverity.ERROR,
+            {"action": action}
+        )
+    
+    async def handle_server_error(self, error: Exception, action: str = ""):
+        """Handle server errors."""
+        await self.handle_error(
+            error,
+            ErrorType.SERVER,
+            ErrorSeverity.ERROR,
+            {"action": action}
+        )
+    
+    def get_error_notifications(self) -> List[Dict[str, Any]]:
+        """Get current error notifications."""
+        return self.error_notifications.copy()
+    
+    def clear_notifications(self):
+        """Clear all error notifications."""
+        self.error_notifications.clear()
+    
+    def create_error_boundary(self, fallback_ui=None):
+        """Create error boundary for UI components."""
+        def decorator(func):
+            async def wrapper(*args, **kwargs):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    await self.handle_error(e, ErrorType.CLIENT, ErrorSeverity.ERROR)
+                    if fallback_ui:
+                        return fallback_ui()
+                    return None
+            return wrapper
+        return decorator
 
 
 # Global error handler instance
@@ -243,31 +255,26 @@ error_handler = ErrorHandler()
 
 
 # Convenience functions
-def handle_error(message: str, severity: ErrorSeverity = ErrorSeverity.ERROR, **kwargs):
-    """Convenience function to handle errors."""
-    error_handler.handle_error(message, severity, **kwargs)
+async def handle_network_error(error: Exception, action: str = ""):
+    """Handle network error."""
+    await error_handler.handle_network_error(error, action)
 
 
-def handle_api_error(response, context: str = ""):
-    """Convenience function to handle API errors."""
-    error_handler.handle_api_error(response, context)
+async def handle_auth_error(error: Exception, action: str = ""):
+    """Handle authentication error."""
+    await error_handler.handle_auth_error(error, action)
 
 
-def handle_network_error(error: Exception, context: str = ""):
-    """Convenience function to handle network errors."""
-    error_handler.handle_network_error(error, context)
+async def handle_validation_error(error: Exception, action: str = ""):
+    """Handle validation error."""
+    await error_handler.handle_validation_error(error, action)
 
 
-def handle_validation_error(field: str, message: str):
-    """Convenience function to handle validation errors."""
-    error_handler.handle_validation_error(field, message)
+async def handle_permission_error(error: Exception, action: str = ""):
+    """Handle permission error."""
+    await error_handler.handle_permission_error(error, action)
 
 
-def handle_authentication_error(message: str = "Authentication failed"):
-    """Convenience function to handle authentication errors."""
-    error_handler.handle_authentication_error(message)
-
-
-def handle_permission_error(resource: str = "resource"):
-    """Convenience function to handle permission errors."""
-    error_handler.handle_permission_error(resource) 
+async def handle_server_error(error: Exception, action: str = ""):
+    """Handle server error."""
+    await error_handler.handle_server_error(error, action) 

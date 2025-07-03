@@ -1,8 +1,8 @@
 """
-Message service for the AI Assistant Platform.
+Message service for handling chat messages and conversation state.
 
-This module provides advanced message handling functionality including
-different message types, file uploads, tool execution, and message formatting.
+This module provides functionality for managing messages, conversations,
+and real-time chat features.
 """
 
 import asyncio
@@ -10,13 +10,14 @@ import base64
 import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Union
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from .api import api_client
 from .error_handler import handle_api_error, handle_network_error
 from utils.helpers import generate_id, format_timestamp
 from utils.validators import validate_message_data, sanitize_input
+from .websocket_service import websocket_service
 
 
 class MessageType(Enum):
@@ -37,6 +38,13 @@ class MessageStatus(Enum):
     READ = "read"
     FAILED = "failed"
     PROCESSING = "processing"
+
+
+class MessageRole(Enum):
+    """Message roles."""
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
 
 
 @dataclass
@@ -64,6 +72,28 @@ class ToolResult:
 
 
 @dataclass
+class Message:
+    """Chat message model."""
+    id: Optional[int] = None
+    conversation_id: Optional[int] = None
+    content: str = ""
+    role: MessageRole = MessageRole.USER
+    timestamp: datetime = field(default_factory=datetime.now)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Conversation:
+    """Conversation model."""
+    id: Optional[int] = None
+    title: str = ""
+    assistant_id: Optional[int] = None
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
+    messages: List[Message] = field(default_factory=list)
+
+
+@dataclass
 class AdvancedMessage:
     """Advanced message data model with support for different types."""
     id: str
@@ -82,484 +112,227 @@ class AdvancedMessage:
 
 
 class MessageService:
-    """Service for advanced message handling."""
+    """Service for managing messages and conversations."""
     
     def __init__(self):
-        """Initialize the message service."""
-        self.message_queue: List[AdvancedMessage] = []
-        self.processing_messages: Dict[str, AdvancedMessage] = {}
-        self.file_cache: Dict[str, FileAttachment] = {}
-    
-    async def send_text_message(
-        self,
-        conversation_id: str,
-        content: str,
-        reply_to: Optional[str] = None
-    ) -> Optional[AdvancedMessage]:
-        """
-        Send a text message.
+        """Initialize message service."""
+        self.conversations: Dict[int, Conversation] = {}
+        self.current_conversation_id: Optional[int] = None
+        self.message_handlers: List[callable] = []
+        self.conversation_handlers: List[callable] = []
         
-        Args:
-            conversation_id: Conversation ID
-            content: Message content
-            reply_to: ID of message to reply to
-            
-        Returns:
-            Sent message or None if failed
-        """
-        try:
-            # Validate message data
-            message_data = {
-                "content": content,
-                "conversation_id": conversation_id
-            }
-            validation = validate_message_data(message_data)
-            if not validation["valid"]:
-                raise ValueError(f"Message validation failed: {validation['errors']}")
-            
-            # Sanitize content
-            sanitized_content = sanitize_input(content, max_length=10000)
-            
-            # Create message object
-            message = AdvancedMessage(
-                id=generate_id("msg_"),
-                conversation_id=conversation_id,
-                content=sanitized_content,
-                role="user",
-                message_type=MessageType.TEXT,
-                status=MessageStatus.SENDING,
-                timestamp=datetime.now(),
-                reply_to=reply_to
-            )
-            
-            # Add to processing queue
-            self.processing_messages[message.id] = message
-            
-            # Send to API
-            response = await api_client.send_message(conversation_id, sanitized_content)
-            
-            if response.success and response.data:
-                # Update message with API response
-                message.id = response.data.get("id", message.id)
-                message.status = MessageStatus.SENT
-                message.timestamp = datetime.fromisoformat(response.data["timestamp"]) if response.data.get("timestamp") else datetime.now()
-                
-                # Remove from processing
-                if message.id in self.processing_messages:
-                    del self.processing_messages[message.id]
-                
-                return message
-            else:
-                # Mark as failed
-                message.status = MessageStatus.FAILED
-                handle_api_error(response, "Senden der Nachricht")
-                return None
-                
-        except Exception as e:
-            handle_network_error(e, "Senden der Nachricht")
-            return None
+        # Register WebSocket handlers
+        websocket_service.on_message("chat_message")(self._handle_chat_message)
+        websocket_service.on_message("typing_indicator")(self._handle_typing_indicator)
     
-    async def send_file_message(
-        self,
-        conversation_id: str,
-        file_data: bytes,
-        filename: str,
-        file_type: str,
-        reply_to: Optional[str] = None
-    ) -> Optional[AdvancedMessage]:
-        """
-        Send a file message.
-        
-        Args:
-            conversation_id: Conversation ID
-            file_data: File content as bytes
-            filename: Name of the file
-            file_type: MIME type of the file
-            reply_to: ID of message to reply to
-            
-        Returns:
-            Sent message or None if failed
-        """
-        try:
-            # Create file attachment
-            file_attachment = FileAttachment(
-                id=generate_id("file_"),
-                filename=filename,
-                file_type=file_type,
-                file_size=len(file_data),
-                content=file_data
-            )
-            
-            # Create message
-            message = AdvancedMessage(
-                id=generate_id("msg_"),
-                conversation_id=conversation_id,
-                content=f"Datei: {filename}",
-                role="user",
-                message_type=MessageType.FILE,
-                status=MessageStatus.SENDING,
-                timestamp=datetime.now(),
-                file_attachments=[file_attachment],
-                reply_to=reply_to
-            )
-            
-            # Add to processing queue
-            self.processing_messages[message.id] = message
-            
-            # Upload file to API
-            response = await api_client.upload_file(
-                conversation_id,
-                file_data,
-                filename,
-                file_type
-            )
-            
-            if response.success and response.data:
-                # Update message with API response
-                message.id = response.data.get("id", message.id)
-                message.status = MessageStatus.SENT
-                message.timestamp = datetime.fromisoformat(response.data["timestamp"]) if response.data.get("timestamp") else datetime.now()
-                
-                # Update file attachment with URL
-                if response.data.get("file_url"):
-                    file_attachment.url = response.data["file_url"]
-                
-                # Cache file
-                self.file_cache[file_attachment.id] = file_attachment
-                
-                # Remove from processing
-                if message.id in self.processing_messages:
-                    del self.processing_messages[message.id]
-                
-                return message
-            else:
-                # Mark as failed
-                message.status = MessageStatus.FAILED
-                handle_api_error(response, "Hochladen der Datei")
-                return None
-                
-        except Exception as e:
-            handle_network_error(e, "Hochladen der Datei")
-            return None
+    def on_message(self, handler: callable):
+        """Register message handler."""
+        self.message_handlers.append(handler)
     
-    async def execute_tool(
-        self,
-        conversation_id: str,
-        tool_id: str,
-        tool_input: Dict[str, Any],
-        reply_to: Optional[str] = None
-    ) -> Optional[AdvancedMessage]:
-        """
-        Execute a tool and send the result as a message.
-        
-        Args:
-            conversation_id: Conversation ID
-            tool_id: Tool ID to execute
-            tool_input: Input data for the tool
-            reply_to: ID of message to reply to
-            
-        Returns:
-            Message with tool result or None if failed
-        """
+    def on_conversation_update(self, handler: callable):
+        """Register conversation update handler."""
+        self.conversation_handlers.append(handler)
+    
+    async def load_conversations(self) -> List[Conversation]:
+        """Load user conversations from API."""
         try:
-            # Create message for tool execution
-            message = AdvancedMessage(
-                id=generate_id("msg_"),
-                conversation_id=conversation_id,
-                content=f"Führe Tool aus: {tool_id}",
-                role="assistant",
-                message_type=MessageType.TOOL,
-                status=MessageStatus.PROCESSING,
-                timestamp=datetime.now(),
-                reply_to=reply_to
-            )
+            response = await api_client.get_conversations()
+            conversations = []
             
-            # Add to processing queue
-            self.processing_messages[message.id] = message
-            
-            # Execute tool
-            start_time = datetime.now()
-            response = await api_client.execute_tool(tool_id, tool_input)
-            
-            execution_time = (datetime.now() - start_time).total_seconds()
-            
-            if response.success and response.data:
-                # Create tool result
-                tool_result = ToolResult(
-                    tool_name=response.data.get("tool_name", tool_id),
-                    tool_id=tool_id,
-                    input_data=tool_input,
-                    output_data=response.data.get("result", {}),
-                    execution_time=execution_time,
-                    status="success"
+            for conv_data in response.get("items", []):
+                conversation = Conversation(
+                    id=conv_data.get("id"),
+                    title=conv_data.get("title", ""),
+                    assistant_id=conv_data.get("assistant_id"),
+                    created_at=datetime.fromisoformat(conv_data.get("created_at", "")),
+                    updated_at=datetime.fromisoformat(conv_data.get("updated_at", ""))
                 )
-                
-                # Update message
-                message.content = f"Tool '{tool_result.tool_name}' erfolgreich ausgeführt"
-                message.status = MessageStatus.SENT
-                message.tool_results = [tool_result]
-                message.timestamp = datetime.now()
-                
-                # Remove from processing
-                if message.id in self.processing_messages:
-                    del self.processing_messages[message.id]
-                
-                return message
-            else:
-                # Create error tool result
-                tool_result = ToolResult(
-                    tool_name=tool_id,
-                    tool_id=tool_id,
-                    input_data=tool_input,
-                    output_data={},
-                    execution_time=execution_time,
-                    status="error",
-                    error_message=response.error if hasattr(response, 'error') else "Unknown error"
-                )
-                
-                # Update message
-                message.content = f"Fehler bei Tool-Ausführung: {tool_result.error_message}"
-                message.status = MessageStatus.FAILED
-                message.tool_results = [tool_result]
-                message.timestamp = datetime.now()
-                
-                # Remove from processing
-                if message.id in self.processing_messages:
-                    del self.processing_messages[message.id]
-                
-                return message
-                
+                conversations.append(conversation)
+                self.conversations[conversation.id] = conversation
+            
+            return conversations
+            
         except Exception as e:
-            handle_network_error(e, "Tool-Ausführung")
+            print(f"Error loading conversations: {e}")
+            return []
+    
+    async def load_messages(self, conversation_id: int) -> List[Message]:
+        """Load messages for a conversation."""
+        try:
+            response = await api_client.get_messages(conversation_id)
+            messages = []
+            
+            for msg_data in response.get("items", []):
+                message = Message(
+                    id=msg_data.get("id"),
+                    conversation_id=conversation_id,
+                    content=msg_data.get("content", ""),
+                    role=MessageRole(msg_data.get("role", "user")),
+                    timestamp=datetime.fromisoformat(msg_data.get("created_at", "")),
+                    metadata=msg_data.get("metadata", {})
+                )
+                messages.append(message)
+            
+            # Update conversation messages
+            if conversation_id in self.conversations:
+                self.conversations[conversation_id].messages = messages
+            
+            return messages
+            
+        except Exception as e:
+            print(f"Error loading messages: {e}")
+            return []
+    
+    async def create_conversation(self, title: str, assistant_id: Optional[int] = None) -> Optional[Conversation]:
+        """Create new conversation."""
+        try:
+            response = await api_client.create_conversation(title, assistant_id)
+            
+            conversation = Conversation(
+                id=response.get("id"),
+                title=title,
+                assistant_id=assistant_id,
+                created_at=datetime.fromisoformat(response.get("created_at", "")),
+                updated_at=datetime.fromisoformat(response.get("updated_at", ""))
+            )
+            
+            self.conversations[conversation.id] = conversation
+            self._notify_conversation_handlers()
+            
+            return conversation
+            
+        except Exception as e:
+            print(f"Error creating conversation: {e}")
             return None
     
-    async def edit_message(
-        self,
-        message_id: str,
-        new_content: str
-    ) -> Optional[AdvancedMessage]:
-        """
-        Edit an existing message.
+    async def send_message(self, content: str, conversation_id: Optional[int] = None) -> Optional[Message]:
+        """Send message to conversation."""
+        conv_id = conversation_id or self.current_conversation_id
         
-        Args:
-            message_id: Message ID to edit
-            new_content: New message content
-            
-        Returns:
-            Updated message or None if failed
-        """
+        if not conv_id:
+            print("No conversation selected")
+            return None
+        
         try:
-            # Validate new content
-            validation = validate_message_data({"content": new_content})
-            if not validation["valid"]:
-                raise ValueError(f"Message validation failed: {validation['errors']}")
+            # Create message locally
+            message = Message(
+                conversation_id=conv_id,
+                content=content,
+                role=MessageRole.USER,
+                timestamp=datetime.now()
+            )
             
-            # Sanitize content
-            sanitized_content = sanitize_input(new_content, max_length=10000)
+            # Add to conversation
+            if conv_id in self.conversations:
+                self.conversations[conv_id].messages.append(message)
+                self.conversations[conv_id].updated_at = datetime.now()
             
-            # Send edit request to API
-            response = await api_client.edit_message(message_id, sanitized_content)
+            # Send via API
+            response = await api_client.send_message(conv_id, content, "user")
+            message.id = response.get("id")
             
-            if response.success and response.data:
-                # Create updated message
-                message = AdvancedMessage(
-                    id=message_id,
-                    conversation_id=response.data.get("conversation_id", ""),
-                    content=sanitized_content,
-                    role=response.data.get("role", "user"),
-                    message_type=MessageType.TEXT,
-                    status=MessageStatus.SENT,
-                    timestamp=datetime.fromisoformat(response.data["timestamp"]) if response.data.get("timestamp") else datetime.now(),
-                    is_edited=True,
-                    edit_history=response.data.get("edit_history", [])
-                )
-                
-                return message
-            else:
-                handle_api_error(response, "Bearbeiten der Nachricht")
-                return None
-                
+            # Send via WebSocket for real-time
+            if websocket_service.connected:
+                await websocket_service.send_chat_message(conv_id, content, "user")
+            
+            # Notify handlers
+            self._notify_message_handlers(message)
+            
+            return message
+            
         except Exception as e:
-            handle_network_error(e, "Bearbeiten der Nachricht")
+            print(f"Error sending message: {e}")
             return None
     
-    async def delete_message(self, message_id: str) -> bool:
-        """
-        Delete a message.
-        
-        Args:
-            message_id: Message ID to delete
-            
-        Returns:
-            True if successful, False otherwise
-        """
+    async def delete_conversation(self, conversation_id: int) -> bool:
+        """Delete conversation."""
         try:
-            response = await api_client.delete_message(message_id)
+            await api_client.delete_conversation(conversation_id)
             
-            if response.success:
-                return True
-            else:
-                handle_api_error(response, "Löschen der Nachricht")
-                return False
-                
+            if conversation_id in self.conversations:
+                del self.conversations[conversation_id]
+            
+            if self.current_conversation_id == conversation_id:
+                self.current_conversation_id = None
+            
+            self._notify_conversation_handlers()
+            return True
+            
         except Exception as e:
-            handle_network_error(e, "Löschen der Nachricht")
+            print(f"Error deleting conversation: {e}")
             return False
     
-    def create_typing_indicator(self, conversation_id: str) -> AdvancedMessage:
-        """
-        Create a typing indicator message.
+    def set_current_conversation(self, conversation_id: int):
+        """Set current conversation."""
+        self.current_conversation_id = conversation_id
         
-        Args:
-            conversation_id: Conversation ID
+        # Join WebSocket room
+        if websocket_service.connected:
+            asyncio.create_task(websocket_service.join_conversation(conversation_id))
+    
+    def get_current_conversation(self) -> Optional[Conversation]:
+        """Get current conversation."""
+        if self.current_conversation_id and self.current_conversation_id in self.conversations:
+            return self.conversations[self.current_conversation_id]
+        return None
+    
+    def get_conversation_messages(self, conversation_id: int) -> List[Message]:
+        """Get messages for conversation."""
+        if conversation_id in self.conversations:
+            return self.conversations[conversation_id].messages
+        return []
+    
+    async def _handle_chat_message(self, data: Dict[str, Any]):
+        """Handle incoming chat message from WebSocket."""
+        conversation_id = data.get("conversation_id")
+        content = data.get("content", "")
+        role = data.get("role", "user")
+        
+        if conversation_id and conversation_id in self.conversations:
+            message = Message(
+                conversation_id=conversation_id,
+                content=content,
+                role=MessageRole(role),
+                timestamp=datetime.now()
+            )
             
-        Returns:
-            Typing indicator message
-        """
-        return AdvancedMessage(
-            id=generate_id("typing_"),
-            conversation_id=conversation_id,
-            content="...",
-            role="assistant",
-            message_type=MessageType.TYPING,
-            status=MessageStatus.PROCESSING,
-            timestamp=datetime.now()
-        )
-    
-    def create_system_message(
-        self,
-        conversation_id: str,
-        content: str,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> AdvancedMessage:
-        """
-        Create a system message.
-        
-        Args:
-            conversation_id: Conversation ID
-            content: System message content
-            metadata: Additional metadata
+            self.conversations[conversation_id].messages.append(message)
+            self.conversations[conversation_id].updated_at = datetime.now()
             
-        Returns:
-            System message
-        """
-        return AdvancedMessage(
-            id=generate_id("sys_"),
-            conversation_id=conversation_id,
-            content=content,
-            role="system",
-            message_type=MessageType.SYSTEM,
-            status=MessageStatus.SENT,
-            timestamp=datetime.now(),
-            metadata=metadata
-        )
+            # Notify handlers
+            self._notify_message_handlers(message)
     
-    def create_error_message(
-        self,
-        conversation_id: str,
-        error_content: str,
-        error_details: Optional[Dict[str, Any]] = None
-    ) -> AdvancedMessage:
-        """
-        Create an error message.
+    async def _handle_typing_indicator(self, data: Dict[str, Any]):
+        """Handle typing indicator from WebSocket."""
+        conversation_id = data.get("conversation_id")
+        is_typing = data.get("is_typing", False)
         
-        Args:
-            conversation_id: Conversation ID
-            error_content: Error message content
-            error_details: Additional error details
-            
-        Returns:
-            Error message
-        """
-        return AdvancedMessage(
-            id=generate_id("error_"),
-            conversation_id=conversation_id,
-            content=error_content,
-            role="system",
-            message_type=MessageType.ERROR,
-            status=MessageStatus.FAILED,
-            timestamp=datetime.now(),
-            metadata={"error_details": error_details}
-        )
+        # Notify UI about typing status
+        for handler in self.message_handlers:
+            try:
+                await handler({
+                    "type": "typing_indicator",
+                    "conversation_id": conversation_id,
+                    "is_typing": is_typing
+                })
+            except Exception as e:
+                print(f"Error in typing indicator handler: {e}")
     
-    def get_processing_messages(self) -> List[AdvancedMessage]:
-        """
-        Get all currently processing messages.
-        
-        Returns:
-            List of processing messages
-        """
-        return list(self.processing_messages.values())
+    def _notify_message_handlers(self, message: Message):
+        """Notify message handlers."""
+        for handler in self.message_handlers:
+            try:
+                asyncio.create_task(handler(message))
+            except Exception as e:
+                print(f"Error in message handler: {e}")
     
-    def get_file_attachment(self, file_id: str) -> Optional[FileAttachment]:
-        """
-        Get a cached file attachment.
-        
-        Args:
-            file_id: File ID
-            
-        Returns:
-            File attachment or None if not found
-        """
-        return self.file_cache.get(file_id)
-    
-    def clear_file_cache(self):
-        """Clear the file cache."""
-        self.file_cache.clear()
-    
-    def format_message_for_display(self, message: AdvancedMessage) -> Dict[str, Any]:
-        """
-        Format a message for display in the UI.
-        
-        Args:
-            message: Message to format
-            
-        Returns:
-            Formatted message data
-        """
-        formatted = {
-            "id": message.id,
-            "content": message.content,
-            "role": message.role,
-            "type": message.message_type.value,
-            "status": message.status.value,
-            "timestamp": format_timestamp(message.timestamp),
-            "is_edited": message.is_edited,
-            "reply_to": message.reply_to
-        }
-        
-        # Add file attachments
-        if message.file_attachments:
-            formatted["files"] = [
-                {
-                    "id": file.id,
-                    "filename": file.filename,
-                    "type": file.file_type,
-                    "size": file.file_size,
-                    "url": file.url
-                }
-                for file in message.file_attachments
-            ]
-        
-        # Add tool results
-        if message.tool_results:
-            formatted["tools"] = [
-                {
-                    "name": tool.tool_name,
-                    "id": tool.tool_id,
-                    "status": tool.status,
-                    "execution_time": tool.execution_time,
-                    "output": tool.output_data,
-                    "error": tool.error_message
-                }
-                for tool in message.tool_results
-            ]
-        
-        # Add metadata
-        if message.metadata:
-            formatted["metadata"] = message.metadata
-        
-        return formatted
+    def _notify_conversation_handlers(self):
+        """Notify conversation handlers."""
+        for handler in self.conversation_handlers:
+            try:
+                asyncio.create_task(handler())
+            except Exception as e:
+                print(f"Error in conversation handler: {e}")
 
 
 # Global message service instance
