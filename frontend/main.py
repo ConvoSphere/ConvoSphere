@@ -88,12 +88,17 @@ def main_page():
     router.navigate_to("login")
 
 
-# Development server configuration
-if __name__ == "__main__":
+def main():
+    """Main application entry point."""
     ui.run(
         title="ConvoSphere",
         port=8080,
-        reload=True,
-        show=True,
+        reload=False,
+        show=False,
         dark=False
-    ) 
+    )
+
+
+# Development server configuration
+if __name__ in {"__main__", "__mp_main__"}:
+    main() 

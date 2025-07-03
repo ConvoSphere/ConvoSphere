@@ -138,26 +138,26 @@ class Router:
     def _handle_dashboard_page(self, **kwargs):
         """Handle dashboard page."""
         from components.layout.page_layout import PageLayout
+        from components.dashboard.dashboard_page import create_dashboard_page
         
         layout = PageLayout()
         layout.create_layout(page_title="Dashboard")
         
         # Add dashboard content
         with layout.main_content:
-            ui.html("<h2>Dashboard</h2>")
-            ui.html("<p>Willkommen zu ConvoSphere!</p>")
+            dashboard = create_dashboard_page()
     
     def _handle_chat_page(self, **kwargs):
         """Handle chat page."""
         from components.layout.page_layout import PageLayout
+        from components.chat.chat_interface import create_chat_interface
         
         layout = PageLayout()
-        layout.create_layout(page_title="Chat")
+        layout.create_layout(page_title="Chat", show_sidebar=False)
         
-        # Add chat content
+        # Add chat interface
         with layout.main_content:
-            ui.html("<h2>Chat</h2>")
-            ui.html("<p>Chat-Funktionalität wird implementiert.</p>")
+            chat_interface = create_chat_interface()
     
     def _handle_conversations_page(self, **kwargs):
         """Handle conversations page."""

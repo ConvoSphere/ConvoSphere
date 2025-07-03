@@ -1,286 +1,262 @@
-# AI Assistant Platform - Project Status
+# ConvoSphere - AI Assistant Platform - Projektstatus
 
-## Overview
-This is a comprehensive AI Assistant Platform with FastAPI backend and modular architecture. The project is currently in active development with core infrastructure implemented.
+## 🎯 **Projektübersicht**
+ConvoSphere ist eine moderne AI Assistant Platform mit modularem Frontend (NiceGUI) und Backend (FastAPI), die eine intuitive Benutzeroberfläche für die Verwaltung von AI-Assistenten, Konversationen und Tools bietet.
 
-## Current Status: Phase 2 Complete (Security & Tests) + Infrastructure Ready
+## 🏗️ **Aktuelle Architektur**
 
-### ✅ Completed Features
+### **Frontend (NiceGUI)**
+- **Modulare Komponenten-Architektur** ✅
+- **Theme-Management (Light/Dark Mode)** ✅
+- **Router-basierte Navigation** ✅
+- **Authentifizierung mit Formularen** ✅
+- **Responsive Design** ✅
 
-#### Phase 1: Critical Infrastructure ✅
-- **Database Connection Management**
-  - PostgreSQL connection with connection pooling
-  - Health check endpoints for database status
-  - Connection error handling and retry logic
-  - Database info retrieval utilities
+### **Backend (FastAPI)**
+- **RESTful API** ✅
+- **Datenbank-Integration (PostgreSQL)** ✅
+- **Vector Database (Weaviate)** ✅
+- **Authentication & Authorization** ✅
+- **WebSocket Support** ✅
 
-- **Redis Client Setup**
-  - Redis connection with connection pooling
-  - Cache operations (set, get, delete)
-  - Health check endpoints for Redis status
-  - Connection error handling
+### **Infrastruktur**
+- **Docker Container** ✅
+- **Docker Compose Setup** ✅
+- **Nginx Reverse Proxy** ✅
+- **PostgreSQL Database** ✅
+- **Redis Cache** ✅
 
-- **Weaviate Client Setup**
-  - Weaviate vector database connection
-  - Schema creation utilities
-  - Health check endpoints for Weaviate status
-  - Connection error handling
+## 📁 **Modulare Frontend-Architektur**
 
-- **Health Check System**
-  - Basic health check endpoint (`/health`)
-  - Detailed health check (`/api/v1/health/detailed`)
-  - Individual component health checks
-  - Component status reporting
-
-#### Phase 2: Security & Tests ✅
-- **Rate Limiting**
-  - Redis-based rate limiting middleware
-  - Global application to API v1 routes
-  - Configurable limits (100 requests/minute)
-  - Rate limit headers in responses
-
-- **Audit Logging**
-  - Login success/failure events
-  - Permission denied events
-  - Structured logging with loguru
-  - Audit trail for security events
-
-- **JWT Token Blacklisting**
-  - Redis-based token blacklisting utilities
-  - Token validation with blacklist checking
-  - Secure token management
-
-- **Comprehensive Test Suite**
-  - Health check tests
-  - Authentication tests
-  - Database connection tests
-  - Redis connection and cache tests
-  - Weaviate connection tests
-  - Security utility tests
-  - Configuration tests
-  - Model tests
-  - Service layer tests
-  - Utility function tests
-  - Integration tests
-  - Endpoint tests
-
-#### Development Environment ✅
-- **Virtual Environment**
-  - Python 3.13 virtual environment created
-  - Dependencies installed (requirements-basic.txt)
-  - Development tools configured
-
-- **Configuration**
-  - Environment variables setup (.env.example)
-  - Settings management with Pydantic
-  - Configurable components (database, redis, weaviate, security)
-
-### 🔄 In Progress
-
-#### Phase 3: Internationalization (i18n) - Starting
-- **Planned Features:**
-  - HTTP header-based language detection (`Accept-Language`)
-  - Individual user language settings
-  - JSON-based translation files
-  - Middleware for language detection
-  - Translation utilities
-  - German and English support
-
-### ❌ Missing/To Do
-
-#### Backend Features
-- **Database Models & Migrations**
-  - SQLAlchemy model implementations
-  - Alembic migration setup
-  - Database schema creation
-
-- **Authentication System**
-  - User registration/login endpoints
-  - Password hashing and verification
-  - JWT token generation and validation
-  - User session management
-
-- **Core API Endpoints**
-  - User management endpoints
-  - Assistant management endpoints
-  - Tool management endpoints
-  - Conversation management endpoints
-  - Knowledge base endpoints
-
-- **AI Integration**
-  - LiteLLM integration for multiple AI providers
-  - Chat completion endpoints
-  - Assistant conversation handling
-  - Tool execution framework
-
-- **Document Processing**
-  - File upload and processing
-  - Document parsing and chunking
-  - Vector embedding generation
-  - Weaviate document storage
-
-- **MCP (Model Context Protocol) Integration**
-  - MCP server implementation
-  - Tool integration via MCP
-  - External tool management
-
-#### Frontend Features
-- **User Interface**
-  - Dashboard implementation
-  - Chat interface
-  - Assistant management UI
-  - Tool management UI
-  - Settings and configuration UI
-
-- **Authentication Frontend**
-  - Login/register forms
-  - User profile management
-  - Session handling
-
-- **Internationalization Frontend**
-  - Language switcher
-  - Translated UI components
-  - RTL language support
-
-#### Infrastructure
-- **Docker Configuration**
-  - Container orchestration
-  - Service dependencies
-  - Environment configuration
-
-- **Deployment**
-  - Production configuration
-  - Environment-specific settings
-  - Monitoring and logging
-
-- **Documentation**
-  - API documentation
-  - User guides
-  - Developer documentation
-  - Deployment guides
-
-## Technical Architecture
-
-### Backend Structure
+### **Komponenten-Module**
 ```
-backend/
-├── app/
-│   ├── api/v1/           # API endpoints
-│   ├── core/             # Core configuration
-│   ├── models/           # Database models
-│   ├── services/         # Business logic
-│   ├── tools/            # Tool implementations
-│   └── utils/            # Utility functions
-├── tests/                # Test suite
-├── alembic/              # Database migrations
-└── main.py              # Application entry point
+frontend/components/
+├── auth/
+│   ├── __init__.py
+│   └── auth_form.py          # Wiederverwendbare Auth-Formulare
+├── layout/
+│   ├── __init__.py
+│   └── page_layout.py        # Konsistente Seitenstruktur
+├── header.py                 # Navigation und Branding
+└── sidebar.py               # Navigations-Sidebar
 ```
 
-### Key Technologies
-- **FastAPI**: Web framework
-- **SQLAlchemy**: ORM
-- **PostgreSQL**: Primary database
-- **Redis**: Caching and session storage
-- **Weaviate**: Vector database
-- **LiteLLM**: AI provider abstraction
-- **Pydantic**: Data validation
-- **JWT**: Authentication
-- **Pytest**: Testing framework
-
-### Configuration
-- Environment-based configuration
-- Secure secret management
-- Configurable service endpoints
-- Internationalization settings
-
-## Next Steps
-
-### Immediate (Phase 3)
-1. **Implement i18n System**
-   - Create translation utilities
-   - Set up language detection middleware
-   - Add German and English translations
-   - Integrate with existing endpoints
-
-2. **Database Models**
-   - Implement SQLAlchemy models
-   - Set up Alembic migrations
-   - Create initial database schema
-
-3. **Authentication System**
-   - User registration/login
-   - JWT token management
-   - Password security
-
-### Short Term
-1. **Core API Endpoints**
-   - User management
-   - Assistant management
-   - Tool management
-   - Conversation handling
-
-2. **AI Integration**
-   - LiteLLM setup
-   - Chat completion
-   - Assistant conversations
-
-3. **Frontend Development**
-   - Basic UI components
-   - Authentication forms
-   - Chat interface
-
-### Long Term
-1. **Advanced Features**
-   - Document processing
-   - MCP integration
-   - Advanced tooling
-
-2. **Production Readiness**
-   - Docker deployment
-   - Monitoring
-   - Performance optimization
-
-3. **Documentation**
-   - API documentation
-   - User guides
-   - Developer documentation
-
-## Development Environment
-
-### Prerequisites
-- Python 3.13+
-- PostgreSQL
-- Redis
-- Weaviate
-
-### Setup
-1. Clone repository
-2. Create virtual environment: `python3 -m venv venv`
-3. Activate environment: `source venv/bin/activate`
-4. Install dependencies: `pip install -r requirements-basic.txt`
-5. Configure environment variables in `.env`
-6. Start services (PostgreSQL, Redis, Weaviate)
-
-### Running Tests
-```bash
-python -m pytest tests/ -v
+### **Service-Module**
+```
+frontend/services/
+├── api_client.py            # Zentrale API-Kommunikation
+└── auth_service.py          # Authentifizierungslogik
 ```
 
-### Running Development Server
-```bash
-python main.py
+### **Utility-Module**
+```
+frontend/utils/
+├── router.py                # Seiten-Navigation
+└── theme_manager.py         # Theme-Verwaltung
 ```
 
-## Notes
-- The project has a solid foundation with infrastructure and security implemented
-- Test coverage is comprehensive for implemented features
-- Configuration is flexible and environment-based
-- Ready to proceed with Phase 3 (i18n) implementation
-- Virtual environment is set up and ready for development
+## ✅ **Implementierte Features**
 
-## Issues & Considerations
-- Some dependencies may require system-level packages (e.g., psycopg2)
-- Database connection requires running PostgreSQL instance
-- Redis and Weaviate services need to be available for full functionality
-- Frontend implementation is pending
-- Production deployment configuration needed 
+### **Authentifizierung**
+- [x] Login-Formular mit Validierung
+- [x] Registrierungs-Formular
+- [x] Session-Management
+- [x] Error-Handling
+- [x] Mock-API für Entwicklung
+
+### **UI/UX**
+- [x] ConvoSphere Branding
+- [x] Light/Dark Mode Toggle
+- [x] Responsive Layout
+- [x] Modulare Komponenten
+- [x] Konsistente Design-Sprache
+
+### **Navigation**
+- [x] Router-basierte Navigation
+- [x] Sidebar mit Kollaps-Funktion
+- [x] Breadcrumb-Navigation
+- [x] Page State Management
+
+### **Backend-Integration**
+- [x] API-Client mit Error-Handling
+- [x] Authentication Endpoints
+- [x] User Management
+- [x] Health Check Endpoints
+
+## 🚧 **In Entwicklung**
+
+### **Frontend-Seiten**
+- [ ] Dashboard mit Statistiken
+- [ ] Chat-Interface
+- [ ] Konversationsverlauf
+- [ ] Assistenten-Verwaltung
+- [ ] Tool-Bibliothek
+- [ ] Wissensdatenbank
+- [ ] MCP-Tools Integration
+- [ ] Benutzer-Profil
+- [ ] Einstellungen
+
+### **Backend-Features**
+- [ ] WebSocket Chat-Implementation
+- [ ] File Upload für Knowledge Base
+- [ ] MCP Server Integration
+- [ ] Advanced Search
+- [ ] Analytics & Logging
+
+## 🔧 **Technische Details**
+
+### **Frontend Stack**
+- **Framework**: NiceGUI (Python)
+- **Styling**: Tailwind CSS
+- **State Management**: Custom Router
+- **Theme**: CSS Variables + JavaScript
+- **Build Tool**: Docker
+
+### **Backend Stack**
+- **Framework**: FastAPI
+- **Database**: PostgreSQL + SQLAlchemy
+- **Vector DB**: Weaviate
+- **Cache**: Redis
+- **Authentication**: JWT
+- **Documentation**: OpenAPI/Swagger
+
+### **DevOps**
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose
+- **Reverse Proxy**: Nginx
+- **Static Analysis**: Ruff, Bandit
+- **Testing**: pytest
+
+## 📊 **Code-Qualität**
+
+### **Static Analysis**
+- [x] Ruff Linting konfiguriert
+- [x] Bandit Security Scanning
+- [x] Python 3.11 Kompatibilität
+- [x] Type Annotations
+- [x] Docstrings
+
+### **Modularität**
+- [x] Single Responsibility Principle
+- [x] Dependency Injection
+- [x] Reusable Components
+- [x] Clear Module Boundaries
+- [x] Separation of Concerns
+
+## 🐳 **Docker Setup**
+
+### **Container**
+- **Frontend**: NiceGUI auf Port 8080
+- **Backend**: FastAPI auf Port 8000
+- **Database**: PostgreSQL auf Port 5432
+- **Vector DB**: Weaviate auf Port 8080
+- **Cache**: Redis auf Port 6379
+- **Proxy**: Nginx auf Port 80
+
+### **Health Checks**
+- [x] Frontend Health Check
+- [x] Backend Health Check
+- [x] Database Connectivity
+- [x] Service Dependencies
+
+## 🚀 **Nächste Schritte**
+
+### **Phase 1: Core Features**
+1. **Dashboard-Implementierung**
+   - Statistiken und Übersicht
+   - Quick Actions
+   - Recent Activity
+
+2. **Chat-Interface**
+   - Real-time Messaging
+   - Message History
+   - File Attachments
+
+3. **Assistenten-Verwaltung**
+   - CRUD Operations
+   - Configuration
+   - Performance Metrics
+
+### **Phase 2: Advanced Features**
+1. **Knowledge Base**
+   - Document Upload
+   - Vector Search
+   - Content Management
+
+2. **MCP Integration**
+   - Server Management
+   - Tool Discovery
+   - Dynamic Loading
+
+3. **Analytics**
+   - Usage Statistics
+   - Performance Monitoring
+   - User Behavior
+
+### **Phase 3: Production Ready**
+1. **Testing**
+   - Unit Tests
+   - Integration Tests
+   - E2E Tests
+
+2. **Security**
+   - Input Validation
+   - SQL Injection Prevention
+   - XSS Protection
+
+3. **Performance**
+   - Caching Strategy
+   - Database Optimization
+   - Load Balancing
+
+## 📝 **Entwicklungshinweise**
+
+### **Code-Standards**
+- Englische Dokumentation im Sourcecode
+- Modulare Architektur
+- Bibliotheksfunktionen verwenden
+- Regelmäßige Commits mit aussagekräftigen Messages
+
+### **Git Workflow**
+- Feature Branches für neue Features
+- Pull Requests für Code Review
+- Semantic Versioning
+- Changelog Maintenance
+
+### **Testing Strategy**
+- Unit Tests für Services
+- Integration Tests für API
+- E2E Tests für UI
+- Performance Tests
+
+## 🎨 **Design System**
+
+### **ConvoSphere Branding**
+- **Primary Colors**: #23224A, #5BC6E8
+- **Accent Color**: #B6E74B
+- **Typography**: Inter, IBM Plex Sans
+- **Icons**: Material Design Icons
+
+### **Theme Variables**
+- CSS Custom Properties für Light/Dark Mode
+- Konsistente Spacing und Typography
+- Responsive Breakpoints
+- Accessibility Features
+
+## 📈 **Performance Metrics**
+
+### **Frontend**
+- Initial Load Time: < 2s
+- Bundle Size: < 1MB
+- Lighthouse Score: > 90
+
+### **Backend**
+- API Response Time: < 200ms
+- Database Query Time: < 50ms
+- WebSocket Latency: < 100ms
+
+---
+
+**Letzte Aktualisierung**: Dezember 2024
+**Version**: 1.0.0-alpha
+**Status**: In Entwicklung 
