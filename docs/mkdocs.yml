@@ -95,26 +95,31 @@ nav:
     - Overview: architecture/overview.md
     - Backend: architecture/backend.md
     - Frontend: architecture/frontend.md
-    - Database: architecture/database.md
   - Development:
-    - Setup: development/setup.md
-    - Testing: development/testing.md
+    - Testing: testing.md
     - Contributing: development/contributing.md
     - Code Style: development/code-style.md
   - API Reference:
     - Overview: api/overview.md
     - Authentication: api/authentication.md
-    - Endpoints: api/endpoints.md
-    - Models: api/models.md
+    - Users: api/users.md
+    - Assistants: api/assistants.md
+    - Conversations: api/conversations.md
+    - Tools: api/tools.md
+    - MCP: api/mcp.md
+    - Knowledge Base: api/knowledge.md
+    - WebSocket: api/websocket.md
+    - Errors: api/errors.md
   - Features:
     - AI Integration: features/ai-integration.md
-    - Internationalization: features/internationalization.md
     - Security: features/security.md
     - Tools: features/tools.md
+    - Knowledge Base: features/knowledge.md
+    - WebSocket: features/websocket.md
+    - Internationalization: features/internationalization.md
   - Deployment:
     - Docker: deployment/docker.md
-    - Production: deployment/production.md
-    - Monitoring: deployment/monitoring.md
+    - Automation: deployment/automation.md
   - Project:
     - Status: project/status.md
     - Roadmap: project/roadmap.md
