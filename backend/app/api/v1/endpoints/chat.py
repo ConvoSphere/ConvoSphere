@@ -7,7 +7,7 @@ and REST endpoints for chat management.
 
 import json
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from loguru import logger
@@ -15,7 +15,7 @@ from loguru import logger
 from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.services.conversation_service import ConversationService
-from app.services.ai_service import AIService
+from app.services.ai_service import AIService, ai_service, AIResponse
 
 
 router = APIRouter()
@@ -104,27 +104,36 @@ class ConversationResponse(BaseModel):
 async def websocket_endpoint(
     websocket: WebSocket,
     conversation_id: str,
+    token: str = Query(None, description="Optional JWT token for authentication"),
     db: Session = Depends(get_db)
 ):
     """
     WebSocket endpoint for real-time chat.
-    
-    Args:
-        websocket: WebSocket connection
-        conversation_id: Conversation ID
-        db: Database session
+    - Optional JWT-Token-Authentifizierung (token-Query-Parameter)
+    - Sende nach erfolgreichem Connect eine Bestätigungsnachricht
+    - Unterstützt Nachrichten, Typing-Indikator, Fehlerbehandlung
     """
-    await manager.connect(websocket, conversation_id)
+    # Optional: Authentifizierung via Token (Backward-compatible)
+    user_id = None
+    if token:
+        # TODO: Implementiere echte JWT-Validierung
+        # Hier: Dummy-Validierung für Entwicklung
+        user_id = str(token) if token != "mock_token_123" else ""
     
+    await manager.connect(websocket, conversation_id)
+    # Sende Connection-Confirmation
+    await websocket.send_text(json.dumps({
+        "type": "connection_established",
+        "data": {
+            "conversation_id": conversation_id,
+            "message": "Connected to chat"
+        }
+    }))
     try:
         while True:
-            # Receive message from client
             data = await websocket.receive_text()
             message_data = json.loads(data)
-            
-            # Process message
-            await process_websocket_message(websocket, conversation_id, message_data, db)
-            
+            await process_websocket_message(websocket, conversation_id, message_data, db, user_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, conversation_id)
     except Exception as e:
@@ -136,111 +145,94 @@ async def process_websocket_message(
     websocket: WebSocket,
     conversation_id: str,
     message_data: Dict[str, Any],
-    db: Session
+    db: Session,
+    user_id: str = ""
 ):
     """
     Process incoming WebSocket message.
-    
-    Args:
-        websocket: WebSocket connection
-        conversation_id: Conversation ID
-        message_data: Message data
-        db: Database session
+    Unterstützt:
+    - type: "message" (Chatnachricht)
+    - type: "typing" (Typing-Indikator)
+    - type: "join" (User joined)
     """
     try:
         message_type = message_data.get("type")
-        
         if message_type == "message":
-            # Handle new message
             content = message_data.get("content", "")
-            user_id = message_data.get("user_id")
-            
-            if not user_id:
+            sender_id = message_data.get("user_id") or user_id or ""
+            if not sender_id:
                 await websocket.send_text(json.dumps({
                     "type": "error",
                     "message": "User ID required"
                 }))
                 return
-            
-            # Save user message
             conversation_service = ConversationService(db)
             user_message = await conversation_service.add_message(
                 conversation_id=conversation_id,
-                user_id=user_id,
+                user_id=sender_id,
                 content=content,
                 role="user"
             )
-            
-            # Send user message to all clients
             await manager.send_message(conversation_id, {
                 "type": "message",
                 "message": {
                     "id": str(user_message.id),
                     "content": user_message.content,
                     "role": user_message.role,
-                    "message_type": user_message.message_type,
-                    "timestamp": user_message.created_at.isoformat(),
-                    "metadata": user_message.metadata
+                    "message_type": getattr(user_message, 'message_type', 'text'),
+                    "timestamp": user_message.created_at.isoformat() if hasattr(user_message, 'created_at') else "",
+                    "metadata": getattr(user_message, 'metadata', None)
                 }
             })
-            
-            # Get AI response
-            ai_service = AIService()
-            ai_response = await ai_service.get_response(
+            ai_response: AIResponse = await ai_service.get_response(
                 conversation_id=conversation_id,
                 user_message=content,
-                db=db
+                user_id=sender_id,
+                db=db,
+                use_rag=True,
+                use_tools=True,
+                max_context_chunks=5
             )
-            
-            # Save AI response
             assistant_message = await conversation_service.add_message(
                 conversation_id=conversation_id,
-                user_id=user_id,
+                user_id=sender_id,
                 content=ai_response.content,
                 role="assistant",
                 message_type=ai_response.message_type,
                 metadata=ai_response.metadata
             )
-            
-            # Send AI response to all clients
             await manager.send_message(conversation_id, {
                 "type": "message",
                 "message": {
                     "id": str(assistant_message.id),
                     "content": assistant_message.content,
                     "role": assistant_message.role,
-                    "message_type": assistant_message.message_type,
-                    "timestamp": assistant_message.created_at.isoformat(),
-                    "metadata": assistant_message.metadata
+                    "message_type": getattr(assistant_message, 'message_type', 'text'),
+                    "timestamp": assistant_message.created_at.isoformat() if hasattr(assistant_message, 'created_at') else "",
+                    "metadata": getattr(assistant_message, 'metadata', None),
+                    "tool_calls": ai_response.tool_calls,
+                    "context_used": ai_response.context_used
                 }
             })
-            
         elif message_type == "typing":
-            # Handle typing indicator
-            user_id = message_data.get("user_id")
+            sender_id = message_data.get("user_id") or user_id or ""
             is_typing = message_data.get("typing", False)
-            
             await manager.send_message(conversation_id, {
                 "type": "typing",
-                "user_id": user_id,
+                "user_id": sender_id,
                 "typing": is_typing
             })
-            
         elif message_type == "join":
-            # Handle user joining conversation
-            user_id = message_data.get("user_id")
-            
+            sender_id = message_data.get("user_id") or user_id or ""
             await manager.send_message(conversation_id, {
                 "type": "user_joined",
-                "user_id": user_id
+                "user_id": sender_id
             })
-            
         else:
             await websocket.send_text(json.dumps({
                 "type": "error",
                 "message": f"Unknown message type: {message_type}"
             }))
-            
     except Exception as e:
         logger.error(f"Error processing WebSocket message: {e}")
         await websocket.send_text(json.dumps({
@@ -339,19 +331,25 @@ async def send_message(
     conversation_id: str,
     message_data: MessageCreate,
     current_user_id: str = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    use_rag: bool = Query(True, description="Use RAG for enhanced responses"),
+    use_tools: bool = Query(True, description="Enable tool execution"),
+    max_context_chunks: int = Query(5, description="Maximum context chunks for RAG")
 ):
     """
-    Send a message to a conversation.
+    Send a message to a conversation with RAG and tool integration.
     
     Args:
         conversation_id: Conversation ID
         message_data: Message data
         current_user_id: Current user ID
         db: Database session
+        use_rag: Whether to use RAG
+        use_tools: Whether to enable tools
+        max_context_chunks: Maximum context chunks
         
     Returns:
-        MessageResponse: Created message
+        MessageResponse: Created message with AI response
     """
     try:
         conversation_service = ConversationService(db)
@@ -365,12 +363,15 @@ async def send_message(
             message_type=message_data.message_type
         )
         
-        # Get AI response
-        ai_service = AIService()
-        ai_response = await ai_service.get_response(
+        # Get AI response with RAG and tools
+        ai_response: AIResponse = await ai_service.get_response(
             conversation_id=conversation_id,
             user_message=message_data.content,
-            db=db
+            user_id=current_user_id,
+            db=db,
+            use_rag=use_rag,
+            use_tools=use_tools,
+            max_context_chunks=max_context_chunks
         )
         
         # Save AI response
@@ -383,13 +384,37 @@ async def send_message(
             metadata=ai_response.metadata
         )
         
+        # Index messages in Weaviate for future RAG
+        try:
+            from app.services.weaviate_service import weaviate_service
+            weaviate_service.index_message(
+                conversation_id=conversation_id,
+                message_id=str(user_message.id),
+                content=message_data.content,
+                role="user",
+                metadata={"user_id": current_user_id}
+            )
+            weaviate_service.index_message(
+                conversation_id=conversation_id,
+                message_id=str(assistant_message.id),
+                content=ai_response.content,
+                role="assistant",
+                metadata={"user_id": current_user_id, "model_used": ai_response.metadata.get("model_used")}
+            )
+        except Exception as e:
+            logger.warning(f"Failed to index messages in Weaviate: {e}")
+        
         return MessageResponse(
             id=str(assistant_message.id),
             content=assistant_message.content,
             role=assistant_message.role,
             message_type=assistant_message.message_type,
             timestamp=assistant_message.created_at.isoformat(),
-            metadata=assistant_message.metadata
+            metadata={
+                **(assistant_message.metadata or {}),
+                "tool_calls": ai_response.tool_calls,
+                "context_used": ai_response.context_used
+            }
         )
         
     except Exception as e:

@@ -68,11 +68,12 @@ class ChatInterface:
         @websocket_service.on_message("message")
         async def handle_chat_message(data: Dict[str, Any]):
             """Handle incoming chat message."""
+            message_data = data.get("message", {})
             message = ChatMessage(
-                content=data.get("content", ""),
-                sender=data.get("user_id", "unknown"),
-                timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
-                message_id=data.get("id")
+                content=message_data.get("content", ""),
+                sender=message_data.get("user_id", "unknown"),
+                timestamp=datetime.fromisoformat(message_data.get("timestamp", datetime.now().isoformat())),
+                message_id=message_data.get("id")
             )
             
             # Add message to UI
@@ -86,7 +87,7 @@ class ChatInterface:
         async def handle_typing_indicator(data: Dict[str, Any]):
             """Handle typing indicator."""
             user_id = data.get("user_id")
-            is_typing = data.get("is_typing", False)
+            is_typing = data.get("typing", False)
             
             if is_typing:
                 self.typing_users.add(user_id)
@@ -100,6 +101,8 @@ class ChatInterface:
             """Handle WebSocket connection established."""
             self.websocket_connected = True
             ui.notify("Verbunden mit Chat-Server", type="positive")
+            # Join conversation after connection
+            await websocket_service.join_conversation()
         
         websocket_service.on_connect(self._on_websocket_connect)
         websocket_service.on_disconnect(self._on_websocket_disconnect)
@@ -107,9 +110,7 @@ class ChatInterface:
     async def _connect_websocket(self):
         """Connect to WebSocket for real-time chat."""
         try:
-            await websocket_service.connect(f"/api/v1/websocket/{self.conversation_id}")
-            if self.conversation_id:
-                await websocket_service.join_conversation(int(self.conversation_id))
+            await websocket_service.connect(self.conversation_id)
         except Exception as e:
             ui.notify(f"WebSocket-Verbindung fehlgeschlagen: {str(e)}", type="negative")
     
@@ -201,71 +202,48 @@ class ChatInterface:
                 ).classes("p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700")
     
     def _create_messages_area(self):
-        """Create the messages display area."""
+        """Create the messages area."""
         with ui.element("div").classes("flex-1 overflow-y-auto p-4 space-y-4") as messages_area:
             self.messages_container = messages_area
-            
-            # Add some sample messages
-            self._add_sample_messages()
     
     def _create_input_area(self):
-        """Create the message input area."""
-        with ui.element("div").classes("border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"):
-            with ui.element("div").classes("flex items-end space-x-3"):
-                # File upload button
-                ui.button(
-                    icon="attach_file",
-                    on_click=self._handle_file_upload
-                ).classes("p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700")
-                
+        """Create the input area."""
+        with ui.element("div").classes("p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"):
+            with ui.element("div").classes("flex space-x-2"):
                 # Message input
-                with ui.element("div").classes("flex-1"):
-                    self.message_input = ui.textarea(
-                        placeholder="Schreibe eine Nachricht...",
-                        on_change=self._handle_input_change,
-                        rows=1
-                    ).classes("w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none")
+                self.message_input = ui.textarea(
+                    placeholder="Nachricht eingeben...",
+                    on_change=self._handle_input_change
+                ).classes("flex-1 resize-none")
                 
                 # Send button
-                self.send_button = ui.button(
+                ui.button(
+                    "Senden",
                     icon="send",
                     on_click=self._handle_send_message
-                ).classes("p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors")
-                
-                # Voice input button
-                ui.button(
-                    icon="mic",
-                    on_click=self._handle_voice_input
-                ).classes("p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700")
+                ).classes("bg-blue-600 text-white")
     
-    def _add_sample_messages(self):
-        """Add sample messages for demonstration."""
-        sample_messages = [
-            {
-                "content": "Hallo! Wie kann ich dir heute helfen?",
-                "sender": "assistant",
-                "timestamp": datetime.now()
-            },
-            {
-                "content": "Ich brauche Hilfe bei einem Python-Projekt.",
-                "sender": "user",
-                "timestamp": datetime.now()
-            },
-            {
-                "content": "Gerne! Erzähl mir mehr über dein Python-Projekt. Was möchtest du erreichen?",
-                "sender": "assistant",
-                "timestamp": datetime.now()
-            }
-        ]
+    async def load_messages(self):
+        """Load existing messages."""
+        if not self.conversation_id:
+            return
         
-        for msg_data in sample_messages:
-            message = ChatMessage(
-                content=msg_data["content"],
-                sender=msg_data["sender"],
-                timestamp=msg_data["timestamp"]
-            )
-            self.messages.append(message)
-            self._add_message_to_ui(message)
+        try:
+            # Load messages from API
+            messages = await api_client.get_conversation_messages(self.conversation_id)
+            
+            for msg_data in messages:
+                message = ChatMessage(
+                    content=msg_data.get("content", ""),
+                    sender=msg_data.get("user_id", "unknown"),
+                    timestamp=datetime.fromisoformat(msg_data.get("timestamp", datetime.now().isoformat())),
+                    message_id=msg_data.get("id")
+                )
+                self.messages.append(message)
+                self._add_message_to_ui(message)
+        
+        except Exception as e:
+            ui.notify(f"Fehler beim Laden der Nachrichten: {str(e)}", type="negative")
     
     def _add_message_to_ui(self, message: ChatMessage):
         """Add a message to the UI."""
@@ -313,8 +291,18 @@ class ChatInterface:
         if hasattr(self, 'message_input'):
             self.message_input.value = ""
         
-        # Send to API
-        asyncio.create_task(self._send_message_to_api(user_message.content))
+        # Send to WebSocket if connected, otherwise to API
+        if self.websocket_connected:
+            asyncio.create_task(self._send_message_to_websocket(user_message.content))
+        else:
+            asyncio.create_task(self._send_message_to_api(user_message.content))
+    
+    async def _send_message_to_websocket(self, content: str):
+        """Send message via WebSocket."""
+        try:
+            await websocket_service.send_chat_message(content)
+        except Exception as e:
+            ui.notify(f"Fehler beim Senden der Nachricht: {str(e)}", type="negative")
     
     async def _send_message_to_api(self, content: str):
         """Send message to API and get response."""
@@ -324,20 +312,19 @@ class ChatInterface:
             # Show typing indicator
             self._show_typing_indicator()
             
-            # Simulate API call
-            await asyncio.sleep(2)
+            # Send message to API
+            response = await api_client.send_message(self.conversation_id, content)
             
-            # Create assistant response
-            response_content = f"Das ist eine Antwort auf: '{content}'. Ich bin der {self.selected_assistant} Assistent."
-            
-            assistant_message = ChatMessage(
-                content=response_content,
-                sender="assistant",
-                timestamp=datetime.now()
-            )
-            
-            self.messages.append(assistant_message)
-            self._add_message_to_ui(assistant_message)
+            if response:
+                # Create assistant response
+                assistant_message = ChatMessage(
+                    content=response.get("content", "Keine Antwort erhalten"),
+                    sender="assistant",
+                    timestamp=datetime.now()
+                )
+                
+                self.messages.append(assistant_message)
+                self._add_message_to_ui(assistant_message)
             
         except Exception as e:
             ui.notify(f"Fehler beim Senden der Nachricht: {str(e)}", type="negative")
@@ -348,16 +335,12 @@ class ChatInterface:
     
     def _show_typing_indicator(self):
         """Show typing indicator."""
-        with self.messages_container:
-            with ui.element("div").classes("flex justify-start"):
-                with ui.element("div").classes("bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2 shadow-sm"):
-                    with ui.element("div").classes("flex items-center space-x-1"):
-                        ui.spinner("dots").classes("h-4 w-4")
-                        ui.html("<span style='font-size: 12px; color: var(--color-text-secondary);'>Schreibt...</span>")
+        # TODO: Implement typing indicator
+        pass
     
     def _hide_typing_indicator(self):
         """Hide typing indicator."""
-        # TODO: Implement typing indicator removal
+        # TODO: Implement typing indicator
         pass
     
     def _handle_assistant_change(self, e):
@@ -368,28 +351,6 @@ class ChatInterface:
     def _handle_settings(self):
         """Handle settings button."""
         ui.notify("Chat-Einstellungen werden geöffnet...", type="info")
-    
-    def _handle_file_upload(self):
-        """Handle file upload."""
-        ui.notify("Datei-Upload wird implementiert...", type="info")
-    
-    def _handle_voice_input(self):
-        """Handle voice input."""
-        ui.notify("Sprach-Eingabe wird implementiert...", type="info")
-    
-    async def load_messages(self):
-        """Load messages from API."""
-        try:
-            if self.conversation_id:
-                # Load messages for specific conversation
-                response = await api_client.get_messages(int(self.conversation_id))
-                # TODO: Process response and add messages
-            else:
-                # Load recent messages or start new conversation
-                pass
-                
-        except Exception as e:
-            ui.notify(f"Fehler beim Laden der Nachrichten: {str(e)}", type="negative")
 
 
 def create_chat_interface(conversation_id: Optional[str] = None) -> ui.element:

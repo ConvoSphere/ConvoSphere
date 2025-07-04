@@ -32,6 +32,7 @@ class WebSocketService:
         self.connection_handlers: List[Callable] = []
         self.disconnection_handlers: List[Callable] = []
         self.auth_token: Optional[str] = None
+        self.current_conversation_id: Optional[str] = None
     
     def set_auth_token(self, token: str):
         """Set authentication token for WebSocket connection."""
@@ -58,17 +59,23 @@ class WebSocketService:
         """Register disconnection handler."""
         self.disconnection_handlers.append(handler)
     
-    async def connect(self, endpoint: str = "/ws"):
+    async def connect(self, conversation_id: str, endpoint: str = None):
         """
-        Connect to WebSocket server.
+        Connect to WebSocket server for a specific conversation.
         
         Args:
-            endpoint: WebSocket endpoint
+            conversation_id: Conversation ID to connect to
+            endpoint: Optional custom endpoint (defaults to /api/v1/chat/ws/{conversation_id})
         """
         if self.connected:
-            return
+            await self.disconnect()
         
-        url = f"{self.base_url}{endpoint}"
+        self.current_conversation_id = conversation_id
+        
+        if endpoint:
+            url = f"{self.base_url}{endpoint}"
+        else:
+            url = f"{self.base_url}/api/v1/chat/ws/{conversation_id}"
         
         # Add auth token to URL if available
         if self.auth_token:
@@ -104,6 +111,7 @@ class WebSocketService:
             await self.websocket.close()
         
         self.connected = False
+        self.current_conversation_id = None
         
         # Notify disconnection handlers
         for handler in self.disconnection_handlers:
@@ -145,6 +153,11 @@ class WebSocketService:
                     message_type = data.get("type")
                     message_data = data.get("data", {})
                     
+                    # Handle connection confirmation
+                    if message_type == "connection_established":
+                        print(f"WebSocket connected to conversation: {message_data.get('conversation_id')}")
+                        continue
+                    
                     if message_type in self.message_handlers:
                         for handler in self.message_handlers[message_type]:
                             try:
@@ -167,32 +180,45 @@ class WebSocketService:
             print(f"WebSocket error: {e}")
     
     # Convenience methods for specific message types
-    async def send_chat_message(self, conversation_id: int, content: str, role: str = "user"):
+    async def send_chat_message(self, content: str, user_id: str = None):
         """Send chat message."""
-        await self.send("chat_message", {
-            "conversation_id": conversation_id,
+        if not self.current_conversation_id:
+            raise Exception("No active conversation")
+        
+        message_data = {
             "content": content,
-            "role": role
-        })
+            "user_id": user_id
+        }
+        await self.send("message", message_data)
     
-    async def join_conversation(self, conversation_id: int):
-        """Join conversation room."""
-        await self.send("join_conversation", {
-            "conversation_id": conversation_id
-        })
-    
-    async def leave_conversation(self, conversation_id: int):
-        """Leave conversation room."""
-        await self.send("leave_conversation", {
-            "conversation_id": conversation_id
-        })
-    
-    async def send_typing_indicator(self, conversation_id: int, is_typing: bool):
+    async def send_typing_indicator(self, is_typing: bool, user_id: str = None):
         """Send typing indicator."""
-        await self.send("typing_indicator", {
-            "conversation_id": conversation_id,
-            "is_typing": is_typing
-        })
+        if not self.current_conversation_id:
+            raise Exception("No active conversation")
+        
+        message_data = {
+            "typing": is_typing,
+            "user_id": user_id
+        }
+        await self.send("typing", message_data)
+    
+    async def join_conversation(self, user_id: str = None):
+        """Join conversation room."""
+        if not self.current_conversation_id:
+            raise Exception("No active conversation")
+        
+        message_data = {
+            "user_id": user_id
+        }
+        await self.send("join", message_data)
+    
+    def is_connected(self) -> bool:
+        """Check if WebSocket is connected."""
+        return self.connected and self.websocket and not self.websocket.closed
+    
+    def get_current_conversation_id(self) -> Optional[str]:
+        """Get current conversation ID."""
+        return self.current_conversation_id
 
 
 # Global WebSocket service instance

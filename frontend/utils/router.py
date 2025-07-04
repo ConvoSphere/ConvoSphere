@@ -110,7 +110,7 @@ class Router:
         """Remove and recreate the main app container for exclusive layouts (e.g. AuthLayout)."""
         from nicegui import ui
         # Remove the existing .app-container if present
-        containers = ui.query('.app-container').elements
+        containers = ui.query('.app-container').all()
         for el in containers:
             el.delete()
         # Create a new app-container for the next layout

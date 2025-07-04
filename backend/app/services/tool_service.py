@@ -409,4 +409,7 @@ class ToolService:
             
         except Exception as e:
             logger.error(f"Error checking edit permission for tool: {e}")
-            return False 
+            return False
+
+# Global tool service instance (for static access, e.g. in AIService)
+tool_service = None  # Muss mit DB-Session initialisiert werden, z.B. im FastAPI-Startup oder per Dependency Injection 

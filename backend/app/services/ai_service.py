@@ -2,7 +2,7 @@
 AI Service for the AI Assistant Platform.
 
 This module provides AI integration using LiteLLM for multiple providers,
-cost tracking, and embedding generation.
+cost tracking, embedding generation, and RAG (Retrieval-Augmented Generation).
 """
 
 import asyncio
@@ -21,6 +21,8 @@ except ImportError:
 
 from app.core.config import settings
 from app.services.weaviate_service import weaviate_service
+from app.services.tool_service import tool_service
+from app.tools.mcp_tool import mcp_manager
 
 
 @dataclass
@@ -67,6 +69,16 @@ class CostTracker:
     def get_costs_by_conversation(self, conversation_id: str) -> List[CostInfo]:
         """Get costs for specific conversation."""
         return [cost for cost in self.costs if cost.conversation_id == conversation_id]
+
+
+@dataclass
+class AIResponse:
+    """AI response data structure."""
+    content: str
+    message_type: str = "text"
+    metadata: Optional[Dict[str, Any]] = None
+    tool_calls: Optional[List[Dict[str, Any]]] = None
+    context_used: Optional[List[Dict[str, Any]]] = None
 
 
 class AIService:
@@ -349,6 +361,408 @@ class AIService:
             "models": len(self.models),
             "total_cost": self.cost_tracker.get_total_cost()
         }
+
+    async def chat_completion_with_rag(
+        self,
+        messages: List[Dict[str, str]],
+        user_id: str,
+        conversation_id: Optional[str] = None,
+        model: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        use_knowledge_base: bool = True,
+        use_tools: bool = True,
+        max_context_chunks: int = 5,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Generate chat completion with RAG (Retrieval-Augmented Generation).
+        
+        Args:
+            messages: List of message dictionaries
+            user_id: User ID for context retrieval
+            conversation_id: Conversation ID for context
+            model: AI model to use
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            use_knowledge_base: Whether to use knowledge base for context
+            use_tools: Whether to enable tool usage
+            max_context_chunks: Maximum number of context chunks to include
+            **kwargs: Additional parameters
+            
+        Returns:
+            Completion response with RAG context
+        """
+        if not self.enabled:
+            raise RuntimeError("AI service is disabled")
+        
+        # Get the latest user message for context retrieval
+        user_message = None
+        for msg in reversed(messages):
+            if msg.get("role") == "user":
+                user_message = msg.get("content", "")
+                break
+        
+        if not user_message:
+            return await self.chat_completion(messages, model, temperature, max_tokens, **kwargs)
+        
+        # Prepare enhanced messages with context
+        enhanced_messages = messages.copy()
+        
+        # Add knowledge base context if enabled
+        if use_knowledge_base:
+            context = await self._search_knowledge_for_context(
+                user_message, user_id, max_context_chunks
+            )
+            if context:
+                system_context = self._create_system_context(context)
+                # Insert system context after the first system message or at the beginning
+                if enhanced_messages and enhanced_messages[0].get("role") == "system":
+                    enhanced_messages.insert(1, {"role": "system", "content": system_context})
+                else:
+                    enhanced_messages.insert(0, {"role": "system", "content": system_context})
+        
+        # Prepare tools if enabled
+        tools = None
+        if use_tools:
+            tools = await self._prepare_tools_for_completion(user_message)
+        
+        # Generate completion with enhanced context
+        return await self.chat_completion(
+            messages=enhanced_messages,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            tools=tools,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            **kwargs
+        )
+    
+    async def _search_knowledge_for_context(
+        self,
+        query: str,
+        user_id: str,
+        max_chunks: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Search knowledge base for relevant context.
+        
+        Args:
+            query: Search query
+            user_id: User ID for filtering
+            max_chunks: Maximum number of chunks to return
+            
+        Returns:
+            List of relevant context chunks
+        """
+        try:
+            # Search in knowledge base
+            knowledge_results = weaviate_service.semantic_search_knowledge(
+                query=query,
+                limit=max_chunks
+            )
+            
+            # Search in conversation history
+            conversation_results = weaviate_service.semantic_search_messages(
+                query=query,
+                conversation_id=None,  # Search across all conversations
+                limit=max_chunks
+            )
+            
+            # Combine and rank results
+            all_results = []
+            
+            # Add knowledge base results
+            for result in knowledge_results:
+                all_results.append({
+                    "content": result.get("content", ""),
+                    "source": "knowledge_base",
+                    "metadata": result.get("metadata", {}),
+                    "relevance_score": result.get("score", 0.0)
+                })
+            
+            # Add conversation results
+            for result in conversation_results:
+                all_results.append({
+                    "content": result.get("content", ""),
+                    "source": "conversation",
+                    "metadata": result.get("metadata", {}),
+                    "relevance_score": result.get("score", 0.0)
+                })
+            
+            # Sort by relevance and take top results
+            all_results.sort(key=lambda x: x.get("relevance_score", 0.0), reverse=True)
+            
+            return all_results[:max_chunks]
+            
+        except Exception as e:
+            logger.error(f"Error searching knowledge for context: {e}")
+            return []
+    
+    def _create_system_context(self, context_chunks: List[Dict[str, Any]]) -> str:
+        """
+        Create system context from knowledge chunks.
+        
+        Args:
+            context_chunks: List of context chunks
+            
+        Returns:
+            Formatted system context
+        """
+        if not context_chunks:
+            return ""
+        
+        context_parts = ["Relevante Informationen aus der Knowledge Base:"]
+        
+        for i, chunk in enumerate(context_chunks, 1):
+            content = chunk.get("content", "").strip()
+            source = chunk.get("source", "unknown")
+            metadata = chunk.get("metadata", {})
+            
+            if content:
+                context_parts.append(f"\n{i}. {content}")
+                if source == "knowledge_base" and metadata.get("title"):
+                    context_parts.append(f"   Quelle: {metadata.get('title')}")
+        
+        context_parts.append("\nVerwende diese Informationen, um präzise und hilfreiche Antworten zu geben.")
+        
+        return "\n".join(context_parts)
+    
+    async def _prepare_tools_for_completion(self, user_message: str) -> List[Dict[str, Any]]:
+        """
+        Prepare available tools for AI completion.
+        
+        Args:
+            user_message: User message to determine relevant tools
+            
+        Returns:
+            List of tool definitions for AI
+        """
+        try:
+            # Get all available tools
+            all_tools = tool_service.get_all_tools()
+            mcp_tools = mcp_manager.get_all_tools()
+            
+            # Combine tools
+            combined_tools = []
+            
+            # Add regular tools
+            for tool in all_tools:
+                if tool.get("status") == "active":
+                    tool_def = {
+                        "type": "function",
+                        "function": {
+                            "name": tool.get("name"),
+                            "description": tool.get("description", ""),
+                            "parameters": tool.get("parameters", {})
+                        }
+                    }
+                    combined_tools.append(tool_def)
+            
+            # Add MCP tools
+            for tool in mcp_tools:
+                tool_def = {
+                    "type": "function",
+                    "function": {
+                        "name": tool.get("name"),
+                        "description": tool.get("description", ""),
+                        "parameters": tool.get("input_schema", {})
+                    }
+                }
+                combined_tools.append(tool_def)
+            
+            return combined_tools
+            
+        except Exception as e:
+            logger.error(f"Error preparing tools for completion: {e}")
+            return []
+    
+    async def execute_tool_call(self, tool_call: Dict[str, Any], user_id: str) -> Dict[str, Any]:
+        """
+        Execute a tool call from AI response.
+        
+        Args:
+            tool_call: Tool call from AI response
+            user_id: User ID for execution context
+            
+        Returns:
+            Tool execution result
+        """
+        try:
+            tool_name = tool_call.get("function", {}).get("name")
+            arguments = tool_call.get("function", {}).get("arguments", {})
+            
+            if not tool_name:
+                return {"error": "No tool name provided"}
+            
+            # Try to execute as regular tool first
+            try:
+                result = await tool_service.execute_tool(tool_name, user_id, **arguments)
+                return {
+                    "success": True,
+                    "result": result,
+                    "tool_type": "regular"
+                }
+            except Exception as e:
+                logger.warning(f"Regular tool execution failed for {tool_name}: {e}")
+            
+            # Try to execute as MCP tool
+            try:
+                mcp_result = await mcp_manager.execute_tool(tool_name, **arguments)
+                return {
+                    "success": True,
+                    "result": mcp_result,
+                    "tool_type": "mcp"
+                }
+            except Exception as e:
+                logger.warning(f"MCP tool execution failed for {tool_name}: {e}")
+            
+            return {"error": f"Tool {tool_name} not found or execution failed"}
+            
+        except Exception as e:
+            logger.error(f"Error executing tool call: {e}")
+            return {"error": str(e)}
+
+    async def get_embeddings_batch(self, texts: List[str], model: str = "text-embedding-ada-002") -> List[List[float]]:
+        """
+        Generate embeddings for multiple texts.
+        
+        Args:
+            texts: List of texts to embed
+            model: Embedding model to use
+            
+        Returns:
+            List of embedding lists
+        """
+        if not self.enabled:
+            raise RuntimeError("AI service is disabled")
+        
+        try:
+            embeddings = []
+            for text in texts:
+                embedding = await self.get_embeddings(text, model)
+                embeddings.append(embedding)
+            return embeddings
+            
+        except Exception as e:
+            logger.error(f"Error generating batch embeddings: {e}")
+            raise
+
+    async def get_response(
+        self,
+        conversation_id: str,
+        user_message: str,
+        user_id: str,
+        db=None,
+        use_rag: bool = True,
+        use_tools: bool = True,
+        max_context_chunks: int = 5
+    ) -> AIResponse:
+        """
+        Get AI response for a user message with RAG and tool integration.
+        
+        Args:
+            conversation_id: Conversation ID
+            user_message: User message content
+            user_id: User ID
+            db: Database session
+            use_rag: Whether to use RAG
+            use_tools: Whether to enable tools
+            max_context_chunks: Maximum context chunks
+            
+        Returns:
+            AIResponse: Structured AI response
+        """
+        if not self.enabled:
+            return AIResponse(
+                content="AI service is currently unavailable.",
+                message_type="text",
+                metadata={"error": "ai_service_disabled"}
+            )
+        
+        try:
+            # Get conversation history
+            conversation_history = []
+            if db:
+                from app.services.conversation_service import ConversationService
+                conv_service = ConversationService(db)
+                conversation_history = conv_service.get_conversation_history(conversation_id)
+            
+            # Prepare messages for AI
+            messages = conversation_history + [
+                {"role": "user", "content": user_message}
+            ]
+            
+            # Use RAG-enhanced completion if enabled
+            if use_rag:
+                response = await self.chat_completion_with_rag(
+                    messages=messages,
+                    user_id=user_id,
+                    conversation_id=conversation_id,
+                    use_knowledge_base=True,
+                    use_tools=use_tools,
+                    max_context_chunks=max_context_chunks
+                )
+            else:
+                # Use regular completion
+                tools = None
+                if use_tools:
+                    tools = await self._prepare_tools_for_completion(user_message)
+                
+                response = await self.chat_completion(
+                    messages=messages,
+                    tools=tools,
+                    user_id=user_id,
+                    conversation_id=conversation_id
+                )
+            
+            # Extract response content
+            content = ""
+            tool_calls = []
+            
+            if "choices" in response and response["choices"]:
+                choice = response["choices"][0]
+                message = choice.get("message", {})
+                content = message.get("content", "")
+                
+                # Check for tool calls
+                if "tool_calls" in message:
+                    tool_calls = message["tool_calls"]
+                    
+                    # Execute tool calls
+                    for tool_call in tool_calls:
+                        tool_result = await self.execute_tool_call(tool_call, user_id)
+                        
+                        # Add tool result to content
+                        if tool_result.get("success"):
+                            content += f"\n\nTool-Ausführung ({tool_result.get('tool_type', 'unknown')}):\n"
+                            content += str(tool_result.get("result", ""))
+                        else:
+                            content += f"\n\nTool-Fehler: {tool_result.get('error', 'Unknown error')}"
+            
+            # Prepare metadata
+            metadata = {
+                "model_used": response.get("model", "unknown"),
+                "tokens_used": response.get("usage", {}).get("total_tokens", 0),
+                "has_tool_calls": len(tool_calls) > 0,
+                "tool_calls_count": len(tool_calls)
+            }
+            
+            return AIResponse(
+                content=content,
+                message_type="text",
+                metadata=metadata,
+                tool_calls=tool_calls if tool_calls else None
+            )
+            
+        except Exception as e:
+            logger.error(f"Error getting AI response: {e}")
+            return AIResponse(
+                content=f"Entschuldigung, es gab einen Fehler bei der Verarbeitung Ihrer Anfrage: {str(e)}",
+                message_type="text",
+                metadata={"error": str(e)}
+            )
 
 
 # Global AI service instance
