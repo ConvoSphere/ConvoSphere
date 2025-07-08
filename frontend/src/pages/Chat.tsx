@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGetConversationsQuery, useCreateConversationMutation, useGetMessagesQuery, useSendMessageMutation } from '../services/apiSlice'
+import { websocketService, type WebSocketMessage } from '../services/websocketService'
+import { fileService, type UploadResult } from '../services/fileService'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import FileUpload from '../components/ui/FileUpload'
 import type { Conversation, Message } from '../services/apiSlice'
 
 const ChatPage = () => {
@@ -145,31 +148,87 @@ interface ChatInterfaceProps {
 
 const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
   const [message, setMessage] = useState('')
+  const [attachments, setAttachments] = useState<UploadResult[]>([])
+  const [showFileUpload, setShowFileUpload] = useState(false)
   const { data: messages, isLoading } = useGetMessagesQuery(conversation.id)
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation()
 
+  // WebSocket connection and message handling
+  useEffect(() => {
+    const connectWebSocket = async () => {
+      try {
+        await websocketService.connect()
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error)
+      }
+    }
+
+    connectWebSocket()
+
+    // Subscribe to real-time messages
+    const unsubscribe = websocketService.subscribe('message', (wsMessage: WebSocketMessage) => {
+      if (wsMessage.conversation_id === conversation.id) {
+        // Handle real-time message updates
+        console.log('Received real-time message:', wsMessage)
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [conversation.id])
+
   const handleSendMessage = async () => {
-    if (!message.trim()) return
+    if (!message.trim() && attachments.length === 0) return
     
     try {
+      // Send message via WebSocket for real-time delivery
+      websocketService.sendMessage({
+        type: 'message',
+        data: {
+          content: message,
+          attachments: attachments.map(att => att.id)
+        },
+        conversation_id: conversation.id
+      })
+
+      // Also send via REST API for persistence
       await sendMessage({
         conversation_id: conversation.id,
         content: message
       }).unwrap()
+      
       setMessage('')
+      setAttachments([])
     } catch (error) {
       console.error('Failed to send message:', error)
     }
+  }
+
+  const handleFileUpload = (result: UploadResult) => {
+    setAttachments(prev => [...prev, result])
+    setShowFileUpload(false)
+  }
+
+  const removeAttachment = (fileId: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== fileId))
   }
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">{conversation.title}</h2>
-        <p className="text-sm text-gray-500">
-          {conversation.messages_count} messages
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">{conversation.title}</h2>
+            <p className="text-sm text-gray-500">
+              {conversation.messages_count} messages
+            </p>
+          </div>
+          <div className="text-sm text-gray-500">
+            {websocketService.isConnected() ? '🟢 Connected' : '🔴 Disconnected'}
+          </div>
+        </div>
       </div>
 
       {/* Messages */}
@@ -178,8 +237,8 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo"></div>
           </div>
-                 ) : messages && messages.length > 0 ? (
-           messages.map((msg: Message) => (
+        ) : messages && messages.length > 0 ? (
+          messages.map((msg: Message) => (
             <div
               key={msg.id}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -205,20 +264,62 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         )}
       </div>
 
+      {/* Attachments Preview */}
+      {attachments.length > 0 && (
+        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg"
+              >
+                <span>{fileService.getFileIcon(attachment.mime_type)}</span>
+                <span className="text-sm truncate max-w-32">{attachment.filename}</span>
+                <button
+                  onClick={() => removeAttachment(attachment.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* File Upload */}
+      {showFileUpload && (
+        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+          <FileUpload
+            variant="chat"
+            onUpload={handleFileUpload}
+            onError={(error) => console.error('Upload error:', error)}
+          />
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex space-x-2">
-                     <Input
-             placeholder="Type your message..."
-             value={message}
-             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
-             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSendMessage()}
-             className="flex-1"
-           />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFileUpload(!showFileUpload)}
+            disabled={isSending}
+          >
+            📎
+          </Button>
+          <Input
+            placeholder="Type your message..."
+            value={message}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSendMessage()}
+            className="flex-1"
+          />
           <Button
             loading={isSending}
             onClick={handleSendMessage}
-            disabled={!message.trim()}
+            disabled={!message.trim() && attachments.length === 0}
           >
             Send
           </Button>

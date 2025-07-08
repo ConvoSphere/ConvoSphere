@@ -1,5 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import type { BaseQueryFn } from '@reduxjs/toolkit/query/react'
 import type { RootState } from '../app/store'
+import { authService } from './authService'
 
 // Define types for API responses
 export interface User {
@@ -33,6 +35,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   access_token: string
+  refresh_token: string
   token_type: string
 }
 
@@ -54,19 +57,40 @@ export interface DashboardStats {
   }>
 }
 
-// Create the API slice
-export const apiSlice = createApi({
-  reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
+// Custom base query with token refresh logic
+const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
+  const baseQuery = fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.accessToken
+    prepareHeaders: async (headers, { getState }) => {
+      const token = await authService.getValidToken()
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
       return headers
     },
-  }),
+  })
+
+  let result = await baseQuery(args, api, extraOptions)
+
+  if (result.error && result.error.status === 401) {
+    // Try to refresh the token
+    try {
+      await authService.refreshToken()
+      // Retry the original request
+      result = await baseQuery(args, api, extraOptions)
+    } catch (error) {
+      // Refresh failed, user will be logged out
+      authService.handleAuthError()
+    }
+  }
+
+  return result
+}
+
+// Create the API slice
+export const apiSlice = createApi({
+  reducerPath: 'api',
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['User', 'Conversation', 'Message', 'Dashboard'],
   endpoints: (builder) => ({
     // Authentication endpoints
@@ -76,6 +100,15 @@ export const apiSlice = createApi({
         method: 'POST',
         body: credentials,
       }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          // Store both tokens
+          authService.storeTokens(data.access_token, data.refresh_token)
+        } catch (error) {
+          console.error('Login failed:', error)
+        }
+      },
     }),
     
     register: builder.mutation<User, RegisterRequest>({
