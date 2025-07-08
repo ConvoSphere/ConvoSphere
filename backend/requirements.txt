@@ -45,11 +45,6 @@ babel==2.13.1
 
 # File Processing
 python-magic
-PyPDF2
-python-docx
-markdown
-pytesseract
-Pillow
 
 # Advanced Document Processing with Docling
 docling

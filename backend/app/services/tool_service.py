@@ -411,9 +411,6 @@ class ToolService:
             logger.error(f"Error checking edit permission for tool: {e}")
             return False
 
-# Global tool service instance (for static access, e.g. in AIService)
-tool_service = None  # Muss mit DB-Session initialisiert werden, z.B. im FastAPI-Startup oder per Dependency Injection
-
     def execute_tool(self, tool_name: str, user_id: str, **kwargs) -> Any:
         """
         Execute a tool by name.
@@ -551,4 +548,8 @@ tool_service = None  # Muss mit DB-Session initialisiert werden, z.B. im FastAPI
             
         except Exception as e:
             logger.error(f"Error executing built-in tool {tool_name}: {e}")
-            raise RuntimeError(f"Built-in tool execution failed: {str(e)}") 
+            raise RuntimeError(f"Built-in tool execution failed: {str(e)}")
+
+
+# Global tool service instance (for static access, e.g. in AIService)
+tool_service = None  # Must be initialized with DB-Session, e.g. in FastAPI startup or via Dependency Injection 

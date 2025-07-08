@@ -336,77 +336,27 @@ class KnowledgeService:
             return []
     
     def _extract_text_from_file(self, file_path: str, file_type: str) -> Optional[str]:
-        """Extract text content from various file types."""
+        """Extract text content from various file types using Docling."""
         try:
-            if file_type == "txt":
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
+            # Read file content
+            with open(file_path, 'rb') as f:
+                file_content = f.read()
             
-            elif file_type == "md":
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
+            # Use document processor with Docling
+            from .document_processor import DocumentProcessor
+            processor = DocumentProcessor()
             
-            elif file_type == "pdf":
-                return self._extract_pdf_text(file_path)
+            # Extract text using Docling
+            text = processor.extract_text(file_content, Path(file_path).name)
             
-            elif file_type in ["doc", "docx"]:
-                return self._extract_docx_text(file_path)
-            
+            if text:
+                return text
             else:
-                logger.warning(f"Unsupported file type: {file_type}")
+                logger.warning(f"No text extracted from {file_path}")
                 return None
                 
         except Exception as e:
             logger.error(f"Error extracting text from {file_path}: {e}")
-            return None
-    
-    def _extract_pdf_text(self, file_path: str) -> Optional[str]:
-        """Extract text from PDF file."""
-        try:
-            import PyPDF2
-            from io import BytesIO
-            
-            with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                
-                text = ""
-                for page in pdf_reader.pages:
-                    text += page.extract_text() + "\n"
-                
-                return text.strip()
-                
-        except ImportError:
-            logger.warning("PyPDF2 not installed. Install with: pip install PyPDF2")
-            return "PDF processing requires PyPDF2 library"
-        except Exception as e:
-            logger.error(f"Error extracting PDF text from {file_path}: {e}")
-            return None
-    
-    def _extract_docx_text(self, file_path: str) -> Optional[str]:
-        """Extract text from Word document."""
-        try:
-            from docx import Document
-            
-            doc = Document(file_path)
-            text = ""
-            
-            for paragraph in doc.paragraphs:
-                text += paragraph.text + "\n"
-            
-            # Also extract text from tables
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        text += cell.text + " "
-                    text += "\n"
-            
-            return text.strip()
-            
-        except ImportError:
-            logger.warning("python-docx not installed. Install with: pip install python-docx")
-            return "Word document processing requires python-docx library"
-        except Exception as e:
-            logger.error(f"Error extracting DOCX text from {file_path}: {e}")
             return None
     
     def _create_chunks(

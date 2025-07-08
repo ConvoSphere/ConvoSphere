@@ -3,6 +3,7 @@ Document processor service.
 
 This module provides functionality for processing different document types,
 extracting text content, and preparing documents for embedding generation.
+Uses Docling for advanced document processing with fallback to traditional methods.
 """
 
 import io
@@ -10,9 +11,7 @@ import logging
 from typing import List, Dict, Any
 from pathlib import Path
 
-import PyPDF2
-from docx import Document
-import markdown
+# Keep minimal imports for fallback processing
 import magic
 
 from app.core.config import settings
@@ -22,19 +21,29 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentProcessor:
-    """Service for processing different document types."""
+    """Service for processing different document types using Docling with fallbacks."""
     
     SUPPORTED_TYPES = {
         'application/pdf': 'pdf',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
         'text/plain': 'txt',
         'text/markdown': 'md',
         'text/html': 'html',
+        'text/csv': 'csv',
+        'application/json': 'json',
+        'application/xml': 'xml',
         'image/jpeg': 'image',
         'image/png': 'image',
         'image/gif': 'image',
         'image/bmp': 'image',
-        'image/tiff': 'image'
+        'image/tiff': 'image',
+        'image/webp': 'image',
+        'audio/wav': 'audio',
+        'audio/mpeg': 'audio',
+        'audio/mp4': 'audio',
+        'audio/flac': 'audio'
     }
     
     def __init__(self):
@@ -65,12 +74,26 @@ class DocumentProcessor:
                 return 'pdf'
             elif ext == '.docx':
                 return 'docx'
+            elif ext == '.pptx':
+                return 'pptx'
+            elif ext == '.xlsx':
+                return 'xlsx'
             elif ext == '.txt':
                 return 'txt'
             elif ext == '.md':
                 return 'md'
-            elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']:
+            elif ext == '.html':
+                return 'html'
+            elif ext == '.csv':
+                return 'csv'
+            elif ext == '.json':
+                return 'json'
+            elif ext == '.xml':
+                return 'xml'
+            elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']:
                 return 'image'
+            elif ext in ['.wav', '.mp3', '.m4a', '.flac']:
+                return 'audio'
             
             logger.warning(f"Unsupported file type: {mime_type} for file {filename}")
             return 'unknown'
@@ -81,7 +104,7 @@ class DocumentProcessor:
     
     def extract_text(self, file_content: bytes, filename: str) -> str:
         """
-        Extract text content from document.
+        Extract text content from document using Docling with fallbacks.
         
         Args:
             file_content: File content as bytes
@@ -93,7 +116,7 @@ class DocumentProcessor:
         try:
             file_type = self.detect_file_type(file_content, filename)
             
-            # Try Docling first if available and supported
+            # Use Docling for all supported formats
             if docling_processor.is_available():
                 supported_formats = docling_processor.get_supported_formats()
                 if file_type in supported_formats:
@@ -104,56 +127,15 @@ class DocumentProcessor:
                     else:
                         logger.warning(f"Docling processing failed for {filename}: {result.get('error')}")
             
-            # Fallback to traditional processing
-            if file_type == 'pdf':
-                return self._extract_pdf_text(file_content)
-            elif file_type == 'docx':
-                return self._extract_docx_text(file_content)
-            elif file_type == 'txt':
+            # Fallback to traditional processing only for unsupported formats
+            if file_type == 'txt':
                 return self._extract_txt_text(file_content)
-            elif file_type == 'md':
-                return self._extract_markdown_text(file_content)
-            elif file_type == 'html':
-                return self._extract_html_text(file_content)
-            elif file_type == 'image':
-                return self._extract_image_text(file_content)
             else:
+                logger.warning(f"No processing method available for {file_type} file: {filename}")
                 return ""
                 
         except Exception as e:
             logger.error(f"Error extracting text from {filename}: {e}")
-            return ""
-    
-    def _extract_pdf_text(self, file_content: bytes) -> str:
-        """Extract text from PDF file."""
-        try:
-            pdf_file = io.BytesIO(file_content)
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
-            
-            return text.strip()
-            
-        except Exception as e:
-            logger.error(f"Error extracting PDF text: {e}")
-            return ""
-    
-    def _extract_docx_text(self, file_content: bytes) -> str:
-        """Extract text from DOCX file."""
-        try:
-            doc_file = io.BytesIO(file_content)
-            doc = Document(doc_file)
-            
-            text = ""
-            for paragraph in doc.paragraphs:
-                text += paragraph.text + "\n"
-            
-            return text.strip()
-            
-        except Exception as e:
-            logger.error(f"Error extracting DOCX text: {e}")
             return ""
     
     def _extract_txt_text(self, file_content: bytes) -> str:
@@ -173,74 +155,6 @@ class DocumentProcessor:
             
         except Exception as e:
             logger.error(f"Error extracting text file content: {e}")
-            return ""
-    
-    def _extract_markdown_text(self, file_content: bytes) -> str:
-        """Extract text from markdown file."""
-        try:
-            # First get raw text
-            raw_text = self._extract_txt_text(file_content)
-            
-            # Convert markdown to plain text
-            html = markdown.markdown(raw_text)
-            
-            # Simple HTML to text conversion
-            import re
-            text = re.sub(r'<[^>]+>', '', html)
-            text = re.sub(r'\n\s*\n', '\n\n', text)
-            
-            return text.strip()
-            
-        except Exception as e:
-            logger.error(f"Error extracting markdown text: {e}")
-            return ""
-    
-    def _extract_html_text(self, file_content: bytes) -> str:
-        """Extract text from HTML file."""
-        try:
-            from bs4 import BeautifulSoup
-            
-            raw_text = self._extract_txt_text(file_content)
-            soup = BeautifulSoup(raw_text, 'html.parser')
-            
-            # Remove script and style elements
-            for script in soup(["script", "style"]):
-                script.decompose()
-            
-            # Get text
-            text = soup.get_text()
-            
-            # Clean up whitespace
-            lines = (line.strip() for line in text.splitlines())
-            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            text = ' '.join(chunk for chunk in chunks if chunk)
-            
-            return text
-            
-        except Exception as e:
-            logger.error(f"Error extracting HTML text: {e}")
-            return ""
-    
-    def _extract_image_text(self, file_content: bytes) -> str:
-        """Extract text from image using OCR."""
-        try:
-            import pytesseract
-            from PIL import Image
-            from io import BytesIO
-            
-            # Open image
-            image = Image.open(BytesIO(file_content))
-            
-            # Extract text using OCR
-            text = pytesseract.image_to_string(image)
-            
-            return text.strip()
-            
-        except ImportError:
-            logger.warning("pytesseract not installed. Install with: pip install pytesseract")
-            return "OCR processing requires pytesseract library"
-        except Exception as e:
-            logger.error(f"Error extracting image text: {e}")
             return ""
     
     def chunk_text(self, text: str) -> List[Dict[str, Any]]:
@@ -292,7 +206,7 @@ class DocumentProcessor:
     
     def process_document(self, file_content: bytes, filename: str) -> Dict[str, Any]:
         """
-        Process a document completely.
+        Process a document completely using Docling with fallbacks.
         
         Args:
             file_content: File content as bytes
@@ -304,7 +218,7 @@ class DocumentProcessor:
         try:
             file_type = self.detect_file_type(file_content, filename)
             
-            # Try Docling first if available and supported
+            # Use Docling for all supported formats
             if docling_processor.is_available():
                 supported_formats = docling_processor.get_supported_formats()
                 if file_type in supported_formats:
@@ -321,41 +235,48 @@ class DocumentProcessor:
                     else:
                         logger.warning(f"Docling processing failed for {filename}: {result.get('error')}")
             
-            # Fallback to traditional processing
-            # Extract text
-            text = self.extract_text(file_content, filename)
-            
-            if not text:
+            # Fallback to basic text processing for unsupported formats
+            if file_type == 'txt':
+                text = self._extract_txt_text(file_content)
+                
+                if not text:
+                    return {
+                        'success': False,
+                        'error': 'No text content extracted',
+                        'chunks': [],
+                        'metadata': {}
+                    }
+                
+                # Create chunks
+                chunks = self.chunk_text(text)
+                
+                # Calculate metadata
+                metadata = {
+                    'file_type': file_type,
+                    'file_size': len(file_content),
+                    'text_length': len(text),
+                    'word_count': len(text.split()),
+                    'chunk_count': len(chunks),
+                    'processing_engine': 'traditional',
+                    'processing_success': True
+                }
+                
+                return {
+                    'success': True,
+                    'text': text,
+                    'chunks': chunks,
+                    'tables': [],
+                    'figures': [],
+                    'formulas': [],
+                    'metadata': metadata
+                }
+            else:
                 return {
                     'success': False,
-                    'error': 'No text content extracted',
+                    'error': f'No processing method available for {file_type} files',
                     'chunks': [],
                     'metadata': {}
                 }
-            
-            # Create chunks
-            chunks = self.chunk_text(text)
-            
-            # Calculate metadata
-            metadata = {
-                'file_type': file_type,
-                'file_size': len(file_content),
-                'text_length': len(text),
-                'word_count': len(text.split()),
-                'chunk_count': len(chunks),
-                'processing_engine': 'traditional',
-                'processing_success': True
-            }
-            
-            return {
-                'success': True,
-                'text': text,
-                'chunks': chunks,
-                'tables': [],
-                'figures': [],
-                'formulas': [],
-                'metadata': metadata
-            }
             
         except Exception as e:
             logger.error(f"Error processing document {filename}: {e}")
