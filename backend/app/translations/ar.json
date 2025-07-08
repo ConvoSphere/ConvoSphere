@@ -1,0 +1,133 @@
+{
+  "common": {
+    "success": "نجح",
+    "error": "خطأ",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "loading": "جاري التحميل...",
+    "saving": "جاري الحفظ...",
+    "deleting": "جاري الحذف...",
+    "updating": "جاري التحديث...",
+    "creating": "جاري الإنشاء...",
+    "searching": "جاري البحث...",
+    "uploading": "جاري الرفع...",
+    "processing": "جاري المعالجة..."
+  },
+  "auth": {
+    "login_success": "تم تسجيل الدخول بنجاح",
+    "login_failed": "فشل تسجيل الدخول",
+    "logout_success": "تم تسجيل الخروج بنجاح",
+    "registration_success": "تم التسجيل بنجاح",
+    "registration_failed": "فشل التسجيل",
+    "invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "account_disabled": "حساب المستخدم معطل",
+    "email_already_registered": "البريد الإلكتروني مسجل بالفعل",
+    "username_already_taken": "اسم المستخدم مستخدم بالفعل",
+    "password_too_weak": "كلمة المرور ضعيفة جداً",
+    "token_expired": "انتهت صلاحية رمز الوصول",
+    "token_invalid": "رمز الوصول غير صحيح",
+    "permission_denied": "تم رفض الإذن",
+    "unauthorized": "وصول غير مصرح"
+  },
+  "user": {
+    "user_created": "تم إنشاء المستخدم بنجاح",
+    "user_updated": "تم تحديث المستخدم بنجاح",
+    "user_deleted": "تم حذف المستخدم بنجاح",
+    "user_not_found": "لم يتم العثور على المستخدم",
+    "profile_updated": "تم تحديث الملف الشخصي بنجاح",
+    "password_changed": "تم تغيير كلمة المرور بنجاح",
+    "invalid_password": "كلمة المرور غير صحيحة",
+    "email_updated": "تم تحديث البريد الإلكتروني بنجاح",
+    "username_updated": "تم تحديث اسم المستخدم بنجاح"
+  },
+  "assistant": {
+    "assistant_created": "تم إنشاء المساعد بنجاح",
+    "assistant_updated": "تم تحديث المساعد بنجاح",
+    "assistant_deleted": "تم حذف المساعد بنجاح",
+    "assistant_not_found": "لم يتم العثور على المساعد",
+    "assistant_activated": "تم تفعيل المساعد",
+    "assistant_deactivated": "تم إلغاء تفعيل المساعد",
+    "invalid_configuration": "تكوين المساعد غير صحيح",
+    "model_not_supported": "نموذج الذكاء الاصطناعي غير مدعوم",
+    "temperature_invalid": "يجب أن تكون درجة الحرارة بين 0.0 و 1.0",
+    "max_tokens_invalid": "يجب أن يكون الحد الأقصى للرموز بين 1 و 8192"
+  },
+  "conversation": {
+    "conversation_created": "تم إنشاء المحادثة بنجاح",
+    "conversation_updated": "تم تحديث المحادثة بنجاح",
+    "conversation_deleted": "تم حذف المحادثة بنجاح",
+    "conversation_not_found": "لم يتم العثور على المحادثة",
+    "conversation_archived": "تم أرشفة المحادثة",
+    "conversation_restored": "تم استعادة المحادثة",
+    "message_sent": "تم إرسال الرسالة بنجاح",
+    "message_not_found": "لم يتم العثور على الرسالة",
+    "message_deleted": "تم حذف الرسالة بنجاح",
+    "invalid_message": "محتوى الرسالة غير صحيح"
+  },
+  "knowledge": {
+    "document_uploaded": "تم رفع المستند بنجاح",
+    "document_processed": "تم معالجة المستند بنجاح",
+    "document_deleted": "تم حذف المستند بنجاح",
+    "document_not_found": "لم يتم العثور على المستند",
+    "document_updated": "تم تحديث المستند بنجاح",
+    "processing_failed": "فشل في معالجة المستند",
+    "unsupported_format": "تنسيق المستند غير مدعوم",
+    "file_too_large": "حجم الملف يتجاوز الحد",
+    "search_no_results": "لم يتم العثور على نتائج",
+    "search_failed": "فشل البحث"
+  },
+  "tools": {
+    "tool_executed": "تم تنفيذ الأداة بنجاح",
+    "tool_failed": "فشل في تنفيذ الأداة",
+    "tool_not_found": "لم يتم العثور على الأداة",
+    "tool_discovered": "تم اكتشاف الأداة بنجاح",
+    "invalid_parameters": "معاملات الأداة غير صحيحة",
+    "tool_timeout": "انتهت مهلة تنفيذ الأداة",
+    "tool_not_available": "الأداة غير متاحة",
+    "mcp_server_error": "خطأ في خادم MCP"
+  },
+  "validation": {
+    "required_field": "{field} مطلوب",
+    "invalid_email": "تنسيق البريد الإلكتروني غير صحيح",
+    "invalid_username": "يجب أن يكون اسم المستخدم بين 3 و 50 حرفاً",
+    "invalid_password": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+    "passwords_not_match": "كلمات المرور غير متطابقة",
+    "invalid_url": "تنسيق الرابط غير صحيح",
+    "invalid_date": "تنسيق التاريخ غير صحيح",
+    "field_too_long": "{field} طويل جداً",
+    "field_too_short": "{field} قصير جداً",
+    "invalid_format": "تنسيق غير صحيح"
+  },
+  "errors": {
+    "internal_server_error": "خطأ داخلي في الخادم",
+    "service_unavailable": "الخدمة غير متاحة مؤقتاً",
+    "bad_request": "طلب سيء",
+    "not_found": "لم يتم العثور على المورد",
+    "method_not_allowed": "الطريقة غير مسموح بها",
+    "request_timeout": "انتهت مهلة الطلب",
+    "too_many_requests": "طلبات كثيرة جداً",
+    "database_error": "خطأ في قاعدة البيانات",
+    "network_error": "خطأ في الشبكة",
+    "file_error": "خطأ في عملية الملف"
+  },
+  "websocket": {
+    "connected": "متصل بالدردشة",
+    "disconnected": "منفصل عن الدردشة",
+    "connection_failed": "فشل الاتصال",
+    "reconnecting": "إعادة الاتصال...",
+    "message_sent": "تم إرسال الرسالة",
+    "message_received": "تم استلام الرسالة",
+    "typing_started": "المساعد يكتب...",
+    "typing_stopped": "توقف المساعد عن الكتابة"
+  },
+  "health": {
+    "service_healthy": "الخدمة صحية",
+    "service_unhealthy": "الخدمة غير صحية",
+    "database_connected": "قاعدة البيانات متصلة",
+    "database_disconnected": "قاعدة البيانات منفصلة",
+    "redis_connected": "Redis متصل",
+    "redis_disconnected": "Redis منفصل",
+    "weaviate_connected": "Weaviate متصل",
+    "weaviate_disconnected": "Weaviate منفصل"
+  }
+} 

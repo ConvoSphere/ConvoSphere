@@ -88,8 +88,11 @@ class Settings(BaseSettings):
     log_file: str = Field(default="./logs/app.log", description="Log file")
     
     # Internationalization
-    default_language: str = Field(default="de", description="Default language")
-    supported_languages: List[str] = Field(default=["de", "en", "fr", "es"], description="Supported languages")
+    default_language: str = Field(default="en", description="Default language")
+    supported_languages: List[str] = Field(
+        default=["en", "de", "fr", "es", "ar", "ja"], 
+        description="Supported languages"
+    )
     
     # Email Configuration
     smtp_host: Optional[str] = Field(default=None, description="SMTP host")

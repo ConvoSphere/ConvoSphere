@@ -1,0 +1,133 @@
+{
+  "common": {
+    "success": "成功",
+    "error": "エラー",
+    "warning": "警告",
+    "info": "情報",
+    "loading": "読み込み中...",
+    "saving": "保存中...",
+    "deleting": "削除中...",
+    "updating": "更新中...",
+    "creating": "作成中...",
+    "searching": "検索中...",
+    "uploading": "アップロード中...",
+    "processing": "処理中..."
+  },
+  "auth": {
+    "login_success": "ログインに成功しました",
+    "login_failed": "ログインに失敗しました",
+    "logout_success": "ログアウトに成功しました",
+    "registration_success": "登録に成功しました",
+    "registration_failed": "登録に失敗しました",
+    "invalid_credentials": "メールアドレスまたはパスワードが無効です",
+    "account_disabled": "ユーザーアカウントが無効になっています",
+    "email_already_registered": "メールアドレスは既に登録されています",
+    "username_already_taken": "ユーザー名は既に使用されています",
+    "password_too_weak": "パスワードが弱すぎます",
+    "token_expired": "アクセストークンの有効期限が切れています",
+    "token_invalid": "無効なアクセストークンです",
+    "permission_denied": "権限が拒否されました",
+    "unauthorized": "認証されていません"
+  },
+  "user": {
+    "user_created": "ユーザーが正常に作成されました",
+    "user_updated": "ユーザーが正常に更新されました",
+    "user_deleted": "ユーザーが正常に削除されました",
+    "user_not_found": "ユーザーが見つかりません",
+    "profile_updated": "プロフィールが正常に更新されました",
+    "password_changed": "パスワードが正常に変更されました",
+    "invalid_password": "無効なパスワードです",
+    "email_updated": "メールアドレスが正常に更新されました",
+    "username_updated": "ユーザー名が正常に更新されました"
+  },
+  "assistant": {
+    "assistant_created": "アシスタントが正常に作成されました",
+    "assistant_updated": "アシスタントが正常に更新されました",
+    "assistant_deleted": "アシスタントが正常に削除されました",
+    "assistant_not_found": "アシスタントが見つかりません",
+    "assistant_activated": "アシスタントが有効化されました",
+    "assistant_deactivated": "アシスタントが無効化されました",
+    "invalid_configuration": "無効なアシスタント設定です",
+    "model_not_supported": "AIモデルがサポートされていません",
+    "temperature_invalid": "温度は0.0から1.0の間である必要があります",
+    "max_tokens_invalid": "最大トークン数は1から8192の間である必要があります"
+  },
+  "conversation": {
+    "conversation_created": "会話が正常に作成されました",
+    "conversation_updated": "会話が正常に更新されました",
+    "conversation_deleted": "会話が正常に削除されました",
+    "conversation_not_found": "会話が見つかりません",
+    "conversation_archived": "会話がアーカイブされました",
+    "conversation_restored": "会話が復元されました",
+    "message_sent": "メッセージが正常に送信されました",
+    "message_not_found": "メッセージが見つかりません",
+    "message_deleted": "メッセージが正常に削除されました",
+    "invalid_message": "無効なメッセージ内容です"
+  },
+  "knowledge": {
+    "document_uploaded": "ドキュメントが正常にアップロードされました",
+    "document_processed": "ドキュメントが正常に処理されました",
+    "document_deleted": "ドキュメントが正常に削除されました",
+    "document_not_found": "ドキュメントが見つかりません",
+    "document_updated": "ドキュメントが正常に更新されました",
+    "processing_failed": "ドキュメントの処理に失敗しました",
+    "unsupported_format": "サポートされていないドキュメント形式です",
+    "file_too_large": "ファイルサイズが制限を超えています",
+    "search_no_results": "結果が見つかりません",
+    "search_failed": "検索に失敗しました"
+  },
+  "tools": {
+    "tool_executed": "ツールが正常に実行されました",
+    "tool_failed": "ツールの実行に失敗しました",
+    "tool_not_found": "ツールが見つかりません",
+    "tool_discovered": "ツールが正常に発見されました",
+    "invalid_parameters": "無効なツールパラメータです",
+    "tool_timeout": "ツールの実行がタイムアウトしました",
+    "tool_not_available": "ツールが利用できません",
+    "mcp_server_error": "MCPサーバーエラー"
+  },
+  "validation": {
+    "required_field": "{field}は必須です",
+    "invalid_email": "無効なメールアドレス形式です",
+    "invalid_username": "ユーザー名は3〜50文字である必要があります",
+    "invalid_password": "パスワードは8文字以上である必要があります",
+    "passwords_not_match": "パスワードが一致しません",
+    "invalid_url": "無効なURL形式です",
+    "invalid_date": "無効な日付形式です",
+    "field_too_long": "{field}が長すぎます",
+    "field_too_short": "{field}が短すぎます",
+    "invalid_format": "無効な形式です"
+  },
+  "errors": {
+    "internal_server_error": "内部サーバーエラー",
+    "service_unavailable": "サービスが一時的に利用できません",
+    "bad_request": "不正なリクエスト",
+    "not_found": "リソースが見つかりません",
+    "method_not_allowed": "許可されていないメソッド",
+    "request_timeout": "リクエストがタイムアウトしました",
+    "too_many_requests": "リクエストが多すぎます",
+    "database_error": "データベースエラー",
+    "network_error": "ネットワークエラー",
+    "file_error": "ファイル操作エラー"
+  },
+  "websocket": {
+    "connected": "チャットに接続しました",
+    "disconnected": "チャットから切断されました",
+    "connection_failed": "接続に失敗しました",
+    "reconnecting": "再接続中...",
+    "message_sent": "メッセージが送信されました",
+    "message_received": "メッセージが受信されました",
+    "typing_started": "アシスタントが入力中...",
+    "typing_stopped": "アシスタントが入力を停止しました"
+  },
+  "health": {
+    "service_healthy": "サービスは正常です",
+    "service_unhealthy": "サービスは異常です",
+    "database_connected": "データベースに接続されています",
+    "database_disconnected": "データベースから切断されています",
+    "redis_connected": "Redisに接続されています",
+    "redis_disconnected": "Redisから切断されています",
+    "weaviate_connected": "Weaviateに接続されています",
+    "weaviate_disconnected": "Weaviateから切断されています"
+  }
+} 

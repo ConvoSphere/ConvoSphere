@@ -7,7 +7,7 @@ This module combines all API routers into a single router for the v1 API.
 from fastapi import APIRouter, Depends
 from app.utils.security import rate_limiter
 
-from .endpoints import auth, users, assistants, conversations, tools, health, chat, mcp, search, knowledge, dashboard
+from .endpoints import auth, users, assistants, conversations, tools, health, chat, mcp, search, knowledge, dashboard, i18n
 
 # Create main API router
 api_router = APIRouter(dependencies=[Depends(rate_limiter)])
@@ -23,4 +23,5 @@ api_router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(search.router, prefix="/search", tags=["search"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
-api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"]) 
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(i18n.router, prefix="/i18n", tags=["internationalization"]) 
