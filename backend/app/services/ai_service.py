@@ -317,16 +317,19 @@ class AIService:
         
         try:
             # Use LiteLLM for embeddings
-            response = await acompletion(
+            response = await litellm.aembedding(
                 model=model,
-                messages=[{"role": "user", "content": text}],
-                max_tokens=1  # We only need embeddings, not completion
+                input=text
             )
             
             # Extract embeddings from response
-            # Note: This is a simplified approach. In practice, you'd use
-            # the embeddings endpoint directly
-            return response.get("embeddings", [])
+            if isinstance(response, dict) and "data" in response:
+                return response["data"][0]["embedding"]
+            elif isinstance(response, list) and len(response) > 0:
+                return response[0]["embedding"]
+            else:
+                logger.warning(f"Unexpected embedding response format: {response}")
+                return []
             
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
@@ -766,4 +769,7 @@ class AIService:
 
 
 # Global AI service instance
-ai_service = AIService() 
+ai_service = AIService()
+
+# Global Assistant Engine instance (will be initialized in main.py)
+assistant_engine = None 

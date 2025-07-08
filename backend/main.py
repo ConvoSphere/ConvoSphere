@@ -21,6 +21,11 @@ from app.core.redis_client import init_redis, close_redis, check_redis_connectio
 from app.core.weaviate_client import init_weaviate, close_weaviate, check_weaviate_connection, get_weaviate_info, create_schema_if_not_exists
 from app.core.i18n import I18nMiddleware, i18n_manager, t
 from app.api.v1.api import api_router
+from app.services.ai_service import ai_service
+from app.services.assistant_engine import AssistantEngine
+from app.services.assistant_service import AssistantService
+from app.services.conversation_service import ConversationService
+from app.services.tool_service import tool_service
 
 
 @asynccontextmanager
@@ -56,6 +61,34 @@ async def lifespan(app: FastAPI):
             raise RuntimeError("Weaviate connection failed")
         create_schema_if_not_exists()
         logger.info("Weaviate initialized successfully")
+        
+        # Initialize Assistant Engine
+        logger.info("Initializing Assistant Engine...")
+        from app.core.database import get_db
+        from sqlalchemy.orm import Session
+        
+        # Create a database session for initialization
+        db = next(get_db())
+        try:
+            assistant_service = AssistantService(db)
+            conversation_service = ConversationService(db)
+            
+            # Initialize global assistant engine
+            global assistant_engine
+            assistant_engine = AssistantEngine(
+                ai_service=ai_service,
+                assistant_service=assistant_service,
+                conversation_service=conversation_service,
+                tool_service=tool_service
+            )
+            
+            # Update ai_service with global assistant engine
+            from app.services.ai_service import assistant_engine as ai_assistant_engine
+            ai_assistant_engine = assistant_engine
+            
+            logger.info("Assistant Engine initialized successfully")
+        finally:
+            db.close()
         
         logger.info("All services initialized successfully")
         

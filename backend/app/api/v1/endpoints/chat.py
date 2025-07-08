@@ -16,6 +16,9 @@ from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.services.conversation_service import ConversationService
 from app.services.ai_service import AIService, ai_service, AIResponse
+from app.services.assistant_engine import AssistantEngine
+from app.services.assistant_service import AssistantService
+from app.services.tool_service import tool_service
 
 
 router = APIRouter()
@@ -183,12 +186,35 @@ async def process_websocket_message(
                 }))
                 return
             conversation_service = ConversationService(db)
+            assistant_service = AssistantService(db)
+            
+            # Create assistant engine
+            assistant_engine = AssistantEngine(
+                ai_service=ai_service,
+                assistant_service=assistant_service,
+                conversation_service=conversation_service,
+                tool_service=tool_service
+            )
+            
+            # Get conversation to find assistant_id
+            conversation = await conversation_service.get_conversation(conversation_id, sender_id)
+            if not conversation:
+                await websocket.send_text(json.dumps({
+                    "type": "error",
+                    "message": "Conversation not found"
+                }))
+                return
+            
+            assistant_id = str(conversation.assistant_id) if conversation.assistant_id else "default"
+            
+            # Add user message
             user_message = await conversation_service.add_message(
                 conversation_id=conversation_id,
                 user_id=sender_id,
                 content=content,
                 role="user"
             )
+            
             await manager.send_message(conversation_id, {
                 "type": "message",
                 "message": {
@@ -200,15 +226,18 @@ async def process_websocket_message(
                     "metadata": getattr(user_message, 'metadata', None)
                 }
             })
-            ai_response: AIResponse = await ai_service.get_response(
+            
+            # Process message with assistant engine
+            ai_response: AIResponse = await assistant_engine.process_message(
+                message=content,
                 conversation_id=conversation_id,
-                user_message=content,
+                assistant_id=assistant_id,
                 user_id=sender_id,
-                db=db,
                 use_rag=True,
-                use_tools=True,
-                max_context_chunks=5
+                use_tools=True
             )
+            
+            # Add assistant message
             assistant_message = await conversation_service.add_message(
                 conversation_id=conversation_id,
                 user_id=sender_id,
@@ -340,16 +369,31 @@ async def send_message(
         message_type=message_data.message_type
     )
     
-    # Get AI response
-    ai_response: AIResponse = await ai_service.get_response(
-        conversation_id=conversation_id,
-        user_message=message_data.content,
-        user_id=current_user_id,
-        db=db,
-        use_rag=use_rag,
-        use_tools=use_tools,
-        max_context_chunks=max_context_chunks
-    )
+                # Get conversation to find assistant_id
+            conversation = await conversation_service.get_conversation(conversation_id, current_user_id)
+            if not conversation:
+                raise HTTPException(status_code=404, detail="Conversation not found")
+            
+            assistant_id = str(conversation.assistant_id) if conversation.assistant_id else "default"
+            
+            # Create assistant engine
+            assistant_service = AssistantService(db)
+            assistant_engine = AssistantEngine(
+                ai_service=ai_service,
+                assistant_service=assistant_service,
+                conversation_service=conversation_service,
+                tool_service=tool_service
+            )
+            
+            # Get AI response using assistant engine
+            ai_response: AIResponse = await assistant_engine.process_message(
+                message=message_data.content,
+                conversation_id=conversation_id,
+                assistant_id=assistant_id,
+                user_id=current_user_id,
+                use_rag=use_rag,
+                use_tools=use_tools
+            )
     
     # Add assistant message
     assistant_message = await conversation_service.add_message(

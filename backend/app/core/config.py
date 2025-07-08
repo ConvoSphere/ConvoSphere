@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     
     # LiteLLM Configuration
     litellm_model: str = Field(default="gpt-4", description="LiteLLM model")
+    default_ai_model: str = Field(default="gpt-4", description="Default AI model")
     litellm_max_tokens: int = Field(default=4096, description="LiteLLM max tokens")
     litellm_temperature: float = Field(default=0.7, description="LiteLLM temperature")
     
