@@ -224,12 +224,21 @@ class DocumentProcessor:
     def _extract_image_text(self, file_content: bytes) -> str:
         """Extract text from image using OCR."""
         try:
-            # For now, return empty string
-            # In a real implementation, this would use OCR libraries like Tesseract
-            # or cloud OCR services like Google Vision API
-            logger.info("OCR extraction not implemented yet")
-            return ""
+            import pytesseract
+            from PIL import Image
+            from io import BytesIO
             
+            # Open image
+            image = Image.open(BytesIO(file_content))
+            
+            # Extract text using OCR
+            text = pytesseract.image_to_string(image)
+            
+            return text.strip()
+            
+        except ImportError:
+            logger.warning("pytesseract not installed. Install with: pip install pytesseract")
+            return "OCR processing requires pytesseract library"
         except Exception as e:
             logger.error(f"Error extracting image text: {e}")
             return ""

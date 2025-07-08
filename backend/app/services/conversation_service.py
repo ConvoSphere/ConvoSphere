@@ -205,6 +205,75 @@ class ConversationService:
         messages = query.all()
         return [msg.to_dict() for msg in messages]
     
+    def get_conversation_history(
+        self,
+        conversation_id: str,
+        limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """
+        Get conversation history for context management.
+        
+        Args:
+            conversation_id: Conversation ID
+            limit: Maximum number of messages to retrieve
+            
+        Returns:
+            List[Dict[str, Any]]: List of messages in AI format
+        """
+        try:
+            messages = self.get_conversation_messages(
+                conversation_id=conversation_id,
+                limit=limit
+            )
+            
+            # Convert to AI message format
+            ai_messages = []
+            for msg in messages:
+                ai_message = {
+                    "role": msg.get("role", "user"),
+                    "content": msg.get("content", ""),
+                    "timestamp": msg.get("created_at"),
+                    "message_id": str(msg.get("id")),
+                    "metadata": msg.get("metadata", {})
+                }
+                ai_messages.append(ai_message)
+            
+            return ai_messages
+            
+        except Exception as e:
+            logger.error(f"Error getting conversation history: {e}")
+            return []
+    
+    def get_conversation(self, conversation_id: str, user_id: str) -> Optional[Conversation]:
+        """
+        Get conversation with user validation.
+        
+        Args:
+            conversation_id: Conversation ID
+            user_id: User ID for validation
+            
+        Returns:
+            Optional[Conversation]: Conversation if found and accessible
+        """
+        try:
+            conversation = self.db.query(Conversation).filter(
+                Conversation.id == conversation_id
+            ).first()
+            
+            if not conversation:
+                return None
+            
+            # Check if user has access to this conversation
+            if conversation.user_id != user_id:
+                logger.warning(f"User {user_id} tried to access conversation {conversation_id} without permission")
+                return None
+            
+            return conversation
+            
+        except Exception as e:
+            logger.error(f"Error getting conversation {conversation_id}: {e}")
+            return None
+    
     def search_messages(
         self,
         conversation_id: str,

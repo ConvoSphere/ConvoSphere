@@ -412,4 +412,143 @@ class ToolService:
             return False
 
 # Global tool service instance (for static access, e.g. in AIService)
-tool_service = None  # Muss mit DB-Session initialisiert werden, z.B. im FastAPI-Startup oder per Dependency Injection 
+tool_service = None  # Muss mit DB-Session initialisiert werden, z.B. im FastAPI-Startup oder per Dependency Injection
+
+    def execute_tool(self, tool_name: str, user_id: str, **kwargs) -> Any:
+        """
+        Execute a tool by name.
+        
+        Args:
+            tool_name: Name of the tool to execute
+            user_id: User ID for execution context
+            **kwargs: Tool parameters
+            
+        Returns:
+            Tool execution result
+        """
+        try:
+            # Get tool by function name
+            tool = self.db.query(Tool).filter(
+                and_(
+                    Tool.function_name == tool_name,
+                    Tool.is_enabled == True
+                )
+            ).first()
+            
+            if not tool:
+                raise ValueError(f"Tool '{tool_name}' not found or disabled")
+            
+            # Check if user has permission to use this tool
+            if not self._check_user_permission(tool, user_id):
+                raise PermissionError(f"User {user_id} does not have permission to use tool '{tool_name}'")
+            
+            # Import and execute tool function
+            if tool.implementation_path:
+                try:
+                    # Dynamic import of tool implementation
+                    module_path, function_name = tool.implementation_path.rsplit('.', 1)
+                    module = __import__(module_path, fromlist=[function_name])
+                    tool_function = getattr(module, function_name)
+                    
+                    # Execute tool with parameters
+                    result = tool_function(user_id=user_id, **kwargs)
+                    return result
+                    
+                except Exception as e:
+                    logger.error(f"Error executing tool {tool_name}: {e}")
+                    raise RuntimeError(f"Tool execution failed: {str(e)}")
+            else:
+                # Built-in tool execution
+                return self._execute_builtin_tool(tool_name, user_id, **kwargs)
+                
+        except Exception as e:
+            logger.error(f"Error in tool execution: {e}")
+            raise
+    
+    def get_tools_for_assistant(self, assistant_id: str) -> List[Dict[str, Any]]:
+        """
+        Get tools available for an assistant.
+        
+        Args:
+            assistant_id: Assistant ID
+            
+        Returns:
+            List[Dict[str, Any]]: List of tools available for the assistant
+        """
+        try:
+            # For now, return all available tools
+            # In the future, this could be filtered based on assistant configuration
+            tools = self.get_available_tools()
+            
+            # Convert to tool definitions for AI
+            tool_definitions = []
+            for tool in tools:
+                if tool.get("can_use", True):
+                    tool_def = {
+                        "name": tool.get("function_name"),
+                        "description": tool.get("description", ""),
+                        "parameters": tool.get("parameters_schema", {}),
+                        "category": tool.get("category"),
+                        "status": "active" if tool.get("is_enabled") else "inactive"
+                    }
+                    tool_definitions.append(tool_def)
+            
+            return tool_definitions
+            
+        except Exception as e:
+            logger.error(f"Error getting tools for assistant {assistant_id}: {e}")
+            return []
+    
+    def get_all_tools(self) -> List[Dict[str, Any]]:
+        """
+        Get all available tools.
+        
+        Returns:
+            List[Dict[str, Any]]: List of all available tools
+        """
+        try:
+            return self.get_available_tools()
+        except Exception as e:
+            logger.error(f"Error getting all tools: {e}")
+            return []
+    
+    def _execute_builtin_tool(self, tool_name: str, user_id: str, **kwargs) -> Any:
+        """
+        Execute a built-in tool.
+        
+        Args:
+            tool_name: Name of the built-in tool
+            user_id: User ID for execution context
+            **kwargs: Tool parameters
+            
+        Returns:
+            Tool execution result
+        """
+        try:
+            # Import built-in tools
+            from app.tools.search_tools import search_web, search_wikipedia
+            from app.tools.file_tools import read_file, write_file
+            from app.tools.analysis_tools import analyze_text, summarize_text
+            
+            # Map tool names to functions
+            builtin_tools = {
+                "search_web": search_web,
+                "search_wikipedia": search_wikipedia,
+                "read_file": read_file,
+                "write_file": write_file,
+                "analyze_text": analyze_text,
+                "summarize_text": summarize_text
+            }
+            
+            if tool_name not in builtin_tools:
+                raise ValueError(f"Built-in tool '{tool_name}' not found")
+            
+            # Execute tool
+            tool_function = builtin_tools[tool_name]
+            result = tool_function(user_id=user_id, **kwargs)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error executing built-in tool {tool_name}: {e}")
+            raise RuntimeError(f"Built-in tool execution failed: {str(e)}") 
