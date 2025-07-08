@@ -13,7 +13,7 @@ const ChatPage = () => {
   const [newConversationTitle, setNewConversationTitle] = useState('')
   const [showNewConversation, setShowNewConversation] = useState(false)
   
-  const { data: conversations, isLoading, error } = useGetConversationsQuery()
+  const { data: conversations, isLoading, error } = useGetConversationsQuery(undefined)
   const [createConversation, { isLoading: isCreating }] = useCreateConversationMutation()
 
   const handleCreateConversation = async () => {
@@ -169,7 +169,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
   const [searchActive, setSearchActive] = useState(false)
   const [searchMessages, { data: searchResults, isLoading: isSearching }] = useSearchMessagesMutation()
   const [exportFormat, setExportFormat] = useState('json')
-  const [exportConversation, { data: exportData, isLoading: isExporting }] = useExportConversationMutation()
+  const [exportConversation, { isLoading: isExporting }] = useExportConversationMutation()
   const [exportError, setExportError] = useState<string | null>(null)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const { data: assistants, isLoading: isLoadingAssistants } = useGetAssistantsQuery({ status: 'active' })
