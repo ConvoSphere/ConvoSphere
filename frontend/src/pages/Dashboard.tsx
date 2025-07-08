@@ -1,14 +1,16 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGetDashboardStatsQuery } from '../services/apiSlice'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation()
   const { data: stats, isLoading, error } = useGetDashboardStatsQuery()
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading dashboard...</div>
+        <div className="text-lg">{t('common.loading')}</div>
       </div>
     )
   }
@@ -16,19 +18,19 @@ const Dashboard: React.FC = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">Error loading dashboard</div>
+        <div className="text-red-500">{t('errors.load_dashboard_failed')}</div>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('dashboard.title')}</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Total Conversations</CardTitle>
+            <CardTitle>{t('dashboard.total_conversations')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats?.total_conversations || 0}</p>
@@ -37,7 +39,7 @@ const Dashboard: React.FC = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Total Messages</CardTitle>
+            <CardTitle>{t('dashboard.total_messages')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats?.total_messages || 0}</p>
@@ -46,7 +48,7 @@ const Dashboard: React.FC = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Active Assistants</CardTitle>
+            <CardTitle>{t('dashboard.active_assistants')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats?.active_assistants || 0}</p>
@@ -55,10 +57,10 @@ const Dashboard: React.FC = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>System Status</CardTitle>
+            <CardTitle>{t('dashboard.system_status')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-green-500 font-bold">Online</p>
+            <p className="text-green-500 font-bold">{t('dashboard.online')}</p>
           </CardContent>
         </Card>
       </div>
@@ -66,7 +68,7 @@ const Dashboard: React.FC = () => {
       {stats?.recent_activity && stats.recent_activity.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t('dashboard.recent_activity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

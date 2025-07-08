@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGetConversationsQuery, useCreateConversationMutation, useGetMessagesQuery, useSendMessageMutation, useSearchMessagesMutation, type Message, useExportConversationMutation, useGetAssistantsQuery, useUpdateConversationMutation, useGetConversationContextQuery, useUpdateConversationContextMutation, useAddMessageReactionMutation, useRemoveMessageReactionMutation, type MessageReaction, useDeleteMessageMutation } from '../services/apiSlice'
 import type { Conversation } from '../services/apiSlice'
 import { websocketService, type WebSocketMessage } from '../services/websocketService'
@@ -7,6 +8,7 @@ import { Button, Input } from '../components/ui'
 import FileUpload from '../components/ui/FileUpload'
 
 const ChatPage = () => {
+  const { t } = useTranslation()
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [newConversationTitle, setNewConversationTitle] = useState('')
   const [showNewConversation, setShowNewConversation] = useState(false)
