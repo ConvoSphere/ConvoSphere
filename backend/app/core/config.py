@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     
     # Internationalization
     default_language: str = Field(default="de", description="Default language")
-    supported_languages: List[str] = Field(default=["de", "en", "fr", "es"], description="Supported languages", env="SUPPORTED_LANGUAGES")
+    supported_languages: List[str] = Field(default=["de", "en", "fr", "es"], description="Supported languages")
     
     # Email Configuration
     smtp_host: Optional[str] = Field(default=None, description="SMTP host")
