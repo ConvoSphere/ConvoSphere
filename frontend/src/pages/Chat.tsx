@@ -66,7 +66,7 @@ const ChatPage = () => {
                              <Input
                  placeholder="Conversation title..."
                  value={newConversationTitle}
-                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewConversationTitle(e.target.value)}
+                 onChange={setNewConversationTitle}
                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleCreateConversation()}
                />
               <div className="flex space-x-2">
@@ -313,7 +313,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
           <Input
             placeholder="Type your message..."
             value={message}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
+            onChange={setMessage}
             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSendMessage()}
             className="flex-1"
           />
