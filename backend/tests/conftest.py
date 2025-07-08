@@ -1,8 +1,17 @@
+import sys
+import os
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from main import app
 from unittest.mock import patch, AsyncMock
+
+# Ensure app module is on sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+try:
+    from app.main import app
+except ImportError:
+    from main import app
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_redis():

@@ -7,10 +7,11 @@ chat conversations between users and AI assistants.
 
 from enum import Enum
 from typing import Optional, Dict, Any
-from sqlalchemy import Column, String, Text, Boolean, JSON, Enum as SQLEnum, ForeignKey, Integer
+from sqlalchemy import Column, String, Text, Boolean, JSON, Enum as SQLEnum, ForeignKey, Integer, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
+from datetime import datetime
 
 from .base import Base
 
@@ -54,13 +55,14 @@ class Conversation(Base):
     # Status and metadata
     is_active = Column(Boolean, default=True, nullable=False)
     is_archived = Column(Boolean, default=False, nullable=False)
+    archived_at = Column(DateTime, nullable=True)
     
     # Statistics
     message_count = Column(Integer, default=0, nullable=False)
     total_tokens = Column(Integer, default=0, nullable=False)
     
     # Metadata
-    conversation_metadata = Column(JSON, default=dict)  # Additional metadata
+    conversation_metadata = Column(JSON, default=dict)  # Additional metadata including context
     
     # Relationships
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
@@ -103,9 +105,10 @@ class Conversation(Base):
             "assistant_id": str(self.assistant_id),
             "is_active": self.is_active,
             "is_archived": self.is_archived,
+            "archived_at": self.archived_at.isoformat() if self.archived_at else None,
             "message_count": self.message_count,
             "total_tokens": self.total_tokens,
-            "conversation_metadata": self.conversation_metadata,
+            "metadata": self.conversation_metadata,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -140,6 +143,9 @@ class Message(Base):
     # Metadata
     message_metadata = Column(JSON, default=dict)  # Additional metadata
     
+    # Relationships
+    reactions = relationship("MessageReaction", back_populates="message", cascade="all, delete-orphan")
+    
     def __repr__(self) -> str:
         """String representation of the message."""
         return f"<Message(id={self.id}, role='{self.role}', content='{self.content[:50]}...')>"
@@ -173,6 +179,43 @@ class Message(Base):
             "tokens_used": self.tokens_used,
             "model_used": self.model_used,
             "metadata": self.message_metadata,
+            "reactions": [reaction.to_dict() for reaction in self.reactions],
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class MessageReaction(Base):
+    """Message reaction model for emoji reactions on messages."""
+    
+    __tablename__ = "message_reactions"
+    
+    # Primary key
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    # Reaction details
+    emoji = Column(String(10), nullable=False)  # Emoji character
+    
+    # Relationships
+    message_id = Column(UUID(as_uuid=True), ForeignKey("messages.id"), nullable=False)
+    message = relationship("Message", back_populates="reactions")
+    
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user = relationship("User")
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    def __repr__(self) -> str:
+        """String representation of the message reaction."""
+        return f"<MessageReaction(id={self.id}, emoji='{self.emoji}', message_id={self.message_id})>"
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert message reaction to dictionary."""
+        return {
+            "id": str(self.id),
+            "emoji": self.emoji,
+            "message_id": str(self.message_id),
+            "user_id": str(self.user_id),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         } 

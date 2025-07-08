@@ -100,6 +100,22 @@ class ConversationResponse(BaseModel):
     message_count: int
 
 
+class AssistantSwitchRequest(BaseModel):
+    """Assistant switch request model."""
+    assistant_id: str
+    preserve_context: bool = True
+
+
+class AssistantSwitchResponse(BaseModel):
+    """Assistant switch response model."""
+    conversation_id: str
+    old_assistant_id: str
+    new_assistant_id: str
+    assistant_name: str
+    context_preserved: bool
+    message: str
+
+
 @router.websocket("/ws/{conversation_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
@@ -198,7 +214,7 @@ async def process_websocket_message(
                 user_id=sender_id,
                 content=ai_response.content,
                 role="assistant",
-                message_type=ai_response.message_type,
+                message_type="text",
                 metadata=ai_response.metadata
             )
             await manager.send_message(conversation_id, {
@@ -209,24 +225,22 @@ async def process_websocket_message(
                     "role": assistant_message.role,
                     "message_type": getattr(assistant_message, 'message_type', 'text'),
                     "timestamp": assistant_message.created_at.isoformat() if hasattr(assistant_message, 'created_at') else "",
-                    "metadata": getattr(assistant_message, 'metadata', None),
-                    "tool_calls": ai_response.tool_calls,
-                    "context_used": ai_response.context_used
+                    "metadata": getattr(assistant_message, 'metadata', None)
                 }
             })
         elif message_type == "typing":
-            sender_id = message_data.get("user_id") or user_id or ""
-            is_typing = message_data.get("typing", False)
+            # Broadcast typing indicator
             await manager.send_message(conversation_id, {
                 "type": "typing",
-                "user_id": sender_id,
-                "typing": is_typing
+                "user_id": message_data.get("user_id", ""),
+                "is_typing": message_data.get("is_typing", False)
             })
         elif message_type == "join":
-            sender_id = message_data.get("user_id") or user_id or ""
+            # User joined the conversation
             await manager.send_message(conversation_id, {
                 "type": "user_joined",
-                "user_id": sender_id
+                "user_id": message_data.get("user_id", ""),
+                "username": message_data.get("username", "Unknown")
             })
         else:
             await websocket.send_text(json.dumps({
@@ -241,48 +255,33 @@ async def process_websocket_message(
         }))
 
 
-# REST endpoints (existing code)
 @router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation(
     conversation_data: ConversationCreate,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-    """
-    Create a new conversation.
+    """Create a new conversation."""
+    conversation_service = ConversationService(db)
     
-    Args:
-        conversation_data: Conversation data
-        current_user_id: Current user ID
-        db: Database session
-        
-    Returns:
-        ConversationResponse: Created conversation
-    """
-    try:
-        conversation_service = ConversationService(db)
-        conversation = await conversation_service.create_conversation(
-            user_id=current_user_id,
-            assistant_id=conversation_data.assistant_id,
-            title=conversation_data.title
-        )
-        
-        return ConversationResponse(
-            id=str(conversation.id),
-            title=conversation.title,
-            assistant_id=str(conversation.assistant_id),
-            assistant_name=conversation.assistant.name,
-            created_at=conversation.created_at.isoformat(),
-            updated_at=conversation.updated_at.isoformat(),
-            message_count=conversation.message_count
-        )
-        
-    except Exception as e:
-        logger.error(f"Error creating conversation: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create conversation"
-        )
+    # Validate assistant exists
+    # TODO: Add assistant validation
+    
+    conversation = await conversation_service.create_conversation(
+        user_id=current_user_id,
+        assistant_id=conversation_data.assistant_id,
+        title=conversation_data.title
+    )
+    
+    return ConversationResponse(
+        id=str(conversation.id),
+        title=conversation.title,
+        assistant_id=str(conversation.assistant_id),
+        assistant_name=conversation.assistant_name,
+        created_at=conversation.created_at.isoformat(),
+        updated_at=conversation.updated_at.isoformat(),
+        message_count=conversation.message_count
+    )
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
@@ -291,39 +290,27 @@ async def get_conversation_messages(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-    """
-    Get messages for a conversation.
+    """Get all messages in a conversation."""
+    conversation_service = ConversationService(db)
     
-    Args:
-        conversation_id: Conversation ID
-        current_user_id: Current user ID
-        db: Database session
-        
-    Returns:
-        List[MessageResponse]: List of messages
-    """
-    try:
-        conversation_service = ConversationService(db)
-        messages = await conversation_service.get_conversation_messages(conversation_id)
-        
-        return [
-            MessageResponse(
-                id=str(message.id),
-                content=message.content,
-                role=message.role,
-                message_type=message.message_type,
-                timestamp=message.created_at.isoformat(),
-                metadata=message.metadata
-            )
-            for message in messages
-        ]
-        
-    except Exception as e:
-        logger.error(f"Error getting conversation messages: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get conversation messages"
+    # Verify conversation access
+    conversation = await conversation_service.get_conversation(conversation_id, current_user_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    messages = await conversation_service.get_conversation_messages(conversation_id)
+    
+    return [
+        MessageResponse(
+            id=str(message.id),
+            content=message.content,
+            role=message.role,
+            message_type=getattr(message, 'message_type', 'text'),
+            timestamp=message.created_at.isoformat(),
+            metadata=getattr(message, 'metadata', None)
         )
+        for message in messages
+    ]
 
 
 @router.post("/conversations/{conversation_id}/messages", response_model=MessageResponse)
@@ -336,90 +323,116 @@ async def send_message(
     use_tools: bool = Query(True, description="Enable tool execution"),
     max_context_chunks: int = Query(5, description="Maximum context chunks for RAG")
 ):
-    """
-    Send a message to a conversation with RAG and tool integration.
+    """Send a message to a conversation."""
+    conversation_service = ConversationService(db)
     
-    Args:
-        conversation_id: Conversation ID
-        message_data: Message data
-        current_user_id: Current user ID
-        db: Database session
-        use_rag: Whether to use RAG
-        use_tools: Whether to enable tools
-        max_context_chunks: Maximum context chunks
-        
-    Returns:
-        MessageResponse: Created message with AI response
-    """
-    try:
-        conversation_service = ConversationService(db)
-        
-        # Save user message
-        user_message = await conversation_service.add_message(
-            conversation_id=conversation_id,
-            user_id=current_user_id,
-            content=message_data.content,
-            role="user",
-            message_type=message_data.message_type
-        )
-        
-        # Get AI response with RAG and tools
-        ai_response: AIResponse = await ai_service.get_response(
-            conversation_id=conversation_id,
-            user_message=message_data.content,
-            user_id=current_user_id,
-            db=db,
-            use_rag=use_rag,
-            use_tools=use_tools,
-            max_context_chunks=max_context_chunks
-        )
-        
-        # Save AI response
-        assistant_message = await conversation_service.add_message(
-            conversation_id=conversation_id,
-            user_id=current_user_id,
-            content=ai_response.content,
-            role="assistant",
-            message_type=ai_response.message_type,
-            metadata=ai_response.metadata
-        )
-        
-        # Index messages in Weaviate for future RAG
-        try:
-            from app.services.weaviate_service import weaviate_service
-            weaviate_service.index_message(
-                conversation_id=conversation_id,
-                message_id=str(user_message.id),
-                content=message_data.content,
-                role="user",
-                metadata={"user_id": current_user_id}
-            )
-            weaviate_service.index_message(
-                conversation_id=conversation_id,
-                message_id=str(assistant_message.id),
-                content=ai_response.content,
-                role="assistant",
-                metadata={"user_id": current_user_id, "model_used": ai_response.metadata.get("model_used")}
-            )
-        except Exception as e:
-            logger.warning(f"Failed to index messages in Weaviate: {e}")
-        
-        return MessageResponse(
-            id=str(assistant_message.id),
-            content=assistant_message.content,
-            role=assistant_message.role,
-            message_type=assistant_message.message_type,
-            timestamp=assistant_message.created_at.isoformat(),
-            metadata={
-                **(assistant_message.metadata or {}),
-                "tool_calls": ai_response.tool_calls,
-                "context_used": ai_response.context_used
-            }
-        )
-        
-    except Exception as e:
-        logger.error(f"Error sending message: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send message"
-        ) 
+    # Verify conversation access
+    conversation = await conversation_service.get_conversation(conversation_id, current_user_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Add user message
+    user_message = await conversation_service.add_message(
+        conversation_id=conversation_id,
+        user_id=current_user_id,
+        content=message_data.content,
+        role="user",
+        message_type=message_data.message_type
+    )
+    
+    # Get AI response
+    ai_response: AIResponse = await ai_service.get_response(
+        conversation_id=conversation_id,
+        user_message=message_data.content,
+        user_id=current_user_id,
+        db=db,
+        use_rag=use_rag,
+        use_tools=use_tools,
+        max_context_chunks=max_context_chunks
+    )
+    
+    # Add assistant message
+    assistant_message = await conversation_service.add_message(
+        conversation_id=conversation_id,
+        user_id=current_user_id,
+        content=ai_response.content,
+        role="assistant",
+        message_type="text",
+        metadata=ai_response.metadata
+    )
+    
+    return MessageResponse(
+        id=str(assistant_message.id),
+        content=assistant_message.content,
+        role=assistant_message.role,
+        message_type=getattr(assistant_message, 'message_type', 'text'),
+        timestamp=assistant_message.created_at.isoformat(),
+        metadata=getattr(assistant_message, 'metadata', None)
+    )
+
+
+# --- Assistant Switching ---
+
+@router.post("/conversations/{conversation_id}/switch-assistant", response_model=AssistantSwitchResponse)
+async def switch_conversation_assistant(
+    conversation_id: str,
+    switch_request: AssistantSwitchRequest,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """Switch the active assistant for a conversation."""
+    conversation_service = ConversationService(db)
+    
+    # Verify conversation access
+    conversation = await conversation_service.get_conversation(conversation_id, current_user_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Validate new assistant exists
+    # TODO: Add assistant validation
+    
+    # Switch assistant
+    switch_result = await conversation_service.switch_assistant(
+        conversation_id=conversation_id,
+        new_assistant_id=switch_request.assistant_id,
+        preserve_context=switch_request.preserve_context,
+        user_id=current_user_id
+    )
+    
+    if not switch_result:
+        raise HTTPException(status_code=400, detail="Failed to switch assistant")
+    
+    return AssistantSwitchResponse(
+        conversation_id=conversation_id,
+        old_assistant_id=str(conversation.assistant_id),
+        new_assistant_id=switch_request.assistant_id,
+        assistant_name=switch_result.get("assistant_name", "Unknown"),
+        context_preserved=switch_request.preserve_context,
+        message=f"Switched to {switch_result.get('assistant_name', 'Unknown')} assistant"
+    )
+
+
+@router.get("/conversations/{conversation_id}/assistant", response_model=Dict[str, Any])
+async def get_conversation_assistant(
+    conversation_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """Get the current assistant for a conversation."""
+    conversation_service = ConversationService(db)
+    
+    # Verify conversation access
+    conversation = await conversation_service.get_conversation(conversation_id, current_user_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Get assistant details
+    assistant = await conversation_service.get_conversation_assistant(conversation_id)
+    
+    return {
+        "assistant_id": str(assistant.get("id")),
+        "assistant_name": assistant.get("name", "Unknown"),
+        "assistant_description": assistant.get("description", ""),
+        "assistant_avatar": assistant.get("avatar", ""),
+        "assistant_capabilities": assistant.get("capabilities", [])
+    } 

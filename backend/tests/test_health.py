@@ -1,6 +1,14 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+try:
+    from app.main import app
+except ImportError:
+    from main import app
+
 import pytest
 from httpx import AsyncClient
-from backend.main import app
 
 @pytest.mark.asyncio
 async def test_health_check():
