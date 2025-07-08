@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { useGetConversationsQuery, useCreateConversationMutation, useGetMessagesQuery, useSendMessageMutation } from '../services/apiSlice'
+import { useGetConversationsQuery, useCreateConversationMutation, useGetMessagesQuery, useSendMessageMutation, useSearchMessagesMutation, type Message, useExportConversationMutation, useGetAssistantsQuery, useUpdateConversationMutation, useGetConversationContextQuery, useUpdateConversationContextMutation, useAddMessageReactionMutation, useRemoveMessageReactionMutation, type MessageReaction, useDeleteMessageMutation } from '../services/apiSlice'
+import type { Conversation } from '../services/apiSlice'
 import { websocketService, type WebSocketMessage } from '../services/websocketService'
 import { fileService, type UploadResult } from '../services/fileService'
 import { Button, Input } from '../components/ui'
 import FileUpload from '../components/ui/FileUpload'
-import type { Conversation, Message } from '../services/apiSlice'
 
 const ChatPage = () => {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -147,12 +147,44 @@ interface ChatInterfaceProps {
   conversation: Conversation
 }
 
+const exportFormats = [
+  { value: 'json', label: 'JSON' },
+  { value: 'markdown', label: 'Markdown' },
+  { value: 'pdf', label: 'PDF' },
+  { value: 'txt', label: 'Text' },
+]
+
+const commonEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🎉', '👏', '🔥', '💯', '🤔', '👀', '💪', '🙏', '✨']
+
 const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
   const [message, setMessage] = useState('')
   const [attachments, setAttachments] = useState<UploadResult[]>([])
   const [showFileUpload, setShowFileUpload] = useState(false)
-  const { data: messages, isLoading } = useGetMessagesQuery(conversation.id)
+  const { data: messages, isLoading } = useGetMessagesQuery({ conversationId: conversation.id })
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation()
+  // Message search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchActive, setSearchActive] = useState(false)
+  const [searchMessages, { data: searchResults, isLoading: isSearching }] = useSearchMessagesMutation()
+  const [exportFormat, setExportFormat] = useState('json')
+  const [exportConversation, { data: exportData, isLoading: isExporting }] = useExportConversationMutation()
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const { data: assistants, isLoading: isLoadingAssistants } = useGetAssistantsQuery({ status: 'active' })
+  const [updateConversation, { isLoading: isUpdatingConversation }] = useUpdateConversationMutation()
+  const [selectedAssistantId, setSelectedAssistantId] = useState(conversation.assistant_id || '')
+  const [assistantError, setAssistantError] = useState<string | null>(null)
+  const [showContext, setShowContext] = useState(false)
+  const { data: context, isLoading: isLoadingContext } = useGetConversationContextQuery(conversation.id)
+  const [updateContext, { isLoading: isUpdatingContext }] = useUpdateConversationContextMutation()
+  const [contextError, setContextError] = useState<string | null>(null)
+  const [userPreferences, setUserPreferences] = useState<Record<string, any>>({})
+  const [addReaction] = useAddMessageReactionMutation()
+  const [removeReaction] = useRemoveMessageReactionMutation()
+  const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null)
+  const [deleteMessage, { isLoading: isDeleting }] = useDeleteMessageMutation()
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // WebSocket connection and message handling
   useEffect(() => {
@@ -181,9 +213,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
 
   const handleSendMessage = async () => {
     if (!message.trim() && attachments.length === 0) return
-    
     try {
-      // Send message via WebSocket for real-time delivery
       websocketService.sendMessage({
         type: 'message',
         data: {
@@ -192,13 +222,10 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         },
         conversation_id: conversation.id
       })
-
-      // Also send via REST API for persistence
       await sendMessage({
         conversation_id: conversation.id,
         content: message
       }).unwrap()
-      
       setMessage('')
       setAttachments([])
     } catch (error) {
@@ -215,6 +242,115 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
     setAttachments(prev => prev.filter(att => att.id !== fileId))
   }
 
+  // Message search handlers
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return
+    setSearchActive(true)
+    await searchMessages({ conversation_id: conversation.id, query: searchQuery })
+  }
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    setSearchActive(false)
+  }
+
+  // Export handler
+  const handleExport = async () => {
+    setExportError(null)
+    setDownloadUrl(null)
+    try {
+      const result = await exportConversation({
+        conversation_id: conversation.id,
+        format: exportFormat as any,
+        include_metadata: true,
+        include_attachments: true,
+      }).unwrap()
+      setDownloadUrl(result.download_url)
+    } catch (err: any) {
+      setExportError('Export failed')
+    }
+  }
+
+  // Handle assistant switching
+  const handleAssistantChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newAssistantId = e.target.value
+    setSelectedAssistantId(newAssistantId)
+    setAssistantError(null)
+    try {
+      await updateConversation({
+        id: conversation.id,
+        data: { assistant_id: newAssistantId }
+      }).unwrap()
+    } catch (err: any) {
+      setAssistantError('Failed to switch assistant')
+    }
+  }
+
+  // Handle context updates
+  const handleContextUpdate = async () => {
+    setContextError(null)
+    try {
+      await updateContext({
+        conversation_id: conversation.id,
+        context: { user_preferences: userPreferences }
+      }).unwrap()
+    } catch (err: any) {
+      setContextError('Failed to update context')
+    }
+  }
+
+  // Handle adding reaction
+  const handleAddReaction = async (messageId: string, emoji: string) => {
+    try {
+      await addReaction({
+        conversation_id: conversation.id,
+        message_id: messageId,
+        emoji
+      }).unwrap()
+    } catch (error) {
+      console.error('Failed to add reaction:', error)
+    }
+  }
+
+  // Handle removing reaction
+  const handleRemoveReaction = async (messageId: string, reactionId: string) => {
+    try {
+      await removeReaction({
+        conversation_id: conversation.id,
+        message_id: messageId,
+        reaction_id: reactionId
+      }).unwrap()
+    } catch (error) {
+      console.error('Failed to remove reaction:', error)
+    }
+  }
+
+  // Group reactions by emoji
+  const groupReactions = (reactions: MessageReaction[] = []) => {
+    const grouped: Record<string, { count: number; reactions: MessageReaction[] }> = {}
+    reactions.forEach(reaction => {
+      if (!grouped[reaction.emoji]) {
+        grouped[reaction.emoji] = { count: 0, reactions: [] }
+      }
+      grouped[reaction.emoji].count++
+      grouped[reaction.emoji].reactions.push(reaction)
+    })
+    return grouped
+  }
+
+  // Handle message deletion
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessage({
+        conversation_id: conversation.id,
+        message_id: messageId
+      }).unwrap()
+      setShowDeleteConfirm(false)
+      setMessageToDelete(null)
+    } catch (error) {
+      console.error('Failed to delete message:', error)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -225,16 +361,248 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
             <p className="text-sm text-gray-500">
               {conversation.messages_count} messages
             </p>
+            {/* Assistant Switcher */}
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xs text-gray-500">Assistant:</span>
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={selectedAssistantId}
+                onChange={handleAssistantChange}
+                disabled={isLoadingAssistants || isUpdatingConversation}
+              >
+                {assistants && assistants.length > 0 ? (
+                  assistants.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))
+                ) : (
+                  <option value="">No assistants</option>
+                )}
+              </select>
+              {isUpdatingConversation && <span className="text-xs text-gray-400 ml-2">Updating...</span>}
+            </div>
+            {assistantError && <div className="text-xs text-red-500 mt-1">{assistantError}</div>}
           </div>
-          <div className="text-sm text-gray-500">
-            {websocketService.isConnected() ? '🟢 Connected' : '🔴 Disconnected'}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-500">
+              {websocketService.isConnected() ? '🟢 Connected' : '🔴 Disconnected'}
+            </div>
+            {/* Context Toggle */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowContext(!showContext)}
+            >
+              {showContext ? 'Hide' : 'Show'} Context
+            </Button>
+            {/* Export Dropdown */}
+            <div className="flex items-center gap-2">
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={exportFormat}
+                onChange={e => setExportFormat(e.target.value)}
+                disabled={isExporting}
+              >
+                {exportFormats.map(f => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+              <Button size="sm" onClick={handleExport} loading={isExporting}>
+                Export
+              </Button>
+            </div>
           </div>
         </div>
+        {/* Context Management Section */}
+        {showContext && (
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <h3 className="text-sm font-semibold mb-3">Conversation Context</h3>
+            {isLoadingContext ? (
+              <div className="text-sm text-gray-500">Loading context...</div>
+            ) : context ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-500">Context Window:</label>
+                  <div className="text-sm">{context.context_window} messages</div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Relevant Documents:</label>
+                  <div className="text-sm">
+                    {context.relevant_documents.length > 0 ? (
+                      <ul className="list-disc list-inside">
+                        {context.relevant_documents.map((docId, index) => (
+                          <li key={index}>{docId}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      'No documents'
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">User Preferences:</label>
+                  <div className="text-sm">
+                    <textarea
+                      className="w-full p-2 border rounded text-xs"
+                      rows={3}
+                      placeholder="Enter user preferences (JSON format)"
+                      value={JSON.stringify(context.user_preferences || {}, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          setUserPreferences(JSON.parse(e.target.value))
+                        } catch {
+                          // Invalid JSON, ignore
+                        }
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleContextUpdate}
+                      loading={isUpdatingContext}
+                      className="mt-2"
+                    >
+                      Update Preferences
+                    </Button>
+                  </div>
+                </div>
+                {contextError && <div className="text-xs text-red-500">{contextError}</div>}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">No context available</div>
+            )}
+          </div>
+        )}
+        {/* Message Search Bar */}
+        <div className="mt-4 flex items-center gap-2">
+          <Input
+            placeholder="Search messages..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch()}
+            className="flex-1"
+          />
+          {searchActive ? (
+            <Button size="sm" variant="outline" onClick={handleClearSearch}>Clear</Button>
+          ) : (
+            <Button size="sm" onClick={handleSearch} disabled={!searchQuery.trim() || isSearching}>Search</Button>
+          )}
+        </div>
+        {/* Export result */}
+        {downloadUrl && (
+          <div className="mt-2">
+            <a
+              href={downloadUrl}
+              download
+              className="text-indigo-600 hover:underline text-sm"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download exported conversation
+            </a>
+          </div>
+        )}
+        {exportError && (
+          <div className="mt-2 text-red-500 text-sm">{exportError}</div>
+        )}
       </div>
 
-      {/* Messages */}
+      {/* Messages or Search Results */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading ? (
+        {searchActive ? (
+          isSearching ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo"></div>
+            </div>
+          ) : searchResults && searchResults.messages.length > 0 ? (
+            <>
+              <div className="mb-2 text-xs text-gray-500">{searchResults.total} result(s) for "{searchResults.query}"</div>
+              {searchResults.messages.map((msg: Message) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
+                      msg.role === 'user'
+                        ? 'bg-indigo text-smoke'
+                        : 'bg-gray-100 dark:bg-gray-800'
+                    }`}
+                  >
+                    {/* Delete Button (Hover Overlay) */}
+                    {msg.role === 'user' && (
+                      <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                          onClick={() => {
+                            setMessageToDelete(msg.id)
+                            setShowDeleteConfirm(true)
+                          }}
+                          title="Delete message"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-sm">{msg.content}</p>
+                    <p className="text-xs opacity-75 mt-1">
+                      {new Date(msg.created_at).toLocaleTimeString()}
+                    </p>
+                    {/* Message Reactions */}
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {Object.entries(groupReactions(msg.reactions)).map(([emoji, { count, reactions }]) => (
+                          <button
+                            key={emoji}
+                            className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                            onClick={() => {
+                              // Check if user already reacted
+                              const userReaction = reactions.find(r => r.user_id === 'current-user-id') // TODO: Get actual user ID
+                              if (userReaction) {
+                                handleRemoveReaction(msg.id, userReaction.id)
+                              } else {
+                                handleAddReaction(msg.id, emoji)
+                              }
+                            }}
+                          >
+                            {emoji} {count}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Reaction Picker */}
+                    <div className="mt-2 relative">
+                      <button
+                        className="text-xs opacity-75 hover:opacity-100 transition-opacity"
+                        onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
+                      >
+                        😊 Add reaction
+                      </button>
+                      {showReactionPicker === msg.id && (
+                        <div className="absolute bottom-full left-0 mb-2 p-2 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
+                          <div className="grid grid-cols-8 gap-1">
+                            {commonEmojis.map(emoji => (
+                              <button
+                                key={emoji}
+                                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                                onClick={() => {
+                                  handleAddReaction(msg.id, emoji)
+                                  setShowReactionPicker(null)
+                                }}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="text-center text-gray-500">No results found.</div>
+          )
+        ) : isLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo"></div>
           </div>
@@ -245,16 +613,80 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
                   msg.role === 'user'
                     ? 'bg-indigo text-smoke'
                     : 'bg-gray-100 dark:bg-gray-800'
                 }`}
               >
+                {/* Delete Button (Hover Overlay) */}
+                {msg.role === 'user' && (
+                  <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                      onClick={() => {
+                        setMessageToDelete(msg.id)
+                        setShowDeleteConfirm(true)
+                      }}
+                      title="Delete message"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
                 <p className="text-sm">{msg.content}</p>
                 <p className="text-xs opacity-75 mt-1">
                   {new Date(msg.created_at).toLocaleTimeString()}
                 </p>
+                {/* Message Reactions */}
+                {msg.reactions && msg.reactions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {Object.entries(groupReactions(msg.reactions)).map(([emoji, { count, reactions }]) => (
+                      <button
+                        key={emoji}
+                        className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        onClick={() => {
+                          // Check if user already reacted
+                          const userReaction = reactions.find(r => r.user_id === 'current-user-id') // TODO: Get actual user ID
+                          if (userReaction) {
+                            handleRemoveReaction(msg.id, userReaction.id)
+                          } else {
+                            handleAddReaction(msg.id, emoji)
+                          }
+                        }}
+                      >
+                        {emoji} {count}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Reaction Picker */}
+                <div className="mt-2 relative">
+                  <button
+                    className="text-xs opacity-75 hover:opacity-100 transition-opacity"
+                    onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
+                  >
+                    😊 Add reaction
+                  </button>
+                  {showReactionPicker === msg.id && (
+                    <div className="absolute bottom-full left-0 mb-2 p-2 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
+                      <div className="grid grid-cols-8 gap-1">
+                        {commonEmojis.map(emoji => (
+                          <button
+                            key={emoji}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                            onClick={() => {
+                              handleAddReaction(msg.id, emoji)
+                              setShowReactionPicker(null)
+                            }}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -264,6 +696,35 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
           </div>
         )}
       </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Delete Message</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete this message? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setMessageToDelete(null)
+                }}
+              >
+                Cancel
+              </Button>
+                              <Button
+                  variant="danger"
+                  onClick={() => messageToDelete && handleDeleteMessage(messageToDelete)}
+                  loading={isDeleting}
+                >
+                  Delete
+                </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Attachments Preview */}
       {attachments.length > 0 && (

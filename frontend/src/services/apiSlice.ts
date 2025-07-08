@@ -17,6 +17,11 @@ export interface Conversation {
   created_at: string
   updated_at: string
   messages_count: number
+  assistant_id?: string
+  assistant_name?: string
+  status: 'active' | 'archived' | 'deleted'
+  tags: string[]
+  metadata?: Record<string, any>
 }
 
 export interface Message {
@@ -25,6 +30,76 @@ export interface Message {
   role: 'user' | 'assistant'
   created_at: string
   conversation_id: string
+  attachments?: MessageAttachment[]
+  metadata?: Record<string, any>
+  status: 'sent' | 'delivered' | 'read' | 'failed'
+  reply_to?: string
+  reactions?: MessageReaction[]
+}
+
+export interface MessageAttachment {
+  id: string
+  filename: string
+  mime_type: string
+  size: number
+  url: string
+  thumbnail_url?: string
+}
+
+export interface MessageReaction {
+  id: string
+  emoji: string
+  user_id: string
+  created_at: string
+}
+
+export interface MessageSearchRequest {
+  conversation_id: string
+  query: string
+  filters?: {
+    role?: 'user' | 'assistant'
+    date_from?: string
+    date_to?: string
+    has_attachments?: boolean
+  }
+  limit?: number
+  offset?: number
+}
+
+export interface MessageSearchResponse {
+  messages: Message[]
+  total: number
+  query: string
+}
+
+export interface ConversationExportRequest {
+  conversation_id: string
+  format: 'json' | 'txt' | 'pdf' | 'markdown'
+  include_metadata?: boolean
+  include_attachments?: boolean
+}
+
+export interface ConversationExportResponse {
+  download_url: string
+  filename: string
+  size: number
+  expires_at: string
+}
+
+export interface ConversationContext {
+  conversation_id: string
+  context_window: number
+  relevant_documents: string[]
+  assistant_context: Record<string, any>
+  user_preferences: Record<string, any>
+}
+
+export interface ConversationUpdate {
+  title?: string
+  assistant_id?: string
+  status?: 'active' | 'archived' | 'deleted'
+  tags?: string[]
+  metadata?: Record<string, any>
 }
 
 export interface LoginRequest {
@@ -190,7 +265,7 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Conversation', 'Message', 'Dashboard', 'Assistants', 'PublicAssistants', 'Documents', 'SearchHistory', 'SupportedFormats'],
+  tagTypes: ['User', 'Conversation', 'Message', 'Dashboard', 'Assistants', 'PublicAssistants', 'Documents', 'SearchHistory', 'SupportedFormats', 'MessageSearch', 'ConversationContext'],
   endpoints: (builder) => ({
     // Authentication endpoints
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -223,9 +298,12 @@ export const apiSlice = createApi({
       providesTags: ['User'],
     }),
     
-    // Conversation endpoints
-    getConversations: builder.query<Conversation[], void>({
-      query: () => '/conversations',
+    // Enhanced Conversation endpoints
+    getConversations: builder.query<Conversation[], { status?: string; assistant_id?: string; tags?: string[] }>({
+      query: (params) => ({
+        url: '/conversations',
+        params,
+      }),
       providesTags: ['Conversation'],
     }),
     
@@ -234,7 +312,7 @@ export const apiSlice = createApi({
       providesTags: (_, __, id) => [{ type: 'Conversation', id }],
     }),
     
-    createConversation: builder.mutation<Conversation, { assistant_id: string; title?: string }>({
+    createConversation: builder.mutation<Conversation, { assistant_id: string; title?: string; tags?: string[]; metadata?: Record<string, any> }>({
       query: (conversation) => ({
         url: '/conversations',
         method: 'POST',
@@ -242,27 +320,116 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Conversation'],
     }),
-    
-    // Message endpoints
-    getMessages: builder.query<Message[], string>({
-      query: (conversationId) => `/conversations/${conversationId}/messages`,
-      providesTags: (_, __, conversationId) => [
+
+    updateConversation: builder.mutation<Conversation, { id: string; data: ConversationUpdate }>({
+      query: ({ id, data }) => ({
+        url: `/conversations/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Conversation'],
+    }),
+
+    deleteConversation: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/conversations/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Conversation'],
+    }),
+
+    archiveConversation: builder.mutation<Conversation, string>({
+      query: (id) => ({
+        url: `/conversations/${id}/archive`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Conversation'],
+    }),
+
+    // Enhanced Message endpoints
+    getMessages: builder.query<Message[], { conversationId: string; limit?: number; offset?: number }>({
+      query: ({ conversationId, limit = 50, offset = 0 }) => ({
+        url: `/conversations/${conversationId}/messages`,
+        params: { limit, offset },
+      }),
+      providesTags: (_, __, { conversationId }) => [
         { type: 'Message', id: conversationId }
       ],
     }),
     
-    sendMessage: builder.mutation<Message, { conversation_id: string; content: string }>({
+    sendMessage: builder.mutation<Message, { conversation_id: string; content: string; attachments?: string[]; reply_to?: string }>({
       query: (message) => ({
         url: `/conversations/${message.conversation_id}/messages`,
         method: 'POST',
-        body: { content: message.content },
+        body: { 
+          content: message.content,
+          attachments: message.attachments,
+          reply_to: message.reply_to,
+        },
       }),
-      invalidatesTags: (_, __, { conversation_id }) => [
-        { type: 'Message', id: conversation_id },
-        { type: 'Conversation', id: conversation_id }
+      invalidatesTags: ['Message', 'Conversation'],
+    }),
+
+    // Message search and management
+    searchMessages: builder.mutation<MessageSearchResponse, MessageSearchRequest>({
+      query: (searchRequest) => ({
+        url: `/conversations/${searchRequest.conversation_id}/messages/search`,
+        method: 'POST',
+        body: searchRequest,
+      }),
+    }),
+
+    deleteMessage: builder.mutation<void, { conversation_id: string; message_id: string }>({
+      query: ({ conversation_id, message_id }) => ({
+        url: `/conversations/${conversation_id}/messages/${message_id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Message', 'Conversation'],
+    }),
+
+    addMessageReaction: builder.mutation<void, { conversation_id: string; message_id: string; emoji: string }>({
+      query: ({ conversation_id, message_id, emoji }) => ({
+        url: `/conversations/${conversation_id}/messages/${message_id}/reactions`,
+        method: 'POST',
+        body: { emoji },
+      }),
+    }),
+
+    removeMessageReaction: builder.mutation<void, { conversation_id: string; message_id: string; reaction_id: string }>({
+      query: ({ conversation_id, message_id, reaction_id }) => ({
+        url: `/conversations/${conversation_id}/messages/${message_id}/reactions/${reaction_id}`,
+        method: 'DELETE',
+      }),
+    }),
+
+    // Conversation export
+    exportConversation: builder.mutation<ConversationExportResponse, ConversationExportRequest>({
+      query: (exportRequest) => ({
+        url: `/conversations/${exportRequest.conversation_id}/export`,
+        method: 'POST',
+        body: exportRequest,
+      }),
+    }),
+
+    // Conversation context management
+    getConversationContext: builder.query<ConversationContext, string>({
+      query: (conversationId) => `/conversations/${conversationId}/context`,
+      providesTags: (_, __, conversationId) => [
+        { type: 'ConversationContext', id: conversationId }
       ],
     }),
-    
+
+    updateConversationContext: builder.mutation<ConversationContext, { conversation_id: string; context: Partial<ConversationContext> }>({
+      query: ({ conversation_id, context }) => ({
+        url: `/conversations/${conversation_id}/context`,
+        method: 'PUT',
+        body: context,
+      }),
+      invalidatesTags: (_, __, { conversation_id }) => [
+        { type: 'ConversationContext', id: conversation_id }
+      ],
+    }),
+
     // Dashboard endpoints
     getDashboardStats: builder.query<DashboardStats, void>({
       query: () => '/dashboard/stats',
@@ -404,8 +571,18 @@ export const {
   useGetConversationsQuery,
   useGetConversationQuery,
   useCreateConversationMutation,
+  useUpdateConversationMutation,
+  useDeleteConversationMutation,
+  useArchiveConversationMutation,
   useGetMessagesQuery,
   useSendMessageMutation,
+  useSearchMessagesMutation,
+  useDeleteMessageMutation,
+  useAddMessageReactionMutation,
+  useRemoveMessageReactionMutation,
+  useExportConversationMutation,
+  useGetConversationContextQuery,
+  useUpdateConversationContextMutation,
   useGetDashboardStatsQuery,
   useGetAssistantsQuery,
   useGetAssistantQuery,
