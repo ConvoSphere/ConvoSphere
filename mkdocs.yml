@@ -94,7 +94,13 @@ nav:
   - Architecture:
     - Overview: architecture/overview.md
     - Backend: architecture/backend.md
-    - Frontend: architecture/frontend.md
+    - Frontend (React):
+        - Overview: frontend/overview.md
+        - Architecture: frontend/architecture.md
+        - Authentication: frontend/auth.md
+        - Styling: frontend/styling.md
+        - Testing: frontend/testing.md
+        - Docker: frontend/docker.md
   - Development:
     - Testing: testing.md
     - Contributing: development/contributing.md

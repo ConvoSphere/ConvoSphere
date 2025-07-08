@@ -18,9 +18,6 @@ redis
 # Vector Database
 weaviate-client
 
-# Frontend
-nicegui
-
 # Authentication & Security
 python-jose[cryptography]
 passlib[bcrypt]
