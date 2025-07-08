@@ -34,31 +34,52 @@
 
 ## 🚀 **Phase 1: Core Features (Priorität: Hoch)**
 
-### **1. Assistant Management** ✅ **Nächster Fokus**
-- [ ] **Assistant Creation UI**
+### **1. Assistant Management** ✅ **Abgeschlossen**
+- [x] **Assistant Creation UI**
   - Configuration Interface
   - Model Selection (OpenAI, Anthropic, etc.)
   - Prompt Engineering
   - Tool Assignment
 
-- [ ] **Assistant Configuration**
+- [x] **Assistant Configuration**
   - Settings Management
   - Performance Monitoring
   - Usage Statistics
 
-### **2. Knowledge Base**
-- [ ] **Document Management**
-  - Upload Interface (✅ File Upload Component vorhanden)
+### **2. Knowledge Base** ✅ **Abgeschlossen**
+- [x] **Document Management**
+  - Upload Interface
   - Document Processing
   - Vector Embeddings
   - Search Functionality
 
-- [ ] **Content Organization**
+- [x] **Content Organization**
   - Folders and Tags
   - Document Versioning
   - Access Control
 
-### **3. Chat-Funktionalität erweitern**
+### **3. CLI Management Tool** 🎯 **Nächster Fokus**
+- [ ] **Database Administration**
+  - User Management (CRUD)
+  - Database Migrations
+  - Backup & Restore
+  - Schema Management
+
+- [ ] **System Administration**
+  - Service Management (Start/Stop/Restart)
+  - Configuration Management
+  - Health Monitoring
+  - Log Management
+
+- [ ] **Project Management**
+  - Environment Setup
+  - Dependency Management
+  - Deployment Automation
+  - Performance Monitoring
+
+## 🎨 **Phase 2: Advanced Features (Priorität: Mittel)**
+
+### **1. Enhanced Chat Features**
 - [ ] **Message History**
   - Persistente Nachrichten-Speicherung (✅ Backend vorhanden)
   - Conversation Management (✅ Backend vorhanden)
@@ -69,9 +90,7 @@
   - Assistant Configuration
   - Context Management
 
-## 🎨 **Phase 2: Advanced Features (Priorität: Mittel)**
-
-### **1. Tool Integration**
+### **2. Tool Integration**
 - [ ] **MCP Server Management**
   - Server Configuration
   - Tool Discovery
@@ -82,7 +101,7 @@
   - API Integration
   - Function Calling
 
-### **2. Analytics & Monitoring**
+### **3. Analytics & Monitoring**
 - [ ] **Usage Statistics**
   - User Behavior Analytics
   - Performance Metrics
@@ -130,40 +149,57 @@
 
 ## 📋 **Sofortige Aufgaben (Diese Woche)**
 
-### **1. Assistant Management UI** 🎯 **Priorität 1**
-```typescript
-// frontend/src/pages/Assistants.tsx
-const AssistantsPage: React.FC = () => {
-  const { data: assistants, isLoading } = useGetAssistantsQuery()
-  
-  return (
-    <div>
-      <h1>Assistant Management</h1>
-      {/* Assistant List */}
-      {/* Create Assistant Form */}
-      {/* Configuration Interface */}
-    </div>
-  )
-}
+### **1. CLI Management Tool** 🎯 **Priorität 1**
+```python
+# scripts/convosphere.py
+#!/usr/bin/env python3
+"""
+ConvoSphere CLI Management Tool
+Provides comprehensive administration capabilities for the ConvoSphere platform.
+"""
+
+import click
+import typer
+from pathlib import Path
+from typing import Optional
+
+app = typer.Typer()
+
+@app.command()
+def users(
+    action: str = typer.Argument(..., help="Action: list, create, update, delete"),
+    email: Optional[str] = typer.Option(None, help="User email"),
+    role: Optional[str] = typer.Option(None, help="User role")
+):
+    """Manage users in the system."""
+    pass
+
+@app.command()
+def database(
+    action: str = typer.Argument(..., help="Action: migrate, backup, restore, status"),
+    file: Optional[Path] = typer.Option(None, help="Backup/restore file path")
+):
+    """Manage database operations."""
+    pass
+
+@app.command()
+def services(
+    action: str = typer.Argument(..., help="Action: start, stop, restart, status"),
+    service: Optional[str] = typer.Option(None, help="Service name")
+):
+    """Manage system services."""
+    pass
+
+@app.command()
+def deploy(
+    environment: str = typer.Argument(..., help="Environment: dev, staging, prod"),
+    force: bool = typer.Option(False, help="Force deployment")
+):
+    """Deploy the application."""
+    pass
 ```
 
-### **2. Knowledge Base Integration** 🎯 **Priorität 2**
-```typescript
-// frontend/src/services/knowledgeService.ts
-export const knowledgeService = {
-  uploadDocument: async (file: File) => {
-    // Use existing fileService
-    const result = await fileService.uploadFile(file)
-    // Process for knowledge base
-  },
-  
-  searchDocuments: async (query: string) => {
-    // Vector search implementation
-  }
-}
-```
-
-### **3. Enhanced Chat Features** 🎯 **Priorität 3**
+### **2. Enhanced Chat Features** 🎯 **Priorität 2**
 ```typescript
 // frontend/src/pages/Chat.tsx - Enhancements
 const ChatPage: React.FC = () => {
@@ -174,15 +210,17 @@ const ChatPage: React.FC = () => {
 }
 ```
 
-### **4. API Endpoints erweitern**
+### **3. MCP Tool Integration** 🎯 **Priorität 3**
 ```python
-# backend/app/api/v1/endpoints/assistants.py
-@router.post("/")
-async def create_assistant(
-    assistant_data: AssistantCreate,
-    current_user: User = Depends(get_current_user)
-):
-    # Assistant creation logic
+# backend/app/tools/mcp_manager.py
+class MCPManager:
+    def discover_servers(self):
+        """Discover available MCP servers."""
+        pass
+    
+    def load_tools(self, server_id: str):
+        """Load tools from MCP server."""
+        pass
 ```
 
 ## 🎯 **Ziele für Q1 2025**
@@ -191,12 +229,13 @@ async def create_assistant(
 - [x] Vollständige Backend-Integration ✅
 - [x] Real-time Chat mit WebSockets ✅
 - [x] User Authentication vervollständigen ✅
-- [ ] Assistant Management UI
-- [ ] Knowledge Base Integration
+- [x] Assistant Management UI ✅
+- [x] Knowledge Base Integration ✅
+- [ ] CLI Management Tool
 
 ### **Februar**
-- [ ] Knowledge Base mit Document Upload
-- [ ] Assistant Management UI
+- [ ] CLI Tool mit vollständiger Administration
+- [ ] Enhanced Chat Features
 - [ ] MCP Tool Integration
 - [ ] Advanced Chat Features
 
@@ -228,15 +267,16 @@ async def create_assistant(
 
 ## 📊 **Fortschritt Dashboard**
 
-### **Core Features (90% Complete)**
+### **Core Features (100% Complete)**
 - ✅ Authentication System
 - ✅ Dashboard Statistics
 - ✅ Real-time Chat
 - ✅ File Upload
-- 🚧 Assistant Management (20%)
-- 🚧 Knowledge Base (10%)
+- ✅ Assistant Management
+- ✅ Knowledge Base
 
-### **Advanced Features (30% Complete)**
+### **Advanced Features (40% Complete)**
+- 🚧 CLI Management Tool (0%)
 - 🚧 MCP Integration (0%)
 - 🚧 Analytics (0%)
 - 🚧 Advanced Search (0%)
@@ -251,23 +291,78 @@ async def create_assistant(
 
 ## 🎯 **Nächste Meilensteine**
 
-### **Milestone 1: Assistant Management (2 Wochen)**
-- [ ] Assistant CRUD Operations
-- [ ] Configuration Interface
-- [ ] Model Integration
-- [ ] Performance Monitoring
+### **Milestone 1: CLI Management Tool (2 Wochen)**
+- [ ] User Administration (CRUD)
+- [ ] Database Management (Migrations, Backup, Restore)
+- [ ] Service Management (Start/Stop/Status)
+- [ ] Configuration Management
 
-### **Milestone 2: Knowledge Base (3 Wochen)**
-- [ ] Document Upload & Processing
-- [ ] Vector Search
-- [ ] Content Management
-- [ ] Search Interface
+### **Milestone 2: Enhanced Chat Features (3 Wochen)**
+- [ ] Message Search & Export
+- [ ] Assistant Switching
+- [ ] Context Management
+- [ ] Advanced Conversation Features
 
 ### **Milestone 3: Production Ready (4 Wochen)**
 - [ ] Comprehensive Testing
 - [ ] Security Hardening
 - [ ] Performance Optimization
 - [ ] Deployment Pipeline
+
+## 🛠️ **CLI Tool Spezifikation**
+
+### **Command Structure**
+```bash
+# User Management
+convosphere users list
+convosphere users create --email user@example.com --role admin
+convosphere users update --id 123 --role moderator
+convosphere users delete --id 123
+
+# Database Management
+convosphere database status
+convosphere database migrate
+convosphere database backup --file backup.sql
+convosphere database restore --file backup.sql
+
+# Service Management
+convosphere services status
+convosphere services start --service backend
+convosphere services stop --service frontend
+convosphere services restart --service all
+
+# Project Management
+convosphere deploy --environment prod
+convosphere config --set database.url=postgresql://...
+convosphere logs --service backend --tail 100
+convosphere health --detailed
+```
+
+### **Features**
+- **Interactive Mode**: TUI für komplexe Operationen
+- **Configuration Management**: Environment-spezifische Konfiguration
+- **Logging**: Strukturierte Logs mit verschiedenen Levels
+- **Validation**: Input-Validierung und Error Handling
+- **Documentation**: Built-in Help und Examples
+- **Plugin System**: Erweiterbare Architektur für Custom Commands
+
+### **Architecture**
+```
+scripts/
+├── convosphere.py          # Main CLI entry point
+├── commands/
+│   ├── users.py           # User management commands
+│   ├── database.py        # Database operations
+│   ├── services.py        # Service management
+│   └── deploy.py          # Deployment automation
+├── utils/
+│   ├── config.py          # Configuration management
+│   ├── database.py        # Database utilities
+│   └── validation.py      # Input validation
+└── templates/
+    ├── config.yaml        # Configuration templates
+    └── docker-compose.yml # Docker templates
+```
 
 ---
 

@@ -1,0 +1,43 @@
+# ConvoSphere CLI Configuration
+
+# Database settings
+database:
+  host: localhost
+  port: 5432
+  name: convosphere
+  user: postgres
+  password: password
+
+# Docker settings
+docker:
+  compose_file: docker-compose.yml
+  project_name: convosphere
+
+# API settings
+api:
+  base_url: http://localhost:8000
+  timeout: 30
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Backup settings
+backup:
+  directory: ./backups
+  retention_days: 30
+  compression: true
+
+# Deployment settings
+deployment:
+  environments:
+    dev:
+      docker_compose_file: docker-compose.dev.yml
+      env_file: .env.dev
+    staging:
+      docker_compose_file: docker-compose.staging.yml
+      env_file: .env.staging
+    prod:
+      docker_compose_file: docker-compose.prod.yml
+      env_file: .env.prod 

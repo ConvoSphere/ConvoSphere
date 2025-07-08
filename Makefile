@@ -1,6 +1,6 @@
 # AI Assistant Platform Makefile
 
-.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean
+.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean cli-install cli-users cli-database cli-services cli-deploy cli-health cli-config cli-logs
 
 # Default target
 help:
@@ -34,6 +34,16 @@ help:
 	@echo "  docs-build     Build documentation"
 	@echo "  docs-deploy    Deploy documentation"
 	@echo "  docs-clean     Clean documentation build files"
+	@echo ""
+	@echo "CLI Management:"
+	@echo "  cli-install    Install CLI tool dependencies"
+	@echo "  cli-users      Manage users (list, create, update, delete)"
+	@echo "  cli-database   Manage database (status, backup, restore)"
+	@echo "  cli-services   Manage services (start, stop, status)"
+	@echo "  cli-deploy     Deploy application (dev, staging, prod)"
+	@echo "  cli-health     Check system health"
+	@echo "  cli-config     Manage configuration"
+	@echo "  cli-logs       Show application logs"
 
 # Development
 install:
@@ -166,4 +176,108 @@ docs-deploy:
 	cd docs && mkdocs gh-deploy
 
 docs-clean:
-	rm -rf docs/site/ 
+	rm -rf docs/site/
+
+# CLI Management Tool
+cli-install:
+	@echo "Installing CLI tool dependencies..."
+	pip install -r requirements-cli.txt
+	chmod +x scripts/convosphere.py
+
+cli-users:
+	@echo "User management commands:"
+	@echo "  make cli-users-list      - List all users"
+	@echo "  make cli-users-create    - Create new user"
+	@echo "  make cli-users-update    - Update user"
+	@echo "  make cli-users-delete    - Delete user"
+
+cli-users-list:
+	python scripts/convosphere.py users list
+
+cli-users-create:
+	@echo "Usage: make cli-users-create EMAIL=user@example.com PASSWORD=secret123 ROLE=admin"
+	python scripts/convosphere.py users create --email $(EMAIL) --password $(PASSWORD) --role $(ROLE)
+
+cli-database:
+	@echo "Database management commands:"
+	@echo "  make cli-database-status  - Check database status"
+	@echo "  make cli-database-backup  - Create database backup"
+	@echo "  make cli-database-restore - Restore database from backup"
+	@echo "  make cli-database-migrate - Run database migrations"
+
+cli-database-status:
+	python scripts/convosphere.py database status
+
+cli-database-backup:
+	python scripts/convosphere.py database backup
+
+cli-database-restore:
+	@echo "Usage: make cli-database-restore FILE=backup.sql"
+	python scripts/convosphere.py database restore --file $(FILE)
+
+cli-database-migrate:
+	python scripts/convosphere.py database migrate
+
+cli-services:
+	@echo "Service management commands:"
+	@echo "  make cli-services-status  - Show service status"
+	@echo "  make cli-services-start   - Start all services"
+	@echo "  make cli-services-stop    - Stop all services"
+	@echo "  make cli-services-restart - Restart all services"
+
+cli-services-status:
+	python scripts/convosphere.py services status
+
+cli-services-start:
+	python scripts/convosphere.py services start
+
+cli-services-stop:
+	python scripts/convosphere.py services stop
+
+cli-services-restart:
+	python scripts/convosphere.py services restart
+
+cli-deploy:
+	@echo "Deployment commands:"
+	@echo "  make cli-deploy-dev       - Deploy to development"
+	@echo "  make cli-deploy-staging   - Deploy to staging"
+	@echo "  make cli-deploy-prod      - Deploy to production"
+
+cli-deploy-dev:
+	python scripts/convosphere.py deploy dev
+
+cli-deploy-staging:
+	python scripts/convosphere.py deploy staging
+
+cli-deploy-prod:
+	python scripts/convosphere.py deploy prod
+
+cli-health:
+	python scripts/convosphere.py health --detailed
+
+cli-config:
+	@echo "Configuration commands:"
+	@echo "  make cli-config-show      - Show current configuration"
+	@echo "  make cli-config-set       - Set configuration value"
+
+cli-config-show:
+	python scripts/convosphere.py config show
+
+cli-config-set:
+	@echo "Usage: make cli-config-set KEY=DB_HOST VALUE=localhost"
+	python scripts/convosphere.py config set --key $(KEY) --value $(VALUE)
+
+cli-logs:
+	@echo "Log commands:"
+	@echo "  make cli-logs-all         - Show all logs"
+	@echo "  make cli-logs-backend     - Show backend logs"
+	@echo "  make cli-logs-frontend    - Show frontend logs"
+
+cli-logs-all:
+	python scripts/convosphere.py logs
+
+cli-logs-backend:
+	python scripts/convosphere.py logs --service backend
+
+cli-logs-frontend:
+	python scripts/convosphere.py logs --service frontend 
