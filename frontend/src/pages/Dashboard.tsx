@@ -1,66 +1,67 @@
+import React from 'react'
 import { useGetDashboardStatsQuery } from '../services/apiSlice'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
-import { useAppSelector } from '../hooks'
 
-const DashboardPage = () => {
+const Dashboard: React.FC = () => {
   const { data: stats, isLoading, error } = useGetDashboardStatsQuery()
-  const { user } = useAppSelector((state) => state.auth)
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading dashboard...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-500">Failed to load dashboard data</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error loading dashboard</div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Welcome back, {user?.username || 'User'}!
-        </p>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Conversations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{stats?.total_conversations || 0}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Messages</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{stats?.total_messages || 0}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Assistants</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{stats?.active_assistants || 0}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-green-500 font-bold">Online</p>
+          </CardContent>
+        </Card>
       </div>
-
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Total Conversations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-indigo">{stats.total_conversations}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Total Messages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-indigo">{stats.total_messages}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Active Assistants</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-indigo">{stats.active_assistants}</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {stats?.recent_activity && stats.recent_activity.length > 0 && (
         <Card>
@@ -68,11 +69,11 @@ const DashboardPage = () => {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {stats.recent_activity.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+                <div key={activity.id} className="flex justify-between items-center p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">{activity.description}</p>
+                    <h3 className="font-semibold">{activity.description}</h3>
                     <p className="text-sm text-gray-500">{activity.type}</p>
                   </div>
                   <span className="text-sm text-gray-400">
@@ -88,4 +89,4 @@ const DashboardPage = () => {
   )
 }
 
-export default DashboardPage
+export default Dashboard

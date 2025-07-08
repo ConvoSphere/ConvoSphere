@@ -1,6 +1,5 @@
 import { store } from '../app/store'
-import { setCredentials, logout, setError } from '../features/auth/authSlice'
-import { apiSlice } from './apiSlice'
+import { setCredentials, logout } from '../features/auth/authSlice'
 
 export interface RefreshTokenResponse {
   access_token: string

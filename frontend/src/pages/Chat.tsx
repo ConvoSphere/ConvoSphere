@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useGetConversationsQuery, useCreateConversationMutation, useGetMessagesQuery, useSendMessageMutation } from '../services/apiSlice'
 import { websocketService, type WebSocketMessage } from '../services/websocketService'
 import { fileService, type UploadResult } from '../services/fileService'
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
-import Button from '../components/ui/Button'
-import Input from '../components/ui/Input'
+import { Button, Input } from '../components/ui'
 import FileUpload from '../components/ui/FileUpload'
 import type { Conversation, Message } from '../services/apiSlice'
 
@@ -20,7 +18,10 @@ const ChatPage = () => {
     if (!newConversationTitle.trim()) return
     
     try {
-      const newConversation = await createConversation({ title: newConversationTitle }).unwrap()
+      const newConversation = await createConversation({ 
+        assistant_id: 'default', // TODO: Get from available assistants
+        title: newConversationTitle 
+      }).unwrap()
       setSelectedConversation(newConversation)
       setNewConversationTitle('')
       setShowNewConversation(false)

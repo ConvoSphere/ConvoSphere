@@ -10,7 +10,7 @@ import os
 from typing import Dict, Optional, Any
 from pathlib import Path
 from fastapi import Request, Response
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from loguru import logger
 
 from app.core.config import settings

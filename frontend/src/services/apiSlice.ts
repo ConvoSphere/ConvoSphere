@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query/react'
-import type { RootState } from '../app/store'
 import { authService } from './authService'
 
 // Define types for API responses
@@ -29,7 +28,7 @@ export interface Message {
 }
 
 export interface LoginRequest {
-  username: string
+  email: string
   password: string
 }
 
@@ -60,8 +59,8 @@ export interface DashboardStats {
 // Custom base query with token refresh logic
 const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
   const baseQuery = fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
-    prepareHeaders: async (headers, { getState }) => {
+    baseUrl: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1',
+    prepareHeaders: async (headers) => {
       const token = await authService.getValidToken()
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
@@ -96,11 +95,11 @@ export const apiSlice = createApi({
     // Authentication endpoints
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: '/auth/jwt/login',
+        url: '/auth/login',
         method: 'POST',
         body: credentials,
       }),
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_, { queryFulfilled }) {
         try {
           const { data } = await queryFulfilled
           // Store both tokens
@@ -120,7 +119,7 @@ export const apiSlice = createApi({
     }),
     
     getCurrentUser: builder.query<User, void>({
-      query: () => '/users/me',
+      query: () => '/auth/me',
       providesTags: ['User'],
     }),
     
@@ -132,10 +131,10 @@ export const apiSlice = createApi({
     
     getConversation: builder.query<Conversation, string>({
       query: (id) => `/conversations/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Conversation', id }],
+      providesTags: (_, __, id) => [{ type: 'Conversation', id }],
     }),
     
-    createConversation: builder.mutation<Conversation, { title: string }>({
+    createConversation: builder.mutation<Conversation, { assistant_id: string; title?: string }>({
       query: (conversation) => ({
         url: '/conversations',
         method: 'POST',
@@ -147,7 +146,7 @@ export const apiSlice = createApi({
     // Message endpoints
     getMessages: builder.query<Message[], string>({
       query: (conversationId) => `/conversations/${conversationId}/messages`,
-      providesTags: (result, error, conversationId) => [
+      providesTags: (_, __, conversationId) => [
         { type: 'Message', id: conversationId }
       ],
     }),
@@ -158,7 +157,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: { content: message.content },
       }),
-      invalidatesTags: (result, error, { conversation_id }) => [
+      invalidatesTags: (_, __, { conversation_id }) => [
         { type: 'Message', id: conversation_id },
         { type: 'Conversation', id: conversation_id }
       ],
