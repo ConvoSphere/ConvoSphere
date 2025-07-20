@@ -7,14 +7,76 @@ using various embedding models and managing embedding operations.
 
 import logging
 import math
-from typing import List, Dict, Any, Optional
+import numpy as np
+from typing import List, Dict, Any, Optional, Tuple, Union
 import asyncio
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+import json
 
 from litellm import completion
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.manifold import TSNE
+import umap
 
 from app.core.config import settings
+from app.services.performance_monitor import performance_monitor, MetricType
 
 logger = logging.getLogger(__name__)
+
+
+class EmbeddingModel(Enum):
+    """Embedding model enumeration."""
+    OPENAI_TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small"
+    OPENAI_TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large"
+    OPENAI_TEXT_EMBEDDING_ADA_002 = "text-embedding-ada-002"
+    COHERE_EMBED_ENGLISH_V3 = "embed-english-v3.0"
+    COHERE_EMBED_MULTILINGUAL_V3 = "embed-multilingual-v3.0"
+    HUGGINGFACE_ALL_MINILM_L6_V2 = "all-MiniLM-L6-v2"
+    HUGGINGFACE_ALL_MPNET_BASE_V2 = "all-mpnet-base-v2"
+
+
+class SimilarityMetric(Enum):
+    """Similarity metric enumeration."""
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
+    DOT_PRODUCT = "dot_product"
+    MANHATTAN = "manhattan"
+
+
+@dataclass
+class EmbeddingResult:
+    """Embedding result with metadata."""
+    text: str
+    embedding: List[float]
+    model: str
+    dimension: int
+    timestamp: datetime
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    quality_score: Optional[float] = None
+
+
+@dataclass
+class SimilarityResult:
+    """Similarity search result."""
+    text: str
+    similarity_score: float
+    rank: int
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class EmbeddingBatch:
+    """Batch of embeddings for processing."""
+    texts: List[str]
+    embeddings: List[List[float]]
+    model: str
+    batch_id: str
+    created_at: datetime
+    processing_time: Optional[float] = None
+    success_count: int = 0
+    error_count: int = 0
 
 
 class EmbeddingService:
@@ -23,54 +85,221 @@ class EmbeddingService:
     def __init__(self):
         self.model = settings.default_embedding_model
         self.batch_size = 10  # Process embeddings in batches
+        self.max_retries = 3
+        self.retry_delay = 1.0
+        
+        # Model configurations
+        self.model_configs = {
+            EmbeddingModel.OPENAI_TEXT_EMBEDDING_3_SMALL: {
+                "dimension": 1536,
+                "max_tokens": 8192,
+                "provider": "openai"
+            },
+            EmbeddingModel.OPENAI_TEXT_EMBEDDING_3_LARGE: {
+                "dimension": 3072,
+                "max_tokens": 8192,
+                "provider": "openai"
+            },
+            EmbeddingModel.OPENAI_TEXT_EMBEDDING_ADA_002: {
+                "dimension": 1536,
+                "max_tokens": 8192,
+                "provider": "openai"
+            },
+            EmbeddingModel.COHERE_EMBED_ENGLISH_V3: {
+                "dimension": 1024,
+                "max_tokens": 512,
+                "provider": "cohere"
+            },
+            EmbeddingModel.COHERE_EMBED_MULTILINGUAL_V3: {
+                "dimension": 1024,
+                "max_tokens": 512,
+                "provider": "cohere"
+            },
+            EmbeddingModel.HUGGINGFACE_ALL_MINILM_L6_V2: {
+                "dimension": 384,
+                "max_tokens": 256,
+                "provider": "huggingface"
+            },
+            EmbeddingModel.HUGGINGFACE_ALL_MPNET_BASE_V2: {
+                "dimension": 768,
+                "max_tokens": 384,
+                "provider": "huggingface"
+            }
+        }
+        
+        # Embedding cache
+        self.embedding_cache = {}
+        self.cache_size_limit = 10000
+        
+        # Performance tracking
+        self.embedding_stats = {
+            "total_embeddings": 0,
+            "total_processing_time": 0.0,
+            "average_processing_time": 0.0,
+            "cache_hits": 0,
+            "cache_misses": 0
+        }
     
-    async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
+    async def generate_embeddings(
+        self,
+        texts: List[str],
+        model: Optional[str] = None,
+        use_cache: bool = True,
+        batch_size: Optional[int] = None
+    ) -> List[EmbeddingResult]:
         """
-        Generate embeddings for a list of texts.
+        Generate embeddings for a list of texts with enhanced features.
         
         Args:
             texts: List of text strings to embed
+            model: Embedding model to use
+            use_cache: Whether to use embedding cache
+            batch_size: Override default batch size
             
         Returns:
-            List of embedding vectors
+            List of embedding results with metadata
         """
+        start_time = datetime.now()
+        
         try:
             if not texts:
                 return []
             
-            embeddings = []
+            model_name = model or self.model
+            batch_size = batch_size or self.batch_size
             
-            # Process in batches
-            for i in range(0, len(texts), self.batch_size):
-                batch = texts[i:i + self.batch_size]
-                
-                # Generate embeddings for batch
-                batch_embeddings = await self._generate_batch_embeddings(batch)
-                embeddings.extend(batch_embeddings)
-                
-                # Small delay to avoid rate limiting
-                await asyncio.sleep(0.1)
+            # Check cache first
+            cached_results = []
+            uncached_texts = []
+            uncached_indices = []
             
-            return embeddings
+            if use_cache:
+                for i, text in enumerate(texts):
+                    cache_key = self._get_cache_key(text, model_name)
+                    if cache_key in self.embedding_cache:
+                        cached_results.append(self.embedding_cache[cache_key])
+                        self.embedding_stats["cache_hits"] += 1
+                    else:
+                        uncached_texts.append(text)
+                        uncached_indices.append(i)
+                        self.embedding_stats["cache_misses"] += 1
+            else:
+                uncached_texts = texts
+                uncached_indices = list(range(len(texts)))
+            
+            # Generate embeddings for uncached texts
+            new_embeddings = []
+            if uncached_texts:
+                new_embeddings = await self._generate_embeddings_with_retry(
+                    uncached_texts, model_name, batch_size
+                )
+                
+                # Cache new embeddings
+                if use_cache:
+                    for i, embedding in enumerate(new_embeddings):
+                        if embedding:
+                            cache_key = self._get_cache_key(uncached_texts[i], model_name)
+                            self._cache_embedding(cache_key, embedding)
+            
+            # Combine cached and new results
+            all_results = []
+            cached_idx = 0
+            new_idx = 0
+            
+            for i in range(len(texts)):
+                if i in uncached_indices:
+                    # Use new embedding
+                    if new_idx < len(new_embeddings) and new_embeddings[new_idx]:
+                        result = EmbeddingResult(
+                            text=texts[i],
+                            embedding=new_embeddings[new_idx],
+                            model=model_name,
+                            dimension=len(new_embeddings[new_idx]),
+                            timestamp=datetime.now(),
+                            quality_score=self._calculate_quality_score(new_embeddings[new_idx])
+                        )
+                        all_results.append(result)
+                    else:
+                        all_results.append(None)
+                    new_idx += 1
+                else:
+                    # Use cached embedding
+                    all_results.append(cached_results[cached_idx])
+                    cached_idx += 1
+            
+            # Update statistics
+            processing_time = (datetime.now() - start_time).total_seconds()
+            self.embedding_stats["total_embeddings"] += len(texts)
+            self.embedding_stats["total_processing_time"] += processing_time
+            self.embedding_stats["average_processing_time"] = (
+                self.embedding_stats["total_processing_time"] / 
+                self.embedding_stats["total_embeddings"]
+            )
+            
+            # Record performance metrics
+            performance_monitor.record_service_metric(
+                "embedding_service",
+                "embedding_generation_time",
+                processing_time,
+                MetricType.HISTOGRAM,
+                {"model": model_name, "batch_size": len(texts)}
+            )
+            
+            return all_results
             
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
+            performance_monitor.record_error("embedding_generation_failed", "embedding_service")
             return []
     
-    async def _generate_batch_embeddings(self, texts: List[str]) -> List[List[float]]:
+    async def _generate_embeddings_with_retry(
+        self,
+        texts: List[str],
+        model: str,
+        batch_size: int
+    ) -> List[List[float]]:
+        """Generate embeddings with retry logic."""
+        for attempt in range(self.max_retries):
+            try:
+                embeddings = []
+                
+                # Process in batches
+                for i in range(0, len(texts), batch_size):
+                    batch = texts[i:i + batch_size]
+                    
+                    # Generate embeddings for batch
+                    batch_embeddings = await self._generate_batch_embeddings(batch, model)
+                    embeddings.extend(batch_embeddings)
+                    
+                    # Small delay to avoid rate limiting
+                    await asyncio.sleep(0.1)
+                
+                return embeddings
+                
+            except Exception as e:
+                logger.warning(f"Embedding generation attempt {attempt + 1} failed: {e}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+                else:
+                    raise e
+    
+    async def _generate_batch_embeddings(self, texts: List[str], model: str = None) -> List[List[float]]:
         """
         Generate embeddings for a batch of texts.
         
         Args:
             texts: List of text strings to embed
+            model: Model to use for embedding generation
             
         Returns:
             List of embedding vectors
         """
         try:
+            model_name = model or self.model
+            
             # Use LiteLLM for embedding generation
             response = await completion(
-                model=self.model,
+                model=model_name,
                 messages=[{"role": "user", "content": text} for text in texts],
                 temperature=0,
                 max_tokens=1,  # We only need embeddings, not completions
@@ -86,6 +315,46 @@ class EmbeddingService:
         except Exception as e:
             logger.error(f"Error generating batch embeddings: {e}")
             return []
+    
+    def _get_cache_key(self, text: str, model: str) -> str:
+        """Generate cache key for text and model."""
+        import hashlib
+        text_hash = hashlib.md5(text.encode()).hexdigest()
+        return f"{model}:{text_hash}"
+    
+    def _cache_embedding(self, cache_key: str, embedding: List[float]):
+        """Cache an embedding."""
+        if len(self.embedding_cache) >= self.cache_size_limit:
+            # Remove oldest entries (simple LRU)
+            oldest_keys = list(self.embedding_cache.keys())[:1000]
+            for key in oldest_keys:
+                del self.embedding_cache[key]
+        
+        self.embedding_cache[cache_key] = embedding
+    
+    def _calculate_quality_score(self, embedding: List[float]) -> float:
+        """Calculate quality score for embedding."""
+        try:
+            # Convert to numpy array
+            emb_array = np.array(embedding)
+            
+            # Calculate various quality metrics
+            magnitude = np.linalg.norm(emb_array)
+            variance = np.var(emb_array)
+            entropy = -np.sum(emb_array * np.log(np.abs(emb_array) + 1e-10))
+            
+            # Normalize and combine metrics
+            quality_score = (
+                0.4 * (magnitude / len(embedding)) +
+                0.3 * min(variance, 1.0) +
+                0.3 * min(entropy / len(embedding), 1.0)
+            )
+            
+            return min(quality_score, 1.0)
+            
+        except Exception as e:
+            logger.error(f"Error calculating quality score: {e}")
+            return 0.5  # Default score
     
     async def generate_single_embedding(self, text: str) -> Optional[List[float]]:
         """
@@ -105,34 +374,113 @@ class EmbeddingService:
             logger.error(f"Error generating single embedding: {e}")
             return None
     
-    def calculate_similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
+    def calculate_similarity(
+        self,
+        embedding1: List[float],
+        embedding2: List[float],
+        metric: SimilarityMetric = SimilarityMetric.COSINE
+    ) -> float:
         """
-        Calculate cosine similarity between two embeddings.
+        Calculate similarity between two embeddings using specified metric.
         
         Args:
             embedding1: First embedding vector
             embedding2: Second embedding vector
+            metric: Similarity metric to use
             
         Returns:
-            Similarity score between 0 and 1
+            Similarity score
         """
         try:
-            # Calculate dot product
-            dot_product = sum(a * b for a, b in zip(embedding1, embedding2))
-            
-            # Calculate norms (vector lengths)
-            norm1 = math.sqrt(sum(x * x for x in embedding1))
-            norm2 = math.sqrt(sum(x * x for x in embedding2))
-            
-            if norm1 == 0 or norm2 == 0:
+            if not embedding1 or not embedding2:
                 return 0.0
             
-            similarity = dot_product / (norm1 * norm2)
-            return float(similarity)
+            # Convert to numpy arrays
+            vec1 = np.array(embedding1)
+            vec2 = np.array(embedding2)
+            
+            if metric == SimilarityMetric.COSINE:
+                return self._cosine_similarity(vec1, vec2)
+            elif metric == SimilarityMetric.EUCLIDEAN:
+                return self._euclidean_similarity(vec1, vec2)
+            elif metric == SimilarityMetric.DOT_PRODUCT:
+                return self._dot_product_similarity(vec1, vec2)
+            elif metric == SimilarityMetric.MANHATTAN:
+                return self._manhattan_similarity(vec1, vec2)
+            else:
+                logger.warning(f"Unknown similarity metric: {metric}")
+                return self._cosine_similarity(vec1, vec2)
             
         except Exception as e:
             logger.error(f"Error calculating similarity: {e}")
             return 0.0
+    
+    def _cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """Calculate cosine similarity."""
+        dot_product = np.dot(vec1, vec2)
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+        
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        
+        return float(dot_product / (norm1 * norm2))
+    
+    def _euclidean_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """Calculate Euclidean distance-based similarity."""
+        distance = np.linalg.norm(vec1 - vec2)
+        # Convert distance to similarity (inverse relationship)
+        return float(1.0 / (1.0 + distance))
+    
+    def _dot_product_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """Calculate dot product similarity."""
+        return float(np.dot(vec1, vec2))
+    
+    def _manhattan_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """Calculate Manhattan distance-based similarity."""
+        distance = np.sum(np.abs(vec1 - vec2))
+        # Convert distance to similarity (inverse relationship)
+        return float(1.0 / (1.0 + distance))
+    
+    def calculate_batch_similarity(
+        self,
+        query_embedding: List[float],
+        candidate_embeddings: List[List[float]],
+        metric: SimilarityMetric = SimilarityMetric.COSINE
+    ) -> List[float]:
+        """
+        Calculate similarity between query and multiple candidates efficiently.
+        
+        Args:
+            query_embedding: Query embedding vector
+            candidate_embeddings: List of candidate embedding vectors
+            metric: Similarity metric to use
+            
+        Returns:
+            List of similarity scores
+        """
+        try:
+            if not query_embedding or not candidate_embeddings:
+                return []
+            
+            query_vec = np.array(query_embedding)
+            candidate_matrix = np.array(candidate_embeddings)
+            
+            if metric == SimilarityMetric.COSINE:
+                # Use sklearn for efficient cosine similarity
+                similarities = cosine_similarity([query_vec], candidate_matrix)[0]
+                return similarities.tolist()
+            else:
+                # Calculate individually for other metrics
+                similarities = []
+                for candidate in candidate_embeddings:
+                    sim = self.calculate_similarity(query_embedding, candidate, metric)
+                    similarities.append(sim)
+                return similarities
+                
+        except Exception as e:
+            logger.error(f"Error calculating batch similarity: {e}")
+            return []
     
     def find_most_similar(
         self, 
@@ -247,6 +595,252 @@ class EmbeddingService:
         except Exception as e:
             logger.error(f"Error getting embedding dimension: {e}")
             return 0
+    
+    def reduce_embeddings_dimension(
+        self,
+        embeddings: List[List[float]],
+        target_dimension: int = 2,
+        method: str = "tsne"
+    ) -> List[List[float]]:
+        """
+        Reduce embedding dimensions for visualization or analysis.
+        
+        Args:
+            embeddings: List of embedding vectors
+            target_dimension: Target dimension (usually 2 or 3)
+            method: Dimensionality reduction method ("tsne" or "umap")
+            
+        Returns:
+            List of reduced embedding vectors
+        """
+        try:
+            if not embeddings:
+                return []
+            
+            # Convert to numpy array
+            emb_array = np.array(embeddings)
+            
+            if method.lower() == "tsne":
+                reducer = TSNE(n_components=target_dimension, random_state=42)
+            elif method.lower() == "umap":
+                reducer = umap.UMAP(n_components=target_dimension, random_state=42)
+            else:
+                logger.warning(f"Unknown reduction method: {method}, using t-SNE")
+                reducer = TSNE(n_components=target_dimension, random_state=42)
+            
+            # Reduce dimensions
+            reduced_embeddings = reducer.fit_transform(emb_array)
+            
+            return reduced_embeddings.tolist()
+            
+        except Exception as e:
+            logger.error(f"Error reducing embedding dimensions: {e}")
+            return embeddings
+    
+    def cluster_embeddings(
+        self,
+        embeddings: List[List[float]],
+        n_clusters: int = 5,
+        method: str = "kmeans"
+    ) -> Dict[str, Any]:
+        """
+        Cluster embeddings to find similar groups.
+        
+        Args:
+            embeddings: List of embedding vectors
+            n_clusters: Number of clusters
+            method: Clustering method
+            
+        Returns:
+            Clustering results with labels and metadata
+        """
+        try:
+            if not embeddings:
+                return {"labels": [], "centroids": [], "silhouette_score": 0.0}
+            
+            from sklearn.cluster import KMeans
+            from sklearn.metrics import silhouette_score
+            
+            # Convert to numpy array
+            emb_array = np.array(embeddings)
+            
+            if method.lower() == "kmeans":
+                clusterer = KMeans(n_clusters=n_clusters, random_state=42)
+                labels = clusterer.fit_predict(emb_array)
+                centroids = clusterer.cluster_centers_.tolist()
+            else:
+                logger.warning(f"Unknown clustering method: {method}, using K-means")
+                clusterer = KMeans(n_clusters=n_clusters, random_state=42)
+                labels = clusterer.fit_predict(emb_array)
+                centroids = clusterer.cluster_centers_.tolist()
+            
+            # Calculate silhouette score
+            silhouette_avg = silhouette_score(emb_array, labels) if len(set(labels)) > 1 else 0.0
+            
+            return {
+                "labels": labels.tolist(),
+                "centroids": centroids,
+                "silhouette_score": float(silhouette_avg),
+                "n_clusters": n_clusters,
+                "method": method
+            }
+            
+        except Exception as e:
+            logger.error(f"Error clustering embeddings: {e}")
+            return {"labels": [], "centroids": [], "silhouette_score": 0.0}
+    
+    def analyze_embedding_quality(
+        self,
+        embeddings: List[List[float]]
+    ) -> Dict[str, Any]:
+        """
+        Analyze the quality of embeddings.
+        
+        Args:
+            embeddings: List of embedding vectors
+            
+        Returns:
+            Quality analysis results
+        """
+        try:
+            if not embeddings:
+                return {}
+            
+            emb_array = np.array(embeddings)
+            
+            # Calculate various quality metrics
+            magnitudes = np.linalg.norm(emb_array, axis=1)
+            variances = np.var(emb_array, axis=1)
+            
+            # Calculate pairwise distances
+            from sklearn.metrics.pairwise import euclidean_distances
+            distances = euclidean_distances(emb_array)
+            
+            # Remove diagonal elements
+            distances_no_diag = distances[~np.eye(distances.shape[0], dtype=bool)]
+            
+            analysis = {
+                "n_embeddings": len(embeddings),
+                "dimension": emb_array.shape[1],
+                "magnitude_stats": {
+                    "mean": float(np.mean(magnitudes)),
+                    "std": float(np.std(magnitudes)),
+                    "min": float(np.min(magnitudes)),
+                    "max": float(np.max(magnitudes))
+                },
+                "variance_stats": {
+                    "mean": float(np.mean(variances)),
+                    "std": float(np.std(variances)),
+                    "min": float(np.min(variances)),
+                    "max": float(np.max(variances))
+                },
+                "distance_stats": {
+                    "mean": float(np.mean(distances_no_diag)),
+                    "std": float(np.std(distances_no_diag)),
+                    "min": float(np.min(distances_no_diag)),
+                    "max": float(np.max(distances_no_diag))
+                },
+                "quality_score": float(np.mean(magnitudes) * np.mean(variances))
+            }
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Error analyzing embedding quality: {e}")
+            return {}
+    
+    def get_embedding_statistics(self) -> Dict[str, Any]:
+        """Get embedding service statistics."""
+        return {
+            "total_embeddings": self.embedding_stats["total_embeddings"],
+            "total_processing_time": self.embedding_stats["total_processing_time"],
+            "average_processing_time": self.embedding_stats["average_processing_time"],
+            "cache_hits": self.embedding_stats["cache_hits"],
+            "cache_misses": self.embedding_stats["cache_misses"],
+            "cache_hit_rate": (
+                self.embedding_stats["cache_hits"] / 
+                (self.embedding_stats["cache_hits"] + self.embedding_stats["cache_misses"])
+                if (self.embedding_stats["cache_hits"] + self.embedding_stats["cache_misses"]) > 0
+                else 0.0
+            ),
+            "cache_size": len(self.embedding_cache),
+            "available_models": list(self.model_configs.keys())
+        }
+    
+    def clear_cache(self):
+        """Clear the embedding cache."""
+        self.embedding_cache.clear()
+        logger.info("Embedding cache cleared")
+    
+    def export_embeddings(
+        self,
+        embeddings: List[EmbeddingResult],
+        format: str = "json"
+    ) -> str:
+        """
+        Export embeddings to various formats.
+        
+        Args:
+            embeddings: List of embedding results
+            format: Export format ("json", "csv", "numpy")
+            
+        Returns:
+            Exported data as string
+        """
+        try:
+            if format == "json":
+                data = []
+                for emb in embeddings:
+                    data.append({
+                        "text": emb.text,
+                        "embedding": emb.embedding,
+                        "model": emb.model,
+                        "dimension": emb.dimension,
+                        "timestamp": emb.timestamp.isoformat(),
+                        "metadata": emb.metadata,
+                        "quality_score": emb.quality_score
+                    })
+                return json.dumps(data, indent=2)
+            
+            elif format == "csv":
+                import csv
+                import io
+                
+                output = io.StringIO()
+                writer = csv.writer(output)
+                
+                # Write header
+                if embeddings:
+                    dimension = len(embeddings[0].embedding)
+                    header = ["text", "model", "dimension", "timestamp", "quality_score"]
+                    header.extend([f"dim_{i}" for i in range(dimension)])
+                    writer.writerow(header)
+                
+                # Write data
+                for emb in embeddings:
+                    row = [
+                        emb.text,
+                        emb.model,
+                        emb.dimension,
+                        emb.timestamp.isoformat(),
+                        emb.quality_score or 0.0
+                    ]
+                    row.extend(emb.embedding)
+                    writer.writerow(row)
+                
+                return output.getvalue()
+            
+            elif format == "numpy":
+                # Export as numpy array
+                emb_array = np.array([emb.embedding for emb in embeddings])
+                return emb_array.tobytes().hex()
+            
+            else:
+                raise ValueError(f"Unsupported export format: {format}")
+                
+        except Exception as e:
+            logger.error(f"Error exporting embeddings: {e}")
+            return ""
 
 
 # Global embedding service instance
