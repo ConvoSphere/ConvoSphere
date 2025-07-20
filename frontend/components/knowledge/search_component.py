@@ -1,16 +1,18 @@
 """
-Advanced search component for the AI Assistant Platform.
+Advanced search component for knowledge base.
 
-This module provides comprehensive search functionality for the knowledge base
-including filters, highlighting, and result management.
+This module provides an enhanced search interface with filters,
+advanced search options, and real-time search suggestions.
 """
 
 from nicegui import ui
-from typing import Optional, List, Dict, Any, Callable
+from typing import Optional, Dict, Any, List, Callable
 from datetime import datetime
+import asyncio
 
-from services.knowledge_service import SearchResult, Document, DocumentStatus, DocumentType
-from utils.helpers import format_timestamp, highlight_text
+from services.knowledge_service import knowledge_service, Document, SearchResult
+from utils.helpers import format_timestamp, format_file_size
+from utils.i18n_manager import t
 
 
 class AdvancedSearchComponent:
@@ -18,33 +20,32 @@ class AdvancedSearchComponent:
     
     def __init__(
         self,
-        on_search: Optional[Callable[[str, Dict[str, Any]], None]] = None,
-        on_result_select: Optional[Callable[[SearchResult], None]] = None
+        on_search: Optional[Callable[[List[SearchResult]], None]] = None,
+        on_filter_change: Optional[Callable[[Dict[str, Any]], None]] = None
     ):
         """
-        Initialize search component.
+        Initialize the search component.
         
         Args:
-            on_search: Search callback function
-            on_result_select: Result selection callback function
+            on_search: Callback for search results
+            on_filter_change: Callback for filter changes
         """
         self.on_search = on_search
-        self.on_result_select = on_result_select
+        self.on_filter_change = on_filter_change
         
         # Search state
-        self.search_query = ""
-        self.search_filters = {}
+        self.current_query = ""
+        self.current_filters = {}
         self.search_results: List[SearchResult] = []
         self.is_searching = False
-        self.current_page = 1
-        self.results_per_page = 20
+        self.search_history: List[str] = []
         
         # UI components
         self.container = None
         self.search_input = None
         self.filters_container = None
         self.results_container = None
-        self.pagination_container = None
+        self.suggestions_container = None
         
         self.create_search_component()
     
@@ -53,331 +54,427 @@ class AdvancedSearchComponent:
         self.container = ui.element("div").classes("w-full")
         
         with self.container:
-            # Search input
+            # Search header
+            self.create_search_header()
+            
+            # Search input and filters
             self.create_search_input()
             
-            # Filters
-            self.create_filters()
+            # Advanced filters
+            self.create_advanced_filters()
             
-            # Results
-            self.create_results_section()
+            # Search suggestions
+            self.create_search_suggestions()
             
-            # Pagination
-            self.create_pagination()
+            # Search results
+            self.create_search_results()
+    
+    def create_search_header(self):
+        """Create search header section."""
+        with ui.element("div").classes("mb-6"):
+            with ui.row().classes("items-center justify-between"):
+                with ui.column():
+                    ui.label(t("knowledge.search_title")).classes("text-2xl font-bold")
+                    ui.label(t("knowledge.search_subtitle")).classes("text-gray-600")
+                
+                with ui.row().classes("space-x-2"):
+                    # Search history button
+                    ui.button(
+                        icon="history",
+                        on_click=self.show_search_history
+                    ).classes("w-10 h-10 bg-gray-100 text-gray-600")
+                    
+                    # Save search button
+                    ui.button(
+                        icon="bookmark",
+                        on_click=self.save_current_search
+                    ).classes("w-10 h-10 bg-gray-100 text-gray-600")
     
     def create_search_input(self):
         """Create search input section."""
-        with ui.element("div").classes("mb-6"):
+        with ui.element("div").classes("mb-4"):
             with ui.row().classes("items-center space-x-4"):
-                # Search input
+                # Main search input
                 self.search_input = ui.input(
-                    placeholder="Dokumente durchsuchen...",
+                    placeholder=t("knowledge.search_placeholder"),
+                    on_change=self.handle_search_input_change,
                     on_keydown=self.handle_search_keydown
-                ).classes("flex-1")
+                ).classes("flex-1").props("autofocus")
                 
                 # Search button
                 ui.button(
-                    "Suchen",
+                    t("knowledge.search_button"),
                     icon="search",
                     on_click=self.perform_search
-                ).classes("bg-blue-600 text-white")
+                ).classes("bg-blue-600 text-white px-6")
                 
                 # Advanced search toggle
                 ui.button(
-                    "Filter",
                     icon="tune",
                     on_click=self.toggle_advanced_filters
-                ).classes("bg-gray-500 text-white")
+                ).classes("w-10 h-10 bg-gray-100 text-gray-600")
     
-    def create_filters(self):
+    def create_advanced_filters(self):
         """Create advanced filters section."""
-        self.filters_container = ui.element("div").classes("mb-6 bg-gray-50 border rounded-lg p-4")
+        self.filters_container = ui.element("div").classes("mb-4 p-4 bg-gray-50 rounded-lg hidden")
         
         with self.filters_container:
-            with ui.row().classes("items-center space-x-4"):
-                # Category filter
-                self.category_filter = ui.select(
-                    "Kategorie",
-                    options=["alle"] + self.get_available_categories(),
-                    value="alle",
-                    on_change=self.update_filters
-                ).classes("w-48")
-                
-                # Status filter
-                self.status_filter = ui.select(
-                    "Status",
-                    options=["alle"] + [s.value for s in DocumentStatus],
-                    value="alle",
-                    on_change=self.update_filters
-                ).classes("w-48")
-                
-                # Date range
-                self.date_from = ui.date("Von").classes("w-32")
-                self.date_to = ui.date("Bis").classes("w-32")
-                
-                # Results per page
-                self.results_per_page_select = ui.select(
-                    "Ergebnisse pro Seite",
-                    options=["10", "20", "50", "100"],
-                    value="20",
-                    on_change=self.update_results_per_page
-                ).classes("w-32")
-                
-                # Clear filters
-                ui.button(
-                    "Filter löschen",
-                    icon="clear",
-                    on_click=self.clear_filters
-                ).classes("bg-red-500 text-white text-xs")
-    
-    def create_results_section(self):
-        """Create search results section."""
-        with ui.element("div").classes("mb-6"):
-            # Results header
-            self.results_header = ui.element("div").classes("mb-4")
+            ui.label(t("knowledge.advanced_filters")).classes("text-lg font-medium mb-3")
             
-            # Results container
-            self.results_container = ui.element("div").classes("space-y-4")
+            with ui.row().classes("grid grid-cols-1 md:grid-cols-3 gap-4"):
+                # Document type filter
+                self.type_filter = ui.select(
+                    options=[
+                        {"label": t("knowledge.all_types"), "value": "all"},
+                        {"label": "PDF", "value": "pdf"},
+                        {"label": "DOCX", "value": "docx"},
+                        {"label": "TXT", "value": "txt"},
+                        {"label": "Markdown", "value": "md"},
+                        {"label": "HTML", "value": "html"}
+                    ],
+                    value="all",
+                    label=t("knowledge.document_type"),
+                    on_change=self.handle_filter_change
+                ).classes("w-full")
+                
+                # Date range filter
+                self.date_filter = ui.select(
+                    options=[
+                        {"label": t("knowledge.all_dates"), "value": "all"},
+                        {"label": t("knowledge.last_day"), "value": "1d"},
+                        {"label": t("knowledge.last_week"), "value": "7d"},
+                        {"label": t("knowledge.last_month"), "value": "30d"},
+                        {"label": t("knowledge.last_year"), "value": "365d"}
+                    ],
+                    value="all",
+                    label=t("knowledge.date_range"),
+                    on_change=self.handle_filter_change
+                ).classes("w-full")
+                
+                # Language filter
+                self.language_filter = ui.select(
+                    options=[
+                        {"label": t("knowledge.all_languages"), "value": "all"},
+                        {"label": "English", "value": "en"},
+                        {"label": "Deutsch", "value": "de"}
+                    ],
+                    value="all",
+                    label=t("knowledge.language"),
+                    on_change=self.handle_filter_change
+                ).classes("w-full")
+            
+            with ui.row().classes("grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"):
+                # Topics filter
+                self.topics_filter = ui.select(
+                    options=[
+                        {"label": t("knowledge.all_topics"), "value": "all"},
+                        {"label": "Programming", "value": "programming"},
+                        {"label": "Database", "value": "database"},
+                        {"label": "Web Development", "value": "web"},
+                        {"label": "AI/ML", "value": "ai"},
+                        {"label": "DevOps", "value": "devops"},
+                        {"label": "Security", "value": "security"}
+                    ],
+                    value="all",
+                    label=t("knowledge.topics"),
+                    on_change=self.handle_filter_change
+                ).classes("w-full")
+                
+                # Sort order
+                self.sort_filter = ui.select(
+                    options=[
+                        {"label": t("knowledge.relevance"), "value": "relevance"},
+                        {"label": t("knowledge.date_newest"), "value": "date_desc"},
+                        {"label": t("knowledge.date_oldest"), "value": "date_asc"},
+                        {"label": t("knowledge.title"), "value": "title"},
+                        {"label": t("knowledge.size"), "value": "size"}
+                    ],
+                    value="relevance",
+                    label=t("knowledge.sort_by"),
+                    on_change=self.handle_filter_change
+                ).classes("w-full")
+            
+            # Additional filters
+            with ui.row().classes("mt-4"):
+                with ui.column().classes("space-y-2"):
+                    ui.label(t("knowledge.additional_filters")).classes("font-medium")
+                    
+                    with ui.row().classes("space-x-4"):
+                        # Has entities filter
+                        self.has_entities_filter = ui.switch(
+                            t("knowledge.has_entities")
+                        ).classes("w-full")
+                        
+                        # Has keywords filter
+                        self.has_keywords_filter = ui.switch(
+                            t("knowledge.has_keywords")
+                        ).classes("w-full")
+                    
+                    with ui.row().classes("space-x-4"):
+                        # Min importance score
+                        self.min_importance_filter = ui.number(
+                            label=t("knowledge.min_importance"),
+                            min=0.0,
+                            max=2.0,
+                            step=0.1,
+                            value=0.0
+                        ).classes("w-32")
+                        
+                        # Max reading time
+                        self.max_reading_time_filter = ui.number(
+                            label=t("knowledge.max_reading_time"),
+                            min=1,
+                            max=120,
+                            step=1,
+                            value=60
+                        ).classes("w-32")
     
-    def create_pagination(self):
-        """Create pagination section."""
-        self.pagination_container = ui.element("div").classes("flex justify-center items-center space-x-2")
+    def create_search_suggestions(self):
+        """Create search suggestions section."""
+        self.suggestions_container = ui.element("div").classes("mb-4")
+        
+        with self.suggestions_container:
+            ui.label(t("knowledge.search_suggestions")).classes("text-sm font-medium mb-2")
+            
+            # Popular searches
+            with ui.row().classes("flex-wrap gap-2"):
+                popular_searches = [
+                    "API documentation",
+                    "Database schema",
+                    "Authentication",
+                    "Error handling",
+                    "Deployment guide"
+                ]
+                
+                for search in popular_searches:
+                    ui.button(
+                        search,
+                        on_click=lambda s=search: self.set_search_query(s)
+                    ).classes("text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded")
+    
+    def create_search_results(self):
+        """Create search results section."""
+        self.results_container = ui.element("div").classes("space-y-4")
+        
+        with self.results_container:
+            # Results header
+            self.results_header = ui.element("div").classes("flex items-center justify-between p-4 bg-gray-50 rounded")
+            
+            with self.results_header:
+                ui.label(t("knowledge.no_results")).classes("text-gray-500")
+    
+    def handle_search_input_change(self, event):
+        """Handle search input change."""
+        self.current_query = event.value
+        self.update_search_suggestions()
     
     def handle_search_keydown(self, event):
         """Handle search input keydown."""
         if event.key == "Enter":
             self.perform_search()
     
-    def perform_search(self):
+    def handle_filter_change(self, event):
+        """Handle filter change."""
+        self.current_filters = self.get_current_filters()
+        
+        if self.on_filter_change:
+            self.on_filter_change(self.current_filters)
+    
+    def get_current_filters(self) -> Dict[str, Any]:
+        """Get current filter values."""
+        return {
+            "document_type": self.type_filter.value,
+            "date_range": self.date_filter.value,
+            "language": self.language_filter.value,
+            "topics": self.topics_filter.value,
+            "sort_by": self.sort_filter.value,
+            "has_entities": self.has_entities_filter.value,
+            "has_keywords": self.has_keywords_filter.value,
+            "min_importance": self.min_importance_filter.value,
+            "max_reading_time": self.max_reading_time_filter.value
+        }
+    
+    async def perform_search(self):
         """Perform search with current query and filters."""
-        if not self.search_query.strip():
-            ui.notify("Bitte geben Sie einen Suchbegriff ein", type="warning")
+        if not self.current_query.strip():
             return
         
         self.is_searching = True
-        self.current_page = 1
+        self.update_search_ui()
         
-        # Update search filters
-        self.update_filters()
-        
-        # Call search callback
-        if self.on_search:
-            self.on_search(self.search_query, self.search_filters)
+        try:
+            # Add to search history
+            if self.current_query not in self.search_history:
+                self.search_history.append(self.current_query)
+                if len(self.search_history) > 10:
+                    self.search_history.pop(0)
+            
+            # Perform search
+            filters = self.get_current_filters()
+            results = await knowledge_service.search_documents(
+                query=self.current_query,
+                filters=filters,
+                limit=50
+            )
+            
+            self.search_results = results
+            self.display_search_results()
+            
+            if self.on_search:
+                self.on_search(results)
+                
+        except Exception as e:
+            ui.notify(f"Search error: {str(e)}", type="error")
+        finally:
+            self.is_searching = False
+            self.update_search_ui()
     
-    def update_filters(self):
-        """Update search filters."""
-        self.search_filters = {
-            "category": self.category_filter.value if self.category_filter.value != "alle" else None,
-            "status": self.status_filter.value if self.status_filter.value != "alle" else None,
-            "date_from": self.date_from.value.isoformat() if self.date_from.value else None,
-            "date_to": self.date_to.value.isoformat() if self.date_to.value else None,
-            "page": self.current_page,
-            "limit": self.results_per_page
-        }
-    
-    def update_results_per_page(self, event):
-        """Update results per page."""
-        self.results_per_page = int(event.value)
-        self.current_page = 1
-        if self.search_results:
-            self.perform_search()
-    
-    def clear_filters(self):
-        """Clear all filters."""
-        self.category_filter.value = "alle"
-        self.status_filter.value = "alle"
-        self.date_from.value = None
-        self.date_to.value = None
-        self.search_filters = {}
-    
-    def toggle_advanced_filters(self):
-        """Toggle advanced filters visibility."""
-        if self.filters_container:
-            self.filters_container.visible = not self.filters_container.visible
-    
-    def get_available_categories(self) -> List[str]:
-        """Get available document categories."""
-        # This would be populated from the knowledge service
-        return ["Dokumentation", "Anleitungen", "Berichte", "Präsentationen"]
-    
-    def display_search_results(self, results: List[SearchResult], total_results: int = 0):
+    def display_search_results(self):
         """Display search results."""
-        self.search_results = results
-        
-        # Update results header
-        self.results_header.clear()
-        with self.results_header:
-            if results:
-                ui.label(f"{len(results)} von {total_results} Ergebnissen gefunden").classes("text-lg font-medium")
-            else:
-                ui.label("Keine Ergebnisse gefunden").classes("text-lg text-gray-500")
-        
-        # Display results
         self.results_container.clear()
         
-        if not results:
-            with self.results_container:
-                ui.label("Versuchen Sie andere Suchbegriffe oder Filter").classes("text-center text-gray-500 py-8")
-            return
-        
         with self.results_container:
-            for result in results:
-                self.create_result_item(result)
-        
-        # Update pagination
-        self.update_pagination(total_results)
+            # Results header
+            with ui.element("div").classes("flex items-center justify-between p-4 bg-gray-50 rounded"):
+                if self.search_results:
+                    ui.label(f"{len(self.search_results)} {t('knowledge.results_found')}")
+                else:
+                    ui.label(t("knowledge.no_results"))
+                
+                # Export results button
+                if self.search_results:
+                    ui.button(
+                        t("knowledge.export_results"),
+                        icon="download",
+                        on_click=self.export_results
+                    ).classes("text-sm bg-green-600 text-white")
+            
+            # Results list
+            if self.search_results:
+                for result in self.search_results:
+                    self.create_result_item(result)
+            else:
+                with ui.element("div").classes("text-center py-8"):
+                    ui.icon("search_off").classes("text-6xl text-gray-300 mb-4")
+                    ui.label(t("knowledge.no_results_message")).classes("text-gray-500")
     
     def create_result_item(self, result: SearchResult):
         """Create a search result item."""
-        with ui.element("div").classes("bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer").on("click", lambda: self.select_result(result)):
-            # Result header
-            with ui.row().classes("items-center justify-between mb-2"):
-                ui.label(result.document_name).classes("font-medium text-blue-600")
-                ui.label(f"Score: {result.score:.3f}").classes("text-sm text-gray-600")
-            
-            # Highlighted content
-            highlighted_content = highlight_text(result.content, self.search_query)
-            ui.html(f"<div class='text-sm text-gray-700 mb-2'>{highlighted_content}</div>")
-            
-            # Metadata
-            with ui.row().classes("items-center justify-between text-xs text-gray-500"):
-                with ui.row().classes("items-center space-x-4"):
-                    ui.label(f"Chunk {result.chunk_index}")
-                    ui.label(f"Position {result.start_position}-{result.end_position}")
+        with ui.element("div").classes("border rounded-lg p-4 hover:shadow-md transition-shadow"):
+            with ui.row().classes("items-start justify-between"):
+                # Result content
+                with ui.column().classes("flex-1"):
+                    # Title and score
+                    with ui.row().classes("items-center space-x-2 mb-2"):
+                        ui.label(result.document_name).classes("font-medium text-lg")
+                        ui.badge(f"{result.score:.2f}").classes("bg-blue-100 text-blue-700")
+                    
+                    # Content preview
+                    content_preview = result.content[:300] + "..." if len(result.content) > 300 else result.content
+                    ui.label(content_preview).classes("text-gray-700 mb-2")
+                    
+                    # Metadata
+                    with ui.row().classes("items-center space-x-4 text-sm text-gray-500"):
+                        ui.label(f"Chunk {result.chunk_index}")
+                        ui.label(f"Position {result.start_position}-{result.end_position}")
+                        
+                        # Highlight matched terms
+                        if hasattr(result, 'highlighted_content'):
+                            ui.html(result.highlighted_content).classes("text-sm")
                 
-                # Action buttons
-                with ui.row().classes("space-x-2"):
+                # Actions
+                with ui.column().classes("space-y-2"):
                     ui.button(
-                        "Dokument öffnen",
-                        icon="open_in_new",
-                        on_click=lambda: self.open_document(result.document_id)
-                    ).classes("bg-blue-500 text-white text-xs")
+                        icon="visibility",
+                        on_click=lambda: self.view_document(result.document_id)
+                    ).classes("w-8 h-8 bg-gray-100 text-gray-600")
                     
                     ui.button(
-                        "Kopieren",
-                        icon="content_copy",
-                        on_click=lambda: self.copy_content(result.content)
-                    ).classes("bg-gray-500 text-white text-xs")
+                        icon="download",
+                        on_click=lambda: self.download_document(result.document_id)
+                    ).classes("w-8 h-8 bg-gray-100 text-gray-600")
     
-    def update_pagination(self, total_results: int):
-        """Update pagination controls."""
-        self.pagination_container.clear()
-        
-        if total_results <= self.results_per_page:
-            return
-        
-        total_pages = (total_results + self.results_per_page - 1) // self.results_per_page
-        
-        with self.pagination_container:
-            # Previous page
-            if self.current_page > 1:
-                ui.button(
-                    "Zurück",
-                    icon="chevron_left",
-                    on_click=self.previous_page
-                ).classes("bg-gray-500 text-white")
-            
-            # Page numbers
-            start_page = max(1, self.current_page - 2)
-            end_page = min(total_pages, self.current_page + 2)
-            
-            for page in range(start_page, end_page + 1):
-                if page == self.current_page:
-                    ui.button(str(page)).classes("bg-blue-600 text-white")
-                else:
-                    ui.button(
-                        str(page),
-                        on_click=lambda p=page: self.go_to_page(p)
-                    ).classes("bg-gray-200 text-gray-700")
-            
-            # Next page
-            if self.current_page < total_pages:
-                ui.button(
-                    "Weiter",
-                    icon="chevron_right",
-                    on_click=self.next_page
-                ).classes("bg-gray-500 text-white")
+    def update_search_suggestions(self):
+        """Update search suggestions based on current query."""
+        # This would typically call an API for suggestions
+        # For now, we'll just show static suggestions
+        pass
     
-    def select_result(self, result: SearchResult):
-        """Select a search result."""
-        if self.on_result_select:
-            self.on_result_select(result)
+    def update_search_ui(self):
+        """Update search UI based on current state."""
+        if self.is_searching:
+            self.search_input.disable()
+        else:
+            self.search_input.enable()
     
-    def open_document(self, document_id: str):
-        """Open document in new view."""
-        ui.notify(f"Dokument {document_id} wird geöffnet", type="info")
-    
-    def copy_content(self, content: str):
-        """Copy content to clipboard."""
-        # In a real implementation, this would copy to clipboard
-        ui.notify("Inhalt in Zwischenablage kopiert", type="positive")
-    
-    def previous_page(self):
-        """Go to previous page."""
-        if self.current_page > 1:
-            self.current_page -= 1
-            self.perform_search()
-    
-    def next_page(self):
-        """Go to next page."""
-        self.current_page += 1
-        self.perform_search()
-    
-    def go_to_page(self, page: int):
-        """Go to specific page."""
-        self.current_page = page
-        self.perform_search()
+    def toggle_advanced_filters(self):
+        """Toggle advanced filters visibility."""
+        if "hidden" in self.filters_container.classes:
+            self.filters_container.classes("block")
+        else:
+            self.filters_container.classes("hidden")
     
     def set_search_query(self, query: str):
         """Set search query."""
-        self.search_query = query
-        if self.search_input:
-            self.search_input.value = query
+        self.current_query = query
+        self.search_input.value = query
+        self.perform_search()
     
-    def get_search_query(self) -> str:
-        """Get current search query."""
-        return self.search_query
+    def show_search_history(self):
+        """Show search history dialog."""
+        with ui.dialog() as dialog, ui.card().classes("w-full max-w-md"):
+            ui.label(t("knowledge.search_history")).classes("text-lg font-medium mb-4")
+            
+            if self.search_history:
+                with ui.column().classes("space-y-2"):
+                    for query in reversed(self.search_history):
+                        ui.button(
+                            query,
+                            on_click=lambda q=query: self.set_search_query(q)
+                        ).classes("w-full text-left justify-start bg-gray-50 hover:bg-gray-100")
+            else:
+                ui.label(t("knowledge.no_search_history")).classes("text-gray-500 text-center py-4")
     
-    def get_search_filters(self) -> Dict[str, Any]:
-        """Get current search filters."""
-        return self.search_filters.copy()
-    
-    def clear_results(self):
-        """Clear search results."""
-        self.search_results = []
-        self.results_container.clear()
-        self.pagination_container.clear()
-    
-    def show_loading(self):
-        """Show loading state."""
-        self.is_searching = True
-        self.results_container.clear()
+    def save_current_search(self):
+        """Save current search as a saved search."""
+        if not self.current_query:
+            ui.notify(t("knowledge.no_query_to_save"), type="warning")
+            return
         
-        with self.results_container:
-            with ui.row().classes("justify-center py-8"):
-                ui.spinner("dots").classes("w-8 h-8")
-                ui.label("Suche läuft...").classes("ml-2 text-gray-600")
+        # This would typically save to user preferences
+        ui.notify(t("knowledge.search_saved"), type="positive")
     
-    def hide_loading(self):
-        """Hide loading state."""
-        self.is_searching = False
+    def export_results(self):
+        """Export search results."""
+        if not self.search_results:
+            return
+        
+        # This would typically export to CSV or JSON
+        ui.notify(t("knowledge.results_exported"), type="positive")
+    
+    def view_document(self, document_id: str):
+        """View document details."""
+        # This would typically open a document viewer
+        ui.notify(f"Viewing document {document_id}", type="info")
+    
+    def download_document(self, document_id: str):
+        """Download document."""
+        # This would typically trigger a download
+        ui.notify(f"Downloading document {document_id}", type="info")
 
 
 def create_advanced_search_component(
-    on_search: Optional[Callable[[str, Dict[str, Any]], None]] = None,
-    on_result_select: Optional[Callable[[SearchResult], None]] = None
+    on_search: Optional[Callable[[List[SearchResult]], None]] = None,
+    on_filter_change: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> AdvancedSearchComponent:
     """
     Create an advanced search component.
     
     Args:
-        on_search: Search callback function
-        on_result_select: Result selection callback function
+        on_search: Callback for search results
+        on_filter_change: Callback for filter changes
         
     Returns:
         AdvancedSearchComponent instance
     """
-    return AdvancedSearchComponent(
-        on_search=on_search,
-        on_result_select=on_result_select
-    ) 
+    return AdvancedSearchComponent(on_search=on_search, on_filter_change=on_filter_change) 

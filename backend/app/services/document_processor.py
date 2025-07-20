@@ -7,18 +7,63 @@ extracting text content, and preparing documents for embedding generation.
 
 import io
 import logging
-from typing import List, Dict, Any
+import re
+import json
+from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
+from datetime import datetime
+from dataclasses import dataclass
 
 import PyPDF2
 from docx import Document
 import markdown
 import magic
+from bs4 import BeautifulSoup
+import tiktoken
 
 from app.core.config import settings
 from .docling_processor import docling_processor
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class DocumentChunk:
+    """Document chunk with enhanced metadata."""
+    content: str
+    chunk_id: str
+    start_position: int
+    end_position: int
+    token_count: int
+    word_count: int
+    chunk_type: str = "text"
+    metadata: Dict[str, Any] = None
+    importance_score: float = 1.0
+    language: str = "en"
+    entities: List[str] = None
+
+
+@dataclass
+class DocumentMetadata:
+    """Enhanced document metadata."""
+    file_type: str
+    file_size: int
+    text_length: int
+    word_count: int
+    chunk_count: int
+    processing_engine: str
+    processing_success: bool
+    language: str = "en"
+    title: Optional[str] = None
+    author: Optional[str] = None
+    creation_date: Optional[datetime] = None
+    modification_date: Optional[datetime] = None
+    keywords: List[str] = None
+    summary: Optional[str] = None
+    reading_time_minutes: Optional[float] = None
+    complexity_score: Optional[float] = None
+    topics: List[str] = None
+    entities: List[str] = None
 
 
 class DocumentProcessor:
@@ -40,6 +85,23 @@ class DocumentProcessor:
     def __init__(self):
         self.chunk_size = settings.chunk_size
         self.chunk_overlap = settings.chunk_overlap
+        self.min_chunk_size = 50  # Minimum chunk size in words
+        self.max_chunk_size = 1000  # Maximum chunk size in words
+        
+        # Initialize tokenizer for accurate token counting
+        try:
+            self.tokenizer = tiktoken.get_encoding("cl100k_base")  # GPT-4 tokenizer
+        except Exception as e:
+            logger.warning(f"Could not initialize tokenizer: {e}")
+            self.tokenizer = None
+        
+        # Chunking strategies
+        self.chunking_strategies = {
+            "semantic": self._semantic_chunking,
+            "fixed": self._fixed_chunking,
+            "paragraph": self._paragraph_chunking,
+            "sentence": self._sentence_chunking
+        }
     
     def detect_file_type(self, file_content: bytes, filename: str) -> str:
         """
@@ -234,52 +296,386 @@ class DocumentProcessor:
             logger.error(f"Error extracting image text: {e}")
             return ""
     
-    def chunk_text(self, text: str) -> List[Dict[str, Any]]:
+    def chunk_text(
+        self,
+        text: str,
+        strategy: str = "semantic",
+        chunk_size: Optional[int] = None,
+        overlap: Optional[int] = None
+    ) -> List[DocumentChunk]:
         """
-        Split text into chunks for embedding.
+        Split text into chunks using different strategies.
         
         Args:
-            text: Text content to chunk
+            text: Text to chunk
+            strategy: Chunking strategy ("semantic", "fixed", "paragraph", "sentence")
+            chunk_size: Override default chunk size
+            overlap: Override default overlap
             
         Returns:
-            List of text chunks with metadata
+            List of document chunks
         """
-        if not text.strip():
+        if not text:
             return []
         
-        chunks = []
-        words = text.split()
+        # Use provided parameters or defaults
+        size = chunk_size or self.chunk_size
+        overlap_size = overlap or self.chunk_overlap
         
-        if len(words) <= self.chunk_size:
-            # Single chunk
+        # Get chunking strategy
+        chunking_func = self.chunking_strategies.get(strategy, self._semantic_chunking)
+        
+        # Create chunks
+        raw_chunks = chunking_func(text, size, overlap_size)
+        
+        # Convert to DocumentChunk objects
+        document_chunks = []
+        for i, chunk_data in enumerate(raw_chunks):
+            chunk = DocumentChunk(
+                content=chunk_data['content'],
+                chunk_id=f"chunk_{i}",
+                start_position=chunk_data.get('start_position', 0),
+                end_position=chunk_data.get('end_position', len(chunk_data['content'])),
+                token_count=self._count_tokens(chunk_data['content']),
+                word_count=len(chunk_data['content'].split()),
+                chunk_type=chunk_data.get('type', 'text'),
+                metadata=chunk_data.get('metadata', {}),
+                importance_score=self._calculate_importance(chunk_data['content']),
+                language=self._detect_language(chunk_data['content']),
+                entities=self._extract_entities(chunk_data['content'])
+            )
+            document_chunks.append(chunk)
+        
+        return document_chunks
+    
+    def _semantic_chunking(
+        self,
+        text: str,
+        chunk_size: int,
+        overlap: int
+    ) -> List[Dict[str, Any]]:
+        """Semantic chunking that respects paragraph and sentence boundaries."""
+        # Split into paragraphs first
+        paragraphs = text.split('\n\n')
+        chunks = []
+        current_chunk = ""
+        current_start = 0
+        
+        for paragraph in paragraphs:
+            paragraph = paragraph.strip()
+            if not paragraph:
+                continue
+            
+            # If adding this paragraph would exceed chunk size
+            if len(current_chunk) + len(paragraph) > chunk_size * 5:  # Approximate word length
+                if current_chunk:
+                    chunks.append({
+                        'content': current_chunk.strip(),
+                        'start_position': current_start,
+                        'end_position': current_start + len(current_chunk),
+                        'type': 'semantic'
+                    })
+                
+                # Start new chunk with overlap
+                overlap_text = self._get_overlap_text(current_chunk, overlap)
+                current_chunk = overlap_text + paragraph
+                current_start = current_start + len(current_chunk) - len(overlap_text)
+            else:
+                current_chunk += "\n\n" + paragraph if current_chunk else paragraph
+        
+        # Add final chunk
+        if current_chunk:
             chunks.append({
-                'content': text,
-                'start_word': 0,
-                'end_word': len(words),
-                'token_count': len(words)
+                'content': current_chunk.strip(),
+                'start_position': current_start,
+                'end_position': current_start + len(current_chunk),
+                'type': 'semantic'
             })
-        else:
-            # Multiple chunks with overlap
-            start = 0
-            while start < len(words):
-                end = min(start + self.chunk_size, len(words))
-                
-                chunk_words = words[start:end]
-                chunk_text = ' '.join(chunk_words)
-                
-                chunks.append({
-                    'content': chunk_text,
-                    'start_word': start,
-                    'end_word': end,
-                    'token_count': len(chunk_words)
-                })
-                
-                # Move start position with overlap
-                start = end - self.chunk_overlap
-                if start >= len(words):
-                    break
         
         return chunks
+    
+    def _fixed_chunking(
+        self,
+        text: str,
+        chunk_size: int,
+        overlap: int
+    ) -> List[Dict[str, Any]]:
+        """Fixed-size chunking with overlap."""
+        words = text.split()
+        chunks = []
+        start = 0
+        
+        while start < len(words):
+            end = min(start + chunk_size, len(words))
+            chunk_words = words[start:end]
+            chunk_text = ' '.join(chunk_words)
+            
+            chunks.append({
+                'content': chunk_text,
+                'start_position': start,
+                'end_position': end,
+                'type': 'fixed'
+            })
+            
+            start = end - overlap
+            if start >= len(words):
+                break
+        
+        return chunks
+    
+    def _paragraph_chunking(
+        self,
+        text: str,
+        chunk_size: int,
+        overlap: int
+    ) -> List[Dict[str, Any]]:
+        """Chunk by paragraphs."""
+        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+        chunks = []
+        
+        for i, paragraph in enumerate(paragraphs):
+            chunks.append({
+                'content': paragraph,
+                'start_position': i,
+                'end_position': i + 1,
+                'type': 'paragraph',
+                'metadata': {'paragraph_index': i}
+            })
+        
+        return chunks
+    
+    def _sentence_chunking(
+        self,
+        text: str,
+        chunk_size: int,
+        overlap: int
+    ) -> List[Dict[str, Any]]:
+        """Chunk by sentences."""
+        # Simple sentence splitting
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        chunks = []
+        current_chunk = ""
+        sentence_count = 0
+        
+        for sentence in sentences:
+            if len(current_chunk) + len(sentence) > chunk_size * 5:
+                if current_chunk:
+                    chunks.append({
+                        'content': current_chunk.strip(),
+                        'start_position': sentence_count - len(current_chunk.split('.')) + 1,
+                        'end_position': sentence_count,
+                        'type': 'sentence'
+                    })
+                current_chunk = sentence
+            else:
+                current_chunk += ". " + sentence if current_chunk else sentence
+            sentence_count += 1
+        
+        if current_chunk:
+            chunks.append({
+                'content': current_chunk.strip(),
+                'start_position': sentence_count - len(current_chunk.split('.')) + 1,
+                'end_position': sentence_count,
+                'type': 'sentence'
+            })
+        
+        return chunks
+    
+    def _get_overlap_text(self, text: str, overlap_words: int) -> str:
+        """Get overlap text from the end of a chunk."""
+        words = text.split()
+        if len(words) <= overlap_words:
+            return text
+        
+        overlap_words_list = words[-overlap_words:]
+        return ' '.join(overlap_words_list)
+    
+    def _count_tokens(self, text: str) -> int:
+        """Count tokens in text using tiktoken."""
+        if self.tokenizer:
+            return len(self.tokenizer.encode(text))
+        else:
+            # Fallback: approximate token count
+            return len(text.split()) * 1.3
+    
+    def _calculate_importance(self, text: str) -> float:
+        """Calculate importance score for a chunk."""
+        # Simple heuristics for importance
+        score = 1.0
+        
+        # Boost for headers
+        if text.startswith('#') or text.isupper():
+            score += 0.5
+        
+        # Boost for numbers and dates
+        if re.search(r'\d+', text):
+            score += 0.2
+        
+        # Boost for technical terms
+        technical_terms = ['api', 'function', 'class', 'method', 'error', 'config', 'database']
+        for term in technical_terms:
+            if term.lower() in text.lower():
+                score += 0.1
+        
+        return min(score, 2.0)  # Cap at 2.0
+    
+    def _detect_language(self, text: str) -> str:
+        """Detect language of text."""
+        # Simple language detection
+        german_chars = set('äöüßÄÖÜ')
+        text_chars = set(text)
+        
+        if german_chars.intersection(text_chars):
+            return 'de'
+        else:
+            return 'en'
+    
+    def _extract_entities(self, text: str) -> List[str]:
+        """Extract named entities from text."""
+        entities = []
+        
+        # Extract URLs
+        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+        entities.extend(urls)
+        
+        # Extract email addresses
+        emails = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text)
+        entities.extend(emails)
+        
+        # Extract potential names (capitalized words)
+        names = re.findall(r'\b[A-Z][a-z]+ [A-Z][a-z]+\b', text)
+        entities.extend(names)
+        
+        return list(set(entities))  # Remove duplicates
+    
+    def _create_enhanced_metadata(
+        self,
+        file_type: str,
+        file_content: bytes,
+        text: str,
+        chunks: List[DocumentChunk]
+    ) -> Dict[str, Any]:
+        """Create enhanced metadata for document."""
+        # Basic metadata
+        metadata = {
+            'file_type': file_type,
+            'file_size': len(file_content),
+            'text_length': len(text),
+            'word_count': len(text.split()),
+            'chunk_count': len(chunks),
+            'processing_engine': 'enhanced',
+            'processing_success': True,
+            'processing_timestamp': datetime.now().isoformat()
+        }
+        
+        # Language detection
+        languages = [chunk.language for chunk in chunks if chunk.language]
+        if languages:
+            primary_language = max(set(languages), key=languages.count)
+            metadata['language'] = primary_language
+            metadata['language_distribution'] = {lang: languages.count(lang) for lang in set(languages)}
+        
+        # Extract title (first line or first chunk)
+        if chunks:
+            first_chunk = chunks[0].content
+            lines = first_chunk.split('\n')
+            if lines:
+                potential_title = lines[0].strip()
+                if len(potential_title) < 200 and not potential_title.startswith('#'):
+                    metadata['title'] = potential_title
+        
+        # Calculate reading time (average 200 words per minute)
+        word_count = len(text.split())
+        metadata['reading_time_minutes'] = round(word_count / 200, 1)
+        
+        # Calculate complexity score
+        avg_sentence_length = self._calculate_avg_sentence_length(text)
+        metadata['complexity_score'] = min(avg_sentence_length / 20, 1.0)  # Normalize to 0-1
+        
+        # Extract topics from chunks
+        topics = self._extract_topics(chunks)
+        if topics:
+            metadata['topics'] = topics
+        
+        # Extract all entities
+        all_entities = []
+        for chunk in chunks:
+            if chunk.entities:
+                all_entities.extend(chunk.entities)
+        if all_entities:
+            metadata['entities'] = list(set(all_entities))
+        
+        # Calculate average importance score
+        if chunks:
+            avg_importance = sum(chunk.importance_score for chunk in chunks) / len(chunks)
+            metadata['average_importance_score'] = round(avg_importance, 2)
+        
+        # Extract keywords (simple approach)
+        keywords = self._extract_keywords(text)
+        if keywords:
+            metadata['keywords'] = keywords
+        
+        return metadata
+    
+    def _calculate_avg_sentence_length(self, text: str) -> float:
+        """Calculate average sentence length."""
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        if not sentences:
+            return 0.0
+        
+        total_words = sum(len(s.split()) for s in sentences)
+        return total_words / len(sentences)
+    
+    def _extract_topics(self, chunks: List[DocumentChunk]) -> List[str]:
+        """Extract topics from document chunks."""
+        # Simple topic extraction based on common technical terms
+        technical_terms = {
+            'programming': ['api', 'function', 'class', 'method', 'code', 'programming'],
+            'database': ['database', 'sql', 'query', 'table', 'schema'],
+            'web': ['web', 'http', 'html', 'css', 'javascript', 'frontend', 'backend'],
+            'ai': ['ai', 'machine learning', 'neural', 'model', 'training'],
+            'devops': ['deployment', 'docker', 'kubernetes', 'ci/cd', 'infrastructure'],
+            'security': ['security', 'authentication', 'authorization', 'encryption']
+        }
+        
+        all_text = ' '.join(chunk.content.lower() for chunk in chunks)
+        found_topics = []
+        
+        for topic, terms in technical_terms.items():
+            for term in terms:
+                if term in all_text:
+                    found_topics.append(topic)
+                    break
+        
+        return list(set(found_topics))
+    
+    def _extract_keywords(self, text: str) -> List[str]:
+        """Extract keywords from text."""
+        # Simple keyword extraction
+        words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
+        
+        # Remove common stop words
+        stop_words = {
+            'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+            'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had',
+            'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might',
+            'this', 'that', 'these', 'those', 'a', 'an', 'as', 'from', 'not', 'no',
+            'yes', 'if', 'then', 'else', 'when', 'where', 'why', 'how', 'what', 'which'
+        }
+        
+        # Count word frequencies
+        word_freq = {}
+        for word in words:
+            if word not in stop_words:
+                word_freq[word] = word_freq.get(word, 0) + 1
+        
+        # Return top 10 keywords
+        sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
+        return [word for word, freq in sorted_words[:10]]
     
     def process_document(self, file_content: bytes, filename: str) -> Dict[str, Any]:
         """
@@ -324,19 +720,31 @@ class DocumentProcessor:
                     'metadata': {}
                 }
             
-            # Create chunks
-            chunks = self.chunk_text(text)
+            # Create chunks with enhanced processing
+            document_chunks = self.chunk_text(text, strategy="semantic")
             
-            # Calculate metadata
-            metadata = {
-                'file_type': file_type,
-                'file_size': len(file_content),
-                'text_length': len(text),
-                'word_count': len(text.split()),
-                'chunk_count': len(chunks),
-                'processing_engine': 'traditional',
-                'processing_success': True
-            }
+            # Convert to legacy format for compatibility
+            chunks = []
+            for chunk in document_chunks:
+                chunks.append({
+                    'content': chunk.content,
+                    'start_word': chunk.start_position,
+                    'end_word': chunk.end_position,
+                    'token_count': chunk.token_count,
+                    'metadata': {
+                        'chunk_id': chunk.chunk_id,
+                        'chunk_type': chunk.chunk_type,
+                        'importance_score': chunk.importance_score,
+                        'language': chunk.language,
+                        'entities': chunk.entities,
+                        **(chunk.metadata or {})
+                    }
+                })
+            
+            # Create enhanced metadata
+            metadata = self._create_enhanced_metadata(
+                file_type, file_content, text, document_chunks
+            )
             
             return {
                 'success': True,
