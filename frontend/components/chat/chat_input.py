@@ -12,6 +12,7 @@ import asyncio
 
 from services.message_service import message_service, AdvancedMessage, MessageType
 from services.tool_service import tool_service, Tool
+from services.file_service import file_service, FileStatus
 from utils.helpers import generate_id
 from utils.validators import validate_message_data, sanitize_input
 from utils.constants import SUPPORTED_FILE_TYPES, MAX_FILE_SIZE
@@ -197,26 +198,86 @@ class ChatInput:
             on_upload=self.handle_file_upload
         ).props("accept=" + ",".join(SUPPORTED_FILE_TYPES))
     
-    def handle_file_upload(self, event):
-        """Handle file upload."""
+    async def handle_file_upload(self, event):
+        """Handle file upload using file service."""
         for file in event.files:
             if file.size > MAX_FILE_SIZE:
                 ui.notify(f"Datei {file.name} ist zu groß (max {MAX_FILE_SIZE} bytes)", type="error")
+                continue
+            
+            # Validate file using file service
+            validation = file_service.validate_file(file.content, file.name, file.type)
+            if not validation["valid"]:
+                error_msg = "; ".join(validation["errors"])
+                ui.notify(f"Datei {file.name}: {error_msg}", type="error")
                 continue
             
             file_info = {
                 "name": file.name,
                 "type": file.type,
                 "size": file.size,
-                "data": file.content
+                "data": file.content,
+                "file_id": None,
+                "upload_progress": 0.0
             }
             
             self.selected_files.append(file_info)
+            
+            # Start upload with progress tracking
+            await self.upload_file_with_progress(file_info)
         
         self.update_file_preview()
     
+    async def upload_file_with_progress(self, file_info: Dict[str, Any]):
+        """Upload file with progress tracking."""
+        try:
+            file_id = await file_service.upload_file(
+                file_data=file_info["data"],
+                filename=file_info["name"],
+                mime_type=file_info["type"],
+                on_progress=self.update_file_progress,
+                on_complete=self.on_file_upload_complete,
+                on_error=self.on_file_upload_error
+            )
+            
+            if file_id:
+                file_info["file_id"] = file_id
+                
+        except Exception as e:
+            ui.notify(f"Upload fehlgeschlagen für {file_info['name']}: {str(e)}", type="error")
+    
+    def update_file_progress(self, progress):
+        """Update file upload progress."""
+        # Find the file in selected_files and update its progress
+        for file_info in self.selected_files:
+            if file_info["name"] == progress.filename:
+                file_info["upload_progress"] = progress.percentage
+                break
+        
+        self.update_file_preview()
+    
+    def on_file_upload_complete(self, result):
+        """Handle file upload completion."""
+        file_id = result.get("file_id")
+        filename = result.get("filename")
+        
+        ui.notify(f"Datei {filename} erfolgreich hochgeladen", type="positive")
+        
+        # Update file info with file ID
+        for file_info in self.selected_files:
+            if file_info["name"] == filename:
+                file_info["file_id"] = file_id
+                file_info["upload_progress"] = 100.0
+                break
+        
+        self.update_file_preview()
+    
+    def on_file_upload_error(self, error_msg):
+        """Handle file upload error."""
+        ui.notify(f"Upload fehlgeschlagen: {error_msg}", type="error")
+    
     def update_file_preview(self):
-        """Update file preview display."""
+        """Update file preview display with upload progress."""
         if not self.selected_files:
             self.file_preview.classes("hidden")
             return
@@ -228,13 +289,27 @@ class ChatInput:
             ui.label("Ausgewählte Dateien:").classes("text-sm font-medium mb-1")
             
             for i, file_info in enumerate(self.selected_files):
-                with ui.row().classes("items-center justify-between p-1"):
-                    ui.label(f"• {file_info['name']} ({file_info['size']} bytes)").classes("text-sm")
+                with ui.row().classes("items-center justify-between p-2 border rounded"):
+                    # File info
+                    with ui.column().classes("flex-1"):
+                        ui.label(f"• {file_info['name']}").classes("text-sm font-medium")
+                        ui.label(f"{file_info['size']} bytes").classes("text-xs text-gray-500")
+                        
+                        # Upload progress
+                        if file_info["upload_progress"] < 100.0:
+                            with ui.row().classes("items-center space-x-2"):
+                                ui.linear_progress(
+                                    value=file_info["upload_progress"] / 100.0
+                                ).classes("flex-1")
+                                ui.label(f"{file_info['upload_progress']:.1f}%").classes("text-xs")
+                        else:
+                            ui.label("✓ Hochgeladen", type="positive").classes("text-xs")
                     
+                    # Remove button
                     ui.button(
                         icon="close",
                         on_click=lambda idx=i: self.remove_file(idx)
-                    ).classes("w-4 h-4 bg-red-500 text-white text-xs")
+                    ).classes("w-6 h-6 bg-red-500 text-white text-xs")
     
     def remove_file(self, index: int):
         """Remove file from selection."""

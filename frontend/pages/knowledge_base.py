@@ -11,6 +11,7 @@ from datetime import datetime
 import asyncio
 
 from services.knowledge_service import knowledge_service, Document, DocumentStatus, DocumentType, SearchResult
+from services.file_service import file_service, FileStatus
 from components.common.loading_spinner import create_loading_spinner
 from components.common.error_message import create_error_message
 from utils.helpers import generate_id, format_timestamp, format_file_size
@@ -471,10 +472,31 @@ class AdvancedKnowledgeBasePage:
         """Show the search dialog."""
         self.search_dialog.open()
     
-    def handle_file_upload(self, event):
-        """Handle file upload."""
-        # This would handle the file upload event
-        pass
+    async def handle_file_upload(self, event):
+        """Handle file upload using file service."""
+        if not event.files:
+            return
+        
+        file = event.files[0]  # Single file upload
+        
+        # Validate file using file service
+        validation = file_service.validate_file(file.content, file.name, file.type)
+        if not validation["valid"]:
+            error_msg = "; ".join(validation["errors"])
+            ui.notify(f"Datei {file.name}: {error_msg}", type="error")
+            return
+        
+        # Store file info for upload
+        self.upload_file_info = {
+            "name": file.name,
+            "type": file.type,
+            "size": file.size,
+            "data": file.content,
+            "file_id": None,
+            "upload_progress": 0.0
+        }
+        
+        ui.notify(f"Datei {file.name} validiert, bereit zum Hochladen", type="info")
     
     async def upload_document(
         self,
@@ -484,42 +506,77 @@ class AdvancedKnowledgeBasePage:
         tags: str,
         dialog
     ):
-        """Upload a document."""
+        """Upload a document using file service."""
         try:
             # Validate input
             if not name:
                 ui.notify("Name ist erforderlich", type="error")
                 return
             
+            if not hasattr(self, 'upload_file_info') or not self.upload_file_info:
+                ui.notify("Bitte wählen Sie zuerst eine Datei aus", type="error")
+                return
+            
             # Parse tags
             tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
             
-            # Create document data
-            document_data = {
+            # Prepare metadata
+            metadata = {
                 "name": name,
                 "description": description,
                 "category": category,
-                "tags": tag_list
+                "tags": tag_list,
+                "document_type": "knowledge_base"
             }
             
-            # Validate document data
-            validation = validate_document_data(document_data)
-            if not validation["valid"]:
-                ui.notify(f"Dokument-Validierung fehlgeschlagen: {validation['errors']}", type="error")
-                return
+            # Upload file using file service
+            file_id = await file_service.upload_file(
+                file_data=self.upload_file_info["data"],
+                filename=self.upload_file_info["name"],
+                mime_type=self.upload_file_info["type"],
+                endpoint="/api/v1/knowledge/upload",
+                metadata=metadata,
+                on_progress=self.update_upload_progress,
+                on_complete=self.on_upload_complete,
+                on_error=self.on_upload_error
+            )
             
-            # Upload document
-            document = await knowledge_service.upload_document(document_data)
-            
-            if document:
-                ui.notify("Dokument erfolgreich hochgeladen", type="positive")
-                dialog.close()
-                await self.load_documents()
+            if file_id:
+                ui.notify("Dokument wird hochgeladen...", type="info")
+                # The dialog will be closed in on_upload_complete
             else:
                 ui.notify("Fehler beim Hochladen des Dokuments", type="error")
                 
         except Exception as e:
             ui.notify(f"Fehler beim Hochladen des Dokuments: {str(e)}", type="error")
+    
+    def update_upload_progress(self, progress):
+        """Update upload progress."""
+        if hasattr(self, 'upload_file_info'):
+            self.upload_file_info["upload_progress"] = progress.percentage
+            ui.notify(f"Upload: {progress.percentage:.1f}%", type="info")
+    
+    def on_upload_complete(self, result):
+        """Handle upload completion."""
+        file_id = result.get("file_id")
+        filename = result.get("filename")
+        
+        ui.notify(f"Dokument {filename} erfolgreich hochgeladen", type="positive")
+        
+        # Close dialog and refresh documents
+        if hasattr(self, 'upload_dialog'):
+            self.upload_dialog.close()
+        
+        # Clear upload file info
+        if hasattr(self, 'upload_file_info'):
+            del self.upload_file_info
+        
+        # Refresh documents list
+        ui.timer(0.1, self.load_documents, once=True)
+    
+    def on_upload_error(self, error_msg):
+        """Handle upload error."""
+        ui.notify(f"Upload fehlgeschlagen: {error_msg}", type="error")
     
     async def perform_search(self, event, query: str, dialog):
         """Perform document search."""
