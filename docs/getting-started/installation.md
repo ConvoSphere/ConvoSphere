@@ -1,361 +1,656 @@
 # Installation Guide
 
-## Overview
+This comprehensive installation guide covers all aspects of setting up the AI Assistant Platform, from development environments to production deployments.
 
-This guide provides detailed installation instructions for the AI Assistant Platform in different environments.
+## 📋 Table of Contents
 
-## Prerequisites
+- [System Requirements](#system-requirements)
+- [Installation Methods](#installation-methods)
+- [Development Installation](#development-installation)
+- [Production Installation](#production-installation)
+- [Docker Installation](#docker-installation)
+- [Configuration](#configuration)
+- [Verification](#verification)
+- [Troubleshooting](#troubleshooting)
 
-### System Requirements
+## 🖥️ System Requirements
 
-- **Python**: 3.11 or higher
-- **Memory**: Minimum 4GB RAM (8GB recommended)
-- **Storage**: 2GB free space
-- **Network**: Internet connection for dependencies
+### Minimum Requirements
+- **CPU**: 2 cores
+- **RAM**: 4 GB
+- **Storage**: 10 GB free space
+- **OS**: Linux, macOS, or Windows 10+
 
-### Required Services
+### Recommended Requirements
+- **CPU**: 4+ cores
+- **RAM**: 8+ GB
+- **Storage**: 50+ GB SSD
+- **OS**: Ubuntu 20.04+, macOS 12+, or Windows 11+
 
-- **PostgreSQL**: 13 or higher
-- **Redis**: 6 or higher
-- **Weaviate**: 1.19 or higher (optional, for vector search)
+### Software Dependencies
+- **Python**: 3.13+
+- **PostgreSQL**: 14+
+- **Redis**: 6+
+- **Docker**: 20.10+ (optional but recommended)
 
-## Installation Methods
+## 🚀 Installation Methods
 
-### 1. Local Development Installation
+Choose the installation method that best fits your needs:
 
-#### Step 1: Clone Repository
+| Method | Use Case | Complexity | Time |
+|--------|----------|------------|------|
+| [Docker](#docker-installation) | Production, Quick Start | Low | 5 minutes |
+| [Development](#development-installation) | Development, Customization | Medium | 15 minutes |
+| [Production](#production-installation) | Production, High Performance | High | 30 minutes |
+
+## 🔧 Development Installation
+
+### Step 1: Clone the Repository
 
 ```bash
+# Clone the repository
 git clone https://github.com/your-org/chatassistant.git
 cd chatassistant
+
+# Verify the clone
+ls -la
 ```
 
-#### Step 2: Create Virtual Environment
+### Step 2: Set Up Python Environment
 
 ```bash
+# Navigate to backend
+cd backend
+
 # Create virtual environment
-python -m venv venv
+python3 -m venv venv
 
 # Activate virtual environment
-# On Windows:
-venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+# Upgrade pip
+pip install --upgrade pip
+
+# Install dependencies
+pip install -r requirements-basic.txt
+
+# For development, also install dev dependencies
+pip install -r requirements-dev.txt
 ```
 
-#### Step 3: Install Dependencies
+### Step 3: Install System Dependencies
 
+#### Ubuntu/Debian
 ```bash
-# Install backend dependencies
-cd backend
-pip install -r requirements.txt
-pip install -r requirements-test.txt
-
-# Install frontend dependencies
-cd ../frontend
-pip install -r requirements.txt
-```
-
-#### Step 4: Setup Environment Variables
-
-Create `.env` file in the backend directory:
-
-```bash
-# Backend configuration
-APP_NAME=AI Assistant Platform
-DEBUG=true
-ENVIRONMENT=development
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/chatassistant
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Weaviate (optional)
-WEAVIATE_URL=http://localhost:8080
-
-# Security
-SECRET_KEY=your-secret-key-here
-JWT_SECRET_KEY=your-jwt-secret-key-here
-
-# AI Providers
-OPENAI_API_KEY=your-openai-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
-```
-
-#### Step 5: Setup Database
-
-```bash
-# Install PostgreSQL (Ubuntu/Debian)
+# Update package list
 sudo apt update
+
+# Install PostgreSQL
 sudo apt install postgresql postgresql-contrib
+
+# Install Redis
+sudo apt install redis-server
+
+# Install build dependencies
+sudo apt install build-essential python3-dev libpq-dev
+```
+
+#### macOS
+```bash
+# Install Homebrew if not already installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install PostgreSQL
+brew install postgresql
+
+# Install Redis
+brew install redis
+
+# Start services
+brew services start postgresql
+brew services start redis
+```
+
+#### Windows
+```bash
+# Install PostgreSQL from https://www.postgresql.org/download/windows/
+# Install Redis from https://redis.io/download#redis-on-windows
+# Or use WSL2 for a Linux-like environment
+```
+
+### Step 4: Configure Services
+
+#### PostgreSQL Setup
+```bash
+# Start PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
 
 # Create database and user
 sudo -u postgres psql
-CREATE DATABASE chatassistant;
-CREATE USER chatassistant_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE chatassistant TO chatassistant_user;
-\q
 
-# Run migrations
-cd backend
-alembic upgrade head
+# In PostgreSQL prompt:
+CREATE DATABASE chatassistant;
+CREATE USER chatassistant_user WITH PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE chatassistant TO chatassistant_user;
+ALTER USER chatassistant_user CREATEDB;
+\q
 ```
 
-#### Step 6: Setup Redis
-
+#### Redis Setup
 ```bash
-# Install Redis (Ubuntu/Debian)
-sudo apt install redis-server
-
 # Start Redis
 sudo systemctl start redis-server
 sudo systemctl enable redis-server
+
+# Test Redis connection
+redis-cli ping
+# Should return: PONG
 ```
 
-#### Step 7: Run the Application
-
+#### Weaviate Setup
 ```bash
-# Terminal 1: Start backend
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# Using Docker (recommended)
+docker run -d \
+  --name weaviate \
+  -p 8080:8080 \
+  -e QUERY_DEFAULTS_LIMIT=25 \
+  -e AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true \
+  -e PERSISTENCE_DATA_PATH='/var/lib/weaviate' \
+  -e DEFAULT_VECTORIZER_MODULE='none' \
+  -e ENABLE_MODULES='text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai' \
+  -e CLUSTER_HOSTNAME='node1' \
+  semitechnologies/weaviate:1.22.4
 
-# Terminal 2: Start frontend
-cd frontend
-python main.py
+# Verify Weaviate is running
+curl http://localhost:8080/v1/.well-known/ready
 ```
 
-### 2. Docker Installation
-
-#### Step 1: Install Docker
+### Step 5: Configure Environment
 
 ```bash
-# Install Docker (Ubuntu/Debian)
-sudo apt update
-sudo apt install docker.io docker-compose
+# Copy environment template
+cp .env.example .env
 
-# Add user to docker group
-sudo usermod -aG docker $USER
-newgrp docker
-```
-
-#### Step 2: Clone and Run
-
-```bash
-git clone https://github.com/your-org/chatassistant.git
-cd chatassistant
-
-# Copy environment file
-cp env.example .env
-
-# Edit .env with your configuration
+# Edit environment file
 nano .env
-
-# Start services
-docker-compose up -d
 ```
 
-#### Step 3: Verify Installation
+**Environment Configuration:**
+
+```env
+# =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+DATABASE_URL=postgresql://chatassistant_user:your_secure_password@localhost:5432/chatassistant
+
+# =============================================================================
+# REDIS CONFIGURATION
+# =============================================================================
+REDIS_URL=redis://localhost:6379/0
+
+# =============================================================================
+# WEAVIATE CONFIGURATION
+# =============================================================================
+WEAVIATE_URL=http://localhost:8080
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# =============================================================================
+# AI PROVIDER CONFIGURATION
+# =============================================================================
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+LITELLM_MODEL=openai/gpt-4
+
+# =============================================================================
+# APPLICATION CONFIGURATION
+# =============================================================================
+DEBUG=true
+LOG_LEVEL=INFO
+CORS_ORIGINS=["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000"]
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW=60
+
+# =============================================================================
+# FILE UPLOAD
+# =============================================================================
+MAX_FILE_SIZE=10485760  # 10MB
+ALLOWED_FILE_TYPES=pdf,doc,docx,txt,md
+```
+
+### Step 6: Initialize Database
 
 ```bash
-# Check service status
-docker-compose ps
+# Run database migrations
+alembic upgrade head
 
-# View logs
-docker-compose logs -f backend
+# Create initial admin user
+python scripts/create_admin.py
 ```
 
-### 3. Production Installation
+### Step 7: Start the Application
 
-#### Step 1: Server Setup
+```bash
+# Start the development server
+python main.py
+
+# Or use uvicorn directly
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## 🏭 Production Installation
+
+### Step 1: Server Preparation
 
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
 
 # Install required packages
-sudo apt install -y python3 python3-pip python3-venv postgresql redis-server nginx
+sudo apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib redis-server nginx
+
+# Install Docker (for Weaviate)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
 ```
 
-#### Step 2: Application Setup
+### Step 2: Create Application User
 
 ```bash
 # Create application user
 sudo useradd -m -s /bin/bash chatassistant
-sudo su - chatassistant
+sudo usermod -aG docker chatassistant
 
+# Switch to application user
+sudo su - chatassistant
+```
+
+### Step 3: Deploy Application
+
+```bash
 # Clone repository
 git clone https://github.com/your-org/chatassistant.git
 cd chatassistant
 
-# Setup virtual environment
+# Set up Python environment
+cd backend
 python3 -m venv venv
 source venv/bin/activate
+pip install -r requirements.txt
 
-# Install dependencies
-pip install -r backend/requirements.txt
-pip install -r frontend/requirements.txt
+# Configure environment
+cp .env.example .env
+nano .env
 ```
 
-#### Step 3: Database Setup
+### Step 4: Configure Services
+
+#### PostgreSQL Production Configuration
+```bash
+# Edit PostgreSQL configuration
+sudo nano /etc/postgresql/14/main/postgresql.conf
+
+# Add/modify these settings:
+max_connections = 200
+shared_buffers = 256MB
+effective_cache_size = 1GB
+work_mem = 4MB
+maintenance_work_mem = 64MB
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+```
+
+#### Redis Production Configuration
+```bash
+# Edit Redis configuration
+sudo nano /etc/redis/redis.conf
+
+# Add/modify these settings:
+maxmemory 512mb
+maxmemory-policy allkeys-lru
+save 900 1
+save 300 10
+save 60 10000
+
+# Restart Redis
+sudo systemctl restart redis-server
+```
+
+### Step 5: Set Up Systemd Service
 
 ```bash
-# Create database
-sudo -u postgres createdb chatassistant
-sudo -u postgres createuser chatassistant_user
-
-# Set password
-sudo -u postgres psql
-ALTER USER chatassistant_user WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE chatassistant TO chatassistant_user;
-\q
+# Create systemd service file
+sudo nano /etc/systemd/system/chatassistant.service
 ```
 
-#### Step 4: Systemd Service
-
-Create service file `/etc/systemd/system/chatassistant.service`:
-
+**Service Configuration:**
 ```ini
 [Unit]
 Description=AI Assistant Platform
-After=network.target
+After=network.target postgresql.service redis-server.service
 
 [Service]
 Type=simple
 User=chatassistant
+Group=chatassistant
 WorkingDirectory=/home/chatassistant/chatassistant/backend
-Environment=PATH=/home/chatassistant/chatassistant/venv/bin
-ExecStart=/home/chatassistant/chatassistant/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Environment=PATH=/home/chatassistant/chatassistant/backend/venv/bin
+ExecStart=/home/chatassistant/chatassistant/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-#### Step 5: Nginx Configuration
+```bash
+# Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable chatassistant
+sudo systemctl start chatassistant
+```
 
-Create `/etc/nginx/sites-available/chatassistant`:
+### Step 6: Configure Nginx
 
+```bash
+# Create Nginx configuration
+sudo nano /etc/nginx/sites-available/chatassistant
+```
+
+**Nginx Configuration:**
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    location /static/ {
+        alias /home/chatassistant/chatassistant/backend/static/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
 }
 ```
 
-#### Step 6: Enable Services
-
 ```bash
-# Enable and start services
-sudo systemctl enable chatassistant
-sudo systemctl start chatassistant
-
-# Enable nginx site
+# Enable site
 sudo ln -s /etc/nginx/sites-available/chatassistant /etc/nginx/sites-enabled/
+sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## Verification
+## 🐳 Docker Installation
 
-### Health Check
+### Option 1: Using Docker Compose (Recommended)
 
 ```bash
-# Check backend health
-curl http://localhost:8000/health
+# Clone repository
+git clone https://github.com/your-org/chatassistant.git
+cd chatassistant
 
-# Expected response:
-{
-  "status": "healthy",
-  "app_name": "AI Assistant Platform",
-  "version": "1.0.0",
-  "environment": "development"
-}
+# Configure environment
+cp .env.example .env
+nano .env
+
+# Start all services
+docker-compose up -d
+
+# Check status
+docker-compose ps
 ```
 
-### API Documentation
+### Option 2: Manual Docker Setup
 
-Access the interactive API documentation:
+```bash
+# Create network
+docker network create chatassistant-network
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+# Start PostgreSQL
+docker run -d \
+  --name postgres \
+  --network chatassistant-network \
+  -e POSTGRES_DB=chatassistant \
+  -e POSTGRES_USER=chatassistant \
+  -e POSTGRES_PASSWORD=your_password \
+  -v postgres_data:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  postgres:15
 
-### Frontend
+# Start Redis
+docker run -d \
+  --name redis \
+  --network chatassistant-network \
+  -v redis_data:/data \
+  -p 6379:6379 \
+  redis:7-alpine
 
-Access the web interface:
+# Start Weaviate
+docker run -d \
+  --name weaviate \
+  --network chatassistant-network \
+  -p 8080:8080 \
+  -e QUERY_DEFAULTS_LIMIT=25 \
+  -e AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true \
+  -e PERSISTENCE_DATA_PATH='/var/lib/weaviate' \
+  -e DEFAULT_VECTORIZER_MODULE='none' \
+  -e ENABLE_MODULES='text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai' \
+  -e CLUSTER_HOSTNAME='node1' \
+  semitechnologies/weaviate:1.22.4
 
-- **Development**: http://localhost:8080
-- **Production**: http://your-domain.com
+# Build and run application
+docker build -t chatassistant .
+docker run -d \
+  --name chatassistant-app \
+  --network chatassistant-network \
+  -p 8000:8000 \
+  --env-file .env \
+  chatassistant
+```
 
-## Troubleshooting
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | - | Yes |
+| `REDIS_URL` | Redis connection string | - | Yes |
+| `WEAVIATE_URL` | Weaviate server URL | - | Yes |
+| `SECRET_KEY` | JWT secret key | - | Yes |
+| `DEBUG` | Debug mode | `false` | No |
+| `LOG_LEVEL` | Logging level | `INFO` | No |
+| `CORS_ORIGINS` | Allowed CORS origins | `[]` | No |
+
+### Security Configuration
+
+```bash
+# Generate secure secret key
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# Set up SSL certificates (production)
+sudo certbot --nginx -d your-domain.com
+```
+
+### Performance Tuning
+
+```bash
+# PostgreSQL tuning
+sudo nano /etc/postgresql/14/main/postgresql.conf
+
+# Redis tuning
+sudo nano /etc/redis/redis.conf
+
+# Application tuning
+# Adjust worker processes in systemd service
+```
+
+## ✅ Verification
+
+### Health Checks
+
+```bash
+# Basic health check
+curl http://localhost:8000/health
+
+# Detailed health check
+curl http://localhost:8000/api/v1/health/detailed
+
+# Database connection test
+curl http://localhost:8000/api/v1/health/database
+
+# Redis connection test
+curl http://localhost:8000/api/v1/health/redis
+
+# Weaviate connection test
+curl http://localhost:8000/api/v1/health/weaviate
+```
+
+### API Testing
+
+```bash
+# Test user registration
+curl -X POST "http://localhost:8000/api/v1/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "testpassword123"}'
+
+# Test user login
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "testpassword123"}'
+```
+
+### Load Testing
+
+```bash
+# Install Apache Bench
+sudo apt install apache2-utils
+
+# Run load test
+ab -n 1000 -c 10 http://localhost:8000/health
+```
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-#### Database Connection Error
-
+#### Database Connection Issues
 ```bash
 # Check PostgreSQL status
 sudo systemctl status postgresql
 
 # Check connection
 psql -h localhost -U chatassistant_user -d chatassistant
+
+# Check logs
+sudo tail -f /var/log/postgresql/postgresql-14-main.log
 ```
 
-#### Redis Connection Error
-
+#### Redis Connection Issues
 ```bash
 # Check Redis status
 sudo systemctl status redis-server
 
-# Test Redis connection
+# Test connection
 redis-cli ping
+
+# Check logs
+sudo tail -f /var/log/redis/redis-server.log
 ```
 
-#### Port Already in Use
-
+#### Application Issues
 ```bash
-# Find process using port
-sudo lsof -i :8000
-
-# Kill process
-sudo kill -9 <PID>
-```
-
-### Logs
-
-```bash
-# Backend logs
-tail -f backend/logs/app.log
-
-# System logs
+# Check application logs
 sudo journalctl -u chatassistant -f
 
-# Docker logs
-docker-compose logs -f backend
+# Check application status
+sudo systemctl status chatassistant
+
+# Restart application
+sudo systemctl restart chatassistant
 ```
 
-## Next Steps
+#### Docker Issues
+```bash
+# Check container status
+docker ps -a
+
+# Check container logs
+docker logs chatassistant-app
+
+# Restart containers
+docker-compose restart
+```
+
+### Performance Issues
+
+#### High Memory Usage
+```bash
+# Check memory usage
+free -h
+
+# Check PostgreSQL memory
+ps aux | grep postgres
+
+# Optimize PostgreSQL settings
+sudo nano /etc/postgresql/14/main/postgresql.conf
+```
+
+#### Slow Response Times
+```bash
+# Check CPU usage
+top
+
+# Check disk I/O
+iotop
+
+# Check network connections
+netstat -tulpn
+```
+
+### Getting Help
+
+- **Documentation**: Check the [API Reference](../api/overview.md) and [Architecture](../architecture/overview.md) sections
+- **Logs**: Check application and service logs for error messages
+- **Issues**: Report problems on [GitHub Issues](https://github.com/your-org/chatassistant/issues)
+- **Community**: Join our [Discord server](https://discord.gg/your-server)
+
+## 📚 Next Steps
 
 After successful installation:
 
-1. **Configure AI Providers**: Add API keys for OpenAI, Anthropic, etc.
-2. **Setup Users**: Create admin user and configure permissions
-3. **Upload Documents**: Add documents to the knowledge base
-4. **Configure Tools**: Setup MCP servers and external tools
-5. **Monitor Performance**: Setup monitoring and alerting
+1. **Configure AI Providers**: Add your OpenAI or Anthropic API keys
+2. **Set Up Frontend**: Follow the [Frontend Setup Guide](../architecture/frontend.md)
+3. **Create First Assistant**: Use the API to create your first AI assistant
+4. **Explore Features**: Check out the [Features Documentation](../features/ai-integration.md)
+5. **Monitor Performance**: Set up monitoring and alerting for production
 
-## Support
+---
 
-For installation issues:
+<div align="center">
 
-- **Documentation**: Check this guide and other documentation
-- **Issues**: Create GitHub issues for bugs
-- **Discussions**: Use GitHub Discussions for questions 
+**Ready to configure your installation?** [Configuration Guide →](configuration.md)
+
+</div> 

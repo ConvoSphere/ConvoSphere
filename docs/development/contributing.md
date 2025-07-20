@@ -1,266 +1,704 @@
 # Contributing Guide
 
-## Overview
+Thank you for your interest in contributing to the AI Assistant Platform! This guide will help you get started with contributing to the project, from setting up your development environment to submitting pull requests.
 
-We welcome contributions to the AI Assistant Platform! This guide outlines the development standards, commit guidelines, and contribution process.
+## 📋 Table of Contents
 
-## Development Standards
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Code Style](#code-style)
+- [Testing](#testing)
+- [Pull Request Process](#pull-request-process)
+- [Issue Reporting](#issue-reporting)
+- [Documentation](#documentation)
+- [Community Guidelines](#community-guidelines)
 
-### Code Style
+## 🚀 Getting Started
 
-- **Python**: Follow PEP 8 standards
-- **Type Hints**: Use type annotations for all functions and methods
-- **Docstrings**: Include comprehensive docstrings for all public functions
-- **Imports**: Organize imports (standard library, third-party, local)
+### Prerequisites
 
-### Modularization
+Before you begin contributing, ensure you have:
 
-- **Use Libraries**: Leverage existing libraries instead of reinventing functionality
-- **Separation of Concerns**: Keep modules focused on specific functionality
-- **Dependency Injection**: Use dependency injection for better testability
-- **Interface Design**: Design clear interfaces between components
+- **Python 3.13+** installed
+- **Git** installed and configured
+- **PostgreSQL 14+** installed
+- **Redis 6+** installed
+- **Docker** (optional but recommended)
 
-### File Organization
+### Fork and Clone
 
+1. **Fork the repository**
+   - Go to [GitHub Repository](https://github.com/your-org/chatassistant)
+   - Click the "Fork" button in the top right
+   - This creates your own copy of the repository
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/chatassistant.git
+   cd chatassistant
+   ```
+
+3. **Add upstream remote**
+   ```bash
+   git remote add upstream https://github.com/your-org/chatassistant.git
+   ```
+
+4. **Verify remotes**
+   ```bash
+   git remote -v
+   # Should show:
+   # origin    https://github.com/YOUR_USERNAME/chatassistant.git (fetch)
+   # origin    https://github.com/YOUR_USERNAME/chatassistant.git (push)
+   # upstream  https://github.com/your-org/chatassistant.git (fetch)
+   # upstream  https://github.com/your-org/chatassistant.git (push)
+   ```
+
+## 🔧 Development Setup
+
+### Environment Setup
+
+1. **Create virtual environment**
+   ```bash
+   cd backend
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements-dev.txt
+   ```
+
+3. **Install pre-commit hooks**
+   ```bash
+   pre-commit install
+   ```
+
+4. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your development settings
+   ```
+
+### Database Setup
+
+1. **Create development database**
+   ```bash
+   # Connect to PostgreSQL
+   sudo -u postgres psql
+   
+   # Create database and user
+   CREATE DATABASE chatassistant_dev;
+   CREATE USER chatassistant_dev WITH PASSWORD 'dev_password';
+   GRANT ALL PRIVILEGES ON DATABASE chatassistant_dev TO chatassistant_dev;
+   \q
+   ```
+
+2. **Run migrations**
+   ```bash
+   alembic upgrade head
+   ```
+
+3. **Seed development data**
+   ```bash
+   python scripts/seed_dev_data.py
+   ```
+
+### Service Setup
+
+1. **Start Redis**
+   ```bash
+   sudo systemctl start redis-server
+   # Or using Docker:
+   docker run -d --name redis-dev -p 6379:6379 redis:7-alpine
+   ```
+
+2. **Start Weaviate**
+   ```bash
+   docker run -d \
+     --name weaviate-dev \
+     -p 8080:8080 \
+     -e QUERY_DEFAULTS_LIMIT=25 \
+     -e AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true \
+     -e PERSISTENCE_DATA_PATH='/var/lib/weaviate' \
+     -e DEFAULT_VECTORIZER_MODULE='none' \
+     -e ENABLE_MODULES='text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai' \
+     -e CLUSTER_HOSTNAME='node1' \
+     semitechnologies/weaviate:1.22.4
+   ```
+
+### Running the Application
+
+1. **Start the development server**
+   ```bash
+   # From the backend directory
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+2. **Verify setup**
+   ```bash
+   # Test health endpoint
+   curl http://localhost:8000/health
+   
+   # Test API documentation
+   open http://localhost:8000/docs
+   ```
+
+## 📝 Code Style
+
+### Python Code Style
+
+We follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) and use several tools to maintain code quality:
+
+#### Black (Code Formatter)
+```bash
+# Format all Python files
+black .
+
+# Format specific file
+black app/api/endpoints/users.py
+
+# Check formatting without making changes
+black --check .
 ```
-backend/
-├── app/
-│   ├── api/          # API endpoints
-│   ├── core/         # Core configuration and utilities
-│   ├── models/       # Database models
-│   ├── services/     # Business logic
-│   ├── tools/        # Tool implementations
-│   └── utils/        # Utility functions
+
+#### isort (Import Sorter)
+```bash
+# Sort imports in all files
+isort .
+
+# Sort imports in specific file
+isort app/api/endpoints/users.py
+
+# Check import sorting without making changes
+isort --check-only .
 ```
 
-## Commit Guidelines
+#### Flake8 (Linter)
+```bash
+# Run linter
+flake8 .
 
-### Commit Message Format
-
-Use conventional commit format:
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
+# Run with specific configuration
+flake8 --config .flake8 app/
 ```
 
-### Types
+### Code Style Guidelines
 
-- **feat**: New feature
-- **fix**: Bug fix
-- **docs**: Documentation changes
-- **style**: Code style changes (formatting, etc.)
-- **refactor**: Code refactoring
-- **test**: Adding or updating tests
-- **chore**: Maintenance tasks
+#### Naming Conventions
+```python
+# Variables and functions: snake_case
+user_name = "john_doe"
+def get_user_by_id(user_id: str):
+    pass
 
-### Examples
+# Classes: PascalCase
+class UserService:
+    pass
 
-```
-feat(auth): add JWT token refresh endpoint
+# Constants: UPPER_SNAKE_CASE
+MAX_RETRY_ATTEMPTS = 3
+DEFAULT_TIMEOUT = 30
 
-fix(api): resolve rate limiting issue in user endpoints
-
-docs(api): update authentication documentation
-
-refactor(services): extract common validation logic
-
-test(assistants): add integration tests for assistant creation
+# Private methods: _prefix
+def _internal_helper():
+    pass
 ```
 
-### Commit Frequency
+#### Type Hints
+```python
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
 
-- **Regular Commits**: Make commits regularly with clear, focused changes
-- **Atomic Changes**: Each commit should represent a single logical change
-- **Descriptive Messages**: Write clear, descriptive commit messages
+def get_user(user_id: str) -> Optional[User]:
+    pass
 
-## Development Workflow
+def create_users(users: List[UserCreate]) -> List[User]:
+    pass
 
-### 1. Setup Development Environment
+def update_user_data(user_id: str, data: Dict[str, Any]) -> User:
+    pass
+```
+
+#### Docstrings
+```python
+def create_user(user_data: UserCreate) -> User:
+    """
+    Create a new user in the system.
+    
+    Args:
+        user_data: User creation data
+        
+    Returns:
+        User: The created user object
+        
+    Raises:
+        ValueError: If user data is invalid
+        ConflictError: If user already exists
+    """
+    pass
+```
+
+#### Error Handling
+```python
+from fastapi import HTTPException
+from app.core.exceptions import CustomException
+
+def process_user_data(user_id: str) -> Dict[str, Any]:
+    try:
+        user = get_user(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"user": user, "status": "success"}
+    except CustomException as e:
+        logger.error(f"Custom error processing user {user_id}: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error processing user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+```
+
+### Pre-commit Hooks
+
+We use pre-commit hooks to automatically check code quality:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.3.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+```
+
+## 🧪 Testing
+
+### Running Tests
 
 ```bash
-# Clone repository
-git clone https://github.com/your-org/chatassistant.git
-cd chatassistant
-
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-test.txt
-
-# Setup pre-commit hooks
-pre-commit install
-```
-
-### 2. Create Feature Branch
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-### 3. Make Changes
-
-- Follow coding standards
-- Write tests for new functionality
-- Update documentation as needed
-
-### 4. Test Your Changes
-
-```bash
-# Run tests
+# Run all tests
 pytest
 
-# Run linting
-flake8
-black --check .
+# Run with coverage
+pytest --cov=app --cov-report=html
 
-# Run type checking
-mypy .
+# Run specific test file
+pytest tests/test_users.py
+
+# Run specific test function
+pytest tests/test_users.py::test_create_user
+
+# Run tests with verbose output
+pytest -v
+
+# Run tests in parallel
+pytest -n auto
 ```
-
-### 5. Commit Changes
-
-```bash
-git add .
-git commit -m "feat(scope): description of changes"
-```
-
-### 6. Push and Create Pull Request
-
-```bash
-git push origin feature/your-feature-name
-```
-
-## Testing Guidelines
-
-### Test Coverage
-
-- **Unit Tests**: Test individual functions and methods
-- **Integration Tests**: Test component interactions
-- **End-to-End Tests**: Test complete user workflows
 
 ### Test Structure
 
-```python
-def test_function_name():
-    """Test description."""
-    # Arrange
-    # Act
-    # Assert
+```
+tests/
+├── conftest.py              # Test configuration and fixtures
+├── test_api/                # API endpoint tests
+│   ├── test_auth.py
+│   ├── test_users.py
+│   └── test_assistants.py
+├── test_services/           # Service layer tests
+│   ├── test_user_service.py
+│   └── test_auth_service.py
+├── test_models/             # Model tests
+│   └── test_user.py
+└── test_integration/        # Integration tests
+    └── test_database.py
 ```
 
-### Mocking
+### Writing Tests
 
-- Mock external dependencies (databases, APIs)
-- Use dependency injection for better testability
-- Test error conditions and edge cases
+#### Unit Tests
+```python
+import pytest
+from unittest.mock import Mock, patch
+from app.services.user_service import UserService
+from app.models.user import User
 
-## Documentation Standards
+class TestUserService:
+    def test_create_user_success(self):
+        """Test successful user creation."""
+        # Arrange
+        user_data = {
+            "email": "test@example.com",
+            "password": "securepassword123",
+            "first_name": "John",
+            "last_name": "Doe"
+        }
+        
+        # Act
+        user = UserService.create_user(user_data)
+        
+        # Assert
+        assert user.email == user_data["email"]
+        assert user.first_name == user_data["first_name"]
+        assert user.last_name == user_data["last_name"]
+        assert user.is_active is True
 
-### Code Documentation
+    def test_create_user_duplicate_email(self):
+        """Test user creation with duplicate email."""
+        # Arrange
+        user_data = {"email": "existing@example.com", "password": "password123"}
+        
+        # Act & Assert
+        with pytest.raises(ValueError, match="Email already exists"):
+            UserService.create_user(user_data)
+```
 
-- **Docstrings**: Use Google or NumPy docstring format
-- **Type Hints**: Include type annotations
-- **Examples**: Provide usage examples for complex functions
+#### Integration Tests
+```python
+import pytest
+from fastapi.testclient import TestClient
+from app.main import app
 
-### API Documentation
+client = TestClient(app)
 
-- **OpenAPI**: Keep OpenAPI specifications up to date
-- **Examples**: Include request/response examples
-- **Error Codes**: Document all possible error responses
+def test_create_user_integration():
+    """Test user creation through API."""
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "integration@example.com",
+            "password": "securepassword123",
+            "first_name": "Integration",
+            "last_name": "Test"
+        }
+    )
+    
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == "integration@example.com"
+    assert "id" in data
+```
 
-### User Documentation
+#### Test Fixtures
+```python
+# conftest.py
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.main import app
+from app.core.database import get_db
+from app.models.user import User
 
-- **Clear Language**: Write in clear, concise language
-- **Examples**: Include practical examples
-- **Screenshots**: Add screenshots for UI features
+@pytest.fixture
+def test_db():
+    """Create test database."""
+    engine = create_engine("sqlite:///./test.db")
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+    
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)
 
-## Code Review Process
+@pytest.fixture
+def client(test_db):
+    """Create test client with test database."""
+    def override_get_db():
+        try:
+            yield test_db
+        finally:
+            test_db.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    return TestClient(app)
 
-### Review Checklist
+@pytest.fixture
+def test_user(test_db):
+    """Create test user."""
+    user = User(
+        email="test@example.com",
+        hashed_password="hashed_password",
+        first_name="Test",
+        last_name="User"
+    )
+    test_db.add(user)
+    test_db.commit()
+    test_db.refresh(user)
+    return user
+```
 
-- [ ] Code follows style guidelines
-- [ ] Tests are included and passing
-- [ ] Documentation is updated
-- [ ] No security vulnerabilities
-- [ ] Performance considerations addressed
-- [ ] Error handling is appropriate
+### Test Coverage
 
-### Review Comments
+We aim for at least 90% test coverage. To check coverage:
 
-- Be constructive and specific
-- Suggest improvements rather than just pointing out issues
-- Consider the broader impact of changes
+```bash
+# Generate coverage report
+pytest --cov=app --cov-report=html --cov-report=term
 
-## Security Guidelines
+# View coverage report
+open htmlcov/index.html
+```
 
-### Input Validation
+## 🔄 Pull Request Process
 
-- Validate all user inputs
-- Use parameterized queries for database operations
-- Sanitize data before processing
+### Before Submitting
 
-### Authentication & Authorization
+1. **Update your fork**
+   ```bash
+   git fetch upstream
+   git checkout main
+   git merge upstream/main
+   ```
 
-- Implement proper authentication checks
-- Use role-based access control
-- Validate permissions for all operations
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/your-bug-fix
+   ```
 
-### Data Protection
+3. **Make your changes**
+   - Write your code following the style guidelines
+   - Add tests for new functionality
+   - Update documentation if needed
 
-- Encrypt sensitive data
-- Use secure communication protocols
-- Follow data protection regulations
+4. **Run tests and checks**
+   ```bash
+   # Run all tests
+   pytest
+   
+   # Run pre-commit hooks
+   pre-commit run --all-files
+   
+   # Check code formatting
+   black --check .
+   isort --check-only .
+   flake8 .
+   ```
 
-## Performance Guidelines
+### Submitting the PR
 
-### Database Optimization
+1. **Commit your changes**
+   ```bash
+   git add .
+   git commit -m "feat: add user profile management"
+   ```
 
-- Use appropriate indexes
-- Optimize queries
-- Implement connection pooling
+2. **Push to your fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-### Caching
+3. **Create Pull Request**
+   - Go to your fork on GitHub
+   - Click "Compare & pull request"
+   - Fill out the PR template
 
-- Cache frequently accessed data
-- Use Redis for session management
-- Implement appropriate cache invalidation
+### PR Template
 
-### Code Optimization
+```markdown
+## Description
+Brief description of the changes made.
 
-- Profile code for bottlenecks
-- Use async/await for I/O operations
-- Optimize memory usage
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
 
-## Release Process
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
 
-### Versioning
+## Checklist
+- [ ] Code follows the style guidelines
+- [ ] Self-review of code completed
+- [ ] Code is commented, particularly in hard-to-understand areas
+- [ ] Corresponding changes to documentation made
+- [ ] No new warnings generated
+- [ ] Tests added that prove fix is effective or feature works
 
-Use semantic versioning (MAJOR.MINOR.PATCH):
+## Screenshots (if applicable)
+Add screenshots to help explain your changes.
 
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
+## Additional Notes
+Any additional information that reviewers should know.
+```
 
-### Release Checklist
+### PR Review Process
 
-- [ ] All tests passing
-- [ ] Documentation updated
-- [ ] Changelog updated
-- [ ] Version bumped
-- [ ] Release notes prepared
+1. **Automated Checks**
+   - CI/CD pipeline runs tests
+   - Code quality checks pass
+   - Coverage requirements met
 
-## Getting Help
+2. **Code Review**
+   - At least one maintainer reviews
+   - Address any feedback
+   - Make requested changes
 
-- **Issues**: Create GitHub issues for bugs or feature requests
-- **Discussions**: Use GitHub Discussions for questions
-- **Documentation**: Check existing documentation first
+3. **Merge**
+   - PR approved and merged
+   - Branch deleted
+   - Changes deployed
 
-## Code of Conduct
+## 🐛 Issue Reporting
+
+### Before Reporting
+
+1. **Check existing issues**
+   - Search for similar issues
+   - Check if it's already been reported
+
+2. **Try to reproduce**
+   - Test on latest version
+   - Check if it's environment-specific
+
+### Issue Template
+
+```markdown
+## Bug Report
+
+### Description
+Clear and concise description of the bug.
+
+### Steps to Reproduce
+1. Go to '...'
+2. Click on '...'
+3. Scroll down to '...'
+4. See error
+
+### Expected Behavior
+What you expected to happen.
+
+### Actual Behavior
+What actually happened.
+
+### Environment
+- OS: [e.g. Ubuntu 20.04]
+- Python Version: [e.g. 3.13.0]
+- Database: [e.g. PostgreSQL 15]
+- Redis: [e.g. 7.0]
+
+### Additional Context
+Any other context about the problem.
+
+### Screenshots
+If applicable, add screenshots to help explain your problem.
+```
+
+## 📚 Documentation
+
+### Documentation Standards
+
+1. **Code Documentation**
+   - Use docstrings for all functions and classes
+   - Follow Google or NumPy docstring format
+   - Include type hints
+
+2. **API Documentation**
+   - Use OpenAPI/Swagger annotations
+   - Provide clear examples
+   - Document all parameters and responses
+
+3. **README Updates**
+   - Update README for new features
+   - Include usage examples
+   - Update installation instructions
+
+### Documentation Structure
+
+```
+docs/
+├── getting-started/          # Getting started guides
+├── api/                     # API documentation
+├── development/             # Development guides
+├── deployment/              # Deployment guides
+├── features/                # Feature documentation
+└── project/                 # Project information
+```
+
+## 🤝 Community Guidelines
+
+### Code of Conduct
+
+We are committed to providing a welcoming and inclusive environment for all contributors. Please:
 
 - Be respectful and inclusive
-- Focus on technical merit
-- Help others learn and grow
-- Follow the project's code of conduct 
+- Use welcoming and inclusive language
+- Be collaborative and open to feedback
+- Focus on what is best for the community
+- Show empathy towards other community members
+
+### Communication
+
+- **GitHub Issues**: For bug reports and feature requests
+- **GitHub Discussions**: For questions and general discussion
+- **Discord**: For real-time chat and community support
+
+### Recognition
+
+Contributors are recognized in several ways:
+
+- **Contributors list** in README
+- **Release notes** for significant contributions
+- **GitHub profile** shows contribution activity
+
+## 🎯 Getting Help
+
+### Resources
+
+- **Documentation**: [docs/](https://github.com/your-org/chatassistant/docs)
+- **API Reference**: [docs/api/](https://github.com/your-org/chatassistant/docs/api)
+- **Issues**: [GitHub Issues](https://github.com/your-org/chatassistant/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/chatassistant/discussions)
+
+### Asking for Help
+
+When asking for help:
+
+1. **Be specific** about your problem
+2. **Include relevant code** and error messages
+3. **Describe what you've tried**
+4. **Provide environment details**
+
+### Mentorship
+
+New contributors can:
+
+- Ask for help in GitHub Discussions
+- Request a mentor for guidance
+- Join community events and workshops
+
+---
+
+<div align="center">
+
+**Ready to contribute?** Start by [forking the repository](https://github.com/your-org/chatassistant/fork)!
+
+</div> 
