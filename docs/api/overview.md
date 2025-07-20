@@ -25,15 +25,15 @@ All endpoints (except registration and login) require a valid JWT access token.
 
 ## Error Handling
 
-- Fehler werden als JSON-Objekte mit HTTP-Statuscode zurückgegeben.
-- Beispiel:
+- Errors are returned as JSON objects with HTTP status codes.
+- Example:
   ```json
   {
     "detail": "Invalid credentials",
     "status_code": 401
   }
   ```
-- Typische Fehlercodes:
+- Common error codes:
   - `400` Bad Request
   - `401` Unauthorized
   - `403` Forbidden
