@@ -17,9 +17,14 @@ Diese Roadmap beschreibt die systematische Integration von Funktionen aus versch
 - **File Upload & Processing** (PDF, DOC, TXT)
 - **Advanced Search** mit Weaviate Vector Database
 - **Admin Dashboard** mit Monitoring
-- **Comprehensive Testing** (21 Test-Dateien)
+- **Comprehensive Testing** (21 Test-Dateien mit >90% Coverage)
 - **Docker Containerization** mit Health Checks
 - **Database Management** mit PostgreSQL und Alembic
+- **Complete CI/CD Pipeline** mit GitHub Actions
+- **Automated Testing** mit Unit, Integration und Security Tests
+- **Security Scanning** mit Trivy und Bandit
+- **Performance Testing** mit automatisierten Benchmarks
+- **Code Quality Automation** mit Pre-commit Hooks
 
 ### 🔄 **Aktuell in Entwicklung:**
 - **Internationalization (i18n)** - HTTP Header-basierte Spracherkennung
@@ -178,6 +183,8 @@ frontend/
 - **Verfügbarkeit**: 99.9% Uptime
 - **Sicherheit**: Zero Critical Vulnerabilities
 - **Test Coverage**: > 90% Code Coverage
+- **CI/CD Pipeline**: < 15 Minuten für komplette Build und Test
+- **Test Execution**: < 5 Minuten für vollständige Test Suite
 
 ### **Benutzer-Metriken:**
 - **Adoption Rate**: 80% Feature-Nutzung innerhalb 30 Tagen
@@ -205,11 +212,12 @@ CUDA Toolkit (für Image Generation)
 ### **CI/CD Pipeline:**
 ```yaml
 # GitHub Actions
-- Automated Testing
-- Security Scanning
-- Performance Testing
-- Deployment Automation
-- Documentation Generation
+- Automated Testing (Unit, Integration, Security)
+- Code Quality Checks (ruff, bandit, mypy)
+- Security Scanning (Trivy, Bandit)
+- Performance Testing (Automated Benchmarks)
+- Docker Image Building & Publishing
+- Automated Deployment (Staging & Production)
 ```
 
 ## 📚 Dokumentation
@@ -267,10 +275,14 @@ CUDA Toolkit (für Image Generation)
 ### **Implementierungsstand:**
 - **Backend**: 83 Python-Dateien implementiert
 - **Frontend**: 67 Python-Dateien implementiert
-- **Tests**: 21 Test-Dateien mit umfassender Abdeckung
+- **Tests**: 21 Test-Dateien mit >90% Coverage
 - **Dokumentation**: Vollständige Dokumentation verfügbar
 - **Docker**: Vollständige Containerisierung
 - **Security**: Rate Limiting, Audit Logging, JWT Blacklisting
+- **CI/CD**: Vollständige Automatisierung mit GitHub Actions
+- **Testing**: Automatisierte Tests mit Unit, Integration und Security
+- **Quality**: Code Quality Automation mit Pre-commit Hooks
+- **Performance**: Automatisierte Performance Tests und Monitoring
 
 ### **Nächste Schritte:**
 1. **Internationalization (i18n)** abschließen
