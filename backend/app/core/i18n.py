@@ -47,29 +47,31 @@ class I18nManager:
 
     def detect_language(self, request: Request) -> str:
         """
-        Detect language from request headers and query parameters.
+        Detect language from user settings, request headers, and query parameters.
 
         Priority order:
-        1. Query parameter: ?lang=de
-        2. Accept-Language header
-        3. Default language
+        1. User preference (if authenticated and set)
+        2. Query parameter: ?lang=de
+        3. Accept-Language header
+        4. Default language
         """
-        # Check query parameter first
+        # 1. User preference
+        user = getattr(request.state, "user", None)
+        if user and hasattr(user, "language") and user.language in self.supported_languages:
+            return user.language
+        # 2. Query parameter
         lang_param = request.query_params.get("lang")
         if lang_param and lang_param in self.supported_languages:
             return lang_param
-
-        # Check Accept-Language header
+        # 3. Accept-Language header
         accept_language = request.headers.get("accept-language", "")
         if accept_language:
-            # Parse Accept-Language header (e.g., "de-DE,de;q=0.9,en;q=0.8")
             languages = accept_language.split(",")
             for lang in languages:
-                # Extract language code (e.g., "de-DE" -> "de")
                 lang_code = lang.split(";")[0].split("-")[0].strip()
                 if lang_code in self.supported_languages:
                     return lang_code
-
+        # 4. Default
         return self.default_language
 
     def translate(self, key: str, language: str, **kwargs) -> str:

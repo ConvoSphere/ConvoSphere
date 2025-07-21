@@ -5,6 +5,8 @@ This module serves as the entry point for the FastAPI application,
 configuring middleware, routes, and application lifecycle events.
 """
 
+import os
+
 from contextlib import asynccontextmanager
 
 from app.api.v1.api import api_router
@@ -25,6 +27,20 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+# OpenTelemetry-Setup
+from opentelemetry import trace, metrics
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+from app.services.performance_monitor import performance_monitor
 
 
 @asynccontextmanager
@@ -79,6 +95,31 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error during shutdown: {e}")
 
 
+def configure_opentelemetry(app, db_engine=None, redis_client=None):
+    resource = Resource.create({
+        "service.name": os.getenv("OTEL_SERVICE_NAME", "ai-assistant-platform"),
+        "service.version": get_settings().app_version,
+        "deployment.environment": get_settings().environment,
+    })
+    # Tracing
+    tracer_provider = TracerProvider(resource=resource)
+    trace.set_tracer_provider(tracer_provider)
+    otlp_exporter = OTLPSpanExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
+    span_processor = BatchSpanProcessor(otlp_exporter)
+    tracer_provider.add_span_processor(span_processor)
+    # Metrics
+    metric_exporter = OTLPMetricExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
+    metric_reader = PeriodicExportingMetricReader(metric_exporter)
+    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+    metrics.set_meter_provider(meter_provider)
+    # Instrumentierung
+    FastAPIInstrumentor.instrument_app(app)
+    if db_engine is not None:
+        SQLAlchemyInstrumentor().instrument(engine=db_engine)
+    if redis_client is not None:
+        RedisInstrumentor().instrument()
+
+
 def create_application() -> FastAPI:
     """Create and configure the FastAPI application."""
 
@@ -93,7 +134,7 @@ def create_application() -> FastAPI:
 
     # Create FastAPI app
     app = FastAPI(
-        title=get_settings().app_name,
+        title="AI Assistant Platform",
         version=get_settings().app_version,
         description="AI Assistant Platform with multiple assistants and extensive tool support",
         docs_url="/docs" if get_settings().debug else None,
@@ -101,6 +142,10 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
+    # OpenTelemetry initialisieren
+    from app.core.database import engine
+    from app.core.redis_client import redis_client
+    configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Add middleware
     app.add_middleware(
@@ -118,6 +163,10 @@ def create_application() -> FastAPI:
 
     # Add i18n middleware
     app.add_middleware(I18nMiddleware, i18n_manager=i18n_manager)
+
+    # Start performance monitoring if enabled
+    if performance_monitor.monitoring_enabled:
+        performance_monitor.start_monitoring()
 
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
@@ -157,6 +206,9 @@ def create_application() -> FastAPI:
 
     # Add routes
     app.include_router(api_router, prefix="/api/v1")
+    from app.api.v1.endpoints import health, users
+    api_router.include_router(health.router, prefix="/health", tags=["health"])
+    api_router.include_router(users.router, prefix="/users", tags=["users"])
 
     # Health check endpoint
     @app.get("/health")
