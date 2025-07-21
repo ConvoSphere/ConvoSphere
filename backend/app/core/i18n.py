@@ -21,7 +21,7 @@ class I18nManager:
         """Initialize the i18n manager."""
         self.translations: dict[str, dict[str, str]] = {}
         self.default_language = "en"
-        self.supported_languages = ["en", "de"]
+        self.supported_languages = ["en", "de", "fr", "es"]
         self.translations_path = Path(__file__).parent.parent / "translations"
 
         # Load translations
@@ -109,6 +109,8 @@ class I18nManager:
         return {
             "en": "English",
             "de": "Deutsch",
+            "fr": "Français",
+            "es": "Español",
         }
 
 

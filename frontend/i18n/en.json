@@ -28,12 +28,15 @@
   "nav": {
     "dashboard": "Dashboard",
     "chat": "Chat",
+    "conversations": "Conversations",
     "assistants": "Assistants",
     "knowledge_base": "Knowledge Base",
     "tools": "Tools",
+    "mcp_tools": "MCP Tools",
     "settings": "Settings",
     "admin": "Admin",
     "profile": "Profile",
+    "user": "User",
     "logout": "Logout",
     "login": "Login",
     "register": "Register"
@@ -49,13 +52,31 @@
     "email": "Email",
     "password": "Password",
     "username": "Username",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "confirm_password": "Confirm Password",
     "forgot_password": "Forgot password?",
     "remember_me": "Remember me",
     "logout": "Logout",
+    "welcome_title": "Welcome to ConvoSphere",
+    "login_subtitle": "Sign in to your account",
+    "register_title": "Create Account",
+    "register_subtitle": "Create your ConvoSphere account",
+    "email_placeholder": "your@email.com",
+    "username_placeholder": "your_username",
+    "password_placeholder": "Your password",
+    "confirm_password_placeholder": "Repeat password",
+    "or": "or",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "register_now": "Register now",
+    "login_now": "Sign in now",
     "login_success": "Login successful",
     "login_failed": "Login failed",
     "registration_success": "Registration successful",
-    "registration_failed": "Registration failed"
+    "registration_success_message": "Registration successful! You can now sign in.",
+    "registration_failed": "Registration failed. Please try again.",
+    "invalid_credentials": "Invalid email or password"
   },
   "chat": {
     "new_conversation": "New Conversation",
@@ -66,7 +87,22 @@
     "message_sent": "Message sent",
     "message_failed": "Message failed",
     "conversation_list": "Conversations",
-    "search_conversations": "Search conversations"
+    "search_conversations": "Search conversations",
+    "subtitle": "Conversation with AI assistants",
+    "assistant_general": "General Assistant",
+    "assistant_code": "Code Assistant",
+    "assistant_data": "Data Analyst",
+    "assistant_creative": "Creative Writer",
+    "typing": "is typing",
+    "websocket_connection_failed": "WebSocket connection failed",
+    "realtime_connected": "Real-time chat connected",
+    "realtime_disconnected": "Real-time chat disconnected",
+    "load_messages_error": "Error loading messages",
+    "new_message_received": "New message received",
+    "send_message_error": "Error sending message",
+    "no_response_received": "No response received",
+    "assistant_changed": "Assistant changed to: {assistant}",
+    "settings_opening": "Chat settings will be opened..."
   },
   "assistants": {
     "create_assistant": "Create Assistant",
@@ -108,12 +144,14 @@
     "required": "{field} is required",
     "invalid_email": "Invalid email format",
     "min_length": "Minimum length is {min}",
-    "max_length": "Maximum length is {max}"
+    "max_length": "Maximum length is {max}",
+    "passwords_not_match": "Passwords do not match"
   },
   "messages": {
     "welcome": "Welcome to the AI Assistant Platform!",
     "goodbye": "Goodbye!",
     "error_occurred": "An error occurred. Please try again.",
-    "saved_successfully": "Saved successfully!"
+    "saved_successfully": "Saved successfully!",
+    "sidebar_toggle": "Sidebar toggle will be implemented"
   }
 } 

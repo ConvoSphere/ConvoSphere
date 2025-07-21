@@ -8,6 +8,7 @@ links and collapsible functionality.
 from collections.abc import Callable
 
 from nicegui import ui
+from utils.i18n_manager import t
 from pages import (
     create_assistants_page,
     create_chat_page,
@@ -62,43 +63,43 @@ def _create_nav_items(
     nav_items = [
         {
             "id": "dashboard",
-            "label": "Dashboard",
+            "label": t("nav.dashboard"),
             "icon": "dashboard",
             "href": "#dashboard",
         },
         {
             "id": "chat",
-            "label": "Chat",
+            "label": t("nav.chat"),
             "icon": "chat",
             "href": "#chat",
         },
         {
             "id": "conversations",
-            "label": "Konversationen",
+            "label": t("nav.conversations"),
             "icon": "forum",
             "href": "#conversations",
         },
         {
             "id": "assistants",
-            "label": "Assistenten",
+            "label": t("nav.assistants"),
             "icon": "smart_toy",
             "href": "#assistants",
         },
         {
             "id": "tools",
-            "label": "Tools",
+            "label": t("nav.tools"),
             "icon": "build",
             "href": "#tools",
         },
         {
             "id": "knowledge",
-            "label": "Wissensdatenbank",
+            "label": t("nav.knowledge_base"),
             "icon": "library_books",
             "href": "#knowledge",
         },
         {
             "id": "mcp",
-            "label": "MCP Tools",
+            "label": t("nav.mcp_tools"),
             "icon": "extension",
             "href": "#mcp",
         },
@@ -151,7 +152,7 @@ def _create_bottom_section(collapsed: bool):
 
             # User info
             with ui.element("div").classes("ml-3"):
-                ui.label("Benutzer").classes(
+                ui.label(t("nav.user")).classes(
                     "text-sm font-medium text-gray-700 dark:text-gray-300",
                 )
                 ui.label("user@example.com").classes(
@@ -171,7 +172,7 @@ def _create_bottom_section(collapsed: bool):
 def _handle_sidebar_toggle():
     """Handle sidebar toggle."""
     # This would need to be implemented with proper state management
-    ui.notify("Sidebar-Toggle wird implementiert", type="info")
+    ui.notify(t("messages.sidebar_toggle"), type="info")
 
 
 # Navigation routes

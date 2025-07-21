@@ -12,6 +12,7 @@ from typing import Any
 from nicegui import ui
 from services.api_client import api_client
 from services.websocket_service import websocket_service
+from utils.i18n_manager import t
 
 
 class ChatMessage:
@@ -122,18 +123,18 @@ class ChatInterface:
         try:
             await websocket_service.connect(self.conversation_id)
         except Exception as e:
-            ui.notify(f"WebSocket-Verbindung fehlgeschlagen: {str(e)}", type="negative")
+            ui.notify(t("chat.websocket_connection_failed"), type="negative")
 
     async def _on_websocket_connect(self):
         """Handle WebSocket connection."""
         self.websocket_connected = True
-        ui.notify("Echtzeit-Chat verbunden", type="positive")
+        ui.notify(t("chat.realtime_connected"), type="positive")
         self._create_chat_header()  # Update status dot
 
     async def _on_websocket_disconnect(self):
         """Handle WebSocket disconnection."""
         self.websocket_connected = False
-        ui.notify("Echtzeit-Chat getrennt", type="warning")
+        ui.notify(t("chat.realtime_disconnected"), type="warning")
         self._create_chat_header()  # Update status dot
 
     def _update_typing_indicator(self):
@@ -147,7 +148,7 @@ class ChatInterface:
                 typing_el.classes("flex items-center space-x-2 mt-2 mb-2")
                 ui.spinner("dots").classes("h-4 w-4")
                 ui.html(
-                    f"<span style='font-size: 13px; color: var(--color-text-secondary);'>{users_text} schreibt...</span>",
+                    f"<span style='font-size: 13px; color: var(--color-text-secondary);'>{users_text} {t('chat.typing')}...</span>",
                 )
             self.typing_indicator_element = typing_el
         else:
@@ -203,28 +204,28 @@ class ChatInterface:
                 )
                 with ui.element("div"):
                     ui.html(
-                        "<h2 style='font-size: 18px; font-weight: 600; color: var(--color-text);'>Chat</h2>",
+                        f"<h2 style='font-size: 18px; font-weight: 600; color: var(--color-text);'>{t('nav.chat')}</h2>",
                     )
                     ui.html(
-                        "<p style='font-size: 14px; color: var(--color-text-secondary);'>Konversation mit AI-Assistenten</p>",
+                        f"<p style='font-size: 14px; color: var(--color-text-secondary);'>{t('chat.subtitle')}</p>",
                     )
 
             with ui.element("div").classes("flex items-center space-x-2"):
                 # Assistant selector
                 with ui.select(
                     options=[
-                        {"label": "Allgemeiner Assistent", "value": "general"},
-                        {"label": "Code Assistant", "value": "code"},
-                        {"label": "Data Analyst", "value": "data"},
-                        {"label": "Creative Writer", "value": "creative"},
+                        {"label": t("chat.assistant_general"), "value": "general"},
+                        {"label": t("chat.assistant_code"), "value": "code"},
+                        {"label": t("chat.assistant_data"), "value": "data"},
+                        {"label": t("chat.assistant_creative"), "value": "creative"},
                     ],
                     value=self.selected_assistant,
                     on_change=self._handle_assistant_change,
                 ).classes("w-48"):
-                    ui.option("general", "Allgemeiner Assistent")
-                    ui.option("code", "Code Assistant")
-                    ui.option("data", "Data Analyst")
-                    ui.option("creative", "Creative Writer")
+                    ui.option("general", t("chat.assistant_general"))
+                    ui.option("code", t("chat.assistant_code"))
+                    ui.option("data", t("chat.assistant_data"))
+                    ui.option("creative", t("chat.assistant_creative"))
 
                 # Settings button
                 ui.button(
@@ -249,13 +250,13 @@ class ChatInterface:
             with ui.element("div").classes("flex space-x-2"):
                 # Message input
                 self.message_input = ui.textarea(
-                    placeholder="Nachricht eingeben...",
+                    placeholder=t("chat.type_message"),
                     on_change=self._handle_input_change,
                 ).classes("flex-1 resize-none")
 
                 # Send button
                 ui.button(
-                    "Senden",
+                    t("chat.send"),
                     icon="send",
                     on_click=self._handle_send_message,
                 ).classes("bg-blue-600 text-white")
@@ -282,7 +283,7 @@ class ChatInterface:
                 self._add_message_to_ui(message)
 
         except Exception as e:
-            ui.notify(f"Fehler beim Laden der Nachrichten: {str(e)}", type="negative")
+            ui.notify(t("chat.load_messages_error"), type="negative")
 
     def _add_message_to_ui(self, message: ChatMessage):
         """Add a message to the UI."""
@@ -306,9 +307,9 @@ class ChatInterface:
                     )
         # Show feedback for new message
         if is_user:
-            ui.notify("Nachricht gesendet", type="positive")
+            ui.notify(t("chat.message_sent"), type="positive")
         else:
-            ui.notify("Neue Nachricht empfangen", type="info")
+            ui.notify(t("chat.new_message_received"), type="info")
 
     def _handle_input_change(self, e):
         """Handle input change."""
@@ -325,11 +326,11 @@ class ChatInterface:
 
                 # Update textarea height using JavaScript
                 ui.run_javascript(
-                    """
-                    const textarea = document.querySelector('textarea[placeholder="Nachricht eingeben..."]');
-                    if (textarea) {
-                        textarea.style.height = `${newHeight}px`;
-                    }
+                    f"""
+                    const textarea = document.querySelector('textarea[placeholder="{t('chat.type_message')}"]');
+                    if (textarea) {{
+                        textarea.style.height = `${{newHeight}}px`;
+                    }}
                 """,
                     newHeight=new_height,
                 )
@@ -366,7 +367,7 @@ class ChatInterface:
         try:
             await websocket_service.send_chat_message(content)
         except Exception as e:
-            ui.notify(f"Fehler beim Senden der Nachricht: {str(e)}", type="negative")
+            ui.notify(t("chat.send_message_error"), type="negative")
 
     async def _send_message_to_api(self, content: str):
         """Send message to API and get response."""
@@ -382,7 +383,7 @@ class ChatInterface:
             if response:
                 # Create assistant response
                 assistant_message = ChatMessage(
-                    content=response.get("content", "Keine Antwort erhalten"),
+                    content=response.get("content", t("chat.no_response_received")),
                     sender="assistant",
                     timestamp=datetime.now(),
                 )
@@ -391,7 +392,7 @@ class ChatInterface:
                 self._add_message_to_ui(assistant_message)
 
         except Exception as e:
-            ui.notify(f"Fehler beim Senden der Nachricht: {str(e)}", type="negative")
+            ui.notify(t("chat.send_message_error"), type="negative")
 
         finally:
             self.is_loading = False
@@ -432,11 +433,11 @@ class ChatInterface:
     def _handle_assistant_change(self, e):
         """Handle assistant change."""
         self.selected_assistant = e.value
-        ui.notify(f"Assistent gewechselt zu: {e.value}", type="info")
+        ui.notify(t("chat.assistant_changed", assistant=e.value), type="info")
 
     def _handle_settings(self):
         """Handle settings button."""
-        ui.notify("Chat-Einstellungen werden geöffnet...", type="info")
+        ui.notify(t("chat.settings_opening"), type="info")
 
 
 def create_chat_interface(conversation_id: str | None = None) -> ui.element:
