@@ -13,17 +13,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
-from .config import settings
+from .config import get_settings
 
 # Create database engine
 engine = create_engine(
-    settings.database_url,
+    get_settings().database_url,
     poolclass=QueuePool,
-    pool_size=settings.database_pool_size,
-    max_overflow=settings.database_max_overflow,
+    pool_size=get_settings().database_pool_size,
+    max_overflow=get_settings().database_max_overflow,
     pool_pre_ping=True,
     pool_recycle=3600,  # Recycle connections after 1 hour
-    echo=settings.debug,  # Log SQL queries in debug mode
+    echo=get_settings().debug,  # Log SQL queries in debug mode
 )
 
 # Create session factory

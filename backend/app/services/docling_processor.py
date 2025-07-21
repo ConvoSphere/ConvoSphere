@@ -20,7 +20,7 @@ except ImportError:
     DOCLING_AVAILABLE = False
     logging.warning("Docling not available. Install with: pip install docling")
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -303,8 +303,8 @@ class DoclingProcessor:
                 if full_text.strip():
                     # Simple chunking for full text
                     words = full_text.split()
-                    chunk_size = settings.chunk_size
-                    chunk_overlap = settings.chunk_overlap
+                    chunk_size = get_settings().chunk_size
+                    chunk_overlap = get_settings().chunk_overlap
 
                     for i in range(0, len(words), chunk_size - chunk_overlap):
                         chunk_words = words[i : i + chunk_size]

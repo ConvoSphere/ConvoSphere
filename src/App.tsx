@@ -41,20 +41,22 @@ const App: React.FC = () => {
             <Route
               path="/*"
               element={
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                    <Route path="/assistants" element={<ProtectedRoute><Assistants /></ProtectedRoute>} />
-                    <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
-                    <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
-                    <Route path="/mcp-tools" element={<ProtectedRoute><McpTools /></ProtectedRoute>} />
-                  </Routes>
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Chat />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/assistants" element={<Assistants />} />
+                      <Route path="/knowledge-base" element={<KnowledgeBase />} />
+                      <Route path="/tools" element={<Tools />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/conversations" element={<Conversations />} />
+                      <Route path="/mcp-tools" element={<McpTools />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
               }
             />
           </Routes>

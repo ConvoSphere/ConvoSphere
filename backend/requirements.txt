@@ -65,3 +65,5 @@ redis==5.0.1
 
 # Validation
 email-validator==2.1.0 
+
+umap-learn 

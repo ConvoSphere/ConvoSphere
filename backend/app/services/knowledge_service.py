@@ -16,7 +16,7 @@ from typing import Any
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from ..core.config import settings
+from ..core.config import get_settings
 from ..models.knowledge import Document, DocumentChunk, SearchQuery
 from .ai_service import AIService
 from .document_processor import document_processor
@@ -35,7 +35,7 @@ class KnowledgeService:
         self.ai_service = AIService()
 
         # Ensure upload directory exists
-        self.upload_dir = Path(settings.UPLOAD_DIR)
+        self.upload_dir = Path(get_settings().UPLOAD_DIR)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
 
     def create_document(
@@ -152,7 +152,7 @@ class KnowledgeService:
             for i, chunk in enumerate(chunks):
                 if i < len(embeddings) and embeddings[i]:
                     chunk.embedding = embeddings[i]
-                    chunk.embedding_model = settings.default_embedding_model
+                    chunk.embedding_model = get_settings().default_embedding_model
                     chunk.embedding_created_at = datetime.utcnow()
 
                     # Enhanced metadata for Weaviate

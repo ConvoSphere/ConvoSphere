@@ -10,7 +10,7 @@ from typing import Any
 import weaviate
 from loguru import logger
 
-from .config import settings
+from .config import get_settings
 
 # Global Weaviate client instance
 weaviate_client: weaviate.Client | None = None
@@ -28,16 +28,16 @@ def init_weaviate() -> weaviate.Client:
     try:
         # Create Weaviate client
         auth_config = None
-        if settings.weaviate_api_key:
-            auth_config = weaviate.Auth.api_key(settings.weaviate_api_key)
+        if get_settings().weaviate_api_key:
+            auth_config = weaviate.Auth.api_key(get_settings().weaviate_api_key)
 
         weaviate_client = weaviate.Client(
-            url=settings.weaviate_url,
+            url=get_settings().weaviate_url,
             auth_client_secret=auth_config,
             additional_headers={
-                "X-OpenAI-Api-Key": settings.openai_api_key,
+                "X-OpenAI-Api-Key": get_settings().openai_api_key,
             }
-            if settings.openai_api_key
+            if get_settings().openai_api_key
             else None,
             timeout_config=(5, 60),  # (connect_timeout, read_timeout)
         )
@@ -159,7 +159,7 @@ def create_schema_if_not_exists() -> None:
                     "description": "Document tags",
                 },
             ],
-            "vectorizer": "text2vec-openai" if settings.openai_api_key else "none",
+            "vectorizer": "text2vec-openai" if get_settings().openai_api_key else "none",
             "moduleConfig": {
                 "text2vec-openai": {
                     "model": "ada",
@@ -167,7 +167,7 @@ def create_schema_if_not_exists() -> None:
                     "type": "text",
                 },
             }
-            if settings.openai_api_key
+            if get_settings().openai_api_key
             else {},
         }
 
@@ -268,7 +268,7 @@ def search_documents(
             }
 
         # Add vector search if OpenAI is configured
-        if settings.openai_api_key:
+        if get_settings().openai_api_key:
             search_query["nearText"] = {
                 "concepts": [query],
             }

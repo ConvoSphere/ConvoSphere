@@ -10,7 +10,7 @@ from typing import Any
 import redis.asyncio as redis
 from loguru import logger
 
-from .config import settings
+from .config import get_settings
 
 # Global Redis client instance
 redis_client: redis.Redis | None = None
@@ -28,8 +28,8 @@ async def init_redis() -> redis.Redis:
     try:
         # Create Redis client with connection pooling
         redis_client = redis.from_url(
-            settings.redis_url,
-            db=settings.redis_db,
+            get_settings().redis_url,
+            db=get_settings().redis_db,
             encoding="utf-8",
             decode_responses=True,
             socket_connect_timeout=5,

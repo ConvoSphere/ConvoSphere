@@ -119,14 +119,27 @@ class Settings(BaseSettings):
         default=None, description="Wolfram Alpha API key",
     )
 
+    performance_monitoring_enabled: bool = Field(default=True, env="PERFORMANCE_MONITORING_ENABLED")
+    performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
+    performance_alert_thresholds: dict = Field(default_factory=dict, env="PERFORMANCE_ALERT_THRESHOLDS")
+
     @field_validator("supported_languages", mode="before")
     @classmethod
     def parse_supported_languages(cls, v):
         """Parse supported languages from comma-separated string."""
+        import logging
+        if v is None or (isinstance(v, str) and not v.strip()):
+            logging.warning("SUPPORTED_LANGUAGES is empty or not set. Using default languages ['de', 'en', 'fr', 'es'].")
+            return ["de", "en", "fr", "es"]
         if isinstance(v, str):
             try:
-                return [lang.strip() for lang in v.split(",") if lang.strip()]
-            except Exception:
+                langs = [lang.strip() for lang in v.split(",") if lang.strip()]
+                if not langs:
+                    logging.warning("SUPPORTED_LANGUAGES is empty after parsing. Using default languages ['de', 'en', 'fr', 'es'].")
+                    return ["de", "en", "fr", "es"]
+                return langs
+            except Exception as e:
+                logging.error(f"Error parsing SUPPORTED_LANGUAGES: {e}. Using default languages ['de', 'en', 'fr', 'es'].")
                 return ["de", "en", "fr", "es"]
         return v
 
@@ -154,9 +167,13 @@ class Settings(BaseSettings):
 
 
 # Global settings instance
-settings = Settings()
+# settings = Settings()
 
+_settings_instance = None
 
 def get_settings() -> Settings:
-    """Get application settings instance."""
-    return settings
+    """Get application settings instance (singleton)."""
+    global _settings_instance
+    if _settings_instance is None:
+        _settings_instance = Settings()
+    return _settings_instance

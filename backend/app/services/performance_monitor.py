@@ -18,7 +18,7 @@ from typing import Any
 import psutil
 from loguru import logger
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 
 class MetricType(Enum):
@@ -93,9 +93,9 @@ class PerformanceMonitor:
         self.alert_handlers: list[Callable[[Alert], None]] = []
 
         # Monitoring configuration
-        self.monitoring_enabled = settings.performance_monitoring_enabled
-        self.monitoring_interval = settings.performance_monitoring_interval
-        self.alert_thresholds = settings.performance_alert_thresholds
+        self.monitoring_enabled = get_settings().performance_monitoring_enabled
+        self.monitoring_interval = get_settings().performance_monitoring_interval
+        self.alert_thresholds = get_settings().performance_alert_thresholds
 
         # System metrics
         self.system_metrics = {}

@@ -20,7 +20,7 @@ except ImportError:
     LITELLM_AVAILABLE = False
     logger.warning("LiteLLM not available. AI features will be disabled.")
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.services.tool_service import tool_service
 from app.services.weaviate_service import weaviate_service
 from app.tools.mcp_tool import mcp_manager
@@ -110,10 +110,10 @@ class AIService:
         """Setup LiteLLM configuration."""
         try:
             # Configure LiteLLM
-            litellm.set_verbose = settings.debug
+            litellm.set_verbose = get_settings().debug
 
             # Set default model
-            litellm.default_model = settings.default_ai_model
+            litellm.default_model = get_settings().default_ai_model
 
             logger.info("LiteLLM configured successfully")
         except Exception as e:
@@ -126,38 +126,38 @@ class AIService:
             "openai": {
                 "name": "OpenAI",
                 "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-                "enabled": bool(settings.openai_api_key),
-                "api_key": settings.openai_api_key,
+                "enabled": bool(get_settings().openai_api_key),
+                "api_key": get_settings().openai_api_key,
             },
             "anthropic": {
                 "name": "Anthropic",
                 "models": ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
-                "enabled": bool(settings.anthropic_api_key),
-                "api_key": settings.anthropic_api_key,
+                "enabled": bool(get_settings().anthropic_api_key),
+                "api_key": get_settings().anthropic_api_key,
             },
             "google": {
                 "name": "Google",
                 "models": ["gemini-pro", "gemini-pro-vision"],
-                "enabled": bool(settings.google_api_key),
-                "api_key": settings.google_api_key,
+                "enabled": bool(get_settings().google_api_key),
+                "api_key": get_settings().google_api_key,
             },
         }
 
         # Set environment variables for LiteLLM
-        if settings.openai_api_key:
+        if get_settings().openai_api_key:
             import os
 
-            os.environ["OPENAI_API_KEY"] = settings.openai_api_key
+            os.environ["OPENAI_API_KEY"] = get_settings().openai_api_key
 
-        if settings.anthropic_api_key:
+        if get_settings().anthropic_api_key:
             import os
 
-            os.environ["ANTHROPIC_API_KEY"] = settings.anthropic_api_key
+            os.environ["ANTHROPIC_API_KEY"] = get_settings().anthropic_api_key
 
-        if settings.google_api_key:
+        if get_settings().google_api_key:
             import os
 
-            os.environ["GOOGLE_API_KEY"] = settings.google_api_key
+            os.environ["GOOGLE_API_KEY"] = get_settings().google_api_key
 
     def _load_models(self):
         """Load available models."""
@@ -240,7 +240,7 @@ class AIService:
 
         # Use default model if none specified
         if not model:
-            model = settings.default_ai_model
+            model = get_settings().default_ai_model
 
         # Validate model
         if model not in self.models:

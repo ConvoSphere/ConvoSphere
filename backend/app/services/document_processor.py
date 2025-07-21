@@ -19,7 +19,7 @@ import PyPDF2
 import tiktoken
 from docx import Document
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 from .docling_processor import docling_processor
 
@@ -84,6 +84,7 @@ class DocumentProcessor:
     }
 
     def __init__(self):
+        settings = get_settings()
         self.chunk_size = settings.chunk_size
         self.chunk_overlap = settings.chunk_overlap
         self.min_chunk_size = 50  # Minimum chunk size in words

@@ -19,7 +19,7 @@ from litellm import completion
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.services.performance_monitor import MetricType, performance_monitor
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ class EmbeddingService:
     """Service for generating and managing embeddings."""
 
     def __init__(self):
-        self.model = settings.default_embedding_model
+        self.model = get_settings().default_embedding_model
         self.batch_size = 10  # Process embeddings in batches
         self.max_retries = 3
         self.retry_delay = 1.0

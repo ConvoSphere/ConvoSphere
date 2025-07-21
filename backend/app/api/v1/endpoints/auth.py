@@ -9,7 +9,11 @@ from loguru import logger
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+# Workaround gegen Import-Zyklen: security wird erst hier importiert
+from fastapi.security import HTTPAuthorizationCredentials
+from app.core.dependencies import get_settings_dep, get_security_dep
+
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import (
     create_access_token,
@@ -123,7 +127,7 @@ async def login(
         access_token=access_token,
         refresh_token=refresh_token,
         token_type="bearer",
-        expires_in=settings.jwt_access_token_expire_minutes * 60,
+        expires_in=get_settings().jwt_access_token_expire_minutes * 60,
     )
 
 
@@ -237,14 +241,14 @@ async def refresh_token(
         access_token=new_access_token,
         refresh_token=new_refresh_token,
         token_type="bearer",
-        expires_in=settings.jwt_access_token_expire_minutes * 60,
+        expires_in=get_settings().jwt_access_token_expire_minutes * 60,
     )
 
 
 @router.post("/logout")
 async def logout(
-    current_user_id: str = Depends(get_current_user_id),
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(get_security_dep),
+    settings = Depends(get_settings_dep),
 ):
     """
     Logout user (invalidate tokens).
@@ -267,7 +271,7 @@ async def logout(
         # Calculate token expiration time
         from jose import jwt
 
-        from app.core.config import settings
+        from app.core.config import get_settings
 
         try:
             payload = jwt.decode(
@@ -291,12 +295,12 @@ async def logout(
 
         log_security_event(
             event_type="USER_LOGOUT",
-            user_id=current_user_id,
+            user_id=get_current_user_id(),
             description="User logged out successfully",
             severity="info",
         )
 
-        logger.info(f"User logged out: {current_user_id}")
+        logger.info(f"User logged out: {get_current_user_id()}")
         return {"message": "Successfully logged out"}
 
     except Exception as e:

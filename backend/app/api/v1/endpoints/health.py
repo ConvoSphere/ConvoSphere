@@ -7,8 +7,9 @@ the AI Assistant Platform.
 
 from fastapi import APIRouter
 from loguru import logger
+from datetime import datetime
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.core.database import check_db_connection, get_db_info
 from app.core.redis_client import check_redis_connection, get_redis_info
 from app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
@@ -19,6 +20,7 @@ router = APIRouter()
 @router.get("/")
 async def health_check():
     """Basic health check endpoint."""
+    settings = get_settings()
     return {
         "status": "healthy",
         "service": "ai-assistant-platform",
@@ -31,6 +33,7 @@ async def health_check():
 async def detailed_health_check():
     """Detailed health check with component status."""
     try:
+        settings = get_settings()
         # Check all components
         db_healthy = check_db_connection()
         redis_healthy = await check_redis_connection()
@@ -72,6 +75,7 @@ async def detailed_health_check():
 
     except Exception as e:
         logger.error(f"Health check failed: {e}")
+        settings = get_settings()
         return {
             "status": "unhealthy",
             "service": "ai-assistant-platform",
@@ -85,6 +89,7 @@ async def detailed_health_check():
 async def database_health():
     """Database-specific health check."""
     try:
+        settings = get_settings()
         healthy = check_db_connection()
         info = get_db_info()
 
@@ -106,6 +111,7 @@ async def database_health():
 async def redis_health():
     """Redis-specific health check."""
     try:
+        settings = get_settings()
         healthy = await check_redis_connection()
         info = await get_redis_info()
 
@@ -127,6 +133,7 @@ async def redis_health():
 async def weaviate_health():
     """Weaviate-specific health check."""
     try:
+        settings = get_settings()
         healthy = check_weaviate_connection()
         info = get_weaviate_info()
 

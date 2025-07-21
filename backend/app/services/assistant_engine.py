@@ -14,7 +14,7 @@ from typing import Any
 
 from loguru import logger
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.services.ai_service import AIResponse, ai_service
 from app.services.context_manager import context_manager
 from app.services.knowledge_service import knowledge_service
@@ -71,7 +71,7 @@ class AssistantEngine:
         self.processing_requests: dict[str, ProcessingRequest] = {}
         self.processing_results: dict[str, ProcessingResult] = {}
         self.max_concurrent_requests = 5
-        self.default_model = settings.default_ai_model
+        self.default_model = get_settings().default_ai_model
         self.default_max_tokens = 2048
 
         # Processing semaphore to limit concurrent requests

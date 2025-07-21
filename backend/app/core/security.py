@@ -14,12 +14,6 @@ from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
 
-from .config import settings
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# JWT token scheme
 security = HTTPBearer()
 
 BLACKLIST_PREFIX = "jwt_blacklist:"
@@ -66,6 +60,7 @@ def create_access_token(
     Returns:
         str: JWT access token
     """
+    settings = get_settings()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -96,6 +91,7 @@ def create_refresh_token(
     Returns:
         str: JWT refresh token
     """
+    settings = get_settings()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -132,6 +128,7 @@ async def verify_token(token: str) -> str | None:
             logger.warning("JWT token is blacklisted")
             return None
 
+        settings = get_settings()
         payload = jwt.decode(
             token,
             settings.secret_key,
