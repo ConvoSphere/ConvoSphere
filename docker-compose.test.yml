@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Test Database
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: chatassistant_postgres_test
+    environment:
+      POSTGRES_DB: chatassistant_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-test.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5434:5432"
+    networks:
+      - chatassistant_test_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d chatassistant_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Test Cache
+  redis_test:
+    image: redis:7-alpine
+    container_name: chatassistant_redis_test
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_test_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - chatassistant_test_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Weaviate Test Vector Database
+  weaviate_test:
+    image: semitechnologies/weaviate:latest
+    container_name: chatassistant_weaviate_test
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      ENABLE_MODULES: 'text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai'
+      CLUSTER_HOSTNAME: 'node1'
+      TELEMETRY_PUSH: 'false'
+    volumes:
+      - weaviate_test_data:/var/lib/weaviate
+    ports:
+      - "8081:8080"
+    networks:
+      - chatassistant_test_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Test Backend API
+  backend_test:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: chatassistant_backend_test
+    environment:
+      - DEBUG=true
+      - TESTING=true
+      - DATABASE_URL=postgresql://test_user:test_password@postgres_test:5432/chatassistant_test
+      - REDIS_URL=redis://redis_test:6379
+      - WEAVIATE_URL=http://weaviate_test:8080
+      - PYTHONPATH=/app
+    volumes:
+      - ./backend:/app/backend
+      - ./tests:/app/tests
+      - ./uploads:/app/uploads
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+      redis_test:
+        condition: service_healthy
+      weaviate_test:
+        condition: service_healthy
+    networks:
+      - chatassistant_test_network
+    command: ["python", "-m", "pytest", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]
+
+  # Test Frontend
+  frontend_test:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: chatassistant_frontend_test
+    environment:
+      - TESTING=true
+      - BACKEND_URL=http://backend_test:8000
+      - PYTHONPATH=/app
+    volumes:
+      - ./frontend:/app/frontend
+      - ./tests:/app/tests
+    ports:
+      - "3001:3000"
+    depends_on:
+      backend_test:
+        condition: service_started
+    networks:
+      - chatassistant_test_network
+    command: ["python", "-m", "pytest", "--cov=frontend", "--cov-report=html", "--cov-report=term-missing"]
+
+  # Performance Testing (Locust)
+  locust:
+    image: locustio/locust:latest
+    container_name: chatassistant_locust_test
+    environment:
+      - LOCUST_HOST=http://backend_test:8000
+    volumes:
+      - ./tests/performance:/app/tests
+    ports:
+      - "8089:8089"
+    depends_on:
+      backend_test:
+        condition: service_started
+    networks:
+      - chatassistant_test_network
+    command: ["locust", "-f", "/app/tests/locustfile.py", "--host", "http://backend_test:8000"]
+
+  # Security Testing (OWASP ZAP)
+  zap:
+    image: owasp/zap2docker-stable:latest
+    container_name: chatassistant_zap_test
+    environment:
+      - ZAP_WEBSWING_OPTS=-Xmx4g
+    volumes:
+      - ./tests/security:/zap/wrk
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend_test:
+        condition: service_started
+      frontend_test:
+        condition: service_started
+    networks:
+      - chatassistant_test_network
+    command: ["zap-baseline.py", "-t", "http://backend_test:8000", "-J", "/zap/wrk/report.json"]
+
+volumes:
+  postgres_test_data:
+  redis_test_data:
+  weaviate_test_data:
+
+networks:
+  chatassistant_test_network:
+    driver: bridge
