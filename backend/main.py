@@ -8,7 +8,7 @@ configuring middleware, routes, and application lifecycle events.
 from contextlib import asynccontextmanager
 
 from app.api.v1.api import api_router
-from app.core.config import settings
+from app.core.config import get_settings
 from app.core.database import check_db_connection, init_db
 from app.core.i18n import I18nMiddleware, i18n_manager, t
 from app.core.redis_client import check_redis_connection, close_redis, init_redis
@@ -32,8 +32,8 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
     logger.info("Starting AI Assistant Platform...")
-    logger.info(f"Environment: {settings.environment}")
-    logger.info(f"Debug mode: {settings.debug}")
+    logger.info(f"Environment: {get_settings().environment}")
+    logger.info(f"Debug mode: {get_settings().debug}")
 
     try:
         # Initialize database
@@ -84,28 +84,28 @@ def create_application() -> FastAPI:
 
     # Configure logging
     logger.add(
-        settings.log_file,
+        get_settings().log_file,
         rotation="10 MB",
         retention="7 days",
-        level=settings.log_level,
+        level=get_settings().log_level,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
     )
 
     # Create FastAPI app
     app = FastAPI(
-        title=settings.app_name,
-        version=settings.app_version,
+        title=get_settings().app_name,
+        version=get_settings().app_version,
         description="AI Assistant Platform with multiple assistants and extensive tool support",
-        docs_url="/docs" if settings.debug else None,
-        redoc_url="/redoc" if settings.debug else None,
-        openapi_url="/openapi.json" if settings.debug else None,
+        docs_url="/docs" if get_settings().debug else None,
+        redoc_url="/redoc" if get_settings().debug else None,
+        openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
 
     # Add middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"] if settings.debug else ["http://localhost:3000"],
+        allow_origins=["*"] if get_settings().debug else ["http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -113,7 +113,7 @@ def create_application() -> FastAPI:
 
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*"] if settings.debug else ["localhost", "127.0.0.1"],
+        allowed_hosts=["*"] if get_settings().debug else ["localhost", "127.0.0.1"],
     )
 
     # Add i18n middleware
@@ -164,9 +164,9 @@ def create_application() -> FastAPI:
         """Health check endpoint."""
         return {
             "status": "healthy",
-            "app_name": settings.app_name,
-            "version": settings.app_version,
-            "environment": settings.environment,
+            "app_name": get_settings().app_name,
+            "version": get_settings().app_version,
+            "environment": get_settings().environment,
         }
 
     # Root endpoint
@@ -175,9 +175,9 @@ def create_application() -> FastAPI:
         """Root endpoint."""
         return {
             "message": "Welcome to AI Assistant Platform",
-            "version": settings.app_version,
+            "version": get_settings().app_version,
             "docs": "/docs"
-            if settings.debug
+            if get_settings().debug
             else "Documentation disabled in production",
         }
 
@@ -193,8 +193,8 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug,
-        log_level=settings.log_level.lower(),
+        host=get_settings().host,
+        port=get_settings().port,
+        reload=get_settings().debug,
+        log_level=get_settings().log_level.lower(),
     )

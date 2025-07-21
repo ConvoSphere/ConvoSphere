@@ -123,6 +123,8 @@ class Settings(BaseSettings):
     performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
     performance_alert_thresholds: dict = Field(default_factory=dict, env="PERFORMANCE_ALERT_THRESHOLDS")
 
+    default_ai_model: str = Field(default="gpt-4", env="DEFAULT_AI_MODEL")
+
     @field_validator("supported_languages", mode="before")
     @classmethod
     def parse_supported_languages(cls, v):
