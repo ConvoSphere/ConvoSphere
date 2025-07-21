@@ -1,17 +1,17 @@
 # ConvoSphere React Frontend
 
-Dieses Frontend basiert auf React, Vite, TypeScript, Ant Design, Zustand, i18next und ist für eine moderne, skalierbare AI-Plattform ausgelegt.
+This frontend is based on React, Vite, TypeScript, Ant Design, Zustand, and i18next, designed for a modern, scalable AI platform.
 
 ## Features
-- Ant Design UI mit Light/Dark Mode
-- State-Management mit Zustand
-- Internationalisierung (i18n) mit englisch und deutsch
-- Routing mit React Router
-- API-Service mit Axios
-- WebSocket-Chat
-- Backend-Anbindung für Knowledge Base, Tools, Assistants, Conversations, MCP Tools
-- Beispiel-Tests mit React Testing Library & Jest
-- Barrierefreiheit und Theme-Switcher
+- Ant Design UI with Light/Dark Mode
+- State management with Zustand
+- Internationalization (i18n) with English and German
+- Routing with React Router (v6)
+- API service with Axios
+- WebSocket chat
+- Backend integration for Knowledge Base, Tools, Assistants, Conversations, MCP Tools
+- Example tests with React Testing Library & Jest
+- Accessibility and theme switcher
 
 ## Setup
 
@@ -21,34 +21,54 @@ npm install
 npm run dev
 ```
 
-## Projektstruktur
-- `src/components/` – Wiederverwendbare UI-Komponenten (ThemeSwitcher, Sidebar, Header, ...)
-- `src/pages/` – Seiten (Chat, Dashboard, Knowledge Base, Tools, ...)
-- `src/services/` – API- und WebSocket-Services
-- `src/store/` – Globaler Zustand (Theme, Auth, ...)
-- `src/i18n/` – Übersetzungen und i18n-Initialisierung
-- `src/styles/` – Theme-Konfiguration
+## Project Structure
+- `frontend-react/src/components/` – Reusable UI components (ThemeSwitcher, Sidebar, Header, ...)
+- `frontend-react/src/pages/` – Pages (Chat, Dashboard, Knowledge Base, Tools, ...)
+- `frontend-react/src/services/` – API and WebSocket services
+- `frontend-react/src/store/` – Global state (Theme, Auth, ...)
+- `frontend-react/src/i18n/` – Translations and i18n initialization
+- `frontend-react/src/styles/` – Theme configuration
 
-## Testen
+## Testing
 
 ```bash
 npm run test
 ```
-- Tests für Komponenten und Services mit Jest & React Testing Library
-- API-Services werden gemockt
-- Beispiel: `src/pages/Chat.test.tsx`, `src/services/tools.test.ts`, ...
+- Component and service tests with Jest & React Testing Library
+- API services are mocked
+- Example: `frontend-react/src/pages/Chat.test.tsx`, `frontend-react/src/services/tools.test.ts`, ...
 
-## Entwicklung
-- Alle Kernfeatures sind modular und mit dem Backend verbunden
-- Error- und Loading-Handling integriert
-- Responsive Sidebar und Header
-- Barrierefreiheit und Theme-Switcher
+## Development
+- All core features are modular and connected to the backend
+- Error and loading handling integrated
+- Responsive sidebar and header
+- Accessibility and theme switcher
 
-## Backend-Anbindung
-- Die wichtigsten Features (Chat, Knowledge Base, Tools, Assistants, Conversations, MCP Tools) sind mit den jeweiligen API-Endpunkten verbunden
-- Anpassungen an die Backend-API können in den Services vorgenommen werden
+## Backend Integration
+- All main features (Chat, Knowledge Base, Tools, Assistants, Conversations, MCP Tools) are connected to their respective API endpoints
+- Backend API adjustments can be made in the services
 
-## Nächste Schritte
-- Features und Seiten weiter ausbauen
-- UI/UX-Feinschliff, Error Handling, Loading States
-- Weitere Tests und Dokumentation
+## Next Steps
+- Expand features and pages
+- UI/UX polish, error handling, loading states
+- More tests and documentation
+
+## Admin CLI
+
+The central CLI tool for admin and maintenance tasks is located at `backend/cli.py` and can be used directly (thanks to the shebang):
+
+```bash
+./backend/cli.py [COMMAND] [SUBCOMMAND] [OPTIONS]
+```
+
+### Examples
+- Database migration: `./backend/cli.py db migrate`
+- Create admin user: `./backend/cli.py user create-admin`
+- List users: `./backend/cli.py user list`
+- Health check: `./backend/cli.py health check`
+- Validate translations: `./backend/cli.py translations validate`
+- Start example MCP server: `./backend/cli.py mcp start-server`
+- Run API integration tests: `./backend/cli.py test api-integration`
+
+**Note:**
+All previous scripts from the `scripts/` folder have been migrated as CLI subcommands. Use the CLI for all administrative, testing, and utility tasks. This ensures a unified, maintainable, and extensible admin interface.
