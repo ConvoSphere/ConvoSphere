@@ -1,34 +1,37 @@
-import pytest
 from app.utils.helpers import generate_uuid, sanitize_filename, validate_email
-from app.utils.validators import validate_password_strength
+
 
 def test_generate_uuid():
     """Test UUID generation."""
     uuid1 = generate_uuid()
     uuid2 = generate_uuid()
-    
+
     # UUIDs should be different
     assert uuid1 != uuid2
-    
+
     # UUIDs should be strings
     assert isinstance(uuid1, str)
     assert isinstance(uuid2, str)
-    
+
     # UUIDs should have correct format
     assert len(uuid1) == 36  # Standard UUID length
-    assert uuid1.count('-') == 4  # Standard UUID format
+    assert uuid1.count("-") == 4  # Standard UUID format
+
 
 def test_sanitize_filename():
     """Test filename sanitization."""
-    from app.utils.helpers import sanitize_filename
     # Test basic sanitization
     assert sanitize_filename("test file.txt") == "test_file.txt"
-    assert sanitize_filename("file with spaces & symbols!.pdf") == "file_with_spaces___symbols_.pdf"
+    assert (
+        sanitize_filename("file with spaces & symbols!.pdf")
+        == "file_with_spaces___symbols_.pdf"
+    )
     # Test edge cases
     assert sanitize_filename("") == "unnamed"
     assert sanitize_filename("   ") == "unnamed"
     assert sanitize_filename("file.txt") == "file.txt"
     assert sanitize_filename("file with spaces.txt") == "file_with_spaces.txt"
+
 
 def test_validate_email():
     """Test email validation."""
@@ -43,9 +46,11 @@ def test_validate_email():
     assert validate_email("") is False
     assert validate_email(None) is False
 
+
 def test_validate_password_strength():
     """Test password strength validation."""
     from app.utils.helpers import validate_password_strength
+
     # Strong passwords
     assert validate_password_strength("StrongPass123!") is True
     assert validate_password_strength("Abc123!X") is True
@@ -58,12 +63,14 @@ def test_validate_password_strength():
     assert validate_password_strength("Abc123!", min_length=8) is False
     assert validate_password_strength("Abc123!X", min_length=8) is True
 
+
 def test_validate_password_strength_custom_rules():
     """Test password strength with custom rules."""
     from app.utils.helpers import validate_password_strength
+
     # Test with minimum length requirement
     assert validate_password_strength("Abc123!", min_length=8) is False
     assert validate_password_strength("Abc123!X", min_length=8) is True
     # Test with higher minimum length
     assert validate_password_strength("Abc123!X", min_length=12) is False
-    assert validate_password_strength("Abc123!XyZ123", min_length=12) is True 
+    assert validate_password_strength("Abc123!XyZ123", min_length=12) is True

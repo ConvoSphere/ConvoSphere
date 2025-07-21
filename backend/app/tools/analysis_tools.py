@@ -4,28 +4,31 @@ Analysis tools for the AI Assistant Platform.
 This module provides tools for data analysis operations.
 """
 
-from typing import Dict, Any, List
+from typing import Any
+
 from .base import BaseTool
 
 
 class DataAnalysisTool(BaseTool):
     """Tool for basic data analysis."""
-    
+
     name = "data_analysis"
     description = "Perform basic data analysis on datasets"
     parameters = {
         "data": {
             "type": "array",
-            "description": "Data to analyze"
+            "description": "Data to analyze",
         },
         "analysis_type": {
             "type": "string",
             "description": "Type of analysis to perform (summary, statistics, visualization)",
-            "default": "summary"
-        }
+            "default": "summary",
+        },
     }
-    
-    async def execute(self, data: List, analysis_type: str = "summary") -> Dict[str, Any]:
+
+    async def execute(
+        self, data: list, analysis_type: str = "summary",
+    ) -> dict[str, Any]:
         """Perform data analysis."""
         try:
             if analysis_type == "summary":
@@ -35,10 +38,10 @@ class DataAnalysisTool(BaseTool):
                     "results": {
                         "count": len(data),
                         "data_type": type(data).__name__,
-                        "preview": data[:5] if len(data) > 5 else data
-                    }
+                        "preview": data[:5] if len(data) > 5 else data,
+                    },
                 }
-            elif analysis_type == "statistics":
+            if analysis_type == "statistics":
                 if all(isinstance(x, (int, float)) for x in data):
                     return {
                         "success": True,
@@ -48,24 +51,22 @@ class DataAnalysisTool(BaseTool):
                             "sum": sum(data),
                             "average": sum(data) / len(data) if data else 0,
                             "min": min(data) if data else None,
-                            "max": max(data) if data else None
-                        }
+                            "max": max(data) if data else None,
+                        },
                     }
-                else:
-                    return {
-                        "success": False,
-                        "error": "Statistics analysis requires numeric data",
-                        "analysis_type": analysis_type
-                    }
-            else:
                 return {
                     "success": False,
-                    "error": f"Unknown analysis type: {analysis_type}",
-                    "analysis_type": analysis_type
+                    "error": "Statistics analysis requires numeric data",
+                    "analysis_type": analysis_type,
                 }
+            return {
+                "success": False,
+                "error": f"Unknown analysis type: {analysis_type}",
+                "analysis_type": analysis_type,
+            }
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e),
-                "analysis_type": analysis_type
-            } 
+                "analysis_type": analysis_type,
+            }

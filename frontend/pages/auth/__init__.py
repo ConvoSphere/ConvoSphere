@@ -5,7 +5,7 @@ This module provides login, registration, and user profile management.
 """
 
 from .login import LoginPage
-from .register import RegisterPage
 from .profile import ProfilePage
+from .register import RegisterPage
 
-__all__ = ["LoginPage", "RegisterPage", "ProfilePage"] 
+__all__ = ["LoginPage", "RegisterPage", "ProfilePage"]

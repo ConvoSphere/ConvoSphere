@@ -11,30 +11,37 @@ from utils.design_system import design_system
 
 class ThemeSwitcher:
     """Theme switcher component for Light/Dark mode toggle."""
-    
+
     def __init__(self):
         """Initialize the theme switcher."""
         self.current_theme = "light"
         self.create_theme_switcher()
-    
+
     def create_theme_switcher(self):
         """Create the theme switcher UI."""
         with ui.element("div").classes("theme-switcher"):
             # Theme toggle button
             with ui.button(
-                on_click=self.toggle_theme
+                on_click=self.toggle_theme,
             ).classes("theme-toggle-btn"):
                 # Sun icon for light mode
-                self.sun_icon = ui.element("div").classes("theme-icon sun-icon").style("""
+                self.sun_icon = (
+                    ui.element("div")
+                    .classes("theme-icon sun-icon")
+                    .style("""
                     width: 20px;
                     height: 20px;
                     background: radial-gradient(circle, #F59E0B 0%, transparent 70%);
                     border-radius: 50%;
                     position: relative;
                 """)
-                
+                )
+
                 # Moon icon for dark mode
-                self.moon_icon = ui.element("div").classes("theme-icon moon-icon").style("""
+                self.moon_icon = (
+                    ui.element("div")
+                    .classes("theme-icon moon-icon")
+                    .style("""
                     width: 20px;
                     height: 20px;
                     background: linear-gradient(45deg, #7A869A 0%, #5BC6E8 100%);
@@ -42,7 +49,8 @@ class ThemeSwitcher:
                     position: relative;
                     display: none;
                 """)
-                
+                )
+
                 # Add crescent to moon
                 ui.element("div").classes("moon-crescent").style("""
                     position: absolute;
@@ -53,18 +61,18 @@ class ThemeSwitcher:
                     background: var(--color-background);
                     border-radius: 50%;
                 """)
-    
+
     def toggle_theme(self):
         """Toggle between light and dark themes."""
         new_theme = "dark" if self.current_theme == "light" else "light"
         self.set_theme(new_theme)
-    
+
     def set_theme(self, theme: str):
         """Set the theme to light or dark."""
         self.current_theme = theme
         if theme in ["light", "dark"]:
             design_system.set_theme(theme)  # type: ignore
-        
+
         # Update icon visibility
         if theme == "light":
             self.sun_icon.style("display: block;")
@@ -72,19 +80,19 @@ class ThemeSwitcher:
         else:
             self.sun_icon.style("display: none;")
             self.moon_icon.style("display: block;")
-        
+
         # Store theme preference
         ui.run_javascript(f"""
         localStorage.setItem('convoSphere-theme', '{theme}');
         """)
-        
+
         # Show notification
         ui.notify(
             f"Switched to {theme} mode",
             type="positive",
-            timeout=2
+            timeout=2,
         )
-    
+
     def load_saved_theme(self):
         """Load the saved theme preference from localStorage."""
         ui.run_javascript("""
@@ -93,10 +101,10 @@ class ThemeSwitcher:
             window.savedTheme = savedTheme;
         }
         """)
-        
+
         # Get the saved theme and apply it
         ui.timer(0.1, lambda: self._apply_saved_theme(), once=True)
-    
+
     def _apply_saved_theme(self):
         """Apply the saved theme from JavaScript."""
         ui.run_javascript("""
@@ -104,10 +112,10 @@ class ThemeSwitcher:
             window.currentTheme = window.savedTheme;
         }
         """)
-        
+
         # Check for saved theme and apply
         ui.timer(0.1, lambda: self._check_and_apply_theme(), once=True)
-    
+
     def _check_and_apply_theme(self):
         """Check for saved theme and apply it."""
         ui.run_javascript("""
@@ -115,10 +123,10 @@ class ThemeSwitcher:
             window.shouldApplyDarkTheme = true;
         }
         """)
-        
+
         # Apply dark theme if needed
         ui.timer(0.1, lambda: self._apply_dark_if_needed(), once=True)
-    
+
     def _apply_dark_if_needed(self):
         """Apply dark theme if it was saved."""
         ui.run_javascript("""
@@ -127,10 +135,10 @@ class ThemeSwitcher:
             window.currentTheme = null;
         }
         """)
-        
+
         # This is a bit hacky, but we'll use a timer to check
         ui.timer(0.1, lambda: self._final_theme_check(), once=True)
-    
+
     def _final_theme_check(self):
         """Final check for theme application."""
         # For now, we'll just set the default theme
@@ -141,4 +149,4 @@ class ThemeSwitcher:
 def create_theme_switcher() -> ThemeSwitcher:
     """Create and return a theme switcher instance."""
     switcher = ThemeSwitcher()
-    return switcher 
+    return switcher

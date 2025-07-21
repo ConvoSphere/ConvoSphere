@@ -4,13 +4,13 @@ Models package for the AI Assistant Platform.
 This package contains all database models for the platform.
 """
 
-from .base import Base
-from .user import User, UserRole
 from .assistant import Assistant, AssistantStatus
+from .audit import AuditEventType, AuditLog, AuditSeverity
+from .base import Base
 from .conversation import Conversation, Message, MessageRole, MessageType
-from .tool import Tool, ToolCategory
-from .audit import AuditLog, AuditEventType, AuditSeverity
 from .knowledge import Document, DocumentChunk, SearchQuery
+from .tool import Tool, ToolCategory
+from .user import User, UserRole
 
 __all__ = [
     "Base",
@@ -30,4 +30,4 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "SearchQuery",
-] 
+]

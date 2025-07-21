@@ -5,32 +5,36 @@ This module provides comprehensive responsive design features including
 mobile optimization, tablet support, and adaptive layouts.
 """
 
-from nicegui import ui
-from typing import Dict, Any, Optional, List, Callable, Tuple
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
+from nicegui import ui
 
 
 class Breakpoint(Enum):
     """CSS breakpoint enumeration."""
-    XS = "xs"      # 0-639px
-    SM = "sm"      # 640-767px
-    MD = "md"      # 768-1023px
-    LG = "lg"      # 1024-1279px
-    XL = "xl"      # 1280-1535px
-    XXL = "2xl"    # 1536px+
+
+    XS = "xs"  # 0-639px
+    SM = "sm"  # 640-767px
+    MD = "md"  # 768-1023px
+    LG = "lg"  # 1024-1279px
+    XL = "xl"  # 1280-1535px
+    XXL = "2xl"  # 1536px+
 
 
 @dataclass
 class ResponsiveConfig:
     """Responsive configuration for a component."""
-    xs: Dict[str, Any] = None
-    sm: Dict[str, Any] = None
-    md: Dict[str, Any] = None
-    lg: Dict[str, Any] = None
-    xl: Dict[str, Any] = None
-    xxl: Dict[str, Any] = None
-    
+
+    xs: dict[str, Any] = None
+    sm: dict[str, Any] = None
+    md: dict[str, Any] = None
+    lg: dict[str, Any] = None
+    xl: dict[str, Any] = None
+    xxl: dict[str, Any] = None
+
     def __post_init__(self):
         """Initialize default values."""
         if self.xs is None:
@@ -49,28 +53,28 @@ class ResponsiveConfig:
 
 class ResponsiveLayout:
     """Responsive layout management system."""
-    
+
     def __init__(self):
         """Initialize responsive layout system."""
         self.current_breakpoint = Breakpoint.LG
-        self.breakpoint_callbacks: List[Callable[[Breakpoint], None]] = []
+        self.breakpoint_callbacks: list[Callable[[Breakpoint], None]] = []
         self.touch_enabled = False
         self.orientation = "landscape"
-        
+
         # Initialize responsive features
         self.initialize_responsive()
-    
+
     def initialize_responsive(self):
         """Initialize responsive features."""
         # Add responsive CSS
         self.add_responsive_css()
-        
+
         # Add viewport meta tag
         self.add_viewport_meta()
-        
+
         # Add touch detection
         self.detect_touch_support()
-    
+
     def add_responsive_css(self):
         """Add responsive CSS styles."""
         css = """
@@ -252,9 +256,9 @@ class ResponsiveLayout:
             }
         }
         """
-        
+
         ui.add_head_html(f"<style>{css}</style>")
-    
+
     def add_viewport_meta(self):
         """Add viewport meta tag for responsive design."""
         viewport_meta = """
@@ -263,50 +267,54 @@ class ResponsiveLayout:
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         """
-        
+
         ui.add_head_html(viewport_meta)
-    
+
     def detect_touch_support(self):
         """Detect touch support."""
         # This would detect actual touch support
         # For now, we'll assume touch is available on mobile
         self.touch_enabled = True
-    
+
     def get_current_breakpoint(self) -> Breakpoint:
         """Get current breakpoint based on screen size."""
         # This would get actual screen size
         # For now, return a default
         return self.current_breakpoint
-    
+
     def set_breakpoint(self, breakpoint: Breakpoint):
         """Set current breakpoint."""
         if self.current_breakpoint != breakpoint:
             self.current_breakpoint = breakpoint
-            
+
             # Notify callbacks
             for callback in self.breakpoint_callbacks:
                 try:
                     callback(breakpoint)
                 except Exception as e:
                     print(f"Error in breakpoint callback: {e}")
-    
+
     def on_breakpoint_change(self, callback: Callable[[Breakpoint], None]):
         """Register breakpoint change callback."""
         self.breakpoint_callbacks.append(callback)
-    
-    def create_responsive_container(self, config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_container(
+        self, config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive container."""
         if config is None:
             config = ResponsiveConfig()
-        
+
         container = ui.element("div").classes("responsive-container")
-        
+
         # Apply responsive classes
         self.apply_responsive_config(container, config)
-        
+
         return container
-    
-    def create_responsive_grid(self, columns: Dict[Breakpoint, int] = None) -> ui.element:
+
+    def create_responsive_grid(
+        self, columns: dict[Breakpoint, int] = None,
+    ) -> ui.element:
         """Create a responsive grid."""
         if columns is None:
             columns = {
@@ -315,11 +323,11 @@ class ResponsiveLayout:
                 Breakpoint.MD: 3,
                 Breakpoint.LG: 4,
                 Breakpoint.XL: 5,
-                Breakpoint.XXL: 6
+                Breakpoint.XXL: 6,
             }
-        
+
         grid = ui.element("div").classes("responsive-grid")
-        
+
         # Apply column configuration
         for breakpoint, column_count in columns.items():
             if breakpoint == Breakpoint.XS:
@@ -327,10 +335,12 @@ class ResponsiveLayout:
             else:
                 # Add media query styles
                 min_width = self.get_breakpoint_width(breakpoint)
-                grid.style(f"@media (min-width: {min_width}px) {{ grid-template-columns: repeat({column_count}, 1fr); }}")
-        
+                grid.style(
+                    f"@media (min-width: {min_width}px) {{ grid-template-columns: repeat({column_count}, 1fr); }}",
+                )
+
         return grid
-    
+
     def get_breakpoint_width(self, breakpoint: Breakpoint) -> int:
         """Get minimum width for breakpoint."""
         widths = {
@@ -339,10 +349,10 @@ class ResponsiveLayout:
             Breakpoint.MD: 768,
             Breakpoint.LG: 1024,
             Breakpoint.XL: 1280,
-            Breakpoint.XXL: 1536
+            Breakpoint.XXL: 1536,
         }
         return widths.get(breakpoint, 0)
-    
+
     def apply_responsive_config(self, element: ui.element, config: ResponsiveConfig):
         """Apply responsive configuration to element."""
         # Apply classes for each breakpoint
@@ -358,8 +368,10 @@ class ResponsiveLayout:
             self.apply_breakpoint_classes(element, config.xl, "xl")
         if config.xxl:
             self.apply_breakpoint_classes(element, config.xxl, "2xl")
-    
-    def apply_breakpoint_classes(self, element: ui.element, config: Dict[str, Any], breakpoint: str):
+
+    def apply_breakpoint_classes(
+        self, element: ui.element, config: dict[str, Any], breakpoint: str,
+    ):
         """Apply breakpoint-specific classes."""
         for key, value in config.items():
             if key == "classes":
@@ -370,215 +382,240 @@ class ResponsiveLayout:
                         element.classes(f"{breakpoint}:{cls}")
             elif key == "style":
                 if isinstance(value, str):
-                    element.style(f"@media (min-width: {self.get_breakpoint_width(Breakpoint(breakpoint))}px) {{ {value} }}")
-    
-    def create_mobile_navigation(self, items: List[Dict[str, Any]]) -> ui.element:
+                    element.style(
+                        f"@media (min-width: {self.get_breakpoint_width(Breakpoint(breakpoint))}px) {{ {value} }}",
+                    )
+
+    def create_mobile_navigation(self, items: list[dict[str, Any]]) -> ui.element:
         """Create mobile navigation bar."""
         nav = ui.element("nav").classes("mobile-nav")
-        
+
         with nav:
             for item in items:
                 nav_item = ui.link(
                     item["text"],
                     item["href"],
-                    icon=item.get("icon", "")
+                    icon=item.get("icon", ""),
                 ).classes("mobile-nav-item")
-                
+
                 if item.get("active", False):
                     nav_item.classes("active")
-        
+
         return nav
-    
-    def create_responsive_card(self, title: str, content, config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_card(
+        self, title: str, content, config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive card."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "p-2"},
                 sm={"classes": "p-3"},
                 md={"classes": "p-4"},
-                lg={"classes": "p-6"}
+                lg={"classes": "p-6"},
             )
-        
+
         card = ui.card().classes("responsive-card")
         self.apply_responsive_config(card, config)
-        
+
         with card:
             ui.label(title).classes("text-lg font-medium mb-2")
             content_container = ui.element("div")
             with content_container:
                 content()
-        
+
         return card
-    
-    def create_responsive_table(self, headers: List[str], data: List[List[str]], config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_table(
+        self, headers: list[str], data: list[list[str]], config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive table."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "text-xs"},
                 sm={"classes": "text-sm"},
-                md={"classes": "text-base"}
+                md={"classes": "text-base"},
             )
-        
+
         table = ui.table(columns=headers, rows=data)
         self.apply_responsive_config(table, config)
-        
+
         return table
-    
-    def create_responsive_form(self, fields: List[Dict[str, Any]], config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_form(
+        self, fields: list[dict[str, Any]], config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive form."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "space-y-2"},
                 sm={"classes": "space-y-3"},
-                md={"classes": "space-y-4"}
+                md={"classes": "space-y-4"},
             )
-        
+
         form = ui.element("form").classes("responsive-form")
         self.apply_responsive_config(form, config)
-        
+
         with form:
             for field in fields:
                 field_type = field.get("type", "input")
-                
+
                 if field_type == "input":
                     ui.input(
                         field.get("label", ""),
                         placeholder=field.get("placeholder", ""),
-                        **field.get("props", {})
+                        **field.get("props", {}),
                     ).classes("w-full")
                 elif field_type == "textarea":
                     ui.textarea(
                         field.get("label", ""),
                         placeholder=field.get("placeholder", ""),
-                        **field.get("props", {})
+                        **field.get("props", {}),
                     ).classes("w-full")
                 elif field_type == "select":
                     ui.select(
                         field.get("label", ""),
                         options=field.get("options", []),
-                        **field.get("props", {})
+                        **field.get("props", {}),
                     ).classes("w-full")
-        
+
         return form
-    
-    def create_responsive_sidebar(self, items: List[Dict[str, Any]], config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_sidebar(
+        self, items: list[dict[str, Any]], config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive sidebar."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "hidden"},
-                md={"classes": "block w-64"}
+                md={"classes": "block w-64"},
             )
-        
+
         sidebar = ui.element("aside").classes("responsive-sidebar")
         self.apply_responsive_config(sidebar, config)
-        
+
         with sidebar:
             for item in items:
                 if item.get("type") == "header":
-                    ui.label(item["text"]).classes("text-sm font-medium text-gray-500 uppercase tracking-wider px-3 py-2")
+                    ui.label(item["text"]).classes(
+                        "text-sm font-medium text-gray-500 uppercase tracking-wider px-3 py-2",
+                    )
                 elif item.get("type") == "link":
                     ui.link(
                         item["text"],
                         item["href"],
-                        icon=item.get("icon", "")
-                    ).classes("flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md")
+                        icon=item.get("icon", ""),
+                    ).classes(
+                        "flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md",
+                    )
                 elif item.get("type") == "divider":
                     ui.element("hr").classes("border-gray-200 my-2")
-        
+
         return sidebar
-    
-    def create_responsive_header(self, title: str, actions: List[Dict[str, Any]] = None, config: ResponsiveConfig = None) -> ui.element:
+
+    def create_responsive_header(
+        self,
+        title: str,
+        actions: list[dict[str, Any]] = None,
+        config: ResponsiveConfig = None,
+    ) -> ui.element:
         """Create a responsive header."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "p-2"},
                 sm={"classes": "p-3"},
-                md={"classes": "p-4"}
+                md={"classes": "p-4"},
             )
-        
-        header = ui.element("header").classes("responsive-header bg-white border-b border-gray-200")
+
+        header = ui.element("header").classes(
+            "responsive-header bg-white border-b border-gray-200",
+        )
         self.apply_responsive_config(header, config)
-        
+
         with header:
             with ui.row().classes("items-center justify-between"):
                 ui.label(title).classes("text-lg font-medium")
-                
+
                 if actions:
                     with ui.row().classes("space-x-2"):
                         for action in actions:
                             ui.button(
                                 action["text"],
                                 icon=action.get("icon", ""),
-                                on_click=action.get("on_click")
+                                on_click=action.get("on_click"),
                             ).classes("touch-friendly")
-        
+
         return header
-    
-    def create_responsive_dialog(self, title: str, content, config: ResponsiveConfig = None) -> ui.dialog:
+
+    def create_responsive_dialog(
+        self, title: str, content, config: ResponsiveConfig = None,
+    ) -> ui.dialog:
         """Create a responsive dialog."""
         if config is None:
             config = ResponsiveConfig(
                 xs={"classes": "w-full h-full"},
                 sm={"classes": "w-96"},
                 md={"classes": "w-lg"},
-                lg={"classes": "w-xl"}
+                lg={"classes": "w-xl"},
             )
-        
+
         dialog = ui.dialog()
-        
+
         with dialog:
             card = ui.card().classes("responsive-dialog")
             self.apply_responsive_config(card, config)
-            
+
             with card:
                 # Header
                 with ui.row().classes("items-center justify-between mb-4"):
                     ui.label(title).classes("text-lg font-medium")
-                    ui.button(icon="close", on_click=dialog.close).classes("touch-friendly")
-                
+                    ui.button(icon="close", on_click=dialog.close).classes(
+                        "touch-friendly",
+                    )
+
                 # Content
                 content_container = ui.element("div")
                 with content_container:
                     content()
-        
+
         return dialog
-    
+
     def is_mobile(self) -> bool:
         """Check if current viewport is mobile."""
         return self.current_breakpoint in [Breakpoint.XS, Breakpoint.SM]
-    
+
     def is_tablet(self) -> bool:
         """Check if current viewport is tablet."""
         return self.current_breakpoint == Breakpoint.MD
-    
+
     def is_desktop(self) -> bool:
         """Check if current viewport is desktop."""
         return self.current_breakpoint in [Breakpoint.LG, Breakpoint.XL, Breakpoint.XXL]
-    
+
     def is_touch_device(self) -> bool:
         """Check if device supports touch."""
         return self.touch_enabled
-    
+
     def get_orientation(self) -> str:
         """Get current device orientation."""
         return self.orientation
-    
+
     def optimize_for_touch(self, element: ui.element):
         """Optimize element for touch interaction."""
         element.classes("touch-friendly")
-    
+
     def optimize_for_mobile(self, element: ui.element):
         """Optimize element for mobile viewport."""
         element.classes("mobile-optimized")
-    
+
     def optimize_for_tablet(self, element: ui.element):
         """Optimize element for tablet viewport."""
         element.classes("tablet-optimized")
-    
+
     def optimize_for_desktop(self, element: ui.element):
         """Optimize element for desktop viewport."""
         element.classes("desktop-optimized")
 
 
 # Global responsive layout instance
-responsive_layout = ResponsiveLayout() 
+responsive_layout = ResponsiveLayout()

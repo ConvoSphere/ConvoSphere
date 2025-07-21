@@ -1,7 +1,7 @@
-import pytest
-from app.models.user import User, UserRole, UserStatus
 from app.models.assistant import Assistant, AssistantStatus
 from app.models.tool import Tool, ToolCategory
+from app.models.user import User, UserRole, UserStatus
+
 
 def test_user_model():
     """Test User model instantiation and attributes."""
@@ -12,9 +12,9 @@ def test_user_model():
         first_name="Test",
         last_name="User",
         role=UserRole.USER,
-        status=UserStatus.ACTIVE
+        status=UserStatus.ACTIVE,
     )
-    
+
     assert user.email == "test@example.com"
     assert user.username == "testuser"
     assert user.first_name == "Test"
@@ -22,6 +22,7 @@ def test_user_model():
     assert user.role == UserRole.USER
     assert user.status == UserStatus.ACTIVE
     assert user.is_active is True
+
 
 def test_assistant_model():
     """Test Assistant model instantiation and attributes."""
@@ -32,15 +33,16 @@ def test_assistant_model():
         creator_id="test_creator_id",
         model="gpt-4",
         temperature="0.7",
-        status=AssistantStatus.DRAFT
+        status=AssistantStatus.DRAFT,
     )
-    
+
     assert assistant.name == "Test Assistant"
     assert assistant.description == "A test assistant"
     assert assistant.system_prompt == "You are a helpful assistant."
     assert assistant.model == "gpt-4"
     assert assistant.temperature == "0.7"
     assert assistant.status == AssistantStatus.DRAFT
+
 
 def test_tool_model():
     """Test Tool model instantiation and attributes."""
@@ -50,15 +52,16 @@ def test_tool_model():
         category=ToolCategory.SEARCH,
         function_name="test_function",
         is_builtin=True,
-        is_enabled=True
+        is_enabled=True,
     )
-    
+
     assert tool.name == "Test Tool"
     assert tool.description == "A test tool"
     assert tool.category == ToolCategory.SEARCH
     assert tool.function_name == "test_function"
     assert tool.is_builtin is True
     assert tool.is_enabled is True
+
 
 def test_user_role_enum():
     """Test UserRole enum values."""
@@ -67,9 +70,10 @@ def test_user_role_enum():
     assert UserRole.USER == "user"
     assert UserRole.GUEST == "guest"
 
+
 def test_assistant_status_enum():
     """Test AssistantStatus enum values."""
     assert AssistantStatus.ACTIVE == "active"
     assert AssistantStatus.INACTIVE == "inactive"
     assert AssistantStatus.DRAFT == "draft"
-    assert AssistantStatus.MAINTENANCE == "maintenance" 
+    assert AssistantStatus.MAINTENANCE == "maintenance"
