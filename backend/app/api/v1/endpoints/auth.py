@@ -86,7 +86,7 @@ async def login(
     if not user or not verify_password(user_credentials.password, user.hashed_password):
         logger.warning(f"Failed login attempt for email: {user_credentials.email}")
         log_security_event(
-            event_type="USER_LOGIN_FAILED",
+            event_type="user_login",
             user_id=None,
             description=f"Failed login attempt for {user_credentials.email}",
             severity="warning",
@@ -115,7 +115,7 @@ async def login(
     db.commit()
 
     log_security_event(
-        event_type="USER_LOGIN",
+        event_type="user_login",
         user_id=user.id,
         description=f"User {user.email} logged in successfully",
         severity="info",
@@ -263,7 +263,7 @@ async def logout(
     try:
         # Add token to blacklist
         from app.core.security import BLACKLIST_PREFIX
-        from app.utils.redis import get_redis
+        from app.core.redis_client import get_redis
 
         redis = await get_redis()
         token = credentials.credentials
@@ -294,7 +294,7 @@ async def logout(
         from app.core.security import log_security_event
 
         log_security_event(
-            event_type="USER_LOGOUT",
+            event_type="user_logout",
             user_id=get_current_user_id(),
             description="User logged out successfully",
             severity="info",

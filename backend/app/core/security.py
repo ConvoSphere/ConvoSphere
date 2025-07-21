@@ -14,6 +14,8 @@ from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
 
+from app.core.config import get_settings
+
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -123,7 +125,7 @@ async def verify_token(token: str) -> str | None:
     """
     try:
         # Check if token is blacklisted
-        from app.utils.redis import get_redis
+        from app.core.redis_client import get_redis
 
         redis = await get_redis()
         is_blacklisted = await redis.get(f"{BLACKLIST_PREFIX}{token}")
