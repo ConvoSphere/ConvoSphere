@@ -1,6 +1,7 @@
 """Security utilities for the AI Assistant Platform."""
 
 import re
+import asyncio
 import html
 from typing import List
 from fastapi import Request, HTTPException, status
@@ -63,21 +64,30 @@ def validate_permissions(user_permissions: List[str], required_permissions: List
     return all(perm in user_permissions for perm in required_permissions)
 
 
-def check_rate_limit(user_id: str, action: str, limit: int, window: int) -> bool:
+async def check_rate_limit(user_id: str, action: str, limit: int, window: int) -> bool:
     """
-    Check if user has exceeded rate limit for an action.
+    Check if user has exceeded rate limit for an action using Redis.
     
     Args:
         user_id: User ID
         action: Action being performed
         limit: Maximum allowed actions
         window: Time window in seconds
-        
     Returns:
         bool: True if within rate limit, False otherwise
     """
-    # TODO: Implement rate limiting with Redis
-    return True
+    redis = await get_redis()
+    key = f"rate_limit:{user_id}:{action}"
+    current = await redis.get(key)
+    if current is None:
+        await redis.set(key, 1, ex=window)
+        return True
+    else:
+        current = int(current)
+        if current >= limit:
+            return False
+        await redis.incr(key)
+        return True
 
 
 def validate_api_key(api_key: str) -> bool:

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from loguru import logger
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
+from app.core.security import verify_token
 from app.services.conversation_service import ConversationService
 from app.services.ai_service import AIService, ai_service, AIResponse
 from app.services.assistant_engine import AssistantEngine
@@ -132,12 +132,12 @@ async def websocket_endpoint(
     - Sende nach erfolgreichem Connect eine Bestätigungsnachricht
     - Unterstützt Nachrichten, Typing-Indikator, Fehlerbehandlung
     """
-    # Optional: Authentifizierung via Token (Backward-compatible)
     user_id = None
     if token:
-        # TODO: Implementiere echte JWT-Validierung
-        # Hier: Dummy-Validierung für Entwicklung
-        user_id = str(token) if token != "mock_token_123" else ""
+        user_id = verify_token(token)
+        if not user_id:
+            await websocket.close(code=4401)
+            return
     
     await manager.connect(websocket, conversation_id)
     # Sende Connection-Confirmation
