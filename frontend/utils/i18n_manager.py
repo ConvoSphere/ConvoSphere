@@ -10,6 +10,7 @@ from pathlib import Path
 
 from nicegui import app, ui
 from utils.constants import SUPPORTED_LANGUAGES
+from utils.logger import get_logger
 
 
 class I18nManager:
@@ -21,6 +22,7 @@ class I18nManager:
         self.translations: dict[str, dict[str, str]] = {}
         self.supported_languages = SUPPORTED_LANGUAGES
         self.translations_path = Path(__file__).parent.parent / "i18n"
+        self.logger = get_logger(__name__)
 
         # Load translations
         self._load_translations()
@@ -36,12 +38,12 @@ class I18nManager:
                 if translation_file.exists():
                     with open(translation_file, encoding="utf-8") as f:
                         self.translations[language_code] = json.load(f)
-                    print(f"Loaded translations for language: {language_code}")
+                    self.logger.info(f"Loaded translations for language: {language_code}")
                 else:
-                    print(f"Translation file not found: {translation_file}")
+                    self.logger.warning(f"Translation file not found: {translation_file}")
                     self.translations[language_code] = {}
         except Exception as e:
-            print(f"Error loading translations: {e}")
+            self.logger.error(f"Error loading translations: {e}")
             # Fallback to empty translations
             for language_code in self.supported_languages.keys():
                 self.translations[language_code] = {}
@@ -54,14 +56,14 @@ class I18nManager:
             if stored_language and stored_language in self.supported_languages:
                 self.current_language = stored_language
         except Exception as e:
-            print(f"Error loading language preference: {e}")
+            self.logger.error(f"Error loading language preference: {e}")
 
     def _save_language_preference(self):
         """Save language preference to browser storage."""
         try:
             app.storage.user["language"] = self.current_language
         except Exception as e:
-            print(f"Error saving language preference: {e}")
+            self.logger.error(f"Error saving language preference: {e}")
 
     def set_language(self, language: str):
         """
@@ -71,7 +73,7 @@ class I18nManager:
             language: Language code (e.g., 'de', 'en')
         """
         if language not in self.supported_languages:
-            print(f"Language {language} not supported")
+            self.logger.warning(f"Language {language} not supported")
             return
 
         if language != self.current_language:
@@ -116,7 +118,7 @@ class I18nManager:
             if kwargs:
                 translation = translation.format(**kwargs)
         except (KeyError, ValueError) as e:
-            print(f"Error formatting translation for key '{key}': {e}")
+            self.logger.error(f"Error formatting translation for key '{key}': {e}")
 
         return translation
 
@@ -151,7 +153,7 @@ class I18nManager:
         """Update UI elements with new language."""
         # This would trigger a UI refresh in a real application
         # For now, we'll just log the change
-        print(f"Language changed to: {self.current_language}")
+        self.logger.info(f"Language changed to: {self.current_language}")
 
     async def create_language_selector(self) -> ui.select:
         """

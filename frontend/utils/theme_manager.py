@@ -6,6 +6,7 @@ with persistent storage and automatic detection.
 """
 
 from nicegui import ui
+from utils.logger import get_logger
 
 
 class ThemeManager:
@@ -14,6 +15,7 @@ class ThemeManager:
     def __init__(self):
         """Initialize the theme manager."""
         self.current_theme = "light"
+        self.logger = get_logger(__name__)
         self._load_theme()
         self._apply_theme()
 
@@ -23,15 +25,14 @@ class ThemeManager:
             # In a real implementation, this would load from localStorage
             # For now, we'll use a simple approach
             self.current_theme = "light"
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Error loading theme, using default: {e}")
             self.current_theme = "light"
 
     def _save_theme(self):
         """Save theme to local storage."""
-        try:
+        with contextlib.suppress(Exception):
             # In a real implementation, this would save to localStorage
-            pass
-        except Exception:
             pass
 
     def _apply_theme(self):

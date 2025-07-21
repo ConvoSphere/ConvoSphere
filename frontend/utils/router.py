@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from nicegui import ui
+from utils.logger import get_logger
 
 
 class Router:
@@ -20,6 +21,7 @@ class Router:
         self.previous_page = ""
         self.page_handlers: dict[str, Callable] = {}
         self.navigation_callbacks: list[Callable] = []
+        self.logger = get_logger(__name__)
 
         # Page state
         self.page_state: dict[str, Any] = {}
@@ -63,6 +65,7 @@ class Router:
         try:
             self.page_handlers[page_name](**kwargs)
         except Exception as e:
+            self.logger.error(f"Error loading page {page_name}: {e}")
             if page_name != "login":
                 self.navigate_to("login")
             else:
@@ -105,12 +108,10 @@ class Router:
             try:
                 callback(page_name)
             except Exception as e:
-                print(f"Error in navigation callback: {e}")
+                self.logger.error(f"Error in navigation callback: {e}")
 
     def _clear_app_container(self):
         """Remove and recreate the main app container for exclusive layouts (e.g. AuthLayout)."""
-        from nicegui import ui
-
         # Remove the existing .app-container if present
         containers = ui.query(".app-container").all()
         for el in containers:
@@ -154,7 +155,7 @@ class Router:
 
         # Add dashboard content
         with layout.main_content:
-            dashboard = create_dashboard_page()
+            create_dashboard_page()
 
     def _handle_chat_page(self, **kwargs):
         """Handle chat page."""
@@ -166,7 +167,7 @@ class Router:
 
         # Add chat interface
         with layout.main_content:
-            chat_interface = create_chat_interface()
+            create_chat_interface()
 
     def _handle_conversations_page(self, **kwargs):
         """Handle conversations page."""

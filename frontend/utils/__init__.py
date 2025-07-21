@@ -24,6 +24,5 @@ __all__ = [
     # Validators
     "validate_email",
     "validate_password",
-    "validate_username",
     "validate_url",
 ]

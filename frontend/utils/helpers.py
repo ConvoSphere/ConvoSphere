@@ -148,7 +148,7 @@ def debounce(delay: float = 0.3):
         Decorated function
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         timer = None
 
         @wraps(func)
@@ -180,7 +180,7 @@ def throttle(delay: float = 0.1):
         Decorated function
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         last_call = 0
 
         @wraps(func)
@@ -234,7 +234,7 @@ def extract_file_extension(filename: str) -> str:
     return filename.rsplit(".", 1)[1].lower() if "." in filename else ""
 
 
-def is_valid_file_type(filename: str, allowed_extensions: list) -> bool:
+def is_valid_file_type(filename: str, allowed_extensions: list[str]) -> bool:
     """
     Check if file type is allowed.
 

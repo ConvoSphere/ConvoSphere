@@ -11,6 +11,7 @@ from nicegui import ui
 from services.auth_service import auth_service
 from utils.router import router
 from utils.theme_manager import theme_manager
+from utils.logger import get_logger
 
 
 class ConvoSphereApp:
@@ -20,6 +21,7 @@ class ConvoSphereApp:
         """Initialize the application."""
         self.current_page = "login"
         self.is_initialized = False
+        self.logger = get_logger(__name__)
 
         # Setup theme
         theme_manager.set_theme("light")
@@ -66,13 +68,13 @@ class ConvoSphereApp:
                 # Navigate to login
                 router.navigate_to("login")
         except Exception as e:
-            print(f"Error checking auth status: {e}")
+            self.logger.error(f"Error checking auth status: {e}")
             router.navigate_to("login")
 
     def _handle_navigation(self, page_name: str):
         """Handle navigation events."""
         self.current_page = page_name
-        print(f"Navigated to: {page_name}")
+        self.logger.info(f"Navigated to: {page_name}")
 
 
 # Global app instance

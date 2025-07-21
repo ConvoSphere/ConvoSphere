@@ -6,6 +6,7 @@ functions for user inputs and data processing.
 """
 
 import html
+import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -581,7 +582,7 @@ def validate_numeric_range(
     Returns:
         Tuple of (is_valid, error_message)
     """
-    if not isinstance(value, (int, float)):
+    if not isinstance(value, int | float):
         return False, f"{field_name} muss eine Zahl sein"
 
     if value < min_value:
@@ -655,8 +656,6 @@ def validate_json_string(json_string: str) -> tuple[bool, str | None]:
         return False, "JSON-String ist erforderlich"
 
     try:
-        import json
-
         json.loads(json_string)
         return True, None
     except json.JSONDecodeError as e:
@@ -720,7 +719,7 @@ def validate_assistant_data(data: dict[str, Any]) -> dict[str, Any]:
 
     # Validate temperature
     temperature = data.get("temperature", 0.7)
-    if not isinstance(temperature, (int, float)) or temperature < 0 or temperature > 2:
+    if not isinstance(temperature, int | float) or temperature < 0 or temperature > 2:
         errors.append("Temperature muss zwischen 0 und 2 liegen")
 
     # Validate max_tokens
@@ -903,7 +902,7 @@ def sanitize_input(text: str, max_length: int = 1000) -> str:
 def validate_file_upload(
     filename: str,
     file_size: int,
-    allowed_extensions: list[str] = None,
+    allowed_extensions: list[str] | None = None,
     max_size_mb: int = 10,
 ) -> tuple[bool, str]:
     """
@@ -1081,37 +1080,7 @@ def validate_url(url: str) -> dict[str, Any]:
     }
 
 
-def validate_phone_number(phone: str) -> dict[str, Any]:
-    """
-    Validate phone number.
 
-    Args:
-        phone: Phone number to validate
-
-    Returns:
-        Validation result with valid flag and errors list
-    """
-    errors = []
-
-    if not phone:
-        errors.append("Telefonnummer ist erforderlich")
-        return {"valid": False, "errors": errors}
-
-    # Remove common separators
-    clean_phone = re.sub(r"[\s\-\(\)\+]", "", phone)
-
-    # Check if it's all digits
-    if not clean_phone.isdigit():
-        errors.append("Telefonnummer darf nur Zahlen enthalten")
-
-    # Check length (international format)
-    if len(clean_phone) < 10 or len(clean_phone) > 15:
-        errors.append("Telefonnummer muss zwischen 10 und 15 Ziffern haben")
-
-    return {
-        "valid": len(errors) == 0,
-        "errors": errors,
-    }
 
 
 def validate_date(date_str: str, format_str: str = "%Y-%m-%d") -> dict[str, Any]:
@@ -1143,7 +1112,7 @@ def validate_date(date_str: str, format_str: str = "%Y-%m-%d") -> dict[str, Any]
 
 
 def validate_number(
-    value: str, min_val: float = None, max_val: float = None,
+    value: str, min_val: float | None = None, max_val: float | None = None,
 ) -> dict[str, Any]:
     """
     Validate number input.
@@ -1240,7 +1209,7 @@ def validate_json_schema(
                     if expected_type == "string" and not isinstance(value, str):
                         errors.append(f"{field} muss ein String sein")
                     elif expected_type == "number" and not isinstance(
-                        value, (int, float),
+                        value, int | float,
                     ):
                         errors.append(f"{field} muss eine Zahl sein")
                     elif expected_type == "boolean" and not isinstance(value, bool):
@@ -1252,7 +1221,7 @@ def validate_json_schema(
                         errors.append(f"{field} ist zu lang")
 
                 # Min/Max validation for numbers
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     if "minimum" in field_schema and value < field_schema["minimum"]:
                         errors.append(f"{field} ist zu klein")
                     if "maximum" in field_schema and value > field_schema["maximum"]:

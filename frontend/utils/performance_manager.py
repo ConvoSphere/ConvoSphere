@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+from utils.logger import get_logger
+
 
 class PerformanceMetric(Enum):
     """Performance metric types."""
@@ -46,6 +48,7 @@ class PerformanceManager:
         self.cache_ttl: dict[str, float] = {}
         self.default_ttl = 300  # 5 minutes
         self.performance_handlers: list[Callable] = []
+        self.logger = get_logger(__name__)
 
         # Performance thresholds
         self.thresholds = {
@@ -85,7 +88,7 @@ class PerformanceManager:
         """Check if metric exceeds threshold."""
         threshold = self.thresholds.get(data.metric)
         if threshold and data.value > threshold:
-            print(
+            self.logger.warning(
                 f"Performance warning: {data.metric.value} = {data.value}ms (threshold: {threshold}ms)",
             )
 
@@ -95,7 +98,7 @@ class PerformanceManager:
             try:
                 handler(data)
             except Exception as e:
-                print(f"Error in performance handler: {e}")
+                self.logger.error(f"Error in performance handler: {e}")
 
     def on_performance_issue(self, handler: Callable):
         """Register performance issue handler."""
