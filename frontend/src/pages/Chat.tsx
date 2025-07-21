@@ -8,7 +8,7 @@ import { Button, Input } from '../components/ui'
 import FileUpload from '../components/ui/FileUpload'
 
 const ChatPage = () => {
-  const { t } = useTranslation()
+  useTranslation() // t wird aktuell nicht verwendet
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [newConversationTitle, setNewConversationTitle] = useState('')
   const [showNewConversation, setShowNewConversation] = useState(false)
@@ -27,7 +27,7 @@ const ChatPage = () => {
       setSelectedConversation(newConversation)
       setNewConversationTitle('')
       setShowNewConversation(false)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to create conversation:', error)
     }
   }
@@ -180,7 +180,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
   const { data: context, isLoading: isLoadingContext } = useGetConversationContextQuery(conversation.id)
   const [updateContext, { isLoading: isUpdatingContext }] = useUpdateConversationContextMutation()
   const [contextError, setContextError] = useState<string | null>(null)
-  const [userPreferences, setUserPreferences] = useState<Record<string, any>>({})
+  const [userPreferences, setUserPreferences] = useState<Record<string, unknown>>({})
   const [addReaction] = useAddMessageReactionMutation()
   const [removeReaction] = useRemoveMessageReactionMutation()
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null)
@@ -193,7 +193,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
     const connectWebSocket = async () => {
       try {
         await websocketService.connect()
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to connect WebSocket:', error)
       }
     }
@@ -230,7 +230,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
       }).unwrap()
       setMessage('')
       setAttachments([])
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to send message:', error)
     }
   }
@@ -262,12 +262,12 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
     try {
       const result = await exportConversation({
         conversation_id: conversation.id,
-        format: exportFormat as any,
+        format: exportFormat as ExportFormat,
         include_metadata: true,
         include_attachments: true,
       }).unwrap()
       setDownloadUrl(result.download_url)
-    } catch (err: any) {
+    } catch {
       setExportError('Export failed')
     }
   }
@@ -282,7 +282,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         id: conversation.id,
         data: { assistant_id: newAssistantId }
       }).unwrap()
-    } catch (err: any) {
+    } catch {
       setAssistantError('Failed to switch assistant')
     }
   }
@@ -295,7 +295,7 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         conversation_id: conversation.id,
         context: { user_preferences: userPreferences }
       }).unwrap()
-    } catch (err: any) {
+    } catch {
       setContextError('Failed to update context')
     }
   }
@@ -308,8 +308,8 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         message_id: messageId,
         emoji
       }).unwrap()
-    } catch (error) {
-      console.error('Failed to add reaction:', error)
+    } catch {
+      // Fehler beim Hinzufügen der Reaktion ignorieren
     }
   }
 
@@ -321,8 +321,8 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
         message_id: messageId,
         reaction_id: reactionId
       }).unwrap()
-    } catch (error) {
-      console.error('Failed to remove reaction:', error)
+    } catch {
+      // Fehler beim Entfernen der Reaktion ignorieren
     }
   }
 
@@ -348,8 +348,8 @@ const ChatInterface = ({ conversation }: ChatInterfaceProps) => {
       }).unwrap()
       setShowDeleteConfirm(false)
       setMessageToDelete(null)
-    } catch (error) {
-      console.error('Failed to delete message:', error)
+    } catch {
+      // Fehler beim Löschen der Nachricht ignorieren
     }
   }
 

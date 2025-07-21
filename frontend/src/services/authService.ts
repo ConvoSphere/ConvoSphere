@@ -96,8 +96,7 @@ class AuthService {
       
       // Consider token expired if it expires within the next 5 minutes
       return currentTime >= (expirationTime - 5 * 60 * 1000)
-    } catch (error) {
-      console.error('Error parsing token:', error)
+    } catch {
       return true
     }
   }
@@ -116,7 +115,7 @@ class AuthService {
       try {
         const refreshResult = await this.refreshToken()
         return refreshResult.access_token
-      } catch (error) {
+      } catch {
         this.handleAuthError()
         return null
       }

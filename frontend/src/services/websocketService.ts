@@ -1,9 +1,9 @@
 import { store } from '../app/store'
 import { logout } from '../features/auth/authSlice'
 
-export interface WebSocketMessage {
+export interface WebSocketMessage<T = unknown> {
   type: 'message' | 'conversation_update' | 'user_typing' | 'error'
-  data: any
+  data: T
   conversation_id?: string
   user_id?: string
 }

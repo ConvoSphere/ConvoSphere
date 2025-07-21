@@ -75,7 +75,7 @@ class FileService {
           try {
             const result: UploadResult = JSON.parse(xhr.responseText)
             resolve(result)
-          } catch (error) {
+          } catch {
             reject(new Error('Failed to parse upload response'))
           }
         } else {
@@ -85,19 +85,19 @@ class FileService {
 
       // Error handling
       xhr.addEventListener('error', () => {
-        const error = new Error('Network error during upload')
+        const err = new Error('Network error during upload')
         if (options.onError) {
-          options.onError(error)
+          options.onError(err)
         }
-        reject(error)
+        reject(err)
       })
 
       xhr.addEventListener('abort', () => {
-        const error = new Error('Upload was aborted')
+        const err = new Error('Upload was aborted')
         if (options.onError) {
-          options.onError(error)
+          options.onError(err)
         }
-        reject(error)
+        reject(err)
       })
 
       // Send request
@@ -159,7 +159,7 @@ class FileService {
           try {
             const result: UploadResult = JSON.parse(xhr.responseText)
             resolve(result)
-          } catch (error) {
+          } catch {
             reject(new Error('Failed to parse upload response'))
           }
         } else {
@@ -168,11 +168,11 @@ class FileService {
       })
 
       xhr.addEventListener('error', () => {
-        const error = new Error('Network error during upload')
+        const err = new Error('Network error during upload')
         if (options.onError) {
-          options.onError(error)
+          options.onError(err)
         }
-        reject(error)
+        reject(err)
       })
 
       xhr.open('POST', `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/knowledge/upload`)
