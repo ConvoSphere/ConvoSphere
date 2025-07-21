@@ -77,8 +77,22 @@ class Tool(Base):
         if not self.parameters_schema:
             return True
         
-        # TODO: Implement JSON Schema validation
-        return True
+        try:
+            from jsonschema import validate, ValidationError
+            
+            # Validate parameters against JSON schema
+            validate(instance=parameters, schema=self.parameters_schema)
+            return True
+            
+        except ImportError:
+            logger.error("jsonschema not installed. Install with: pip install jsonschema")
+            return False
+        except ValidationError as e:
+            logger.error(f"Parameter validation failed: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Schema validation error: {e}")
+            return False
     
     def get_parameter_description(self, param_name: str) -> Optional[str]:
         """Get description for a specific parameter."""

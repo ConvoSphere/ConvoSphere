@@ -106,7 +106,8 @@ async def login(
     refresh_token = create_refresh_token(subject=user.id)
     
     # Update last login
-    user.last_login = "2024-01-01T00:00:00Z"  # TODO: Use proper datetime
+    from datetime import datetime
+    user.last_login = datetime.utcnow()
     db.commit()
     
     log_security_event(
@@ -240,21 +241,63 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(
-    current_user_id: str = Depends(get_current_user_id)
+    current_user_id: str = Depends(get_current_user_id),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     Logout user (invalidate tokens).
     
     Args:
         current_user_id: Current user ID from token
+        credentials: HTTP authorization credentials
         
     Returns:
         dict: Logout confirmation
     """
-    # TODO: Implement token blacklisting
-    logger.info(f"User logged out: {current_user_id}")
-    
-    return {"message": "Successfully logged out"}
+    try:
+        # Add token to blacklist
+        from app.core.security import BLACKLIST_PREFIX
+        from app.utils.redis import get_redis
+        
+        redis = await get_redis()
+        token = credentials.credentials
+        
+        # Calculate token expiration time
+        from app.core.security import verify_token
+        from jose import jwt
+        from app.core.config import settings
+        
+        try:
+            payload = jwt.decode(
+                token,
+                settings.secret_key,
+                algorithms=[settings.jwt_algorithm]
+            )
+            exp = payload.get("exp")
+            if exp:
+                # Calculate time until expiration
+                import time
+                ttl = int(exp - time.time())
+                if ttl > 0:
+                    await redis.set(f"{BLACKLIST_PREFIX}{token}", "1", ex=ttl)
+        except Exception as e:
+            logger.error(f"Token blacklisting error: {e}")
+        
+        # Log security event
+        from app.core.security import log_security_event
+        log_security_event(
+            event_type="USER_LOGOUT",
+            user_id=current_user_id,
+            description="User logged out successfully",
+            severity="info"
+        )
+        
+        logger.info(f"User logged out: {current_user_id}")
+        return {"message": "Successfully logged out"}
+        
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        return {"message": "Successfully logged out"}
 
 
 @router.get("/me", response_model=UserResponse)

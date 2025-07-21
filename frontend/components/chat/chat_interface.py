@@ -143,8 +143,17 @@ class ChatInterface:
     
     async def _scroll_to_bottom(self):
         """Scroll messages area to bottom."""
-        # TODO: Implement scroll to bottom functionality
-        pass
+        try:
+            if self.messages_container:
+                # Use JavaScript to scroll to bottom
+                await ui.run_javascript("""
+                    const messagesContainer = document.querySelector('.messages-container');
+                    if (messagesContainer) {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                """)
+        except Exception as e:
+            print(f"Error scrolling to bottom: {e}")
     
     def create_chat_interface(self) -> ui.element:
         """
@@ -269,8 +278,22 @@ class ChatInterface:
         
         # Auto-resize textarea
         if hasattr(self, 'message_input'):
-            # TODO: Implement auto-resize
-            pass
+            try:
+                # Auto-resize textarea based on content
+                lines = len(e.value.split('\n'))
+                min_height = 40
+                max_height = 120
+                new_height = min(max(lines * 20, min_height), max_height)
+                
+                # Update textarea height using JavaScript
+                ui.run_javascript("""
+                    const textarea = document.querySelector('textarea[placeholder="Nachricht eingeben..."]');
+                    if (textarea) {
+                        textarea.style.height = `${newHeight}px`;
+                    }
+                """, newHeight=new_height)
+            except Exception as e:
+                print(f"Error auto-resizing textarea: {e}")
     
     def _handle_send_message(self):
         """Handle send message."""
@@ -335,13 +358,35 @@ class ChatInterface:
     
     def _show_typing_indicator(self):
         """Show typing indicator."""
-        # TODO: Implement typing indicator
-        pass
+        try:
+            if hasattr(self, 'typing_indicator_element'):
+                self.typing_indicator_element.visible = True
+                # Animate typing indicator
+                ui.run_javascript("""
+                    const typingIndicator = document.querySelector('.typing-indicator');
+                    if (typingIndicator) {
+                        typingIndicator.style.display = 'flex';
+                        typingIndicator.style.animation = 'typing 1.4s infinite';
+                    }
+                """)
+        except Exception as e:
+            print(f"Error showing typing indicator: {e}")
     
     def _hide_typing_indicator(self):
         """Hide typing indicator."""
-        # TODO: Implement typing indicator
-        pass
+        try:
+            if hasattr(self, 'typing_indicator_element'):
+                self.typing_indicator_element.visible = False
+                # Stop animation
+                ui.run_javascript("""
+                    const typingIndicator = document.querySelector('.typing-indicator');
+                    if (typingIndicator) {
+                        typingIndicator.style.display = 'none';
+                        typingIndicator.style.animation = 'none';
+                    }
+                """)
+        except Exception as e:
+            print(f"Error hiding typing indicator: {e}")
     
     def _handle_assistant_change(self, e):
         """Handle assistant change."""

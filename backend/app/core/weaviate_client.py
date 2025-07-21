@@ -208,7 +208,7 @@ def add_document(
             "title": title,
             "file_type": file_type,
             "user_id": user_id,
-            "upload_date": "2024-01-01T00:00:00Z",  # TODO: Use actual date
+            "upload_date": datetime.utcnow().isoformat(),
             "tags": tags or []
         }
         

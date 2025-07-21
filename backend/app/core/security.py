@@ -111,7 +111,7 @@ def create_refresh_token(
     return encoded_jwt
 
 
-def verify_token(token: str) -> Optional[str]:
+async def verify_token(token: str) -> Optional[str]:
     """
     Verify and decode a JWT token.
     
@@ -122,6 +122,14 @@ def verify_token(token: str) -> Optional[str]:
         Optional[str]: Token subject (user ID) if valid, None otherwise
     """
     try:
+        # Check if token is blacklisted
+        from app.utils.redis import get_redis
+        redis = await get_redis()
+        is_blacklisted = await redis.get(f"{BLACKLIST_PREFIX}{token}")
+        if is_blacklisted:
+            logger.warning("JWT token is blacklisted")
+            return None
+        
         payload = jwt.decode(
             token,
             settings.secret_key,
@@ -134,9 +142,12 @@ def verify_token(token: str) -> Optional[str]:
     except JWTError as e:
         logger.warning(f"JWT token verification failed: {e}")
         return None
+    except Exception as e:
+        logger.error(f"Token verification error: {e}")
+        return None
 
 
-def get_current_user_id(
+async def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> str:
     """
@@ -152,7 +163,7 @@ def get_current_user_id(
         HTTPException: If token is invalid or expired
     """
     token = credentials.credentials
-    user_id = verify_token(token)
+    user_id = await verify_token(token)
     
     if user_id is None:
         raise HTTPException(
@@ -164,7 +175,7 @@ def get_current_user_id(
     return user_id
 
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> "User":
     """
@@ -182,7 +193,7 @@ def get_current_user(
     from app.models.user import User
     from app.core.database import get_db
     
-    user_id = get_current_user_id(credentials)
+    user_id = await get_current_user_id(credentials)
     
     # Get database session
     db = next(get_db())
@@ -211,7 +222,35 @@ def require_permission(permission: str):
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
-            # TODO: Implement permission checking logic
+            # Get current user from kwargs or request context
+            current_user = kwargs.get('current_user')
+            if not current_user:
+                # Try to get from request context
+                from fastapi import Request
+                request = kwargs.get('request')
+                if request and hasattr(request.state, 'user'):
+                    current_user = request.state.user
+            
+            if not current_user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication required"
+                )
+            
+            # Check if user has the required permission
+            user_permissions = getattr(current_user, 'permissions', [])
+            if permission not in user_permissions:
+                log_security_event(
+                    event_type="PERMISSION_DENIED",
+                    user_id=str(current_user.id),
+                    description=f"Access denied to {permission}",
+                    severity="warning"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Insufficient permissions. Required: {permission}"
+                )
+            
             return func(*args, **kwargs)
         return wrapper
     return decorator

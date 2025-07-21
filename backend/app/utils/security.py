@@ -63,7 +63,7 @@ def validate_permissions(user_permissions: List[str], required_permissions: List
     return all(perm in user_permissions for perm in required_permissions)
 
 
-def check_rate_limit(user_id: str, action: str, limit: int, window: int) -> bool:
+async def check_rate_limit(user_id: str, action: str, limit: int, window: int) -> bool:
     """
     Check if user has exceeded rate limit for an action.
     
@@ -76,8 +76,29 @@ def check_rate_limit(user_id: str, action: str, limit: int, window: int) -> bool
     Returns:
         bool: True if within rate limit, False otherwise
     """
-    # TODO: Implement rate limiting with Redis
-    return True
+    try:
+        redis = await get_redis()
+        key = f"rate_limit:{user_id}:{action}"
+        
+        # Get current count
+        current = await redis.get(key)
+        if current is None:
+            # First request in window
+            await redis.set(key, 1, ex=window)
+            return True
+        
+        current_count = int(current)
+        if current_count >= limit:
+            return False
+        
+        # Increment counter
+        await redis.incr(key)
+        return True
+        
+    except Exception as e:
+        logger.error(f"Rate limiting error: {e}")
+        # Fallback to allow request if Redis is unavailable
+        return True
 
 
 def validate_api_key(api_key: str) -> bool:

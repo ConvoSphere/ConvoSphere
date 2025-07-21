@@ -270,14 +270,19 @@ async def websocket_endpoint(
 async def get_current_user_ws(token: str, db: Session) -> Optional[User]:
     """Get current user from WebSocket token."""
     try:
-        # Simple token validation for WebSocket
-        # In production, use proper JWT validation
-        if not token or token == "mock_token_123":
-            # For development, return a mock user
-            return db.query(User).first()
+        if not token:
+            return None
         
-        # TODO: Implement proper JWT validation for WebSocket
-        return None
+        # Proper JWT validation for WebSocket
+        from app.core.security import verify_token
+        user_id = verify_token(token)
+        if not user_id:
+            return None
         
-    except Exception:
+        # Get user from database
+        user = db.query(User).filter(User.id == user_id).first()
+        return user
+        
+    except Exception as e:
+        logger.error(f"WebSocket JWT validation error: {e}")
         return None 

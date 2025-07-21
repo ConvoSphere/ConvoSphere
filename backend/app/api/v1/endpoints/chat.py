@@ -116,9 +116,17 @@ async def websocket_endpoint(
     # Optional: Authentifizierung via Token (Backward-compatible)
     user_id = None
     if token:
-        # TODO: Implementiere echte JWT-Validierung
-        # Hier: Dummy-Validierung für Entwicklung
-        user_id = str(token) if token != "mock_token_123" else ""
+        try:
+            # Echte JWT-Validierung
+            from app.core.security import verify_token
+            user_id = verify_token(token)
+            if not user_id:
+                await websocket.close(code=4001, reason="Invalid token")
+                return
+        except Exception as e:
+            logger.error(f"JWT validation error: {e}")
+            await websocket.close(code=4001, reason="Token validation failed")
+            return
     
     await manager.connect(websocket, conversation_id)
     # Sende Connection-Confirmation

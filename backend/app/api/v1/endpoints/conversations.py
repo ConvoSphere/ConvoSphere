@@ -83,9 +83,15 @@ async def update_conversation(
     conv = service.get_conversation(conversation_id, str(current_user.id))
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
+    # Check access rights
+    if not service.has_conversation_access(conversation_id, str(current_user.id)):
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     # Only allow update of title/description/metadata for now
-    # TODO: implement update logic in service
-    return conv
+    updated_conv = service.update_conversation(conversation_id, update_data.dict())
+    if not updated_conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return updated_conv
 
 @router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_conversation(
@@ -122,7 +128,9 @@ async def list_messages(
 ):
     """List all messages in a conversation."""
     service = ConversationService(db)
-    # TODO: check access rights
+    # Check access rights
+    if not service.has_conversation_access(conversation_id, str(current_user.id)):
+        raise HTTPException(status_code=403, detail="Access denied")
     return service.get_conversation_messages(conversation_id)
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
@@ -134,7 +142,9 @@ async def add_message(
 ):
     """Add a message to a conversation."""
     service = ConversationService(db)
-    # TODO: check access rights
+    # Check access rights
+    if not service.has_conversation_access(conversation_id, str(current_user.id)):
+        raise HTTPException(status_code=403, detail="Access denied")
     return service.add_message(
         conversation_id=conversation_id,
         user_id=str(current_user.id),
