@@ -7,4 +7,4 @@ extensive tool support, and enterprise-grade features including RBAC and multi-l
 
 __version__ = "1.0.0"
 __author__ = "AI Assistant Team"
-__description__ = "AI Assistant Platform Backend" 
+__description__ = "AI Assistant Platform Backend"

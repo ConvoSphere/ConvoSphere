@@ -5,12 +5,13 @@ This module provides database connection setup, session management,
 and utility functions for the AI Assistant Platform.
 """
 
-from typing import Generator
+from collections.abc import Generator
+
+from loguru import logger
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
-from loguru import logger
 
 from .config import settings
 
@@ -29,7 +30,7 @@ engine = create_engine(
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
 )
 
 # Create declarative base
@@ -39,10 +40,10 @@ Base = declarative_base()
 def get_db() -> Generator[Session, None, None]:
     """
     Get database session.
-    
+
     Yields:
         Session: Database session
-        
+
     Example:
         ```python
         db = next(get_db())
@@ -69,7 +70,7 @@ def init_db() -> None:
     try:
         # Import all models to ensure they are registered
         from app.models import Base
-        
+
         # Create all tables
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
@@ -81,7 +82,7 @@ def init_db() -> None:
 def check_db_connection() -> bool:
     """
     Check database connection.
-    
+
     Returns:
         bool: True if connection is successful, False otherwise
     """
@@ -98,7 +99,7 @@ def check_db_connection() -> bool:
 def get_db_info() -> dict:
     """
     Get database information.
-    
+
     Returns:
         dict: Database information including connection status and pool stats
     """
@@ -113,4 +114,4 @@ def get_db_info() -> dict:
         }
     except Exception as e:
         logger.error(f"Failed to get database info: {e}")
-        return {"status": "error", "error": str(e)} 
+        return {"status": "error", "error": str(e)}

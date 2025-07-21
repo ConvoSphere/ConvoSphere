@@ -5,25 +5,26 @@ This module provides Redis connection setup, connection pooling,
 and utility functions for the AI Assistant Platform.
 """
 
+from typing import Any
+
 import redis.asyncio as redis
-from typing import Optional, Any, Dict
 from loguru import logger
 
 from .config import settings
 
 # Global Redis client instance
-redis_client: Optional[redis.Redis] = None
+redis_client: redis.Redis | None = None
 
 
 async def init_redis() -> redis.Redis:
     """
     Initialize Redis connection with connection pooling.
-    
+
     Returns:
         redis.Redis: Redis client instance
     """
     global redis_client
-    
+
     try:
         # Create Redis client with connection pooling
         redis_client = redis.from_url(
@@ -37,13 +38,13 @@ async def init_redis() -> redis.Redis:
             health_check_interval=30,
             max_connections=20,
         )
-        
+
         # Test connection
         await redis_client.ping()
         logger.info("Redis connection established successfully")
-        
+
         return redis_client
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize Redis connection: {e}")
         raise
@@ -52,10 +53,10 @@ async def init_redis() -> redis.Redis:
 async def get_redis() -> redis.Redis:
     """
     Get Redis client instance.
-    
+
     Returns:
         redis.Redis: Redis client instance
-        
+
     Raises:
         RuntimeError: If Redis is not initialized
     """
@@ -67,7 +68,7 @@ async def get_redis() -> redis.Redis:
 async def close_redis() -> None:
     """Close Redis connection."""
     global redis_client
-    
+
     if redis_client:
         await redis_client.close()
         redis_client = None
@@ -77,7 +78,7 @@ async def close_redis() -> None:
 async def check_redis_connection() -> bool:
     """
     Check Redis connection status.
-    
+
     Returns:
         bool: True if connection is successful, False otherwise
     """
@@ -90,17 +91,17 @@ async def check_redis_connection() -> bool:
         return False
 
 
-async def get_redis_info() -> Dict[str, Any]:
+async def get_redis_info() -> dict[str, Any]:
     """
     Get Redis server information.
-    
+
     Returns:
         dict: Redis server information
     """
     try:
         client = await get_redis()
         info = await client.info()
-        
+
         return {
             "status": "connected" if await check_redis_connection() else "disconnected",
             "version": info.get("redis_version", "unknown"),
@@ -119,12 +120,12 @@ async def get_redis_info() -> Dict[str, Any]:
 async def set_cache(key: str, value: Any, expire: int = 3600) -> bool:
     """
     Set cache value with expiration.
-    
+
     Args:
         key: Cache key
         value: Value to cache
         expire: Expiration time in seconds (default: 1 hour)
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -137,13 +138,13 @@ async def set_cache(key: str, value: Any, expire: int = 3600) -> bool:
         return False
 
 
-async def get_cache(key: str) -> Optional[str]:
+async def get_cache(key: str) -> str | None:
     """
     Get cache value.
-    
+
     Args:
         key: Cache key
-        
+
     Returns:
         Optional[str]: Cached value or None if not found
     """
@@ -158,10 +159,10 @@ async def get_cache(key: str) -> Optional[str]:
 async def delete_cache(key: str) -> bool:
     """
     Delete cache value.
-    
+
     Args:
         key: Cache key
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -177,10 +178,10 @@ async def delete_cache(key: str) -> bool:
 async def clear_cache_pattern(pattern: str) -> int:
     """
     Clear cache entries matching pattern.
-    
+
     Args:
         pattern: Redis pattern (e.g., "user:*")
-        
+
     Returns:
         int: Number of deleted keys
     """
@@ -192,4 +193,4 @@ async def clear_cache_pattern(pattern: str) -> int:
         return len(keys)
     except Exception as e:
         logger.error(f"Failed to clear cache pattern: {e}")
-        return 0 
+        return 0

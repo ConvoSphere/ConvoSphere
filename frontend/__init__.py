@@ -7,4 +7,4 @@ conversations, and tools with a responsive design.
 
 __version__ = "1.0.0"
 __author__ = "AI Assistant Team"
-__description__ = "AI Assistant Platform Frontend" 
+__description__ = "AI Assistant Platform Frontend"

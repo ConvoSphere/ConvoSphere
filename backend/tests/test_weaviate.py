@@ -1,6 +1,7 @@
 import pytest
 from app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
 
+
 def test_weaviate_connection():
     """Test Weaviate connection status."""
     # This test requires Weaviate to be running
@@ -11,6 +12,7 @@ def test_weaviate_connection():
         # If Weaviate is not available, test should be skipped
         pytest.skip("Weaviate not available")
 
+
 def test_weaviate_info():
     """Test Weaviate info retrieval."""
     try:
@@ -20,12 +22,14 @@ def test_weaviate_info():
     except Exception:
         pytest.skip("Weaviate not available")
 
+
 def test_weaviate_schema_creation():
     """Test Weaviate schema creation."""
     try:
         from app.core.weaviate_client import create_schema_if_not_exists
+
         # This should not raise an exception
         create_schema_if_not_exists()
         assert True
     except Exception:
-        pytest.skip("Weaviate not available") 
+        pytest.skip("Weaviate not available")

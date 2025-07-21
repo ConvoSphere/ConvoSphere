@@ -12,14 +12,14 @@ DEFAULT_TIMEOUT = 30.0
 # Supported Languages
 SUPPORTED_LANGUAGES = {
     "de": "Deutsch",
-    "en": "English"
+    "en": "English",
 }
 
 # Supported Themes
 SUPPORTED_THEMES = {
     "light": "Hell",
     "dark": "Dunkel",
-    "auto": "Automatisch"
+    "auto": "Automatisch",
 }
 
 # File Upload
@@ -28,7 +28,7 @@ SUPPORTED_FILE_TYPES = {
     "image": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
     "document": [".pdf", ".doc", ".docx", ".txt", ".md"],
     "data": [".csv", ".json", ".xml"],
-    "archive": [".zip", ".rar"]
+    "archive": [".zip", ".rar"],
 }
 
 # Pagination
@@ -55,7 +55,7 @@ ERROR_MESSAGES = {
     "file_upload_error": "Datei-Upload fehlgeschlagen. Bitte versuche es erneut.",
     "conversation_error": "Fehler beim Laden der Konversation.",
     "assistant_error": "Fehler beim Laden des Assistenten.",
-    "tool_error": "Fehler bei der Tool-Ausführung."
+    "tool_error": "Fehler bei der Tool-Ausführung.",
 }
 
 # Success Messages
@@ -70,7 +70,7 @@ SUCCESS_MESSAGES = {
     "conversation_created": "Konversation erfolgreich erstellt!",
     "message_sent": "Nachricht erfolgreich gesendet!",
     "file_uploaded": "Datei erfolgreich hochgeladen!",
-    "document_processed": "Dokument erfolgreich verarbeitet!"
+    "document_processed": "Dokument erfolgreich verarbeitet!",
 }
 
 # UI Configuration
@@ -79,7 +79,7 @@ UI_CONFIG = {
     "header_height": 70,
     "card_padding": 24,
     "border_radius": 12,
-    "transition_duration": 0.3
+    "transition_duration": 0.3,
 }
 
 # Colors
@@ -100,8 +100,8 @@ COLORS = {
         "600": "#4b5563",
         "700": "#374151",
         "800": "#1f2937",
-        "900": "#111827"
-    }
+        "900": "#111827",
+    },
 }
 
 # Local Storage Keys
@@ -112,7 +112,7 @@ STORAGE_KEYS = {
     "theme": "theme",
     "sidebar_collapsed": "sidebar_collapsed",
     "recent_conversations": "recent_conversations",
-    "user_preferences": "user_preferences"
+    "user_preferences": "user_preferences",
 }
 
 # WebSocket Configuration
@@ -120,7 +120,7 @@ WEBSOCKET_CONFIG = {
     "reconnect_attempts": 5,
     "reconnect_delay": 1.0,
     "heartbeat_interval": 30,
-    "connection_timeout": 10
+    "connection_timeout": 10,
 }
 
 # Search Configuration
@@ -128,12 +128,12 @@ SEARCH_CONFIG = {
     "min_query_length": 2,
     "max_results": 10,
     "search_delay": 300,  # ms
-    "highlight_length": 100
+    "highlight_length": 100,
 }
 
 SUPPORTED_AVATAR_TYPES = [
     "image/png",
     "image/jpeg",
     "image/svg+xml",
-    "image/webp"
-] 
+    "image/webp",
+]

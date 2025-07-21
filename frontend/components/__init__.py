@@ -1,1 +1,1 @@
-"""Frontend components for the AI Assistant Platform.""" 
+"""Frontend components for the AI Assistant Platform."""

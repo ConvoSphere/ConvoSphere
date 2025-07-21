@@ -1,22 +1,35 @@
 """Users endpoints for user management with enterprise features."""
 
-from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ....core.database import get_db
 from ....core.security import get_current_user
-from ....models.user import User, UserRole, UserStatus, AuthProvider
+from ....models.user import AuthProvider, User, UserRole, UserStatus
 from ....schemas.user import (
-    UserCreate, UserUpdate, UserResponse, UserListResponse, UserStats,
-    UserGroupCreate, UserGroupUpdate, UserGroupResponse,
-    UserBulkUpdate, UserGroupAssignment, UserSearchParams,
-    SSOUserCreate, UserProfileUpdate, UserPasswordUpdate
+    SSOUserCreate,
+    UserBulkUpdate,
+    UserCreate,
+    UserGroupAssignment,
+    UserGroupCreate,
+    UserGroupResponse,
+    UserGroupUpdate,
+    UserListResponse,
+    UserPasswordUpdate,
+    UserProfileUpdate,
+    UserResponse,
+    UserSearchParams,
+    UserStats,
+    UserUpdate,
 )
 from ....services.user_service import UserService
 from ....utils.exceptions import (
-    UserNotFoundError, UserAlreadyExistsError, InvalidCredentialsError,
-    PermissionDeniedError, UserLockedError, GroupNotFoundError
+    GroupNotFoundError,
+    InvalidCredentialsError,
+    PermissionDeniedError,
+    UserAlreadyExistsError,
+    UserLockedError,
+    UserNotFoundError,
 )
 
 router = APIRouter()
@@ -27,7 +40,7 @@ router = APIRouter()
 async def create_user(
     user_data: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Create a new user."""
     try:
@@ -42,17 +55,19 @@ async def create_user(
 
 @router.get("/", response_model=UserListResponse)
 async def list_users(
-    query: Optional[str] = Query(None, description="Search query"),
-    role: Optional[UserRole] = Query(None, description="Filter by role"),
-    status: Optional[UserStatus] = Query(None, description="Filter by status"),
-    auth_provider: Optional[AuthProvider] = Query(None, description="Filter by auth provider"),
-    organization_id: Optional[str] = Query(None, description="Filter by organization"),
-    group_id: Optional[str] = Query(None, description="Filter by group"),
-    is_verified: Optional[bool] = Query(None, description="Filter by verification status"),
+    query: str | None = Query(None, description="Search query"),
+    role: UserRole | None = Query(None, description="Filter by role"),
+    status: UserStatus | None = Query(None, description="Filter by status"),
+    auth_provider: AuthProvider | None = Query(
+        None, description="Filter by auth provider",
+    ),
+    organization_id: str | None = Query(None, description="Filter by organization"),
+    group_id: str | None = Query(None, description="Filter by group"),
+    is_verified: bool | None = Query(None, description="Filter by verification status"),
     page: int = Query(1, ge=1, description="Page number"),
     size: int = Query(20, ge=1, le=100, description="Page size"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """List users with filtering and pagination."""
     try:
@@ -65,9 +80,9 @@ async def list_users(
             group_id=group_id,
             is_verified=is_verified,
             page=page,
-            size=size
+            size=size,
         )
-        
+
         user_service = UserService(db)
         return user_service.list_users(search_params, current_user)
     except PermissionDeniedError as e:
@@ -78,20 +93,27 @@ async def list_users(
 async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get user by ID."""
     try:
         user_service = UserService(db)
         user = user_service.get_user_by_id(user_id)
-        
+
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+            )
+
         # Check if user can access this user
-        if not user_service._can_manage_user(current_user, user) and user.id != current_user.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-        
+        if (
+            not user_service._can_manage_user(current_user, user)
+            and user.id != current_user.id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            )
+
         return user_service._user_to_response(user)
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -102,7 +124,7 @@ async def update_user(
     user_id: str,
     user_data: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Update user."""
     try:
@@ -119,7 +141,7 @@ async def update_user(
 async def delete_user(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Delete user."""
     try:
@@ -135,7 +157,7 @@ async def delete_user(
 @router.get("/me/profile", response_model=UserResponse)
 async def get_my_profile(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get current user's profile."""
     user_service = UserService(db)
@@ -146,7 +168,7 @@ async def get_my_profile(
 async def update_my_profile(
     profile_data: UserProfileUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Update current user's profile."""
     try:
@@ -163,7 +185,7 @@ async def update_my_profile(
 async def update_my_password(
     password_data: UserPasswordUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Update current user's password."""
     try:
@@ -181,7 +203,7 @@ async def update_my_password(
 async def bulk_update_users(
     bulk_data: UserBulkUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Bulk update users."""
     try:
@@ -193,11 +215,13 @@ async def bulk_update_users(
 
 
 # User groups management
-@router.post("/groups", response_model=UserGroupResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/groups", response_model=UserGroupResponse, status_code=status.HTTP_201_CREATED,
+)
 async def create_group(
     group_data: UserGroupCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Create a new user group."""
     try:
@@ -208,11 +232,11 @@ async def create_group(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
 
-@router.get("/groups", response_model=List[UserGroupResponse])
+@router.get("/groups", response_model=list[UserGroupResponse])
 async def list_groups(
-    organization_id: Optional[str] = Query(None, description="Filter by organization"),
+    organization_id: str | None = Query(None, description="Filter by organization"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """List user groups."""
     try:
@@ -227,16 +251,18 @@ async def list_groups(
 async def get_group(
     group_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get group by ID."""
     try:
         user_service = UserService(db)
         group = user_service.get_group_by_id(group_id)
-        
+
         if not group:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Group not found",
+            )
+
         return user_service._group_to_response(group)
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -247,7 +273,7 @@ async def update_group(
     group_id: str,
     group_data: UserGroupUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Update user group."""
     try:
@@ -264,7 +290,7 @@ async def update_group(
 async def delete_group(
     group_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Delete user group."""
     try:
@@ -280,7 +306,7 @@ async def delete_group(
 async def assign_users_to_groups(
     assignment: UserGroupAssignment,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Assign users to groups."""
     try:
@@ -295,7 +321,7 @@ async def assign_users_to_groups(
 @router.post("/sso", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_sso_user(
     sso_data: SSOUserCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create user from SSO authentication."""
     try:
@@ -309,9 +335,9 @@ async def create_sso_user(
 # User statistics
 @router.get("/stats/overview", response_model=UserStats)
 async def get_user_stats(
-    organization_id: Optional[str] = Query(None, description="Organization ID"),
+    organization_id: str | None = Query(None, description="Organization ID"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get user statistics."""
     try:
@@ -326,7 +352,7 @@ async def get_user_stats(
 async def verify_user_email(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Verify user email."""
     try:
@@ -344,20 +370,27 @@ async def verify_user_email(
 async def get_user_by_email(
     email: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get user by email."""
     try:
         user_service = UserService(db)
         user = user_service.get_user_by_email(email)
-        
+
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+            )
+
         # Check permissions
-        if not user_service._can_manage_user(current_user, user) and user.id != current_user.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-        
+        if (
+            not user_service._can_manage_user(current_user, user)
+            and user.id != current_user.id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            )
+
         return user_service._user_to_response(user)
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -367,20 +400,27 @@ async def get_user_by_email(
 async def get_user_by_username(
     username: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get user by username."""
     try:
         user_service = UserService(db)
         user = user_service.get_user_by_username(username)
-        
+
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+            )
+
         # Check permissions
-        if not user_service._can_manage_user(current_user, user) and user.id != current_user.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-        
+        if (
+            not user_service._can_manage_user(current_user, user)
+            and user.id != current_user.id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            )
+
         return user_service._user_to_response(user)
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -391,18 +431,20 @@ async def get_user_by_username(
 async def authenticate_user(
     email: str,
     password: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Authenticate user with email and password."""
     try:
         user_service = UserService(db)
         user = user_service.authenticate_user(email, password)
-        
+
         if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-        
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials",
+            )
+
         return {"message": "Authentication successful", "user_id": str(user.id)}
     except UserLockedError as e:
         raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=str(e))
     except InvalidCredentialsError as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))

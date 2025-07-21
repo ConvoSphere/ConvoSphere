@@ -1,1 +1,1 @@
-"""API v1 package for the AI Assistant Platform.""" 
+"""API v1 package for the AI Assistant Platform."""
