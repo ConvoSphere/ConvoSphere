@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from loguru import logger
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
+from app.core.security import get_current_user_id, require_permission
 from app.tools.mcp_tool import mcp_manager
 
 router = APIRouter()
@@ -52,6 +52,7 @@ class MCPToolExecute(BaseModel):
 
 
 @router.post("/servers", response_model=MCPServerResponse)
+@require_permission("mcp:write")
 async def add_mcp_server(
     server_data: MCPServerCreate,
     current_user_id: str = Depends(get_current_user_id),
@@ -147,6 +148,7 @@ async def list_mcp_servers(
 
 
 @router.delete("/servers/{server_id}")
+@require_permission("mcp:write")
 async def remove_mcp_server(
     server_id: str,
     current_user_id: str = Depends(get_current_user_id),
@@ -266,6 +268,7 @@ async def get_mcp_tool(
 
 
 @router.post("/tools/{tool_id}/execute")
+@require_permission("mcp:write")
 async def execute_mcp_tool(
     tool_id: str,
     execute_data: MCPToolExecute,
@@ -346,6 +349,7 @@ async def list_server_resources(
 
 
 @router.post("/servers/{server_id}/resources/{resource_uri}/read")
+@require_permission("mcp:write")
 async def read_server_resource(
     server_id: str,
     resource_uri: str,

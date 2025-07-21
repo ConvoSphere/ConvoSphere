@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from loguru import logger
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
+from app.core.security import get_current_user_id, require_permission
 from app.services.tool_service import ToolService
 from app.models.tool import ToolCategory
 
@@ -173,6 +173,7 @@ async def get_tool(
 
 
 @router.post("/", response_model=ToolResponse)
+@require_permission("tool:write")
 async def create_tool(
     tool_data: ToolCreate,
     current_user_id: str = Depends(get_current_user_id),
@@ -225,6 +226,7 @@ async def create_tool(
 
 
 @router.put("/{tool_id}", response_model=ToolResponse)
+@require_permission("tool:write")
 async def update_tool(
     tool_id: str,
     tool_data: ToolUpdate,
@@ -281,6 +283,7 @@ async def update_tool(
 
 
 @router.delete("/{tool_id}")
+@require_permission("tool:delete")
 async def delete_tool(
     tool_id: str,
     current_user_id: str = Depends(get_current_user_id),
