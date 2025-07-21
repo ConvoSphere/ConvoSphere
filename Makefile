@@ -1,6 +1,6 @@
 # AI Assistant Platform Makefile
 
-.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean
+.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean pre-commit-install pre-commit-run pre-commit-update code-quality
 
 # Default target
 help:
@@ -13,6 +13,12 @@ help:
 	@echo "  format         Format code with black and isort"
 	@echo "  lint           Run linting with ruff"
 	@echo "  security-check Run security checks with bandit"
+	@echo "  code-quality   Run comprehensive code quality checks"
+	@echo ""
+	@echo "Pre-commit:"
+	@echo "  pre-commit-install  Install pre-commit hooks"
+	@echo "  pre-commit-run      Run pre-commit hooks on all files"
+	@echo "  pre-commit-update   Update pre-commit hooks"
 	@echo ""
 	@echo "Docker:"
 	@echo "  docker-up      Start all services with Docker"
@@ -41,6 +47,7 @@ install:
 	pip install -r requirements.txt
 	pip install -r backend/requirements.txt
 	pip install -r frontend/requirements.txt
+	pip install -r docs/requirements-docs.txt
 
 dev:
 	@echo "Starting development environment..."
@@ -57,6 +64,7 @@ test:
 
 format:
 	@echo "Formatting code..."
+	ruff format backend/ frontend/
 	black backend/ frontend/
 	isort backend/ frontend/
 
@@ -67,8 +75,37 @@ lint:
 
 security-check:
 	@echo "Running security checks..."
-	bandit -r backend/
-	bandit -r frontend/
+	bandit -r backend/ frontend/ -f json -o bandit-report.json || true
+	@echo "Security report saved to bandit-report.json"
+
+code-quality:
+	@echo "Running comprehensive code quality checks..."
+	@echo "1. Formatting check..."
+	ruff format --check backend/ frontend/
+	@echo "2. Linting check..."
+	ruff check backend/ frontend/
+	@echo "3. Import sorting check..."
+	isort --check-only --diff backend/ frontend/
+	@echo "4. Type checking..."
+	mypy backend/ frontend/ --ignore-missing-imports
+	@echo "5. Security check..."
+	bandit -r backend/ frontend/ -f json -o bandit-report.json || true
+	@echo "Code quality checks completed!"
+
+# Pre-commit hooks
+pre-commit-install:
+	@echo "Installing pre-commit hooks..."
+	pip install pre-commit
+	pre-commit install
+	pre-commit install --hook-type commit-msg
+
+pre-commit-run:
+	@echo "Running pre-commit hooks on all files..."
+	pre-commit run --all-files
+
+pre-commit-update:
+	@echo "Updating pre-commit hooks..."
+	pre-commit autoupdate
 
 # Docker
 docker-up:
@@ -106,6 +143,10 @@ clean:
 	rm -rf .ruff_cache/
 	rm -rf build/
 	rm -rf dist/
+	rm -rf htmlcov/
+	rm -f bandit-report.json
+	rm -f coverage.xml
+	rm -rf .mypy_cache/
 
 # Production
 prod-build:
@@ -146,6 +187,7 @@ setup:
 	cp env.example .env
 	@echo "Please edit .env with your configuration"
 	make install
+	make pre-commit-install
 	make docker-up
 	@echo "Waiting for services to start..."
 	sleep 10
@@ -166,4 +208,35 @@ docs-deploy:
 	cd docs && mkdocs gh-deploy
 
 docs-clean:
-	rm -rf docs/site/ 
+	rm -rf docs/site/
+
+# Code quality reports
+quality-report:
+	@echo "Generating code quality report..."
+	@echo "=== Code Quality Report ===" > quality-report.txt
+	@echo "Generated: $(shell date)" >> quality-report.txt
+	@echo "" >> quality-report.txt
+	@echo "=== Ruff Linting ===" >> quality-report.txt
+	ruff check backend/ frontend/ >> quality-report.txt 2>&1 || true
+	@echo "" >> quality-report.txt
+	@echo "=== Security Scan ===" >> quality-report.txt
+	bandit -r backend/ frontend/ -f txt >> quality-report.txt 2>&1 || true
+	@echo "" >> quality-report.txt
+	@echo "=== Type Checking ===" >> quality-report.txt
+	mypy backend/ frontend/ --ignore-missing-imports >> quality-report.txt 2>&1 || true
+	@echo "Quality report saved to quality-report.txt"
+
+# Performance testing
+performance-test:
+	@echo "Running performance tests..."
+	pytest --benchmark-only backend/tests/performance/ frontend/tests/performance/
+
+# Coverage report
+coverage-report:
+	@echo "Generating coverage report..."
+	pytest --cov=backend --cov=frontend --cov-report=html --cov-report=term-missing
+	@echo "Coverage report generated in htmlcov/"
+
+# All checks (for CI/CD)
+all-checks: format lint security-check test coverage-report
+	@echo "All checks completed successfully!" 
