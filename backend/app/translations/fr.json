@@ -1,0 +1,133 @@
+{
+  "common": {
+    "success": "Succès",
+    "error": "Erreur",
+    "warning": "Avertissement",
+    "info": "Information",
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression...",
+    "updating": "Mise à jour...",
+    "creating": "Création...",
+    "searching": "Recherche...",
+    "uploading": "Téléchargement...",
+    "processing": "Traitement..."
+  },
+  "auth": {
+    "login_success": "Connexion réussie",
+    "login_failed": "Échec de la connexion",
+    "logout_success": "Déconnexion réussie",
+    "registration_success": "Inscription réussie",
+    "registration_failed": "Échec de l'inscription",
+    "invalid_credentials": "E-mail ou mot de passe invalide",
+    "account_disabled": "Le compte utilisateur est désactivé",
+    "email_already_registered": "E-mail déjà enregistré",
+    "username_already_taken": "Nom d'utilisateur déjà pris",
+    "password_too_weak": "Le mot de passe est trop faible",
+    "token_expired": "Le token d'accès a expiré",
+    "token_invalid": "Token d'accès invalide",
+    "permission_denied": "Permission refusée",
+    "unauthorized": "Accès non autorisé"
+  },
+  "user": {
+    "user_created": "Utilisateur créé avec succès",
+    "user_updated": "Utilisateur mis à jour avec succès",
+    "user_deleted": "Utilisateur supprimé avec succès",
+    "user_not_found": "Utilisateur non trouvé",
+    "profile_updated": "Profil mis à jour avec succès",
+    "password_changed": "Mot de passe modifié avec succès",
+    "invalid_password": "Mot de passe invalide",
+    "email_updated": "E-mail mis à jour avec succès",
+    "username_updated": "Nom d'utilisateur mis à jour avec succès"
+  },
+  "assistant": {
+    "assistant_created": "Assistant créé avec succès",
+    "assistant_updated": "Assistant mis à jour avec succès",
+    "assistant_deleted": "Assistant supprimé avec succès",
+    "assistant_not_found": "Assistant non trouvé",
+    "assistant_activated": "Assistant activé",
+    "assistant_deactivated": "Assistant désactivé",
+    "invalid_configuration": "Configuration d'assistant invalide",
+    "model_not_supported": "Modèle IA non pris en charge",
+    "temperature_invalid": "La température doit être comprise entre 0.0 et 1.0",
+    "max_tokens_invalid": "Le nombre maximum de tokens doit être compris entre 1 et 8192"
+  },
+  "conversation": {
+    "conversation_created": "Conversation créée avec succès",
+    "conversation_updated": "Conversation mise à jour avec succès",
+    "conversation_deleted": "Conversation supprimée avec succès",
+    "conversation_not_found": "Conversation non trouvée",
+    "conversation_archived": "Conversation archivée",
+    "conversation_restored": "Conversation restaurée",
+    "message_sent": "Message envoyé avec succès",
+    "message_not_found": "Message non trouvé",
+    "message_deleted": "Message supprimé avec succès",
+    "invalid_message": "Contenu de message invalide"
+  },
+  "knowledge": {
+    "document_uploaded": "Document téléchargé avec succès",
+    "document_processed": "Document traité avec succès",
+    "document_deleted": "Document supprimé avec succès",
+    "document_not_found": "Document non trouvé",
+    "document_updated": "Document mis à jour avec succès",
+    "processing_failed": "Échec du traitement du document",
+    "unsupported_format": "Format de document non pris en charge",
+    "file_too_large": "La taille du fichier dépasse la limite",
+    "search_no_results": "Aucun résultat trouvé",
+    "search_failed": "Échec de la recherche"
+  },
+  "tools": {
+    "tool_executed": "Outil exécuté avec succès",
+    "tool_failed": "Échec de l'exécution de l'outil",
+    "tool_not_found": "Outil non trouvé",
+    "tool_discovered": "Outil découvert avec succès",
+    "invalid_parameters": "Paramètres d'outil invalides",
+    "tool_timeout": "Délai d'exécution de l'outil dépassé",
+    "tool_not_available": "Outil non disponible",
+    "mcp_server_error": "Erreur du serveur MCP"
+  },
+  "validation": {
+    "required_field": "{field} est requis",
+    "invalid_email": "Format d'e-mail invalide",
+    "invalid_username": "Le nom d'utilisateur doit contenir entre 3 et 50 caractères",
+    "invalid_password": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwords_not_match": "Les mots de passe ne correspondent pas",
+    "invalid_url": "Format d'URL invalide",
+    "invalid_date": "Format de date invalide",
+    "field_too_long": "{field} est trop long",
+    "field_too_short": "{field} est trop court",
+    "invalid_format": "Format invalide"
+  },
+  "errors": {
+    "internal_server_error": "Erreur interne du serveur",
+    "service_unavailable": "Service temporairement indisponible",
+    "bad_request": "Requête invalide",
+    "not_found": "Ressource non trouvée",
+    "method_not_allowed": "Méthode non autorisée",
+    "request_timeout": "Délai de requête dépassé",
+    "too_many_requests": "Trop de requêtes",
+    "database_error": "Erreur de base de données",
+    "network_error": "Erreur réseau",
+    "file_error": "Erreur d'opération de fichier"
+  },
+  "websocket": {
+    "connected": "Connecté au chat",
+    "disconnected": "Déconnecté du chat",
+    "connection_failed": "Échec de la connexion",
+    "reconnecting": "Reconnexion...",
+    "message_sent": "Message envoyé",
+    "message_received": "Message reçu",
+    "typing_started": "L'assistant tape...",
+    "typing_stopped": "L'assistant a arrêté de taper"
+  },
+  "health": {
+    "service_healthy": "Le service est sain",
+    "service_unhealthy": "Le service est malsain",
+    "database_connected": "Base de données connectée",
+    "database_disconnected": "Base de données déconnectée",
+    "redis_connected": "Redis connecté",
+    "redis_disconnected": "Redis déconnecté",
+    "weaviate_connected": "Weaviate connecté",
+    "weaviate_disconnected": "Weaviate déconnecté"
+  }
+}

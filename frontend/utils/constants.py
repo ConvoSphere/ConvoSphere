@@ -13,6 +13,8 @@ DEFAULT_TIMEOUT = 30.0
 SUPPORTED_LANGUAGES = {
     "de": "Deutsch",
     "en": "English",
+    "fr": "Français",
+    "es": "Español",
 }
 
 # Supported Themes

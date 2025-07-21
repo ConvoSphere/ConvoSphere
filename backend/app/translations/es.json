@@ -1,0 +1,133 @@
+{
+  "common": {
+    "success": "Éxito",
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "deleting": "Eliminando...",
+    "updating": "Actualizando...",
+    "creating": "Creando...",
+    "searching": "Buscando...",
+    "uploading": "Subiendo...",
+    "processing": "Procesando..."
+  },
+  "auth": {
+    "login_success": "Inicio de sesión exitoso",
+    "login_failed": "Error en el inicio de sesión",
+    "logout_success": "Cierre de sesión exitoso",
+    "registration_success": "Registro exitoso",
+    "registration_failed": "Error en el registro",
+    "invalid_credentials": "Correo electrónico o contraseña inválidos",
+    "account_disabled": "La cuenta de usuario está deshabilitada",
+    "email_already_registered": "Correo electrónico ya registrado",
+    "username_already_taken": "Nombre de usuario ya tomado",
+    "password_too_weak": "La contraseña es demasiado débil",
+    "token_expired": "El token de acceso ha expirado",
+    "token_invalid": "Token de acceso inválido",
+    "permission_denied": "Permiso denegado",
+    "unauthorized": "Acceso no autorizado"
+  },
+  "user": {
+    "user_created": "Usuario creado exitosamente",
+    "user_updated": "Usuario actualizado exitosamente",
+    "user_deleted": "Usuario eliminado exitosamente",
+    "user_not_found": "Usuario no encontrado",
+    "profile_updated": "Perfil actualizado exitosamente",
+    "password_changed": "Contraseña cambiada exitosamente",
+    "invalid_password": "Contraseña inválida",
+    "email_updated": "Correo electrónico actualizado exitosamente",
+    "username_updated": "Nombre de usuario actualizado exitosamente"
+  },
+  "assistant": {
+    "assistant_created": "Asistente creado exitosamente",
+    "assistant_updated": "Asistente actualizado exitosamente",
+    "assistant_deleted": "Asistente eliminado exitosamente",
+    "assistant_not_found": "Asistente no encontrado",
+    "assistant_activated": "Asistente activado",
+    "assistant_deactivated": "Asistente desactivado",
+    "invalid_configuration": "Configuración de asistente inválida",
+    "model_not_supported": "Modelo de IA no soportado",
+    "temperature_invalid": "La temperatura debe estar entre 0.0 y 1.0",
+    "max_tokens_invalid": "El número máximo de tokens debe estar entre 1 y 8192"
+  },
+  "conversation": {
+    "conversation_created": "Conversación creada exitosamente",
+    "conversation_updated": "Conversación actualizada exitosamente",
+    "conversation_deleted": "Conversación eliminada exitosamente",
+    "conversation_not_found": "Conversación no encontrada",
+    "conversation_archived": "Conversación archivada",
+    "conversation_restored": "Conversación restaurada",
+    "message_sent": "Mensaje enviado exitosamente",
+    "message_not_found": "Mensaje no encontrado",
+    "message_deleted": "Mensaje eliminado exitosamente",
+    "invalid_message": "Contenido de mensaje inválido"
+  },
+  "knowledge": {
+    "document_uploaded": "Documento subido exitosamente",
+    "document_processed": "Documento procesado exitosamente",
+    "document_deleted": "Documento eliminado exitosamente",
+    "document_not_found": "Documento no encontrado",
+    "document_updated": "Documento actualizado exitosamente",
+    "processing_failed": "Error en el procesamiento del documento",
+    "unsupported_format": "Formato de documento no soportado",
+    "file_too_large": "El tamaño del archivo excede el límite",
+    "search_no_results": "No se encontraron resultados",
+    "search_failed": "Error en la búsqueda"
+  },
+  "tools": {
+    "tool_executed": "Herramienta ejecutada exitosamente",
+    "tool_failed": "Error en la ejecución de la herramienta",
+    "tool_not_found": "Herramienta no encontrada",
+    "tool_discovered": "Herramienta descubierta exitosamente",
+    "invalid_parameters": "Parámetros de herramienta inválidos",
+    "tool_timeout": "Tiempo de ejecución de la herramienta agotado",
+    "tool_not_available": "Herramienta no disponible",
+    "mcp_server_error": "Error del servidor MCP"
+  },
+  "validation": {
+    "required_field": "{field} es requerido",
+    "invalid_email": "Formato de correo electrónico inválido",
+    "invalid_username": "El nombre de usuario debe tener entre 3 y 50 caracteres",
+    "invalid_password": "La contraseña debe tener al menos 8 caracteres",
+    "passwords_not_match": "Las contraseñas no coinciden",
+    "invalid_url": "Formato de URL inválido",
+    "invalid_date": "Formato de fecha inválido",
+    "field_too_long": "{field} es demasiado largo",
+    "field_too_short": "{field} es demasiado corto",
+    "invalid_format": "Formato inválido"
+  },
+  "errors": {
+    "internal_server_error": "Error interno del servidor",
+    "service_unavailable": "Servicio temporalmente no disponible",
+    "bad_request": "Solicitud inválida",
+    "not_found": "Recurso no encontrado",
+    "method_not_allowed": "Método no permitido",
+    "request_timeout": "Tiempo de solicitud agotado",
+    "too_many_requests": "Demasiadas solicitudes",
+    "database_error": "Error de base de datos",
+    "network_error": "Error de red",
+    "file_error": "Error de operación de archivo"
+  },
+  "websocket": {
+    "connected": "Conectado al chat",
+    "disconnected": "Desconectado del chat",
+    "connection_failed": "Error de conexión",
+    "reconnecting": "Reconectando...",
+    "message_sent": "Mensaje enviado",
+    "message_received": "Mensaje recibido",
+    "typing_started": "El asistente está escribiendo...",
+    "typing_stopped": "El asistente dejó de escribir"
+  },
+  "health": {
+    "service_healthy": "El servicio está saludable",
+    "service_unhealthy": "El servicio no está saludable",
+    "database_connected": "Base de datos conectada",
+    "database_disconnected": "Base de datos desconectada",
+    "redis_connected": "Redis conectado",
+    "redis_disconnected": "Redis desconectado",
+    "weaviate_connected": "Weaviate conectado",
+    "weaviate_disconnected": "Weaviate desconectado"
+  }
+}

@@ -10,6 +10,7 @@ from collections.abc import Callable
 
 from nicegui import ui
 from services.auth_service import auth_service
+from utils.i18n_manager import t
 
 
 class AuthForm:
@@ -75,28 +76,28 @@ class AuthForm:
         with ui.element("div").classes("text-center mb-8"):
             if self.form_type == "login":
                 ui.html(
-                    "<h1 style='font-size: 28px; font-weight: 700; color: var(--color-text); margin-bottom: 8px;'>Willkommen zu ConvoSphere</h1>",
+                    f"<h1 style='font-size: 28px; font-weight: 700; color: var(--color-text); margin-bottom: 8px;'>{t('auth.welcome_title')}</h1>",
                 )
                 ui.html(
-                    "<p style='color: var(--color-text-secondary); font-size: 16px;'>Melde dich in deinem Konto an</p>",
+                    f"<p style='color: var(--color-text-secondary); font-size: 16px;'>{t('auth.login_subtitle')}</p>",
                 )
             else:
                 ui.html(
-                    "<h1 style='font-size: 28px; font-weight: 700; color: var(--color-text); margin-bottom: 8px;'>Konto erstellen</h1>",
+                    f"<h1 style='font-size: 28px; font-weight: 700; color: var(--color-text); margin-bottom: 8px;'>{t('auth.register_title')}</h1>",
                 )
                 ui.html(
-                    "<p style='color: var(--color-text-secondary); font-size: 16px;'>Erstelle dein ConvoSphere-Konto</p>",
+                    f"<p style='color: var(--color-text-secondary); font-size: 16px;'>{t('auth.register_subtitle')}</p>",
                 )
 
     def _create_form_fields(self):
         """Create form input fields."""
         # Email input
         with ui.element("div"):
-            ui.label("E-Mail-Adresse").classes(
+            ui.label(t("auth.email")).classes(
                 "block text-sm font-medium text-gray-700 mb-2",
             )
             self.email_input = ui.input(
-                placeholder="deine@email.com",
+                placeholder=t("auth.email_placeholder"),
                 on_change=self._on_email_change,
             ).classes(
                 "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
@@ -105,11 +106,11 @@ class AuthForm:
         # Username input (only for registration)
         if self.form_type == "register":
             with ui.element("div"):
-                ui.label("Benutzername").classes(
+                ui.label(t("auth.username")).classes(
                     "block text-sm font-medium text-gray-700 mb-2",
                 )
                 self.username_input = ui.input(
-                    placeholder="dein_benutzername",
+                    placeholder=t("auth.username_placeholder"),
                     on_change=self._on_username_change,
                 ).classes(
                     "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
@@ -119,22 +120,22 @@ class AuthForm:
         if self.form_type == "register":
             with ui.row().classes("space-x-4"):
                 with ui.element("div").classes("flex-1"):
-                    ui.label("Vorname").classes(
+                    ui.label(t("auth.first_name")).classes(
                         "block text-sm font-medium text-gray-700 mb-2",
                     )
                     self.first_name_input = ui.input(
-                        placeholder="Vorname",
+                        placeholder=t("auth.first_name"),
                         on_change=self._on_first_name_change,
                     ).classes(
                         "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
                     )
 
                 with ui.element("div").classes("flex-1"):
-                    ui.label("Nachname").classes(
+                    ui.label(t("auth.last_name")).classes(
                         "block text-sm font-medium text-gray-700 mb-2",
                     )
                     self.last_name_input = ui.input(
-                        placeholder="Nachname",
+                        placeholder=t("auth.last_name"),
                         on_change=self._on_last_name_change,
                     ).classes(
                         "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
@@ -142,9 +143,9 @@ class AuthForm:
 
         # Password input
         with ui.element("div"):
-            ui.label("Passwort").classes("block text-sm font-medium text-gray-700 mb-2")
+            ui.label(t("auth.password")).classes("block text-sm font-medium text-gray-700 mb-2")
             self.password_input = ui.input(
-                placeholder="Dein Passwort",
+                placeholder=t("auth.password_placeholder"),
                 password=True,
                 on_change=self._on_password_change,
             ).classes(
@@ -154,11 +155,11 @@ class AuthForm:
         # Confirm password input (only for registration)
         if self.form_type == "register":
             with ui.element("div"):
-                ui.label("Passwort bestätigen").classes(
+                ui.label(t("auth.confirm_password")).classes(
                     "block text-sm font-medium text-gray-700 mb-2",
                 )
                 self.confirm_password_input = ui.input(
-                    placeholder="Passwort wiederholen",
+                    placeholder=t("auth.confirm_password_placeholder"),
                     password=True,
                     on_change=self._on_confirm_password_change,
                 ).classes(
@@ -173,28 +174,28 @@ class AuthForm:
                 with ui.element("div").classes("absolute inset-0 flex items-center"):
                     ui.element("div").classes("w-full border-t border-gray-300")
                 with ui.element("div").classes("relative flex justify-center text-sm"):
-                    ui.label("oder").classes("px-2 bg-white text-gray-500")
+                    ui.label(t("auth.or")).classes("px-2 bg-white text-gray-500")
 
         # Links
         with ui.element("div").classes("text-center"):
             if self.form_type == "login":
                 ui.html(
-                    "<span style='color: var(--color-text-secondary);'>Noch kein Konto? </span>",
+                    f"<span style='color: var(--color-text-secondary);'>{t('auth.no_account')} </span>",
                 )
-                ui.link("Jetzt registrieren", "#register").classes(
+                ui.link(t("auth.register_now"), "#register").classes(
                     "text-blue-600 hover:text-blue-500 font-medium",
                 )
             else:
                 ui.html(
-                    "<span style='color: var(--color-text-secondary);'>Bereits ein Konto? </span>",
+                    f"<span style='color: var(--color-text-secondary);'>{t('auth.have_account')} </span>",
                 )
-                ui.link("Jetzt anmelden", "#login").classes(
+                ui.link(t("auth.login_now"), "#login").classes(
                     "text-blue-600 hover:text-blue-500 font-medium",
                 )
 
     def _get_submit_text(self) -> str:
         """Get the submit button text."""
-        return "Anmelden" if self.form_type == "login" else "Registrieren"
+        return t("auth.login") if self.form_type == "login" else t("auth.register")
 
     def _on_email_change(self, e):
         """Handle email input change."""
@@ -286,34 +287,34 @@ class AuthForm:
         """Validate form inputs."""
         # Email validation
         if not self.email:
-            self._show_error("E-Mail-Adresse ist erforderlich")
+            self._show_error(t("validation.required", field=t("auth.email")))
             return False
 
         if "@" not in self.email or "." not in self.email:
-            self._show_error("Bitte gib eine gültige E-Mail-Adresse ein")
+            self._show_error(t("validation.invalid_email"))
             return False
 
         # Password validation
         if not self.password:
-            self._show_error("Passwort ist erforderlich")
+            self._show_error(t("validation.required", field=t("auth.password")))
             return False
 
         if len(self.password) < 6:
-            self._show_error("Passwort muss mindestens 6 Zeichen lang sein")
+            self._show_error(t("validation.min_length", min=6))
             return False
 
         # Registration-specific validation
         if self.form_type == "register":
             if not self.username:
-                self._show_error("Benutzername ist erforderlich")
+                self._show_error(t("validation.required", field=t("auth.username")))
                 return False
 
             if len(self.username) < 3:
-                self._show_error("Benutzername muss mindestens 3 Zeichen lang sein")
+                self._show_error(t("validation.min_length", min=3))
                 return False
 
             if self.password != self.confirm_password:
-                self._show_error("Passwörter stimmen nicht überein")
+                self._show_error(t("validation.passwords_not_match"))
                 return False
 
         return True
@@ -337,7 +338,7 @@ class AuthForm:
                 await self.on_error(self.error_message)
 
         except Exception as e:
-            self._show_error(f"Ein Fehler ist aufgetreten: {str(e)}")
+            self._show_error(t("messages.error_occurred"))
             if self.on_error:
                 await self.on_error(str(e))
 
@@ -349,10 +350,10 @@ class AuthForm:
         success = await auth_service.login(self.email, self.password)
 
         if success:
-            ui.notify("Erfolgreich angemeldet!", type="positive")
+            ui.notify(t("auth.login_success"), type="positive")
             await asyncio.sleep(1)
             return True
-        self._show_error("Ungültige E-Mail oder Passwort")
+        self._show_error(t("auth.invalid_credentials"))
         return False
 
     async def _handle_register(self) -> bool:
@@ -369,10 +370,10 @@ class AuthForm:
 
         if success:
             ui.notify(
-                "Registrierung erfolgreich! Du kannst dich jetzt anmelden.",
+                t("auth.registration_success_message"),
                 type="positive",
             )
             await asyncio.sleep(2)
             return True
-        self._show_error("Registrierung fehlgeschlagen. Bitte versuche es erneut.")
+        self._show_error(t("auth.registration_failed"))
         return False
