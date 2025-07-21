@@ -286,12 +286,12 @@ class ChatInterface:
                 new_height = min(max(lines * 20, min_height), max_height)
                 
                 # Update textarea height using JavaScript
-                ui.run_javascript(f"""
+                ui.run_javascript("""
                     const textarea = document.querySelector('textarea[placeholder="Nachricht eingeben..."]');
-                    if (textarea) {{
-                        textarea.style.height = '{new_height}px';
-                    }}
-                """)
+                    if (textarea) {
+                        textarea.style.height = `${newHeight}px`;
+                    }
+                """, newHeight=new_height)
             except Exception as e:
                 print(f"Error auto-resizing textarea: {e}")
     
