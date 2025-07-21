@@ -229,8 +229,33 @@ class User(Base):
         """Check if user can access specific assistant."""
         if self.role in [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER]:
             return True
-        # TODO: Implement assistant-specific permissions
-        return True
+        
+        # Check if user is the creator of the assistant
+        from app.models.assistant import Assistant
+        from app.core.database import get_db
+        
+        db = next(get_db())
+        try:
+            assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+            if assistant and assistant.creator_id == self.id:
+                return True
+            
+            # Check if assistant is public
+            if assistant and assistant.is_public:
+                return True
+            
+            # Check group-based access
+            if assistant and assistant.allowed_groups:
+                user_group_ids = [str(group.id) for group in self.groups]
+                if any(group_id in user_group_ids for group_id in assistant.allowed_groups):
+                    return True
+                    
+        except Exception as e:
+            logger.error(f"Error checking assistant access: {e}")
+        finally:
+            db.close()
+        
+        return False
     
     def can_manage_user(self, target_user_id: str) -> bool:
         """Check if user can manage another user."""
@@ -238,9 +263,20 @@ class User(Base):
             return True
         if self.role == UserRole.MANAGER:
             # Managers can manage users in their groups
-            target_user = None  # TODO: Get target user from database
-            if target_user:
-                return any(group in self.groups for group in target_user.groups)
+            from app.core.database import get_db
+            
+            db = next(get_db())
+            try:
+                target_user = db.query(User).filter(User.id == target_user_id).first()
+                if target_user:
+                    # Check if target user is in any of the manager's groups
+                    manager_group_ids = [str(group.id) for group in self.groups]
+                    target_group_ids = [str(group.id) for group in target_user.groups]
+                    return any(group_id in manager_group_ids for group_id in target_group_ids)
+            except Exception as e:
+                logger.error(f"Error checking user management permissions: {e}")
+            finally:
+                db.close()
         return False
     
     def get_effective_permissions(self) -> List[str]:

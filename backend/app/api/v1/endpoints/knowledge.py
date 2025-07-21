@@ -279,10 +279,16 @@ async def get_search_history(
 ):
     """Get search history for the current user."""
     try:
-        # TODO: Implement search history retrieval
+        knowledge_service = KnowledgeService(db)
+        search_history = knowledge_service.get_search_history(
+            user_id=str(current_user.id),
+            skip=skip,
+            limit=limit
+        )
+        
         return {
-            "searches": [],
-            "total": 0,
+            "searches": search_history,
+            "total": len(search_history),
             "skip": skip,
             "limit": limit
         }

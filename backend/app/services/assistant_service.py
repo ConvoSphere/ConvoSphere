@@ -160,8 +160,9 @@ class AssistantService:
             query = query.filter(Assistant.category == category)
         
         if tags:
-            # TODO: Implement tag filtering
-            pass
+            # Implement tag filtering
+            for tag in tags:
+                query = query.filter(Assistant.tags.contains([tag]))
         
         return query.order_by(Assistant.created_at.desc()).limit(limit).all()
     

@@ -64,7 +64,7 @@ async def detailed_health_check():
                     "details": weaviate_info
                 }
             },
-            "timestamp": "2024-01-01T00:00:00Z"  # TODO: Use actual timestamp
+            "timestamp": datetime.utcnow().isoformat()
         }
         
         logger.info(f"Health check completed - Status: {overall_status}")

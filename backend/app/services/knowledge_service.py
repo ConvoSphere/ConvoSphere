@@ -347,14 +347,49 @@ class KnowledgeService:
                     return f.read()
             
             elif file_type == "pdf":
-                # TODO: Implement PDF text extraction
-                # For now, return placeholder
-                return "PDF content extraction not yet implemented"
+                # Implement PDF text extraction
+                try:
+                    import PyPDF2
+                    import io
+                    
+                    with open(file_path, 'rb') as file:
+                        pdf_reader = PyPDF2.PdfReader(file)
+                        text = ""
+                        for page in pdf_reader.pages:
+                            text += page.extract_text() + "\n"
+                        return text.strip()
+                except ImportError:
+                    logger.error("PyPDF2 not installed. Install with: pip install PyPDF2")
+                    return None
+                except Exception as e:
+                    logger.error(f"PDF extraction error: {e}")
+                    return None
             
             elif file_type in ["doc", "docx"]:
-                # TODO: Implement Word document text extraction
-                # For now, return placeholder
-                return "Word document content extraction not yet implemented"
+                # Implement Word document text extraction
+                try:
+                    import docx
+                    from docx import Document
+                    
+                    doc = Document(file_path)
+                    text = ""
+                    for paragraph in doc.paragraphs:
+                        text += paragraph.text + "\n"
+                    
+                    # Also extract text from tables
+                    for table in doc.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                text += cell.text + " "
+                            text += "\n"
+                    
+                    return text.strip()
+                except ImportError:
+                    logger.error("python-docx not installed. Install with: pip install python-docx")
+                    return None
+                except Exception as e:
+                    logger.error(f"Word document extraction error: {e}")
+                    return None
             
             else:
                 logger.warning(f"Unsupported file type: {file_type}")

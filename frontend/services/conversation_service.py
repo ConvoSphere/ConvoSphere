@@ -239,8 +239,10 @@ class ConversationService:
                     conversation.status = "archived"
                     break
             
-            # TODO: Implement API call for archiving
-            # response = await api_client.archive_conversation(conversation_id)
+            # Implement API call for archiving
+            response = await api_client.archive_conversation(conversation_id)
+            if not response.get("success"):
+                raise Exception(f"Failed to archive conversation: {response.get('error')}")
             
             return True
         except Exception as e:
@@ -268,8 +270,10 @@ class ConversationService:
             if self.current_conversation and self.current_conversation.id == conversation_id:
                 self.current_conversation = None
             
-            # TODO: Implement API call for deletion
-            # response = await api_client.delete_conversation(conversation_id)
+            # Implement API call for deletion
+            response = await api_client.delete_conversation(conversation_id)
+            if not response.get("success"):
+                raise Exception(f"Failed to delete conversation: {response.get('error')}")
             
             return True
         except Exception as e:

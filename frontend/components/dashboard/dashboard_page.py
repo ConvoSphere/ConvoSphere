@@ -272,50 +272,82 @@ class DashboardPage:
     # Event handlers
     def _handle_new_conversation(self):
         """Handle new conversation action."""
-        ui.notify("Neue Konversation wird erstellt...", type="info")
-        # TODO: Navigate to chat page
+        try:
+            # Navigate to chat page
+            from frontend.pages.chat import create_chat_page
+            ui.clear()
+            chat_page = create_chat_page()
+            ui.add(chat_page)
+        except Exception as e:
+            ui.notify(f"Fehler beim Navigieren zur Chat-Seite: {str(e)}", type="negative")
     
     def _handle_create_assistant(self):
         """Handle create assistant action."""
-        ui.notify("Assistenten-Erstellung wird geöffnet...", type="info")
-        # TODO: Navigate to assistants page
+        try:
+            # Navigate to assistants page
+            from frontend.pages.assistants import create_assistants_page
+            ui.clear()
+            assistants_page = create_assistants_page()
+            ui.add(assistants_page)
+        except Exception as e:
+            ui.notify(f"Fehler beim Navigieren zur Assistenten-Seite: {str(e)}", type="negative")
     
     def _handle_upload_document(self):
         """Handle upload document action."""
-        ui.notify("Dokument-Upload wird geöffnet...", type="info")
-        # TODO: Navigate to knowledge base page
+        try:
+            # Navigate to knowledge base page
+            from frontend.pages.knowledge import create_knowledge_page
+            ui.clear()
+            knowledge_page = create_knowledge_page()
+            ui.add(knowledge_page)
+        except Exception as e:
+            ui.notify(f"Fehler beim Navigieren zur Knowledge-Base-Seite: {str(e)}", type="negative")
     
     def _handle_add_tool(self):
         """Handle add tool action."""
-        ui.notify("Tool-Hinzufügung wird geöffnet...", type="info")
-        # TODO: Navigate to tools page
+        try:
+            # Navigate to tools page
+            from frontend.pages.tools import create_tools_page
+            ui.clear()
+            tools_page = create_tools_page()
+            ui.add(tools_page)
+        except Exception as e:
+            ui.notify(f"Fehler beim Navigieren zur Tools-Seite: {str(e)}", type="negative")
     
     async def load_dashboard_data(self):
         """Load dashboard data from API."""
         try:
-            # Load statistics
-            # TODO: Replace with actual API calls
-            self.stats = {
-                "total_conversations": 24,
-                "active_assistants": 8,
-                "total_tools": 15,
-                "knowledge_documents": 42
-            }
-            
-            # Load recent activity
-            # TODO: Replace with actual API calls
-            self.recent_activity = [
-                {
-                    "title": "Neue Konversation gestartet",
-                    "description": "Mit 'Code Assistant' begonnen",
-                    "time": "vor 5 Minuten",
-                    "icon": "chat",
-                    "color": "blue"
+            # Load statistics from API
+            stats_response = await api_client.get_dashboard_stats()
+            if stats_response.get("success"):
+                self.stats = stats_response.get("data", {})
+            else:
+                # Fallback to default values
+                self.stats = {
+                    "total_conversations": 0,
+                    "active_assistants": 0,
+                    "total_tools": 0,
+                    "knowledge_documents": 0
                 }
-            ]
+            
+            # Load recent activity from API
+            activity_response = await api_client.get_recent_activity()
+            if activity_response.get("success"):
+                self.recent_activity = activity_response.get("data", [])
+            else:
+                # Fallback to default values
+                self.recent_activity = []
             
         except Exception as e:
             ui.notify(f"Fehler beim Laden der Dashboard-Daten: {str(e)}", type="negative")
+            # Set fallback values
+            self.stats = {
+                "total_conversations": 0,
+                "active_assistants": 0,
+                "total_tools": 0,
+                "knowledge_documents": 0
+            }
+            self.recent_activity = []
 
 
 def create_dashboard_page() -> ui.element:

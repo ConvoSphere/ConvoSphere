@@ -219,8 +219,14 @@ class RegisterPage:
                 # Show success and redirect to login
                 ui.notify("Konto erfolgreich erstellt!", type="positive")
                 await asyncio.sleep(2)
-                # TODO: Navigate to login page
-                ui.notify("Weiterleitung zur Anmeldung...", type="info")
+                # Navigate to login page
+                try:
+                    from frontend.pages.auth.login import create_page as create_login_page
+                    ui.clear()
+                    login_page = create_login_page()
+                    ui.add(login_page)
+                except Exception as e:
+                    ui.notify(f"Fehler beim Navigieren zur Login-Seite: {str(e)}", type="negative")
             else:
                 self.show_error("Registrierung fehlgeschlagen. Bitte versuche es erneut.")
                 

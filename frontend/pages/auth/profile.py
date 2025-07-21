@@ -269,13 +269,95 @@ class ProfilePage:
     
     def change_password(self):
         """Open password change dialog."""
-        # TODO: Implement password change dialog
-        ui.notify("Passwort-Änderung wird implementiert...", type="info")
+        try:
+            # Create password change dialog
+            with ui.dialog() as dialog, ui.card():
+                ui.label('Passwort ändern').classes('text-2xl font-bold')
+                
+                current_password = ui.input('Aktuelles Passwort', password=True).props('type=password')
+                new_password = ui.input('Neues Passwort', password=True).props('type=password')
+                confirm_password = ui.input('Neues Passwort bestätigen', password=True).props('type=password')
+                
+                with ui.row():
+                    ui.button('Abbrechen', on_click=dialog.close).props('outline')
+                    ui.button('Ändern', on_click=lambda: self._handle_password_change(
+                        dialog, current_password.value, new_password.value, confirm_password.value
+                    )).props('color=primary')
+        except Exception as e:
+            ui.notify(f"Fehler beim Öffnen des Passwort-Dialogs: {str(e)}", type="negative")
+    
+    async def _handle_password_change(self, dialog, current_password: str, new_password: str, confirm_password: str):
+        """Handle password change."""
+        try:
+            if not current_password or not new_password or not confirm_password:
+                ui.notify("Alle Felder müssen ausgefüllt werden", type="negative")
+                return
+            
+            if new_password != confirm_password:
+                ui.notify("Neue Passwörter stimmen nicht überein", type="negative")
+                return
+            
+            if len(new_password) < 8:
+                ui.notify("Neues Passwort muss mindestens 8 Zeichen lang sein", type="negative")
+                return
+            
+            # Call API to change password
+            response = await api_client.change_password(current_password, new_password)
+            
+            if response.get("success"):
+                ui.notify("Passwort erfolgreich geändert!", type="positive")
+                dialog.close()
+            else:
+                ui.notify(f"Fehler beim Ändern des Passworts: {response.get('error')}", type="negative")
+                
+        except Exception as e:
+            ui.notify(f"Fehler beim Ändern des Passworts: {str(e)}", type="negative")
     
     def delete_account(self):
         """Open account deletion dialog."""
-        # TODO: Implement account deletion dialog
-        ui.notify("Konto-Löschung wird implementiert...", type="warning")
+        try:
+            # Create account deletion dialog
+            with ui.dialog() as dialog, ui.card():
+                ui.label('Konto löschen').classes('text-2xl font-bold text-red-600')
+                ui.label('Diese Aktion kann nicht rückgängig gemacht werden!').classes('text-red-500')
+                
+                confirmation = ui.input('Geben Sie "LÖSCHEN" ein, um zu bestätigen')
+                
+                with ui.row():
+                    ui.button('Abbrechen', on_click=dialog.close).props('outline')
+                    ui.button('Konto löschen', on_click=lambda: self._handle_account_deletion(
+                        dialog, confirmation.value
+                    )).props('color=negative')
+        except Exception as e:
+            ui.notify(f"Fehler beim Öffnen des Lösch-Dialogs: {str(e)}", type="negative")
+    
+    async def _handle_account_deletion(self, dialog, confirmation: str):
+        """Handle account deletion."""
+        try:
+            if confirmation != "LÖSCHEN":
+                ui.notify("Bitte geben Sie 'LÖSCHEN' ein, um zu bestätigen", type="negative")
+                return
+            
+            # Call API to delete account
+            response = await api_client.delete_account()
+            
+            if response.get("success"):
+                ui.notify("Konto erfolgreich gelöscht!", type="positive")
+                dialog.close()
+                
+                # Redirect to login page
+                try:
+                    from frontend.pages.auth.login import create_page as create_login_page
+                    ui.clear()
+                    login_page = create_login_page()
+                    ui.add(login_page)
+                except Exception as e:
+                    ui.notify(f"Fehler beim Navigieren zur Login-Seite: {str(e)}", type="negative")
+            else:
+                ui.notify(f"Fehler beim Löschen des Kontos: {response.get('error')}", type="negative")
+                
+        except Exception as e:
+            ui.notify(f"Fehler beim Löschen des Kontos: {str(e)}", type="negative")
 
 
 # Create page instance

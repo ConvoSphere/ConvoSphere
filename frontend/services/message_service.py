@@ -121,6 +121,15 @@ class MessageService:
         self.is_connected = False
         self.is_typing = False
         
+        # Event system for UI updates
+        self._event_listeners = {
+            'message_received': [],
+            'message_sent': [],
+            'typing_changed': [],
+            'connection_changed': [],
+            'error': []
+        }
+        
         # Setup WebSocket handlers
         self._setup_websocket_handlers()
     
@@ -362,26 +371,58 @@ class MessageService:
         """Clear all messages."""
         self.messages.clear()
     
-    # Event notification methods (to be implemented by UI components)
+    # Event system for UI updates
+    
+    def add_event_listener(self, event_type: str, callback):
+        """Add event listener for UI updates."""
+        if event_type in self._event_listeners:
+            self._event_listeners[event_type].append(callback)
+    
+    def remove_event_listener(self, event_type: str, callback):
+        """Remove event listener."""
+        if event_type in self._event_listeners:
+            try:
+                self._event_listeners[event_type].remove(callback)
+            except ValueError:
+                pass
+    
+    async def _notify_event(self, event_type: str, data: Any):
+        """Notify all listeners of an event."""
+        if event_type in self._event_listeners:
+            for callback in self._event_listeners[event_type]:
+                try:
+                    if asyncio.iscoroutinefunction(callback):
+                        await callback(data)
+                    else:
+                        callback(data)
+                except Exception as e:
+                    print(f"Error in event listener {event_type}: {e}")
+    
+    # Event notification methods
     async def _notify_message_received(self, message: Message):
         """Notify that a message was received."""
-        # TODO: Implement event system for UI updates
-        pass
+        await self._notify_event('message_received', message)
     
     async def _notify_message_sent(self, message: Message):
         """Notify that a message was sent."""
-        # TODO: Implement event system for UI updates
-        pass
+        await self._notify_event('message_sent', message)
     
     async def _notify_typing_changed(self, user_id: str, is_typing: bool):
         """Notify typing status change."""
-        # TODO: Implement event system for UI updates
-        pass
+        await self._notify_event('typing_changed', {
+            'user_id': user_id,
+            'is_typing': is_typing
+        })
     
     async def _notify_connection_changed(self, connected: bool):
         """Notify connection status change."""
-        # TODO: Implement event system for UI updates
-        pass
+        await self._notify_event('connection_changed', {
+            'connected': connected
+        })
+    
+    async def _notify_error(self, error: str):
+        """Notify error event."""
+        await self._notify_event('error', error)
 
 
 # Global message service instance
