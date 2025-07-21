@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form, Input, Alert } from 'antd';
+import { Button, Form, Input, Alert, message } from 'antd';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ const Register: React.FC = () => {
     setError(null);
     try {
       await register(values.username, values.password, values.email);
+      message.success('Registration successful');
       navigate('/');
     } catch (e) {
       setError('Registration failed.');
@@ -32,14 +33,17 @@ const Register: React.FC = () => {
     <div style={{ maxWidth: 320, margin: 'auto', marginTop: 64 }}>
       <h2>Register</h2>
       {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-      <Form name="register" onFinish={onFinish} layout="vertical">
-        <Form.Item name="username" label="Username" rules={[{ required: true }]}> <Input autoFocus /> </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}> <Input /> </Form.Item>
-        <Form.Item name="password" label="Password" rules={[{ required: true }]}> <Input.Password /> </Form.Item>
+      <Form name="register" onFinish={onFinish} layout="vertical" aria-label="Register form">
+        <Form.Item name="username" label="Username" rules={[{ required: true }]}> <Input autoFocus aria-label="Username" /> </Form.Item>
+        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}> <Input aria-label="Email" /> </Form.Item>
+        <Form.Item name="password" label="Password" rules={[{ required: true }]}> <Input.Password aria-label="Password" /> </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>Register</Button>
+          <Button type="primary" htmlType="submit" loading={loading} block aria-label="Register">Register</Button>
         </Form.Item>
       </Form>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+        <a onClick={() => navigate('/login')} tabIndex={0} aria-label="Back to login">Zurück zum Login</a>
+      </div>
     </div>
   );
 };

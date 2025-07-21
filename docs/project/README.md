@@ -203,3 +203,28 @@ This project is licensed under the MIT License - see the [LICENSE](../../LICENSE
 **Built with ❤️ by the AI Assistant Platform Team**
 
 *Empowering organizations with intelligent AI assistants since 2024*
+
+## Geplante Roadmap: Erweiterung um moderne AI-Chat-Features
+
+Das Projekt wird schrittweise um folgende Funktionen erweitert, sobald die Basis stabil läuft:
+- Multi-Modell-Unterstützung
+- Conversation Branching
+- Tabbed Chat
+- Text-zu-Bild-Generierung
+- Code-Interpreter/Sandbox
+- Sprachein- & -ausgabe (STT/TTS)
+- Multichannel-Integration
+- Erweiterungs-/Marketplace-Ökosystem
+- Export- & Sharing-Funktionen
+- OpenAI-kompatible API & Provider-Wechsel
+- Token-Streaming in Echtzeit
+- RBAC-Feingranularität
+
+Details und Priorisierung siehe [development-roadmap.md](./development-roadmap.md).
+
+## Performance Monitoring & System Status
+
+- OpenTelemetry (OTLP) integration for tracing and metrics
+- System status API for health, performance, and tracing IDs (admin only)
+- Admin UI with time-based visualizations (CPU, RAM, service status)
+- Live updates and admin-only access

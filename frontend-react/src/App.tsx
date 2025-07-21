@@ -20,6 +20,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Conversations from './pages/Conversations';
 import McpTools from './pages/McpTools';
+import SystemStatus from './pages/SystemStatus';
 
 const App: React.FC = () => {
   return (
@@ -52,6 +53,7 @@ const App: React.FC = () => {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/conversations" element={<Conversations />} />
                       <Route path="/mcp-tools" element={<McpTools />} />
+                      <Route path="/admin/system-status" element={<SystemStatus />} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>

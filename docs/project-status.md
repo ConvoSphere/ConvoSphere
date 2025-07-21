@@ -33,8 +33,8 @@ The AI Assistant Platform is a comprehensive, enterprise-grade AI assistant solu
 - [x] **Health Monitoring** - Comprehensive health check system
 - [x] **Testing Suite** - Unit, integration, and API tests
 
-#### **Frontend Application (67 Python files)**
-- [x] **NiceGUI Interface** - Responsive, modern UI framework
+#### **Frontend Application (frontend-react, React/TypeScript)**
+- [x] **React Interface** - Modern, modular UI with Ant Design
 - [x] **Real-time Chat** - WebSocket-based messaging system
 - [x] **Knowledge Base UI** - Document management interface
 - [x] **User Management** - Profile, settings, and admin dashboard
@@ -42,6 +42,10 @@ The AI Assistant Platform is a comprehensive, enterprise-grade AI assistant solu
 - [x] **Accessibility** - Screen reader support and keyboard navigation
 - [x] **Theme System** - Light/dark mode with custom colors
 - [x] **Responsive Design** - Mobile, tablet, and desktop support
+- [x] **Internationalization** - i18next with English and German
+- [x] **State Management** - Zustand
+- [x] **API Integration** - Axios
+- [x] **Testing** - Jest & React Testing Library
 
 #### **Infrastructure & DevOps**
 - [x] **Docker Containerization** - Complete container setup with health checks
@@ -70,6 +74,12 @@ The AI Assistant Platform is a comprehensive, enterprise-grade AI assistant solu
 - [ ] Caching strategy enhancement
 - [ ] Database query optimization
 
+### 🟢 Performance Monitoring & System Status
+- OpenTelemetry (OTLP) integration for tracing and metrics
+- System status API for health, performance, and tracing IDs (admin only)
+- Admin UI with time-based visualizations (CPU, RAM, service status)
+- Live updates and admin-only access
+
 ### 📋 **Planned Features (Roadmap)**
 
 #### **Phase 1: High Priority (2-4 months)**
@@ -91,7 +101,7 @@ The AI Assistant Platform is a comprehensive, enterprise-grade AI assistant solu
 
 ### **Technology Stack**
 ```
-Frontend:     NiceGUI 2.20.0 (Python-based reactive UI)
+Frontend:     frontend-react (React, TypeScript, Ant Design, Zustand, i18next, Vite)
 Backend:      FastAPI with SQLAlchemy and PostgreSQL
 Real-time:    WebSocket for live chat
 Search:       Weaviate vector database

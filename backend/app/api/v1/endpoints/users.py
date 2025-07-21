@@ -1,10 +1,14 @@
 """Users endpoints for user management with enterprise features."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body, Request
 from sqlalchemy.orm import Session
+import psutil
 
-from ....core.database import get_db
+from ....core.database import get_db, check_db_connection, get_db_info
+from ....core.redis_client import check_redis_connection, get_redis_info
+from ....core.weaviate_client import check_weaviate_connection, get_weaviate_info
 from ....core.security import get_current_user
+from ....core.config import get_settings
 from ....models.user import AuthProvider, User, UserRole, UserStatus
 from ....schemas.user import (
     SSOUserCreate,
@@ -31,6 +35,7 @@ from ....utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
+from opentelemetry.trace import get_current_span
 
 router = APIRouter()
 
@@ -170,7 +175,10 @@ async def update_my_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Update current user's profile."""
+    """Update current user's profile (including language preference).
+    
+    You can update the user's language preference by providing the 'language' field (e.g. 'en', 'de').
+    """
     try:
         user_service = UserService(db)
         # Convert profile update to user update
@@ -448,3 +456,77 @@ async def authenticate_user(
         raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=str(e))
     except InvalidCredentialsError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+def is_admin(user: User) -> bool:
+    return user.role in {UserRole.ADMIN, UserRole.SUPER_ADMIN}
+
+@router.get("/admin/default-language", response_model=str)
+async def get_default_language(
+    current_user: User = Depends(get_current_user),
+):
+    """Get the global default language (admin only)."""
+    if not is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    settings = get_settings()
+    return settings.default_language
+
+@router.put("/admin/default-language", response_model=str)
+async def set_default_language(
+    language: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+):
+    """Set the global default language (admin only)."""
+    if not is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    settings = get_settings()
+    # Dynamisch zur Laufzeit setzen (nur für Demo, persistente Speicherung erfordert weitere Logik)
+    settings.default_language = language
+    return settings.default_language
+
+@router.get("/admin/system-status")
+async def get_system_status(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Get system health and performance metrics (admin only)."""
+    if not is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    # System
+    cpu = psutil.cpu_percent(interval=0.2)
+    ram = psutil.virtual_memory()._asdict()
+    # DB
+    db_healthy = check_db_connection()
+    db_info = get_db_info()
+    # Redis
+    redis_healthy = await check_redis_connection()
+    redis_info = await get_redis_info()
+    # Weaviate
+    weaviate_healthy = check_weaviate_connection()
+    weaviate_info = get_weaviate_info()
+    # Fehler (nur Beispiel, kann erweitert werden)
+    # Tracing
+    span = get_current_span()
+    trace_id = span.get_span_context().trace_id if span else None
+    return {
+        "system": {
+            "cpu_percent": cpu,
+            "ram": ram,
+        },
+        "database": {
+            "healthy": db_healthy,
+            "info": db_info,
+        },
+        "redis": {
+            "healthy": redis_healthy,
+            "info": redis_info,
+        },
+        "weaviate": {
+            "healthy": weaviate_healthy,
+            "info": weaviate_info,
+        },
+        "tracing": {
+            "trace_id": trace_id,
+        },
+        "status": "ok" if all([db_healthy, redis_healthy, weaviate_healthy]) else "degraded",
+    }

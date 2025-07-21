@@ -2,68 +2,69 @@
 
 ## Overview
 
-Das neue Frontend der AI Assistant Platform basiert auf **React** (TypeScript), **Ant Design** (UI), **Zustand** (State-Management), **i18next** (Internationalisierung), **Axios** (API), **Vite** (Build-Tool) und ist modular, responsiv und zukunftssicher aufgebaut.
+The new frontend of the AI Assistant Platform is implemented in `frontend-react/` and is based on **React** (TypeScript), **Ant Design** (UI), **Zustand** (state management), **i18next** (internationalization), **Axios** (API), and **Vite** (build tool). It is modular, responsive, and future-proof.
 
 ### Key Features
-- Moderne, modulare React-Architektur
-- Ant Design UI mit Light/Dark Mode und Responsive Sidebar
-- State-Management mit Zustand
-- Internationalisierung (i18n) mit i18next (DE/EN)
-- Routing mit React Router, Protected Routes
-- WebSocket-basierter Chat
-- API-Integration mit Axios
-- Vollständige Backend-Anbindung für alle Kernfeatures (Chat, Knowledge Base, Tools, Assistants, Conversations, MCP Tools)
-- Umfassende Tests mit Jest & React Testing Library
-- Barrierefreiheit (WCAG-konform)
+- Modern, modular React architecture
+- Ant Design UI with light/dark mode and responsive sidebar
+- State management with Zustand
+- Internationalization (i18n) with i18next (EN/DE)
+- Routing with React Router v6, protected routes
+- WebSocket-based chat
+- API integration with Axios
+- Full backend integration for all core features (Chat, Knowledge Base, Tools, Assistants, Conversations, MCP Tools)
+- Comprehensive tests with Jest & React Testing Library
+- Accessibility (WCAG compliant)
 
 ## Technology Stack
-- **React (TypeScript)**: UI-Framework
-- **Ant Design**: UI-Komponenten und Design-System
-- **Zustand**: State-Management
-- **i18next**: Internationalisierung
-- **Axios**: API-Requests
-- **Vite**: Build-Tool
+- **React (TypeScript)**: UI framework
+- **Ant Design**: UI components and design system
+- **Zustand**: State management
+- **i18next**: Internationalization
+- **Axios**: API requests
+- **Vite**: Build tool
 - **Jest, React Testing Library**: Testing
 
-## Projektstruktur
+## Project Structure
 
 ```
 frontend-react/
 ├── src/
-│   ├── components/      # Wiederverwendbare UI-Komponenten (Sidebar, Header, ThemeSwitcher, ...)
-│   ├── pages/           # Seiten (Chat, Dashboard, Knowledge Base, Tools, ...)
-│   ├── services/        # API- und WebSocket-Services
-│   ├── store/           # Globaler Zustand (Theme, Auth, ...)
-│   ├── i18n/            # Übersetzungen und i18n-Initialisierung
-│   ├── styles/          # Theme-Konfiguration
+│   ├── components/      # Reusable UI components (Sidebar, Header, ThemeSwitcher, ...)
+│   ├── pages/           # Pages (Chat, Dashboard, Knowledge Base, Tools, ...)
+│   ├── services/        # API and WebSocket services
+│   ├── store/           # Global state (Theme, Auth, ...)
+│   ├── i18n/            # Translations and i18n initialization
+│   ├── styles/          # Theme configuration
 │   └── ...
 ├── public/
 ├── package.json
 └── ...
 ```
 
-## Hauptfeatures
-- **Chat**: WebSocket-basierter Echtzeit-Chat, direkt als Startseite
-- **Knowledge Base**: Dokumentenverwaltung, Upload, Suche
-- **Tools**: Tool-Liste, Ausführung, Parameterübergabe
-- **Assistants**: Verwaltung von AI-Assistants
-- **Conversations**: Übersicht und Details vergangener Konversationen
-- **MCP Tools**: Integration und Ausführung externer Tools
-- **Settings, Admin, Profile**: Einstellungen, User- und Systemverwaltung
+## Main Features
+- **Chat**: WebSocket-based real-time chat, default start page
+- **Knowledge Base**: Document management, upload, search
+- **Tools**: Tool list, execution, parameter input
+- **Assistants**: AI assistant management
+- **Conversations**: Overview and details of past conversations
+- **MCP Tools**: Integration and execution of external tools
+- **Settings, Admin, Profile**: Settings, user and system management
 
-## Architekturprinzipien
-- **Modularität**: Feature- und Komponenten-basiert
-- **Wartbarkeit**: Klare Trennung von UI, State, Services
-- **Testbarkeit**: Hohe Testabdeckung, Mocking von Services
-- **Barrierefreiheit**: WCAG-konforme UI
-- **Responsivität**: Sidebar, Header, Layout passen sich an
+## Architectural Principles
+- **Modularity**: Feature- and component-based
+- **Maintainability**: Clear separation of UI, state, and services
+- **Testability**: High test coverage, service mocking
+- **Accessibility**: WCAG-compliant UI
+- **Responsiveness**: Sidebar, header, and layout adapt to device
 
 ## Testing
-- Komponenten- und Service-Tests mit Jest & React Testing Library
-- API-Services werden gemockt
-- Testabdeckung >80% angestrebt
+- Component and service tests with Jest & React Testing Library
+- API services are mocked
+- Target test coverage >80%
 
 ## Migration
-- NiceGUI/Streamlit wurde vollständig entfernt
-- Alle Features und Seiten wurden als React-Komponenten neu umgesetzt
-- Parallele Entwicklung und schrittweise Migration möglich 
+- Previous NiceGUI/Streamlit frontend has been fully removed
+- All features and pages are now implemented as React components in `frontend-react/`
+- No more code in src/ or frontend/ directories
+- Parallel development and stepwise migration completed 

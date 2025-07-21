@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import { login as apiLogin, logout as apiLogout, register as apiRegister } from '../services/auth';
 import { getProfile, updateProfile } from '../services/user';
+import type { UserProfileUpdate } from '../services/user';
 
 export interface UserProfile {
   id: string;
   username: string;
   email: string;
+  language?: string;
+  role?: string;
 }
 
 interface AuthState {
@@ -16,7 +19,7 @@ interface AuthState {
   register: (username: string, password: string, email: string) => Promise<void>;
   logout: () => void;
   fetchProfile: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (data: UserProfileUpdate) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

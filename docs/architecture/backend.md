@@ -882,6 +882,10 @@ async def log_requests(request: Request, call_next):
     return response
 ```
 
+## Observability & Performance Monitoring
+
+The backend uses OpenTelemetry (OTLP) for tracing and metrics. Key components (FastAPI, SQLAlchemy, Redis) are instrumented. A dedicated API endpoint provides system status and performance metrics (CPU, RAM, service status, trace IDs) for the admin UI. Data can be exported to Jaeger, Tempo, Prometheus, or other OTLP-compatible backends.
+
 ## Security Considerations
 
 ### Input Validation
