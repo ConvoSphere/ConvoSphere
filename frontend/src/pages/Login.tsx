@@ -25,8 +25,20 @@ const Login: React.FC = () => {
       const result = await login({ email, password }).unwrap()
       dispatch(setCredentials({ accessToken: result.access_token, user: null }))
       navigate('/dashboard')
-    } catch (error: any) {
-      dispatch(setError(error?.data?.detail || t('auth.login_failed')))
+    } catch (error: unknown) {
+      let message = t('auth.login_failed')
+      interface ErrorWithDetail {
+        data?: { detail?: string }
+      }
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'data' in error &&
+        typeof (error as ErrorWithDetail).data?.detail === 'string'
+      ) {
+        message = (error as ErrorWithDetail).data!.detail!
+      }
+      dispatch(setError(message))
     }
   }
 

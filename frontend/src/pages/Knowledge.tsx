@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useGetDocumentsQuery, useUploadDocumentMutation, useDeleteDocumentMutation, useProcessDocumentMutation, useSearchDocumentsMutation, useGetSupportedFormatsQuery, type SearchRequest } from '../services/apiSlice'
+import { useGetDocumentsQuery, useUploadDocumentMutation, useDeleteDocumentMutation, useProcessDocumentMutation, useSearchDocumentsMutation, useGetSupportedFormatsQuery, type SearchRequest, type SearchResponse } from '../services/apiSlice'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -11,6 +11,8 @@ interface UploadFormData {
   tags: string
 }
 
+type SearchResult = SearchResponse['results'][number]
+
 const Knowledge: React.FC = () => {
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -20,7 +22,7 @@ const Knowledge: React.FC = () => {
     tags: '',
   })
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
 
   const { data: documents, isLoading, error } = useGetDocumentsQuery({ limit: 100 })
   const [uploadDocument, { isLoading: isUploading }] = useUploadDocumentMutation()

@@ -5,7 +5,7 @@ This module provides the authentication API endpoints for the AI Assistant Platf
 """
 
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from loguru import logger
@@ -21,6 +21,7 @@ from app.core.security import (
     log_security_event
 )
 from app.models.user import User, UserRole
+from app.utils.security import check_rate_limit
 from app.core.config import settings
 
 router = APIRouter()
@@ -62,7 +63,8 @@ class UserResponse(BaseModel):
 @router.post("/login", response_model=TokenResponse)
 async def login(
     user_credentials: UserLogin,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    request: Request = None
 ):
     """
     Authenticate user and return access token.
@@ -77,6 +79,11 @@ async def login(
     Raises:
         HTTPException: If credentials are invalid
     """
+    # Rate limiting: max 5 login attempts per minute per IP
+    if request:
+        allowed = await check_rate_limit(request.client.host, "login", 5, 60)
+        if not allowed:
+            raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
     # Find user by email
     user = db.query(User).filter(User.email == user_credentials.email).first()
     
@@ -194,7 +201,8 @@ async def register(
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
     refresh_token: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    request: Request = None
 ):
     """
     Refresh access token using refresh token.
@@ -209,6 +217,11 @@ async def refresh_token(
     Raises:
         HTTPException: If refresh token is invalid
     """
+    # Rate limiting: max 10 refreshes per minute per IP
+    if request:
+        allowed = await check_rate_limit(request.client.host, "refresh_token", 10, 60)
+        if not allowed:
+            raise HTTPException(status_code=429, detail="Too many token refresh attempts. Please try again later.")
     user_id = verify_token(refresh_token)
     if not user_id:
         raise HTTPException(

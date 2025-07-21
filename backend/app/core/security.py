@@ -205,13 +205,20 @@ def require_permission(permission: str):
     
     Args:
         permission: Required permission
-        
     Returns:
         Callable: Decorated function
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
-            # TODO: Implement permission checking logic
+            user = kwargs.get('current_user')
+            if user is None:
+                # Try to get user from dependency
+                user = get_current_user()
+            if not user.has_permission(permission):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Missing required permission: {permission}"
+                )
             return func(*args, **kwargs)
         return wrapper
     return decorator

@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 from ....core.database import get_db
-from ....core.security import get_current_user
+from ....core.security import get_current_user, require_permission
 from ....models.user import User
 from ....schemas.conversation import (
     ConversationCreate, ConversationUpdate, ConversationResponse, ConversationListResponse,
@@ -142,6 +142,7 @@ async def get_conversation(
     return conv
 
 @router.put("/{conversation_id}", response_model=ConversationResponse)
+@require_permission("conversation:write")
 async def update_conversation(
     conversation_id: str,
     update_data: ConversationUpdate,
@@ -163,6 +164,7 @@ async def update_conversation(
     return updated_conv
 
 @router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@require_permission("conversation:delete")
 async def delete_conversation(
     conversation_id: str,
     db: Session = Depends(get_db),

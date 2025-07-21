@@ -21,7 +21,7 @@ export interface Conversation {
   assistant_name?: string
   status: 'active' | 'archived' | 'deleted'
   tags: string[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface Message {
@@ -31,7 +31,7 @@ export interface Message {
   created_at: string
   conversation_id: string
   attachments?: MessageAttachment[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   status: 'sent' | 'delivered' | 'read' | 'failed'
   reply_to?: string
   reactions?: MessageReaction[]
@@ -90,8 +90,8 @@ export interface ConversationContext {
   conversation_id: string
   context_window: number
   relevant_documents: string[]
-  assistant_context: Record<string, any>
-  user_preferences: Record<string, any>
+  assistant_context: Record<string, unknown>
+  user_preferences: Record<string, unknown>
 }
 
 export interface ConversationUpdate {
@@ -99,7 +99,7 @@ export interface ConversationUpdate {
   assistant_id?: string
   status?: 'active' | 'archived' | 'deleted'
   tags?: string[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface LoginRequest {
@@ -145,11 +145,11 @@ export interface Assistant {
   status: string
   is_public: boolean
   is_template: boolean
-  tools_config: Array<Record<string, any>>
+  tools_config: Array<Record<string, unknown>>
   tools_enabled: boolean
   category?: string
   tags: string[]
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   creator_id: string
   created_at?: string
   updated_at?: string
@@ -214,7 +214,7 @@ export interface DocumentList {
 
 export interface SearchRequest {
   query: string
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
   limit?: number
   include_metadata?: boolean
 }
@@ -225,7 +225,7 @@ export interface SearchResponse {
     title: string
     content: string
     score: number
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }>
   total: number
   query: string
@@ -252,7 +252,7 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
       await authService.refreshToken()
       // Retry the original request
       result = await baseQuery(args, api, extraOptions)
-    } catch (error) {
+    } catch {
       // Refresh failed, user will be logged out
       authService.handleAuthError()
     }
@@ -312,7 +312,7 @@ export const apiSlice = createApi({
       providesTags: (_, __, id) => [{ type: 'Conversation', id }],
     }),
     
-    createConversation: builder.mutation<Conversation, { assistant_id: string; title?: string; tags?: string[]; metadata?: Record<string, any> }>({
+    createConversation: builder.mutation<Conversation, { assistant_id: string; title?: string; tags?: string[]; metadata?: Record<string, unknown> }>({
       query: (conversation) => ({
         url: '/conversations',
         method: 'POST',

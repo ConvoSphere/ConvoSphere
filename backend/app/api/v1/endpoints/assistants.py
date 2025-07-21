@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from loguru import logger
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
+from app.core.security import get_current_user_id, require_permission
 from app.services.assistant_service import AssistantService
 from app.models.assistant import AssistantStatus
 
@@ -270,6 +270,7 @@ async def get_assistant(
 
 
 @router.post("/", response_model=AssistantResponse)
+@require_permission("assistant:write")
 async def create_assistant(
     assistant_data: AssistantCreate,
     current_user_id: str = Depends(get_current_user_id),
@@ -332,6 +333,7 @@ async def create_assistant(
 
 
 @router.put("/{assistant_id}", response_model=AssistantResponse)
+@require_permission("assistant:write")
 async def update_assistant(
     assistant_id: str,
     assistant_data: AssistantUpdate,
@@ -397,6 +399,7 @@ async def update_assistant(
 
 
 @router.delete("/{assistant_id}")
+@require_permission("assistant:write")
 async def delete_assistant(
     assistant_id: str,
     current_user_id: str = Depends(get_current_user_id),
@@ -440,6 +443,7 @@ async def delete_assistant(
 
 
 @router.post("/{assistant_id}/activate", response_model=AssistantResponse)
+@require_permission("assistant:activate")
 async def activate_assistant(
     assistant_id: str,
     current_user_id: str = Depends(get_current_user_id),
@@ -485,6 +489,7 @@ async def activate_assistant(
 
 
 @router.post("/{assistant_id}/deactivate", response_model=AssistantResponse)
+@require_permission("assistant:activate")
 async def deactivate_assistant(
     assistant_id: str,
     current_user_id: str = Depends(get_current_user_id),
@@ -530,6 +535,7 @@ async def deactivate_assistant(
 
 
 @router.post("/{assistant_id}/tools", response_model=AssistantResponse)
+@require_permission("assistant:tool")
 async def add_tool_to_assistant(
     assistant_id: str,
     tool_data: ToolAssignmentRequest,
@@ -582,6 +588,7 @@ async def add_tool_to_assistant(
 
 
 @router.delete("/{assistant_id}/tools/{tool_id}", response_model=AssistantResponse)
+@require_permission("assistant:tool")
 async def remove_tool_from_assistant(
     assistant_id: str,
     tool_id: str,
