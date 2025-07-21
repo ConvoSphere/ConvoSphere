@@ -10,7 +10,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/chatassistant
+      - DATABASE_URL=postgresql://chatassistant:chatassistant_password@postgres:5432/chatassistant
       - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=http://weaviate:8080
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -52,8 +52,8 @@ services:
     image: postgres:15
     environment:
       - POSTGRES_DB=chatassistant
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=chatassistant
+      - POSTGRES_PASSWORD=chatassistant_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql

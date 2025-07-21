@@ -14,6 +14,9 @@ from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
 
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 security = HTTPBearer()
 
 BLACKLIST_PREFIX = "jwt_blacklist:"
