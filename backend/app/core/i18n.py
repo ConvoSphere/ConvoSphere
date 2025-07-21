@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Request
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from loguru import logger
 
 
