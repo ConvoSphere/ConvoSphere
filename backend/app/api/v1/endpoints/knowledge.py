@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from pathlib import Path
 
 from ....core.database import get_db
-from ....core.security import get_current_user
+from ....core.security import get_current_user, require_permission
 from ....models.user import User
 from ....services.knowledge_service import KnowledgeService
 from ....services.docling_processor import docling_processor
@@ -151,6 +151,7 @@ async def get_document(
 
 
 @router.delete("/documents/{document_id}")
+@require_permission("knowledge:delete")
 async def delete_document(
     document_id: str,
     db: Session = Depends(get_db),
@@ -173,6 +174,7 @@ async def delete_document(
 
 
 @router.post("/documents/{document_id}/process")
+@require_permission("knowledge:write")
 async def process_document(
     document_id: str,
     db: Session = Depends(get_db),
