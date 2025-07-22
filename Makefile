@@ -1,6 +1,6 @@
 # AI Assistant Platform Makefile
 
-.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean pre-commit-install pre-commit-run pre-commit-update code-quality
+.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean pre-commit-install pre-commit-run pre-commit-update code-quality test-communication
 
 # Default target
 help:
@@ -32,6 +32,7 @@ help:
 	@echo ""
 	@echo "Utilities:"
 	@echo "  clean          Clean up temporary files"
+	@echo "  test-communication Test frontend-backend communication"
 	@echo "  help           Show this help message"
 	@echo ""
 	@echo "Documentation:"
@@ -91,6 +92,11 @@ code-quality:
 	@echo "5. Security check..."
 	bandit -r backend/ frontend/ -f json -o bandit-report.json || true
 	@echo "Code quality checks completed!"
+
+# Communication testing
+test-communication:
+	@echo "Testing frontend-backend communication..."
+	./scripts/test-communication.sh
 
 # Pre-commit hooks
 pre-commit-install:

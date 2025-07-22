@@ -1,3 +1,5 @@
+import config from '../config';
+
 type MessageHandler = (msg: { sender: string; text: string }) => void;
 
 class ChatWebSocket {
@@ -6,7 +8,10 @@ class ChatWebSocket {
 
   connect(token: string, onMessage: MessageHandler) {
     this.handler = onMessage;
-    this.ws = new WebSocket(`ws://${window.location.host}/api/v1/ws/chat?token=${token}`);
+    
+    const wsUrl = `${config.wsUrl}${config.wsEndpoints.chat}?token=${token}`;
+    this.ws = new WebSocket(wsUrl);
+    
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (this.handler) this.handler(data);

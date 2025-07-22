@@ -1,7 +1,8 @@
 import axios from 'axios';
+import config from '../config';
 
 const api = axios.create({
-  baseURL: '/api', // ggf. anpassen
+  baseURL: config.apiUrl,
   withCredentials: true,
 });
 

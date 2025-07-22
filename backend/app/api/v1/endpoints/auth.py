@@ -139,19 +139,12 @@ async def register(
     user_data: UserRegister,
     db: Session = Depends(get_db),
 ):
-    """
-    Register a new user account.
-
-    Args:
-        user_data: User registration data
-        db: Database session
-
-    Returns:
-        UserResponse: Created user information
-
-    Raises:
-        HTTPException: If email or username already exists
-    """
+    settings = get_settings()
+    if not settings.registration_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is disabled. Please contact the administrator."
+        )
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:

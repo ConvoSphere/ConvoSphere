@@ -26,8 +26,9 @@ const Login: React.FC = () => {
     const loadSSOProviders = async () => {
       try {
         const providers = await getSSOProviders();
-        setSsoProviders(providers);
+        setSsoProviders(providers || []); // immer ein Array setzen
       } catch (error) {
+        setSsoProviders([]); // auch im Fehlerfall ein Array
         console.log('No SSO providers configured or error loading providers');
       }
     };

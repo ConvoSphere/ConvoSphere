@@ -3,9 +3,6 @@ import { ConfigProvider, theme as antdTheme } from 'antd';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-import ThemeSwitcher from './components/ThemeSwitcher';
-import LanguageSwitcher from './components/LanguageSwitcher';
-import LogoutButton from './components/LogoutButton';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -39,9 +36,6 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <ThemeSwitcher />
-                    <LanguageSwitcher />
-                    <LogoutButton />
                     <Routes>
                       <Route path="/" element={<Chat />} />
                       <Route path="/dashboard" element={<Dashboard />} />

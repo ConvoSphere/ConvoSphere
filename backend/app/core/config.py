@@ -25,6 +25,24 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, description="Port")
     frontend_port: int = Field(default=3000, description="Frontend port")
 
+    # Frontend-Backend Communication
+    backend_url: str = Field(
+        default="http://localhost:8000", 
+        description="Backend URL for frontend communication"
+    )
+    ws_url: str = Field(
+        default="ws://localhost:8000", 
+        description="WebSocket URL for frontend communication"
+    )
+    frontend_url: str = Field(
+        default="http://localhost:5173", 
+        description="Frontend URL for CORS configuration"
+    )
+    cors_origins: str = Field(
+        default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
+        description="Comma-separated list of allowed CORS origins"
+    )
+
     # Database
     database_url: str = Field(..., description="Database URL")
     database_pool_size: int = Field(default=20, description="Database pool size")
@@ -172,6 +190,9 @@ class Settings(BaseSettings):
         description="OIDC redirect URI"
     )
 
+    # Registration
+    registration_enabled: bool = Field(default=True, env="REGISTRATION_ENABLED")
+
     performance_monitoring_enabled: bool = Field(default=True, env="PERFORMANCE_MONITORING_ENABLED")
     performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
     performance_alert_thresholds: dict = Field(default_factory=dict, env="PERFORMANCE_ALERT_THRESHOLDS")
@@ -212,6 +233,14 @@ class Settings(BaseSettings):
         """Validate temperature range."""
         if not 0.0 <= v <= 2.0:
             raise ValueError("Temperature must be between 0.0 and 2.0")
+        return v
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS origins from comma-separated string."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
     model_config = ConfigDict(
