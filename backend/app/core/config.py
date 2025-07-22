@@ -168,9 +168,6 @@ class Settings(BaseSettings):
     )
 
 
-# Global settings instance
-# settings = Settings()
-
 _settings_instance = None
 
 def get_settings() -> Settings:
@@ -179,3 +176,6 @@ def get_settings() -> Settings:
     if _settings_instance is None:
         _settings_instance = Settings()
     return _settings_instance
+
+# Global settings instance
+settings = get_settings()
