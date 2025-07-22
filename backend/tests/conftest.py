@@ -42,8 +42,9 @@ def setup_redis():
 @pytest_asyncio.fixture
 async def async_client():
     """Async client fixture for testing FastAPI endpoints."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
+    from fastapi.testclient import TestClient
+    client = TestClient(app)
+    yield client
 
 
 @pytest.fixture

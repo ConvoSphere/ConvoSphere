@@ -8,9 +8,9 @@ and authentication functionality with enterprise features support.
 import uuid
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, Text, JSON
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -79,8 +79,8 @@ class UserGroup(Base):
     )  # System groups cannot be deleted
 
     # Permissions and settings
-    permissions = Column(JSONB, nullable=True)  # Custom permissions for the group
-    settings = Column(JSONB, nullable=True)  # Group-specific settings
+    permissions = Column(JSON, nullable=True)  # Custom permissions for the group
+    settings = Column(JSON, nullable=True)  # Group-specific settings
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -124,7 +124,7 @@ class User(Base):
     external_id = Column(
         String(255), nullable=True, index=True,
     )  # ID from external provider
-    sso_attributes = Column(JSONB, nullable=True)  # Additional SSO attributes
+    sso_attributes = Column(JSON, nullable=True)  # Additional SSO attributes
 
     # Profile fields
     first_name = Column(String(100), nullable=True)
@@ -148,7 +148,7 @@ class User(Base):
     # Preferences
     language = Column(String(10), default="de", nullable=False)
     timezone = Column(String(50), default="Europe/Berlin", nullable=False)
-    preferences = Column(JSONB, nullable=True)  # User preferences
+    preferences = Column(JSON, nullable=True)  # User preferences
 
     # Timestamps
     last_login = Column(DateTime(timezone=True), nullable=True)

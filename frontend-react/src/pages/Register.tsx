@@ -17,7 +17,7 @@ const Register: React.FC = () => {
       await register(values.username, values.password, values.email);
       message.success('Registration successful');
       navigate('/');
-    } catch (e) {
+          } catch {
       setError('Registration failed.');
     } finally {
       setLoading(false);

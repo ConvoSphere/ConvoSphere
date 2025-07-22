@@ -18,7 +18,7 @@ const Login: React.FC = () => {
       await login(values.username, values.password);
       message.success('Login successful');
       navigate('/');
-    } catch (e) {
+          } catch {
       setError('Login failed.');
     } finally {
       setLoading(false);

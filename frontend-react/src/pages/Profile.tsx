@@ -12,7 +12,7 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     if (!user) fetchProfile();
-    // eslint-disable-next-line
+     
   }, []);
 
   if (!user) return <Spin style={{ marginTop: 64 }} />;
@@ -23,7 +23,7 @@ const Profile: React.FC = () => {
     try {
       await updateProfile(values);
       setEditing(false);
-    } catch (e) {
+          } catch {
       setError('Update failed.');
     } finally {
       setLoading(false);

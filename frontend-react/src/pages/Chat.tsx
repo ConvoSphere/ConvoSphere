@@ -23,7 +23,7 @@ const Chat: React.FC = () => {
         setMessages((prev) => [...prev, msg]);
         setLoading(false);
       });
-    } catch (e) {
+          } catch {
       setError('WebSocket connection failed');
       setLoading(false);
     }
@@ -45,7 +45,7 @@ const Chat: React.FC = () => {
         setInput('');
         message.success('Message sent');
         setTimeout(() => inputRef.current?.focus(), 100);
-      } catch (e) {
+      } catch {
         message.error('Failed to send message');
       } finally {
         setSending(false);

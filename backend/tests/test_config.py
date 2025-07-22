@@ -29,7 +29,7 @@ def test_redis_settings():
 def test_weaviate_settings():
     """Test Weaviate-related settings."""
     assert hasattr(settings, "weaviate_url")
-    assert settings.weaviate_url == "http://weaviate:8080"
+    assert settings.weaviate_url == "http://localhost:8080"
     assert hasattr(settings, "weaviate_api_key")
     # weaviate_timeout is not implemented yet
 
