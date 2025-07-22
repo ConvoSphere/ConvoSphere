@@ -122,3 +122,12 @@ Delete a user (admin only).
 **Errors:**
 - 404 Not Found: User does not exist
 - 403 Forbidden: Admin privileges required 
+
+## 🏢 Enterprise User Management
+
+Alle User-API-Responses enthalten folgende zusätzliche Felder:
+- `auth_provider`: (local, saml, oidc, oauth_google, ...)
+- `external_id`: ID vom SSO-Provider
+- `groups`: Liste der Gruppen (mit Rechten)
+- `role`: Hierarchische Rolle (super_admin, admin, manager, user, guest)
+- `sso_attributes`: SSO-Attribut-Mapping (z.B. Name, E-Mail, Abteilung) 

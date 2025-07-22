@@ -232,6 +232,15 @@ The platform is built with a modern, scalable architecture:
 - **Character System**: AI personas and role-playing
 - **Enterprise Features**: SSO, advanced RBAC, multi-tenancy
 
+## 🏢 Enterprise User Management
+
+- SSO (OIDC, SAML, OAuth2) mit Account-Linking und JIT-Provisionierung
+- Erweiterte RBAC: Hierarchische Rollen, Gruppen, Bereichs-Admins, feingranulare Rechte
+- 2FA/MFA für erhöhte Sicherheit
+- Self-Service-UI für User (API-Token, 2FA, Account-Löschung)
+- Audit-Log-API und UI für Admins
+- Bulk-Import/-Export, DSGVO-Features
+
 ## 🛠️ Technology Stack
 
 ### Backend

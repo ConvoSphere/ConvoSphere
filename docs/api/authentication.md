@@ -647,3 +647,99 @@ client.logout()
 **Ready to implement authentication?** [API Reference →](overview.md)
 
 </div> 
+
+## 🚀 SSO (Single Sign-On) Integration
+
+The platform supports SSO via OIDC, SAML, and OAuth2 (Google, Microsoft, etc.).
+
+### SSO Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/auth/sso/providers` | GET | Get list of configured SSO providers |
+| `/api/v1/auth/sso/login/{provider}` | GET | Redirect to SSO provider |
+| `/api/v1/auth/sso/callback/{provider}` | GET | Handle SSO callback and user provisioning |
+| `/api/v1/auth/sso/link/{provider}` | POST | Link SSO account to existing user |
+
+### SSO Flow
+1. User clicks SSO login button (e.g. "Login with Google").
+2. User is redirected to the provider and authenticates.
+3. Provider redirects back to `/sso/callback/{provider}`.
+4. User is provisioned (JIT) or eingeloggt.
+5. Optional: Account-Linking, falls E-Mail schon existiert.
+
+### SSO Provider Configuration
+The platform supports multiple SSO providers. Configure them in your `.env` file:
+
+```bash
+# Google OAuth2
+SSO_GOOGLE_ENABLED=true
+SSO_GOOGLE_CLIENT_ID=your-google-client-id
+SSO_GOOGLE_CLIENT_SECRET=your-google-client-secret
+SSO_GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/google
+
+# Microsoft OAuth2
+SSO_MICROSOFT_ENABLED=true
+SSO_MICROSOFT_CLIENT_ID=your-microsoft-client-id
+SSO_MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+SSO_MICROSOFT_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/microsoft
+SSO_MICROSOFT_TENANT_ID=your-microsoft-tenant-id
+
+# GitHub OAuth2
+SSO_GITHUB_ENABLED=true
+SSO_GITHUB_CLIENT_ID=your-github-client-id
+SSO_GITHUB_CLIENT_SECRET=your-github-client-secret
+SSO_GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/github
+
+# SAML
+SSO_SAML_ENABLED=true
+SSO_SAML_METADATA_URL=https://your-idp.com/metadata
+SSO_SAML_ENTITY_ID=http://localhost:8000
+SSO_SAML_ACS_URL=http://localhost:8000/api/v1/auth/sso/callback/saml
+
+# OIDC
+SSO_OIDC_ENABLED=true
+SSO_OIDC_ISSUER_URL=https://your-oidc-provider.com
+SSO_OIDC_CLIENT_ID=your-oidc-client-id
+SSO_OIDC_CLIENT_SECRET=your-oidc-client-secret
+SSO_OIDC_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/oidc
+```
+
+### Get SSO Providers
+**Endpoint:** `GET /api/v1/auth/sso/providers`
+
+**Response:**
+```json
+{
+  "providers": [
+    {
+      "id": "google",
+      "name": "Google",
+      "type": "oauth2",
+      "icon": "google",
+      "login_url": "/api/v1/auth/sso/login/google"
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "type": "oauth2",
+      "icon": "microsoft",
+      "login_url": "/api/v1/auth/sso/login/microsoft"
+    }
+  ]
+}
+```
+
+### Account Linking
+- Existing users can link SSO accounts via `/sso/link/{provider}`.
+- SSO events are audit-logged.
+
+---
+
+## 🏢 Erweiterte RBAC
+
+- Hierarchische Rollen: Super Admin, Admin, Manager, User, Guest
+- Gruppenbasierte Rechte und Bereichs-Admins
+- Feingranulare Rechteverwaltung (z.B. auf Ressourcenebene)
+- Admin-API und UI für Rollen, Rechte, Gruppen
+- Delegierte Administration: Bereichs-/Team-Admins können User in ihrem Bereich verwalten
+- Alle Änderungen werden audit-logged 

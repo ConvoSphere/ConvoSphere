@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { message } from 'antd';
 import Login from '../Login';
+import { getSSOProviders, ssoLogin } from '../../services/auth';
 
 // Mock antd message
 jest.mock('antd', () => ({
@@ -24,6 +25,8 @@ jest.mock('../../store/authStore', () => ({
 // Mock the API service
 jest.mock('../../services/auth', () => ({
   login: jest.fn(),
+  getSSOProviders: jest.fn(),
+  ssoLogin: jest.fn(),
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -360,5 +363,43 @@ describe('Login', () => {
     // Check if social login handlers are called
     expect(googleButton).toBeInTheDocument();
     expect(githubButton).toBeInTheDocument();
+  });
+});
+
+describe('Login SSO Buttons', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('zeigt keine SSO-Buttons wenn keine Provider', async () => {
+    (getSSOProviders as jest.Mock).mockResolvedValue([]);
+    renderWithRouter(<Login />);
+    await waitFor(() => {
+      expect(screen.queryByText(/login with/i)).not.toBeInTheDocument();
+    });
+  });
+
+  test('zeigt Google und Microsoft SSO-Buttons', async () => {
+    (getSSOProviders as jest.Mock).mockResolvedValue([
+      { id: 'google', name: 'Google', icon: 'google' },
+      { id: 'microsoft', name: 'Microsoft', icon: 'microsoft' },
+    ]);
+    renderWithRouter(<Login />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /login with google/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /login with microsoft/i })).toBeInTheDocument();
+    });
+  });
+
+  test('klick auf SSO-Button ruft ssoLogin auf', async () => {
+    (getSSOProviders as jest.Mock).mockResolvedValue([
+      { id: 'google', name: 'Google', icon: 'google' },
+    ]);
+    renderWithRouter(<Login />);
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /login with google/i });
+      fireEvent.click(btn);
+      expect(ssoLogin).toHaveBeenCalledWith('google');
+    });
   });
 });

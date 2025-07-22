@@ -119,6 +119,59 @@ class Settings(BaseSettings):
         default=None, description="Wolfram Alpha API key",
     )
 
+    # SSO Configuration
+    # Google OAuth2
+    sso_google_enabled: bool = Field(default=False, description="Enable Google SSO")
+    sso_google_client_id: str | None = Field(default=None, description="Google OAuth2 client ID")
+    sso_google_client_secret: str | None = Field(default=None, description="Google OAuth2 client secret")
+    sso_google_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/sso/callback/google",
+        description="Google OAuth2 redirect URI"
+    )
+
+    # Microsoft OAuth2
+    sso_microsoft_enabled: bool = Field(default=False, description="Enable Microsoft SSO")
+    sso_microsoft_client_id: str | None = Field(default=None, description="Microsoft OAuth2 client ID")
+    sso_microsoft_client_secret: str | None = Field(default=None, description="Microsoft OAuth2 client secret")
+    sso_microsoft_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/sso/callback/microsoft",
+        description="Microsoft OAuth2 redirect URI"
+    )
+    sso_microsoft_tenant_id: str | None = Field(default=None, description="Microsoft tenant ID")
+
+    # GitHub OAuth2
+    sso_github_enabled: bool = Field(default=False, description="Enable GitHub SSO")
+    sso_github_client_id: str | None = Field(default=None, description="GitHub OAuth2 client ID")
+    sso_github_client_secret: str | None = Field(default=None, description="GitHub OAuth2 client secret")
+    sso_github_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/sso/callback/github",
+        description="GitHub OAuth2 redirect URI"
+    )
+
+    # SAML Configuration
+    sso_saml_enabled: bool = Field(default=False, description="Enable SAML SSO")
+    sso_saml_metadata_url: str | None = Field(default=None, description="SAML metadata URL")
+    sso_saml_entity_id: str = Field(
+        default="http://localhost:8000",
+        description="SAML entity ID"
+    )
+    sso_saml_acs_url: str = Field(
+        default="http://localhost:8000/api/v1/auth/sso/callback/saml",
+        description="SAML assertion consumer service URL"
+    )
+    sso_saml_cert_file: str | None = Field(default=None, description="SAML certificate file path")
+    sso_saml_key_file: str | None = Field(default=None, description="SAML private key file path")
+
+    # OIDC Configuration
+    sso_oidc_enabled: bool = Field(default=False, description="Enable OIDC SSO")
+    sso_oidc_issuer_url: str | None = Field(default=None, description="OIDC issuer URL")
+    sso_oidc_client_id: str | None = Field(default=None, description="OIDC client ID")
+    sso_oidc_client_secret: str | None = Field(default=None, description="OIDC client secret")
+    sso_oidc_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/sso/callback/oidc",
+        description="OIDC redirect URI"
+    )
+
     performance_monitoring_enabled: bool = Field(default=True, env="PERFORMANCE_MONITORING_ENABLED")
     performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
     performance_alert_thresholds: dict = Field(default_factory=dict, env="PERFORMANCE_ALERT_THRESHOLDS")

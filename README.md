@@ -354,3 +354,16 @@ For support and questions:
 ---
 
 **Built with ❤️ by the AI Chat Team**
+
+## 🏢 Enterprise User Management
+
+- **SSO (Single Sign-On)**: Unterstützt Google, Microsoft, GitHub, SAML, OIDC mit dynamischer Provider-Anzeige
+- **Account-Linking**: Verknüpfung von SSO-Konten mit lokalen Accounts
+- **JIT-Provisionierung**: Automatisches Anlegen von Usern bei erstem SSO-Login
+- **Erweiterte RBAC**: Hierarchische Rollen (Super Admin, Admin, Manager, User, Guest), Gruppen, Bereichs-Admins
+- **Feingranulare Rechte**: Rechteverwaltung auf Ressourcenebene
+- **2FA/MFA**: Zwei-Faktor-Authentifizierung für erhöhte Sicherheit
+- **Self-Service-UI**: User können API-Token, 2FA, Account-Löschung selbst verwalten
+- **Audit-Log-API und UI**: Vollständiges Logging aller sicherheitsrelevanten Events
+- **Bulk-Import/-Export**: Massenverwaltung von Usern und Rollen
+- **DSGVO-Features**: Datenexport, Account-Löschung, Datenschutz-Compliance

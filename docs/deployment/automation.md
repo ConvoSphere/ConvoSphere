@@ -516,3 +516,57 @@ echo "Migrations completed!"
 5. **Security First**: Scan for vulnerabilities regularly
 6. **Performance Testing**: Test performance under load
 7. **Rollback Strategy**: Have a plan for quick rollbacks 
+
+## 🔑 SSO-Provider-Konfiguration
+
+Um SSO zu aktivieren, müssen folgende Umgebungsvariablen in der `.env`-Datei gesetzt werden:
+
+### Google OAuth2
+```bash
+SSO_GOOGLE_ENABLED=true
+SSO_GOOGLE_CLIENT_ID=your-google-client-id
+SSO_GOOGLE_CLIENT_SECRET=your-google-client-secret
+SSO_GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/google
+```
+
+### Microsoft OAuth2
+```bash
+SSO_MICROSOFT_ENABLED=true
+SSO_MICROSOFT_CLIENT_ID=your-microsoft-client-id
+SSO_MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+SSO_MICROSOFT_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/microsoft
+SSO_MICROSOFT_TENANT_ID=your-microsoft-tenant-id
+```
+
+### GitHub OAuth2
+```bash
+SSO_GITHUB_ENABLED=true
+SSO_GITHUB_CLIENT_ID=your-github-client-id
+SSO_GITHUB_CLIENT_SECRET=your-github-client-secret
+SSO_GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/github
+```
+
+### SAML
+```bash
+SSO_SAML_ENABLED=true
+SSO_SAML_METADATA_URL=https://your-idp.com/metadata
+SSO_SAML_ENTITY_ID=http://localhost:8000
+SSO_SAML_ACS_URL=http://localhost:8000/api/v1/auth/sso/callback/saml
+SSO_SAML_CERT_FILE=./certs/saml.crt
+SSO_SAML_KEY_FILE=./certs/saml.key
+```
+
+### OIDC
+```bash
+SSO_OIDC_ENABLED=true
+SSO_OIDC_ISSUER_URL=https://your-oidc-provider.com
+SSO_OIDC_CLIENT_ID=your-oidc-client-id
+SSO_OIDC_CLIENT_SECRET=your-oidc-client-secret
+SSO_OIDC_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/oidc
+```
+
+**Wichtige Hinweise:**
+- Die Redirect-URIs müssen beim jeweiligen Provider registriert werden
+- Secrets und IDs sollten sicher im Deployment (z.B. als Kubernetes Secret, Docker-Env) hinterlegt werden
+- Für Produktionsumgebungen HTTPS-URLs verwenden
+- SAML-Zertifikate müssen im `./certs/`-Verzeichnis hinterlegt werden 

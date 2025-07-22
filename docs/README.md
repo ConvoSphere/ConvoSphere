@@ -280,3 +280,27 @@ For questions about the documentation, please:
 - Review existing documentation for examples
 - Create an issue for specific problems
 - Contact the development team 
+
+## 🏢 Enterprise Features
+
+### SSO (Single Sign-On)
+- Unterstützung für OIDC, SAML, OAuth2 (Google, Microsoft, etc.)
+- SSO-Login, Callback und Account-Linking
+- Just-in-Time-Provisionierung und Mapping von SSO-Attributen
+- SSO-Konfigurationsanleitung im Deployment-Bereich
+
+### Erweiterte RBAC
+- Hierarchische Rollen (Super Admin, Admin, Manager, User, Guest)
+- Gruppenbasierte Rechte und Bereichs-Admins
+- Feingranulare Rechteverwaltung (z.B. auf Ressourcenebene)
+- Admin-UI für Rollen, Rechte, Gruppen
+
+### Security & Self-Service
+- 2FA/MFA (TOTP, WebAuthn)
+- Self-Service-UI für User (API-Token, 2FA, Account-Löschung)
+- Bulk-Import/-Export von Usern/Rollen
+- DSGVO-Features (Datenexport, Account-Löschung)
+
+### Audit-Log
+- Audit-Log-API und UI für Admins
+- Logging aller sicherheitsrelevanten Events (Login, SSO, Rollenänderungen) 
