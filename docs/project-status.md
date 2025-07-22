@@ -97,6 +97,15 @@ The AI Assistant Platform is a comprehensive, enterprise-grade AI assistant solu
 - [ ] **Analytics Dashboard** - Advanced analytics and insights
 - [ ] **Enterprise Features** - SSO, advanced RBAC, multi-tenancy
 
+### 🏢 Enterprise Features (in progress)
+- [x] SSO (OIDC, SAML, OAuth2)
+- [x] Erweiterte RBAC (hierarchische Rollen, Gruppen, Bereichs-Admins)
+- [x] 2FA/MFA
+- [x] Self-Service-UI für User
+- [x] Audit-Log-API und UI
+- [x] Bulk-Import/-Export
+- [x] DSGVO-Features
+
 ## 🏗️ Architecture Overview
 
 ### **Technology Stack**

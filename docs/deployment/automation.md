@@ -516,3 +516,20 @@ echo "Migrations completed!"
 5. **Security First**: Scan for vulnerabilities regularly
 6. **Performance Testing**: Test performance under load
 7. **Rollback Strategy**: Have a plan for quick rollbacks 
+
+## 🔑 SSO-Provider-Konfiguration
+
+Um SSO zu aktivieren, müssen folgende Umgebungsvariablen gesetzt werden (Beispiel für OIDC/Google):
+
+- `SSO_GOOGLE_CLIENT_ID`
+- `SSO_GOOGLE_CLIENT_SECRET`
+- `SSO_GOOGLE_REDIRECT_URI`
+- `SSO_MICROSOFT_CLIENT_ID`
+- `SSO_MICROSOFT_CLIENT_SECRET`
+- `SSO_MICROSOFT_REDIRECT_URI`
+- `SSO_SAML_METADATA_URL`
+- ...
+
+Die Redirect-URIs müssen beim jeweiligen Provider registriert werden (z.B. `https://yourdomain/api/v1/auth/sso/callback/google`).
+
+Secrets und IDs sollten sicher im Deployment (z.B. als Kubernetes Secret, Docker-Env) hinterlegt werden. 

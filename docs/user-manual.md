@@ -573,3 +573,17 @@ ConvoSphere supports both light and dark mode for optimal accessibility and user
 ---
 
 *This user manual provides comprehensive guidance for using the AI Assistant Platform. For technical documentation, please refer to the developer guides.* 
+
+## 🔑 SSO (Single Sign-On) Login
+
+- Klicke auf der Login-Seite auf den gewünschten SSO-Provider (z.B. Google, Microsoft).
+- Folge dem Authentifizierungs-Flow des Providers.
+- Nach erfolgreichem Login wirst du automatisch eingeloggt oder dein Account wird angelegt (JIT-Provisionierung).
+- Falls deine E-Mail bereits existiert, kannst du dein SSO-Konto mit deinem lokalen Account verknüpfen (Account-Linking).
+
+## 🛡️ Erweiterte Rollen & Rechte (RBAC)
+
+- Die Plattform unterstützt hierarchische Rollen: Super Admin, Admin, Manager, User, Guest.
+- Admins und Bereichs-Admins können User, Gruppen und Rechte verwalten.
+- Rechte können auf Ressourcenebene vergeben werden (z.B. Zugriff auf bestimmte Dokumente oder Assistenten).
+- Alle Änderungen an Rollen und Rechten werden im Audit-Log protokolliert. 

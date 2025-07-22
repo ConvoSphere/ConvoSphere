@@ -942,6 +942,21 @@ async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
 # GOOD: Use ORM or parameterized queries
 ```
 
+## 🏢 Enterprise Authentication & RBAC
+
+### SSO (Single Sign-On)
+- Unterstützt OIDC, SAML, OAuth2 (Google, Microsoft, etc.)
+- SSO-Login, Callback, Account-Linking
+- SSO-User-Provisionierung (JIT) und Attribut-Mapping
+- SSO-Events werden audit-logged
+
+### Erweiterte RBAC
+- Hierarchische Rollen (Super Admin, Admin, Manager, User, Guest)
+- Gruppenbasierte Rechte, Bereichs-Admins
+- Feingranulare Rechteverwaltung (z.B. auf Ressourcenebene)
+- Delegierte Administration
+- Alle Änderungen werden audit-logged
+
 ## Deployment Considerations
 
 ### Environment Configuration

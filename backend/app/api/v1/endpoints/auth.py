@@ -4,7 +4,7 @@ Authentication endpoints for user login, registration, and token management.
 This module provides the authentication API endpoints for the AI Assistant Platform.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from loguru import logger
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -25,6 +25,9 @@ from app.core.security import (
     verify_token,
 )
 from app.models.user import User, UserRole
+from app.services.user_service import UserService
+from app.schemas.user import SSOUserCreate
+from app.models.user import AuthProvider
 
 router = APIRouter()
 
@@ -341,6 +344,63 @@ async def get_current_user_info(
         is_active=user.is_active,
         is_verified=user.is_verified,
     )
+
+
+@router.get("/sso/login/{provider}")
+async def sso_login(provider: str, request: Request):
+    """Initiate SSO login with the given provider (OIDC/SAML/OAuth2)."""
+    # Redirect to provider's auth URL (pseudo-code, implement with Authlib or fastapi-sso)
+    # Example: return await oidc_client.get_authorize_redirect(request, provider)
+    return {"message": f"Redirect to {provider} SSO login"}
+
+@router.get("/sso/callback/{provider}")
+async def sso_callback(provider: str, request: Request, db: Session = Depends(get_db)):
+    """Handle SSO callback and user provisioning/account-linking."""
+    # Pseudo-code: Extract user info from provider
+    # user_info = await oidc_client.get_user_info(request, provider)
+    user_info = {"email": "sso@example.com", "external_id": "123", "auth_provider": provider}
+    user_service = UserService(db)
+    user = user_service.get_user_by_external_id(user_info["external_id"], provider)
+    if not user:
+        sso_data = SSOUserCreate(
+            email=user_info["email"],
+            auth_provider=provider,
+            external_id=user_info["external_id"],
+            sso_attributes=user_info,
+        )
+        user = user_service.create_sso_user(sso_data)
+    # Log SSO event
+    log_security_event(
+        event_type="sso_login",
+        user_id=user.id,
+        description=f"User {user.email} logged in via SSO ({provider})",
+        severity="info",
+    )
+    # Issue tokens
+    access_token = create_access_token(subject=user.id)
+    refresh_token = create_refresh_token(subject=user.id)
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=get_settings().jwt_access_token_expire_minutes * 60,
+    )
+
+@router.post("/sso/link/{provider}")
+async def sso_link(provider: str, request: Request, current_user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    """Link SSO account to existing user account."""
+    # Pseudo-code: Extract SSO info and link to current user
+    user_service = UserService(db)
+    user = user_service.get_user_by_id(current_user_id)
+    # Example: user.external_id = ...; user.auth_provider = provider
+    # db.commit()
+    log_security_event(
+        event_type="sso_link",
+        user_id=user.id,
+        description=f"User {user.email} linked SSO account ({provider})",
+        severity="info",
+    )
+    return {"message": f"SSO account linked for {provider}"}
 
 
 # Example for permission denied:

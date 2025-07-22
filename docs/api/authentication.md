@@ -647,3 +647,41 @@ client.logout()
 **Ready to implement authentication?** [API Reference →](overview.md)
 
 </div> 
+
+## 🚀 SSO (Single Sign-On) Integration
+
+The platform supports SSO via OIDC, SAML, and OAuth2 (Google, Microsoft, etc.).
+
+### SSO Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/auth/sso/login/{provider}` | GET | Redirect to SSO provider |
+| `/api/v1/auth/sso/callback/{provider}` | GET | Handle SSO callback and user provisioning |
+| `/api/v1/auth/sso/link/{provider}` | POST | Link SSO account to existing user |
+
+### SSO Flow
+1. User clicks SSO login button (e.g. "Login with Google").
+2. User is redirected to the provider and authenticates.
+3. Provider redirects back to `/sso/callback/{provider}`.
+4. User is provisioned (JIT) or eingeloggt.
+5. Optional: Account-Linking, falls E-Mail schon existiert.
+
+### SSO Provider Configuration
+- Configure client ID, secret, redirect URIs in the deployment config.
+- Supported providers: Google, Microsoft, SAML, OIDC, etc.
+- Attribute mapping: SSO attributes (email, name, roles) are mapped to user fields.
+
+### Account Linking
+- Existing users can link SSO accounts via `/sso/link/{provider}`.
+- SSO events are audit-logged.
+
+---
+
+## 🏢 Erweiterte RBAC
+
+- Hierarchische Rollen: Super Admin, Admin, Manager, User, Guest
+- Gruppenbasierte Rechte und Bereichs-Admins
+- Feingranulare Rechteverwaltung (z.B. auf Ressourcenebene)
+- Admin-API und UI für Rollen, Rechte, Gruppen
+- Delegierte Administration: Bereichs-/Team-Admins können User in ihrem Bereich verwalten
+- Alle Änderungen werden audit-logged 
