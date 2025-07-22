@@ -1,7 +1,40 @@
 import pytest
 from fastapi.testclient import TestClient
-
 from main import app
+
+client = TestClient(app)
+
+def test_sso_providers_empty(monkeypatch):
+    # Keine Provider konfiguriert
+    monkeypatch.setenv("SSO_GOOGLE_ENABLED", "false")
+    monkeypatch.setenv("SSO_MICROSOFT_ENABLED", "false")
+    monkeypatch.setenv("SSO_GITHUB_ENABLED", "false")
+    monkeypatch.setenv("SSO_SAML_ENABLED", "false")
+    monkeypatch.setenv("SSO_OIDC_ENABLED", "false")
+    response = client.get("/api/v1/auth/sso/providers")
+    assert response.status_code == 200
+    assert response.json()["providers"] == []
+
+def test_sso_providers_google(monkeypatch):
+    monkeypatch.setenv("SSO_GOOGLE_ENABLED", "true")
+    monkeypatch.setenv("SSO_GOOGLE_CLIENT_ID", "test-google-client-id")
+    response = client.get("/api/v1/auth/sso/providers")
+    assert response.status_code == 200
+    providers = response.json()["providers"]
+    assert any(p["id"] == "google" for p in providers)
+
+def test_sso_login_redirect(monkeypatch):
+    monkeypatch.setenv("SSO_GOOGLE_ENABLED", "true")
+    monkeypatch.setenv("SSO_GOOGLE_CLIENT_ID", "test-google-client-id")
+    response = client.get("/api/v1/auth/sso/login/google")
+    assert response.status_code == 200
+    assert "redirect_url" in response.json()
+
+def test_sso_login_not_configured(monkeypatch):
+    monkeypatch.setenv("SSO_GOOGLE_ENABLED", "false")
+    response = client.get("/api/v1/auth/sso/login/google")
+    assert response.status_code == 400
+    assert "not configured" in response.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
