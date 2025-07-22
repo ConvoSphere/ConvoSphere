@@ -6,19 +6,21 @@ import i18n from './i18n';
 import { useThemeStore } from './store/themeStore';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Chat from './pages/Chat';
-import Assistants from './pages/Assistants';
-import KnowledgeBase from './pages/KnowledgeBase';
-import Tools from './pages/Tools';
-import Settings from './pages/Settings';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Profile from './pages/Profile';
-import Conversations from './pages/Conversations';
-import McpTools from './pages/McpTools';
-import SystemStatus from './pages/SystemStatus';
+import {
+  LazyChatPage,
+  LazyDashboardPage,
+  LazyAssistantsPage,
+  LazyKnowledgeBasePage,
+  LazyToolsPage,
+  LazySettingsPage,
+  LazyAdminPage,
+  LazyLoginPage,
+  LazyRegisterPage,
+  LazyProfilePage,
+  LazyConversationsPage,
+  LazyMcpToolsPage,
+  LazySystemStatusPage,
+} from './components/LazyComponents';
 
 const App: React.FC = () => {
   const { mode, getCurrentTheme } = useThemeStore();
@@ -34,25 +36,25 @@ const App: React.FC = () => {
       >
         <Router>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<LazyLoginPage />} />
+            <Route path="/register" element={<LazyRegisterPage />} />
             <Route
               path="/*"
               element={
                 <ProtectedRoute>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Chat />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/assistants" element={<Assistants />} />
-                      <Route path="/knowledge-base" element={<KnowledgeBase />} />
-                      <Route path="/tools" element={<Tools />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/admin" element={<Admin />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/conversations" element={<Conversations />} />
-                      <Route path="/mcp-tools" element={<McpTools />} />
-                      <Route path="/admin/system-status" element={<SystemStatus />} />
+                      <Route path="/" element={<LazyChatPage />} />
+                      <Route path="/dashboard" element={<LazyDashboardPage />} />
+                      <Route path="/assistants" element={<LazyAssistantsPage />} />
+                      <Route path="/knowledge-base" element={<LazyKnowledgeBasePage />} />
+                      <Route path="/tools" element={<LazyToolsPage />} />
+                      <Route path="/settings" element={<LazySettingsPage />} />
+                      <Route path="/admin" element={<LazyAdminPage />} />
+                      <Route path="/profile" element={<LazyProfilePage />} />
+                      <Route path="/conversations" element={<LazyConversationsPage />} />
+                      <Route path="/mcp-tools" element={<LazyMcpToolsPage />} />
+                      <Route path="/admin/system-status" element={<LazySystemStatusPage />} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>
