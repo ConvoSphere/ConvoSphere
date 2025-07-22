@@ -1,18 +1,18 @@
-# AI Chat Application
+# ConvoSphere
 
 A modern, full-stack AI chat application built with **FastAPI** (Backend) and **React** (Frontend), featuring comprehensive test coverage, real-time messaging, and advanced AI capabilities.
 
 <div align="center">
 
-![AI Chat Application](https://img.shields.io/badge/AI%20Chat%20Application-v1.0.0-blue)
+![ConvoSphere](https://img.shields.io/badge/ConvoSphere-v1.0.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.11+-green)
 ![React](https://img.shields.io/badge/React-18+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-[![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://your-org.github.io/ai-chat-app/)
-[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/your-org/ai-chat-app/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/your-org/ai-chat-app/actions)
+[![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://your-org.github.io/convosphere/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/your-org/convosphere/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/your-org/convosphere/actions)
 
 </div>
 
@@ -22,8 +22,8 @@ Get up and running in under 10 minutes:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ai-chat-app.git
-cd ai-chat-app
+git clone https://github.com/your-org/convosphere.git
+cd convosphere
 
 # Quick setup with Docker (recommended)
 docker-compose up --build
@@ -34,7 +34,7 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](https://your-org.github.io/ai-chat-app/) for detailed guides.
+**Ready to dive deeper?** Check out our [📚 Documentation](https://your-org.github.io/convosphere/) for detailed guides.
 
 ## ✨ Key Features
 

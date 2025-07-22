@@ -1,0 +1,180 @@
+/* ConvoSphere Logo Styles */
+
+.convosphere-logo {
+  display: inline-block;
+  vertical-align: middle;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .convosphere-logo[data-variant="text"] {
+    width: 280px !important;
+    height: 84px !important;
+  }
+  
+  .convosphere-logo[data-variant="main"] {
+    width: 150px !important;
+    height: 150px !important;
+  }
+  
+  .convosphere-logo[data-variant="icon"] {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .convosphere-logo[data-variant="text"] {
+    width: 240px !important;
+    height: 72px !important;
+  }
+  
+  .convosphere-logo[data-variant="main"] {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  
+  .convosphere-logo[data-variant="icon"] {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* Loading state */
+.convosphere-logo.loading {
+  opacity: 0.6;
+  filter: blur(1px);
+}
+
+/* Disabled state */
+.convosphere-logo.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Focus styles for accessibility */
+.convosphere-logo:focus {
+  outline: 2px solid var(--colorPrimary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .convosphere-logo {
+    filter: contrast(1.2);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .convosphere-logo {
+    transition: none !important;
+  }
+  
+  .convosphere-logo:hover {
+    transform: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .convosphere-logo {
+    filter: grayscale(100%);
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
+
+/* Logo container styles */
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.logo-container.vertical {
+  flex-direction: column;
+  text-align: center;
+}
+
+.logo-container.horizontal {
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Logo with text combination */
+.logo-with-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-with-text .logo-text {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  color: var(--colorPrimary);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.logo-with-text .logo-tagline {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 300;
+  color: var(--colorTextSecondary);
+  font-size: 0.875rem;
+  line-height: 1.2;
+  margin-top: 0.25rem;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .logo-with-text .logo-text {
+  color: var(--colorPrimary);
+}
+
+[data-theme="dark"] .logo-with-text .logo-tagline {
+  color: var(--colorTextSecondary);
+}
+
+/* Animation classes */
+.logo-fade-in {
+  animation: logoFadeIn 0.5s ease-in-out;
+}
+
+.logo-bounce {
+  animation: logoBounce 0.6s ease-in-out;
+}
+
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logoBounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}

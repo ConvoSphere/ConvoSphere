@@ -1,0 +1,177 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions for dark theme -->
+    <radialGradient id="sphereGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#5BC6E8;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#23224A;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#1A1A33;stop-opacity:0.9" />
+    </radialGradient>
+    
+    <linearGradient id="conversationGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5BC6E8;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#B6E74B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5BC6E8;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <radialGradient id="aiNodeGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#B6E74B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5BC6E8;stop-opacity:0.5" />
+    </radialGradient>
+    
+    <!-- Enhanced glow filter for dark theme -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Stronger glow for AI nodes -->
+    <filter id="aiGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Animation definitions -->
+    <animateTransform
+      xlink:href="#mainSphere"
+      attributeName="transform"
+      type="scale"
+      values="1;1.06;1"
+      dur="3s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animateTransform
+      xlink:href="#conversationLine1"
+      attributeName="transform"
+      type="translate"
+      values="0,0; 6,-3; 0,0"
+      dur="4s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animateTransform
+      xlink:href="#conversationLine2"
+      attributeName="transform"
+      type="translate"
+      values="0,0; -4,5; 0,0"
+      dur="3.5s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animateTransform
+      xlink:href="#conversationLine3"
+      attributeName="transform"
+      type="translate"
+      values="0,0; 5,4; 0,0"
+      dur="4.5s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animate
+      xlink:href="#aiNode1"
+      attributeName="opacity"
+      values="0.8;1;0.8"
+      dur="2s"
+      repeatCount="indefinite"
+    />
+    
+    <animate
+      xlink:href="#aiNode2"
+      attributeName="opacity"
+      values="0.8;1;0.8"
+      dur="2.5s"
+      repeatCount="indefinite"
+    />
+    
+    <animate
+      xlink:href="#aiNode3"
+      attributeName="opacity"
+      values="0.8;1;0.8"
+      dur="1.8s"
+      repeatCount="indefinite"
+    />
+  </defs>
+  
+  <!-- Main conversation sphere with enhanced glow -->
+  <circle id="mainSphere" cx="100" cy="100" r="45" fill="url(#sphereGradient)" filter="url(#glow)">
+    <animate attributeName="r" values="45;48;45" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- AI circuit pattern overlay with enhanced visibility -->
+  <g opacity="0.5">
+    <path d="M70 80 Q85 75 100 80 Q115 85 130 80" stroke="#5BC6E8" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M70 120 Q85 125 100 120 Q115 115 130 120" stroke="#5BC6E8" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <circle cx="85" cy="80" r="2.5" fill="#B6E74B" opacity="1"/>
+    <circle cx="115" cy="120" r="2.5" fill="#B6E74B" opacity="1"/>
+  </g>
+  
+  <!-- Additional AI circuit elements -->
+  <g opacity="0.3">
+    <path d="M80 70 Q100 65 120 70" stroke="#5BC6E8" stroke-width="1" fill="none" opacity="0.6"/>
+    <path d="M80 130 Q100 135 120 130" stroke="#5BC6E8" stroke-width="1" fill="none" opacity="0.6"/>
+    <circle cx="100" cy="65" r="1.5" fill="#B6E74B" opacity="0.7"/>
+    <circle cx="100" cy="135" r="1.5" fill="#B6E74B" opacity="0.7"/>
+  </g>
+  
+  <!-- Flowing conversation lines with enhanced visibility -->
+  <g id="conversationLine1">
+    <path d="M145 100 Q160 90 175 85" stroke="url(#conversationGradient)" stroke-width="4" fill="none" opacity="0.9">
+      <animate attributeName="stroke-dasharray" values="0,50;25,25;0,50" dur="4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <g id="conversationLine2">
+    <path d="M55 100 Q40 110 25 115" stroke="url(#conversationGradient)" stroke-width="3.5" fill="none" opacity="0.8">
+      <animate attributeName="stroke-dasharray" values="0,40;20,20;0,40" dur="3.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <g id="conversationLine3">
+    <path d="M100 55 Q110 40 115 25" stroke="url(#conversationGradient)" stroke-width="3" fill="none" opacity="0.7">
+      <animate attributeName="stroke-dasharray" values="0,35;17,17;0,35" dur="4.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- AI connection nodes with enhanced glow -->
+  <circle id="aiNode1" cx="175" cy="85" r="5" fill="url(#aiNodeGradient)" filter="url(#aiGlow)"/>
+  <circle id="aiNode2" cx="25" cy="115" r="4.5" fill="url(#aiNodeGradient)" filter="url(#aiGlow)"/>
+  <circle id="aiNode3" cx="115" cy="25" r="4" fill="url(#aiNodeGradient)" filter="url(#aiGlow)"/>
+  
+  <!-- Enhanced data flow particles -->
+  <g opacity="0.6">
+    <circle cx="160" cy="92" r="2" fill="#B6E74B">
+      <animate attributeName="cx" values="160;175" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="108" r="2" fill="#B6E74B">
+      <animate attributeName="cx" values="40;25" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="108" cy="40" r="2" fill="#B6E74B">
+      <animate attributeName="cy" values="40;25" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Additional floating particles for enhanced effect -->
+  <g opacity="0.4">
+    <circle cx="150" cy="95" r="1.5" fill="#5BC6E8">
+      <animate attributeName="cx" values="150;165" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="105" r="1.5" fill="#5BC6E8">
+      <animate attributeName="cx" values="50;35" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
