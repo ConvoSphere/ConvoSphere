@@ -576,10 +576,26 @@ ConvoSphere supports both light and dark mode for optimal accessibility and user
 
 ## 🔑 SSO (Single Sign-On) Login
 
-- Klicke auf der Login-Seite auf den gewünschten SSO-Provider (z.B. Google, Microsoft).
-- Folge dem Authentifizierungs-Flow des Providers.
-- Nach erfolgreichem Login wirst du automatisch eingeloggt oder dein Account wird angelegt (JIT-Provisionierung).
-- Falls deine E-Mail bereits existiert, kannst du dein SSO-Konto mit deinem lokalen Account verknüpfen (Account-Linking).
+Die Plattform unterstützt verschiedene SSO-Provider. Auf der Login-Seite werden automatisch alle konfigurierten Provider als Buttons angezeigt:
+
+### Verfügbare SSO-Provider
+- **Google**: Login mit Google-Konto
+- **Microsoft**: Login mit Microsoft 365/Azure AD-Konto
+- **GitHub**: Login mit GitHub-Konto
+- **SAML**: Login über SAML-Identity Provider
+- **OIDC**: Login über OpenID Connect Provider
+
+### SSO-Login-Flow
+1. Klicke auf der Login-Seite auf den gewünschten SSO-Provider-Button
+2. Du wirst zum jeweiligen Provider weitergeleitet
+3. Authentifiziere dich beim Provider
+4. Nach erfolgreichem Login wirst du automatisch eingeloggt oder dein Account wird angelegt (JIT-Provisionierung)
+5. Falls deine E-Mail bereits existiert, kannst du dein SSO-Konto mit deinem lokalen Account verknüpfen (Account-Linking)
+
+### Hinweise
+- SSO-Provider müssen vom Administrator konfiguriert werden
+- Nicht alle Provider sind möglicherweise verfügbar
+- Bei Problemen mit SSO-Login kontaktiere den Support
 
 ## 🛡️ Erweiterte Rollen & Rechte (RBAC)
 

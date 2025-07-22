@@ -346,12 +346,87 @@ async def get_current_user_info(
     )
 
 
+@router.get("/sso/providers")
+async def get_sso_providers():
+    """Get list of configured SSO providers."""
+    settings = get_settings()
+    providers = []
+    
+    if settings.sso_google_enabled and settings.sso_google_client_id:
+        providers.append({
+            "id": "google",
+            "name": "Google",
+            "type": "oauth2",
+            "icon": "google",
+            "login_url": f"/api/v1/auth/sso/login/google"
+        })
+    
+    if settings.sso_microsoft_enabled and settings.sso_microsoft_client_id:
+        providers.append({
+            "id": "microsoft",
+            "name": "Microsoft",
+            "type": "oauth2",
+            "icon": "microsoft",
+            "login_url": f"/api/v1/auth/sso/login/microsoft"
+        })
+    
+    if settings.sso_github_enabled and settings.sso_github_client_id:
+        providers.append({
+            "id": "github",
+            "name": "GitHub",
+            "type": "oauth2",
+            "icon": "github",
+            "login_url": f"/api/v1/auth/sso/login/github"
+        })
+    
+    if settings.sso_saml_enabled and settings.sso_saml_metadata_url:
+        providers.append({
+            "id": "saml",
+            "name": "SAML",
+            "type": "saml",
+            "icon": "saml",
+            "login_url": f"/api/v1/auth/sso/login/saml"
+        })
+    
+    if settings.sso_oidc_enabled and settings.sso_oidc_issuer_url:
+        providers.append({
+            "id": "oidc",
+            "name": "OIDC",
+            "type": "oidc",
+            "icon": "oidc",
+            "login_url": f"/api/v1/auth/sso/login/oidc"
+        })
+    
+    return {"providers": providers}
+
 @router.get("/sso/login/{provider}")
 async def sso_login(provider: str, request: Request):
-    """Initiate SSO login with the given provider (OIDC/SAML/OAuth2)."""
-    # Redirect to provider's auth URL (pseudo-code, implement with Authlib or fastapi-sso)
-    # Example: return await oidc_client.get_authorize_redirect(request, provider)
-    return {"message": f"Redirect to {provider} SSO login"}
+    """Initiate SSO login with the given provider."""
+    settings = get_settings()
+    
+    # Check if provider is enabled and configured
+    if provider == "google" and not (settings.sso_google_enabled and settings.sso_google_client_id):
+        raise HTTPException(status_code=400, detail="Google SSO not configured")
+    elif provider == "microsoft" and not (settings.sso_microsoft_enabled and settings.sso_microsoft_client_id):
+        raise HTTPException(status_code=400, detail="Microsoft SSO not configured")
+    elif provider == "github" and not (settings.sso_github_enabled and settings.sso_github_client_id):
+        raise HTTPException(status_code=400, detail="GitHub SSO not configured")
+    elif provider == "saml" and not (settings.sso_saml_enabled and settings.sso_saml_metadata_url):
+        raise HTTPException(status_code=400, detail="SAML SSO not configured")
+    elif provider == "oidc" and not (settings.sso_oidc_enabled and settings.sso_oidc_issuer_url):
+        raise HTTPException(status_code=400, detail="OIDC SSO not configured")
+    
+    # Redirect to provider's auth URL (implement with Authlib or fastapi-sso)
+    # For now, return redirect URL structure
+    redirect_urls = {
+        "google": f"https://accounts.google.com/oauth/authorize?client_id={settings.sso_google_client_id}&redirect_uri={settings.sso_google_redirect_uri}&response_type=code&scope=openid email profile",
+        "microsoft": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id}/oauth2/v2.0/authorize?client_id={settings.sso_microsoft_client_id}&redirect_uri={settings.sso_microsoft_redirect_uri}&response_type=code&scope=openid email profile",
+        "github": f"https://github.com/login/oauth/authorize?client_id={settings.sso_github_client_id}&redirect_uri={settings.sso_github_redirect_uri}&scope=read:user user:email",
+        "saml": f"/api/v1/auth/sso/login/saml",  # SAML requires special handling
+        "oidc": f"{settings.sso_oidc_issuer_url}/auth?client_id={settings.sso_oidc_client_id}&redirect_uri={settings.sso_oidc_redirect_uri}&response_type=code&scope=openid email profile"
+    }
+    
+    return {"redirect_url": redirect_urls.get(provider, "")}
 
 @router.get("/sso/callback/{provider}")
 async def sso_callback(provider: str, request: Request, db: Session = Depends(get_db)):

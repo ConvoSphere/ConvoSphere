@@ -357,9 +357,13 @@ For support and questions:
 
 ## 🏢 Enterprise User Management
 
-- SSO (OIDC, SAML, OAuth2) mit Account-Linking und JIT-Provisionierung
-- Erweiterte RBAC: Hierarchische Rollen, Gruppen, Bereichs-Admins, feingranulare Rechte
-- 2FA/MFA für erhöhte Sicherheit
-- Self-Service-UI für User (API-Token, 2FA, Account-Löschung)
-- Audit-Log-API und UI für Admins
-- Bulk-Import/-Export, DSGVO-Features
+- **SSO (Single Sign-On)**: Unterstützt Google, Microsoft, GitHub, SAML, OIDC mit dynamischer Provider-Anzeige
+- **Account-Linking**: Verknüpfung von SSO-Konten mit lokalen Accounts
+- **JIT-Provisionierung**: Automatisches Anlegen von Usern bei erstem SSO-Login
+- **Erweiterte RBAC**: Hierarchische Rollen (Super Admin, Admin, Manager, User, Guest), Gruppen, Bereichs-Admins
+- **Feingranulare Rechte**: Rechteverwaltung auf Ressourcenebene
+- **2FA/MFA**: Zwei-Faktor-Authentifizierung für erhöhte Sicherheit
+- **Self-Service-UI**: User können API-Token, 2FA, Account-Löschung selbst verwalten
+- **Audit-Log-API und UI**: Vollständiges Logging aller sicherheitsrelevanten Events
+- **Bulk-Import/-Export**: Massenverwaltung von Usern und Rollen
+- **DSGVO-Features**: Datenexport, Account-Löschung, Datenschutz-Compliance
