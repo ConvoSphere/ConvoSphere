@@ -1,38 +1,27 @@
 # Configuration Guide
 
-This comprehensive configuration guide covers all aspects of configuring the AI Assistant Platform, from basic environment setup to advanced production configurations.
+This guide covers all configuration options for the AI Chat Application, including environment variables, database settings, AI provider configuration, and security settings.
 
-## 📋 Table of Contents
+## Environment Configuration
 
-- [Environment Configuration](#environment-configuration)
-- [Database Configuration](#database-configuration)
-- [Security Configuration](#security-configuration)
-- [AI Provider Configuration](#ai-provider-configuration)
-- [Performance Configuration](#performance-configuration)
-- [Monitoring Configuration](#monitoring-configuration)
-- [Deployment Configuration](#deployment-configuration)
-- [Advanced Configuration](#advanced-configuration)
+### Core Environment Variables
 
-## 🔧 Environment Configuration
-
-### Basic Environment Setup
-
-Create a `.env` file in the backend directory with the following structure:
+Create a `.env` file in the root directory with the following variables:
 
 ```env
 # =============================================================================
 # APPLICATION CONFIGURATION
 # =============================================================================
-APP_NAME=AI Assistant Platform
-DEBUG=false
-ENVIRONMENT=production
+DEBUG=true
+ENVIRONMENT=development
 LOG_LEVEL=INFO
-TIMEZONE=UTC
+HOST=0.0.0.0
+PORT=8000
 
 # =============================================================================
 # DATABASE CONFIGURATION
 # =============================================================================
-DATABASE_URL=postgresql://username:password@localhost:5432/chatassistant
+DATABASE_URL=postgresql://user:password@localhost:5432/ai_chat_db
 DATABASE_POOL_SIZE=20
 DATABASE_MAX_OVERFLOW=30
 DATABASE_POOL_TIMEOUT=30
@@ -41,47 +30,48 @@ DATABASE_POOL_TIMEOUT=30
 # REDIS CONFIGURATION
 # =============================================================================
 REDIS_URL=redis://localhost:6379/0
-REDIS_POOL_SIZE=10
-REDIS_SOCKET_TIMEOUT=5
-REDIS_SOCKET_CONNECT_TIMEOUT=5
-
-# =============================================================================
-# WEAVIATE CONFIGURATION
-# =============================================================================
-WEAVIATE_URL=http://localhost:8080
-WEAVIATE_API_KEY=
-WEAVIATE_BATCH_SIZE=100
-WEAVIATE_BATCH_DYNAMIC=false
+REDIS_PASSWORD=
+REDIS_DB=0
 
 # =============================================================================
 # SECURITY CONFIGURATION
 # =============================================================================
 SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
+JWT_SECRET_KEY=your-jwt-secret-key-here
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 PASSWORD_MIN_LENGTH=8
-PASSWORD_REQUIRE_UPPERCASE=true
-PASSWORD_REQUIRE_LOWERCASE=true
-PASSWORD_REQUIRE_DIGITS=true
 PASSWORD_REQUIRE_SPECIAL_CHARS=true
+
+# =============================================================================
+# CORS CONFIGURATION
+# =============================================================================
+CORS_ORIGINS=["http://localhost:3000", "http://127.0.0.1:3000"]
+CORS_ALLOW_CREDENTIALS=true
+CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS=["*"]
 
 # =============================================================================
 # AI PROVIDER CONFIGURATION
 # =============================================================================
+DEFAULT_AI_PROVIDER=openai
 OPENAI_API_KEY=your-openai-api-key
+OPENAI_ORGANIZATION=your-openai-org-id
 ANTHROPIC_API_KEY=your-anthropic-api-key
-LITELLM_MODEL=openai/gpt-4
-LITELLM_MAX_TOKENS=4096
-LITELLM_TEMPERATURE=0.7
+GOOGLE_AI_API_KEY=your-google-ai-api-key
+COHERE_API_KEY=your-cohere-api-key
 
 # =============================================================================
-# CORS AND NETWORK CONFIGURATION
+# MODEL CONFIGURATION
 # =============================================================================
-CORS_ORIGINS=["http://localhost:3000", "https://your-domain.com"]
-CORS_ALLOW_CREDENTIALS=true
-CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-CORS_ALLOW_HEADERS=["*"]
+DEFAULT_MODEL=gpt-4
+FALLBACK_MODEL=gpt-3.5-turbo
+MAX_TOKENS=4096
+TEMPERATURE=0.7
+TOP_P=1.0
+FREQUENCY_PENALTY=0.0
+PRESENCE_PENALTY=0.0
 
 # =============================================================================
 # RATE LIMITING
@@ -95,67 +85,53 @@ RATE_LIMIT_BURST=10
 # FILE UPLOAD CONFIGURATION
 # =============================================================================
 MAX_FILE_SIZE=10485760  # 10MB
-ALLOWED_FILE_TYPES=pdf,doc,docx,txt,md
+ALLOWED_FILE_TYPES=pdf,doc,docx,txt,md,csv,json
 UPLOAD_DIR=uploads
-ENABLE_FILE_COMPRESSION=true
+ENABLE_FILE_PROCESSING=true
 
 # =============================================================================
-# LOGGING CONFIGURATION
+# EMAIL CONFIGURATION
 # =============================================================================
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_TLS=true
+FROM_EMAIL=noreply@yourdomain.com
+
+# =============================================================================
+# MONITORING AND LOGGING
+# =============================================================================
+ENABLE_METRICS=true
+METRICS_PORT=9090
 LOG_FORMAT=json
 LOG_FILE=logs/app.log
-LOG_MAX_SIZE=100MB
-LOG_BACKUP_COUNT=5
-LOG_LEVEL_ROOT=INFO
-LOG_LEVEL_APP=DEBUG
+SENTRY_DSN=your-sentry-dsn
 ```
 
-### Environment-Specific Configurations
+## Database Configuration
 
-#### Development Environment
-```env
-DEBUG=true
-LOG_LEVEL=DEBUG
-ENVIRONMENT=development
-CORS_ORIGINS=["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000"]
-RATE_LIMIT_ENABLED=false
-```
+### PostgreSQL Settings
 
-#### Staging Environment
-```env
-DEBUG=false
-LOG_LEVEL=INFO
-ENVIRONMENT=staging
-CORS_ORIGINS=["https://staging.your-domain.com"]
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=50
-```
+#### Development Configuration
 
-#### Production Environment
-```env
-DEBUG=false
-LOG_LEVEL=WARNING
-ENVIRONMENT=production
-CORS_ORIGINS=["https://your-domain.com"]
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=100
-```
-
-## 🗄️ Database Configuration
-
-### PostgreSQL Configuration
-
-#### Connection Pooling
-```env
-DATABASE_POOL_SIZE=20
-DATABASE_MAX_OVERFLOW=30
-DATABASE_POOL_TIMEOUT=30
-DATABASE_POOL_RECYCLE=3600
-```
-
-#### Performance Tuning
 ```sql
--- PostgreSQL configuration for production
+-- Create database and user
+CREATE DATABASE ai_chat_db;
+CREATE USER ai_chat_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE ai_chat_db TO ai_chat_user;
+ALTER USER ai_chat_user CREATEDB;
+
+-- Set up extensions
+\c ai_chat_db
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+```
+
+#### Production Configuration
+
+```sql
+-- Optimize for production
 ALTER SYSTEM SET max_connections = 200;
 ALTER SYSTEM SET shared_buffers = '256MB';
 ALTER SYSTEM SET effective_cache_size = '1GB';
@@ -164,374 +140,196 @@ ALTER SYSTEM SET maintenance_work_mem = '64MB';
 ALTER SYSTEM SET checkpoint_completion_target = 0.9;
 ALTER SYSTEM SET wal_buffers = '16MB';
 ALTER SYSTEM SET default_statistics_target = 100;
-ALTER SYSTEM SET random_page_cost = 1.1;
-ALTER SYSTEM SET effective_io_concurrency = 200;
-```
 
-#### Database Maintenance
-```sql
--- Create indexes for better performance
-CREATE INDEX CONCURRENTLY idx_users_email ON users(email);
-CREATE INDEX CONCURRENTLY idx_conversations_user_id ON conversations(user_id);
-CREATE INDEX CONCURRENTLY idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX CONCURRENTLY idx_messages_created_at ON messages(created_at);
-
--- Set up automatic vacuum
-ALTER SYSTEM SET autovacuum = on;
-ALTER SYSTEM SET autovacuum_max_workers = 3;
-ALTER SYSTEM SET autovacuum_naptime = '1min';
+-- Reload configuration
+SELECT pg_reload_conf();
 ```
 
 ### Redis Configuration
 
-#### Basic Configuration
-```env
-REDIS_URL=redis://localhost:6379/0
-REDIS_POOL_SIZE=10
-REDIS_SOCKET_TIMEOUT=5
-REDIS_SOCKET_CONNECT_TIMEOUT=5
-REDIS_RETRY_ON_TIMEOUT=true
-```
+#### Development Configuration
 
-#### Advanced Redis Configuration
-```conf
-# redis.conf
-maxmemory 512mb
-maxmemory-policy allkeys-lru
+```bash
+# Edit Redis configuration
+sudo nano /etc/redis/redis.conf
+
+# Basic settings
+bind 127.0.0.1
+port 6379
+databases 16
 save 900 1
 save 300 10
 save 60 10000
+```
+
+#### Production Configuration
+
+```bash
+# Production Redis settings
+maxmemory 512mb
+maxmemory-policy allkeys-lru
 appendonly yes
 appendfsync everysec
 tcp-keepalive 300
+timeout 0
+tcp-backlog 511
 ```
 
-#### Redis Cluster Configuration
-```env
-# For Redis Cluster
-REDIS_CLUSTER_MODE=true
-REDIS_CLUSTER_NODES=redis://node1:6379,redis://node2:6379,redis://node3:6379
-REDIS_CLUSTER_REQUIRE_FULL_COVERAGE=false
-```
-
-## 🔒 Security Configuration
-
-### JWT Configuration
-```env
-SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-JWT_REFRESH_TOKEN_EXPIRE_DAYS=30
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-### Password Policy
-```env
-PASSWORD_MIN_LENGTH=8
-PASSWORD_REQUIRE_UPPERCASE=true
-PASSWORD_REQUIRE_LOWERCASE=true
-PASSWORD_REQUIRE_DIGITS=true
-PASSWORD_REQUIRE_SPECIAL_CHARS=true
-PASSWORD_HISTORY_COUNT=5
-PASSWORD_EXPIRY_DAYS=90
-```
-
-### CORS Configuration
-```env
-CORS_ORIGINS=["https://your-domain.com", "https://app.your-domain.com"]
-CORS_ALLOW_CREDENTIALS=true
-CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-CORS_ALLOW_HEADERS=["Authorization", "Content-Type", "X-Requested-With"]
-CORS_EXPOSE_HEADERS=["X-Total-Count", "X-Page-Count"]
-CORS_MAX_AGE=86400
-```
-
-### Rate Limiting
-```env
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=100
-RATE_LIMIT_WINDOW=60
-RATE_LIMIT_BURST=10
-RATE_LIMIT_STORAGE_URL=redis://localhost:6379/1
-```
-
-### SSL/TLS Configuration
-```env
-SSL_ENABLED=true
-SSL_CERT_FILE=/path/to/certificate.crt
-SSL_KEY_FILE=/path/to/private.key
-SSL_CA_FILE=/path/to/ca-bundle.crt
-FORCE_HTTPS=true
-```
-
-## 🤖 AI Provider Configuration
+## AI Provider Configuration
 
 ### OpenAI Configuration
-```env
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_ORGANIZATION=your-organization-id
-OPENAI_MODEL=gpt-4
-OPENAI_MAX_TOKENS=4096
-OPENAI_TEMPERATURE=0.7
-OPENAI_TOP_P=1.0
-OPENAI_FREQUENCY_PENALTY=0.0
-OPENAI_PRESENCE_PENALTY=0.0
-```
 
-### Anthropic Configuration
-```env
-ANTHROPIC_API_KEY=your-anthropic-api-key
-ANTHROPIC_MODEL=claude-3-sonnet-20240229
-ANTHROPIC_MAX_TOKENS=4096
-ANTHROPIC_TEMPERATURE=0.7
-ANTHROPIC_TOP_P=1.0
-ANTHROPIC_TOP_K=40
-```
-
-### LiteLLM Configuration
-```env
-LITELLM_MODEL=openai/gpt-4
-LITELLM_MAX_TOKENS=4096
-LITELLM_TEMPERATURE=0.7
-LITELLM_TOP_P=1.0
-LITELLM_FREQUENCY_PENALTY=0.0
-LITELLM_PRESENCE_PENALTY=0.0
-LITELLM_REQUEST_TIMEOUT=60
-LITELLM_RETRY_ATTEMPTS=3
-```
-
-### Model Fallback Configuration
-```env
-MODEL_FALLBACK_ENABLED=true
-PRIMARY_MODEL=openai/gpt-4
-FALLBACK_MODELS=openai/gpt-3.5-turbo,anthropic/claude-3-haiku-20240307
-FALLBACK_ON_ERROR=true
-FALLBACK_ON_RATE_LIMIT=true
-```
-
-## ⚡ Performance Configuration
-
-### Application Performance
-```env
-WORKER_PROCESSES=4
-WORKER_CONNECTIONS=1000
-MAX_REQUESTS=1000
-MAX_REQUESTS_JITTER=50
-TIMEOUT_KEEP_ALIVE=5
-TIMEOUT_GRACEFUL_SHUTDOWN=30
-```
-
-### Database Performance
-```env
-DATABASE_POOL_SIZE=20
-DATABASE_MAX_OVERFLOW=30
-DATABASE_POOL_TIMEOUT=30
-DATABASE_POOL_RECYCLE=3600
-DATABASE_ECHO=false
-DATABASE_ECHO_POOL=false
-```
-
-### Cache Configuration
-```env
-CACHE_ENABLED=true
-CACHE_TTL=3600
-CACHE_MAX_SIZE=1000
-CACHE_STORAGE_URL=redis://localhost:6379/2
-CACHE_KEY_PREFIX=chatassistant:
-```
-
-### File Upload Performance
-```env
-MAX_FILE_SIZE=10485760  # 10MB
-UPLOAD_CHUNK_SIZE=8192
-ENABLE_FILE_COMPRESSION=true
-COMPRESSION_LEVEL=6
-UPLOAD_CONCURRENT_LIMIT=5
-```
-
-## 📊 Monitoring Configuration
-
-### Health Check Configuration
-```env
-HEALTH_CHECK_ENABLED=true
-HEALTH_CHECK_INTERVAL=30
-HEALTH_CHECK_TIMEOUT=10
-HEALTH_CHECK_RETRIES=3
-```
-
-### Metrics Configuration
-```env
-METRICS_ENABLED=true
-METRICS_PORT=9090
-METRICS_PATH=/metrics
-PROMETHEUS_ENABLED=true
-```
-
-### Logging Configuration
-```env
-LOG_FORMAT=json
-LOG_FILE=logs/app.log
-LOG_MAX_SIZE=100MB
-LOG_BACKUP_COUNT=5
-LOG_LEVEL_ROOT=INFO
-LOG_LEVEL_APP=DEBUG
-LOG_LEVEL_SQL=WARNING
-LOG_LEVEL_REDIS=WARNING
-```
-
-### Error Tracking
-```env
-SENTRY_DSN=your-sentry-dsn
-SENTRY_ENVIRONMENT=production
-SENTRY_TRACES_SAMPLE_RATE=0.1
-SENTRY_PROFILES_SAMPLE_RATE=0.1
-```
-
-## 🚀 Deployment Configuration
-
-### Docker Configuration
-```dockerfile
-# Dockerfile
-FROM python:3.13-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Docker Compose Configuration
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://user:pass@postgres:5432/chatassistant
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - postgres
-      - redis
-      - weaviate
-
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: chatassistant
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
-
-  weaviate:
-    image: semitechnologies/weaviate:1.22.4
-    environment:
-      QUERY_DEFAULTS_LIMIT: 25
-      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
-      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
-      DEFAULT_VECTORIZER_MODULE: 'none'
-      ENABLE_MODULES: 'text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai'
-      CLUSTER_HOSTNAME: 'node1'
-
-volumes:
-  postgres_data:
-  redis_data:
-```
-
-### Kubernetes Configuration
-```yaml
-# deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chatassistant
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: chatassistant
-  template:
-    metadata:
-      labels:
-        app: chatassistant
-    spec:
-      containers:
-      - name: chatassistant
-        image: chatassistant:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: chatassistant-secrets
-              key: database-url
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              name: chatassistant-secrets
-              key: redis-url
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-```
-
-## 🔧 Advanced Configuration
-
-### Custom Middleware Configuration
 ```python
-# middleware_config.py
-MIDDLEWARE_CONFIG = {
-    "cors": {
-        "allow_origins": ["https://your-domain.com"],
-        "allow_credentials": True,
-        "allow_methods": ["GET", "POST", "PUT", "DELETE"],
-        "allow_headers": ["*"],
-    },
-    "rate_limit": {
-        "enabled": True,
-        "requests": 100,
-        "window": 60,
-    },
-    "auth": {
-        "jwt_secret": "your-secret",
-        "algorithm": "HS256",
-        "access_token_expire_minutes": 30,
-    }
+# OpenAI settings
+OPENAI_CONFIG = {
+    "api_key": os.getenv("OPENAI_API_KEY"),
+    "organization": os.getenv("OPENAI_ORGANIZATION"),
+    "default_model": "gpt-4",
+    "fallback_model": "gpt-3.5-turbo",
+    "max_tokens": 4096,
+    "temperature": 0.7,
+    "timeout": 30,
+    "retry_attempts": 3
 }
 ```
 
-### Custom Logging Configuration
+### Anthropic Configuration
+
 ```python
-# logging_config.py
+# Anthropic settings
+ANTHROPIC_CONFIG = {
+    "api_key": os.getenv("ANTHROPIC_API_KEY"),
+    "default_model": "claude-3-sonnet-20240229",
+    "max_tokens": 4096,
+    "temperature": 0.7,
+    "timeout": 30,
+    "retry_attempts": 3
+}
+```
+
+### Model Selection Strategy
+
+```python
+# Model selection configuration
+MODEL_SELECTION = {
+    "strategy": "cost_optimized",  # or "performance_optimized"
+    "budget_limit": 0.10,  # $0.10 per request
+    "performance_threshold": 0.8,
+    "fallback_chain": [
+        "gpt-4",
+        "gpt-3.5-turbo",
+        "claude-3-haiku-20240307"
+    ]
+}
+```
+
+## Security Configuration
+
+### JWT Configuration
+
+```python
+# JWT settings
+JWT_CONFIG = {
+    "secret_key": os.getenv("JWT_SECRET_KEY"),
+    "algorithm": "HS256",
+    "access_token_expire_minutes": 30,
+    "refresh_token_expire_days": 7,
+    "token_type": "Bearer"
+}
+```
+
+### Password Policy
+
+```python
+# Password requirements
+PASSWORD_POLICY = {
+    "min_length": 8,
+    "require_uppercase": True,
+    "require_lowercase": True,
+    "require_digits": True,
+    "require_special_chars": True,
+    "max_length": 128,
+    "prevent_common_passwords": True
+}
+```
+
+### Rate Limiting
+
+```python
+# Rate limiting configuration
+RATE_LIMIT_CONFIG = {
+    "enabled": True,
+    "requests_per_minute": 100,
+    "burst_limit": 10,
+    "storage": "redis",
+    "key_prefix": "rate_limit:"
+}
+```
+
+## File Upload Configuration
+
+### File Processing Settings
+
+```python
+# File upload configuration
+FILE_UPLOAD_CONFIG = {
+    "max_size": 10 * 1024 * 1024,  # 10MB
+    "allowed_types": [
+        "application/pdf",
+        "text/plain",
+        "text/markdown",
+        "application/json",
+        "text/csv"
+    ],
+    "storage_backend": "local",  # or "s3", "gcs"
+    "process_files": True,
+    "extract_text": True,
+    "create_embeddings": True
+}
+```
+
+### S3 Configuration (Optional)
+
+```env
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=your-bucket-name
+S3_ENDPOINT_URL=https://s3.amazonaws.com
+```
+
+## Email Configuration
+
+### SMTP Settings
+
+```python
+# Email configuration
+EMAIL_CONFIG = {
+    "smtp_host": os.getenv("SMTP_HOST"),
+    "smtp_port": int(os.getenv("SMTP_PORT", 587)),
+    "smtp_username": os.getenv("SMTP_USERNAME"),
+    "smtp_password": os.getenv("SMTP_PASSWORD"),
+    "smtp_tls": os.getenv("SMTP_TLS", "true").lower() == "true",
+    "from_email": os.getenv("FROM_EMAIL"),
+    "from_name": "AI Chat Application"
+}
+```
+
+## Monitoring Configuration
+
+### Logging Configuration
+
+```python
+# Logging configuration
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "json": {
             "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
-            "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
-        },
+            "class": "pythonjsonlogger.jsonlogger.JsonFormatter"
+        }
     },
     "handlers": {
         "file": {
@@ -539,124 +337,259 @@ LOGGING_CONFIG = {
             "filename": "logs/app.log",
             "maxBytes": 10485760,  # 10MB
             "backupCount": 5,
-            "formatter": "json",
+            "formatter": "json"
         },
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "json",
-        },
+            "formatter": "json"
+        }
     },
-    "loggers": {
-        "": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-        },
-        "uvicorn": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-        },
-    },
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "INFO"
+    }
 }
 ```
 
-### Environment-Specific Overrides
-```python
-# config_overrides.py
-import os
+### Metrics Configuration
 
-def get_config_overrides():
-    env = os.getenv("ENVIRONMENT", "development")
-    
-    if env == "development":
-        return {
-            "DEBUG": True,
-            "LOG_LEVEL": "DEBUG",
-            "CORS_ORIGINS": ["http://localhost:3000"],
-        }
-    elif env == "staging":
-        return {
-            "DEBUG": False,
-            "LOG_LEVEL": "INFO",
-            "CORS_ORIGINS": ["https://staging.your-domain.com"],
-        }
-    elif env == "production":
-        return {
-            "DEBUG": False,
-            "LOG_LEVEL": "WARNING",
-            "CORS_ORIGINS": ["https://your-domain.com"],
-        }
-    
-    return {}
+```python
+# Metrics configuration
+METRICS_CONFIG = {
+    "enabled": True,
+    "port": 9090,
+    "endpoint": "/metrics",
+    "collectors": [
+        "request_count",
+        "request_duration",
+        "error_count",
+        "active_connections"
+    ]
+}
 ```
 
-## 🔍 Configuration Validation
+## Environment-Specific Configurations
+
+### Development Environment
+
+```env
+# Development settings
+DEBUG=true
+LOG_LEVEL=DEBUG
+CORS_ORIGINS=["http://localhost:3000", "http://127.0.0.1:3000"]
+ENABLE_METRICS=false
+RATE_LIMIT_ENABLED=false
+```
+
+### Staging Environment
+
+```env
+# Staging settings
+DEBUG=false
+LOG_LEVEL=INFO
+CORS_ORIGINS=["https://staging.yourdomain.com"]
+ENABLE_METRICS=true
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS=50
+```
+
+### Production Environment
+
+```env
+# Production settings
+DEBUG=false
+LOG_LEVEL=WARNING
+CORS_ORIGINS=["https://yourdomain.com"]
+ENABLE_METRICS=true
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS=100
+SENTRY_DSN=your-sentry-dsn
+```
+
+## Configuration Validation
 
 ### Environment Validation Script
-```python
-# validate_config.py
-import os
-from typing import Dict, Any
 
-def validate_required_vars() -> Dict[str, Any]:
+```python
+# config_validator.py
+import os
+from typing import Dict, List
+
+def validate_environment() -> Dict[str, List[str]]:
+    """Validate environment configuration."""
+    errors = []
+    warnings = []
+    
+    # Required variables
     required_vars = [
         "DATABASE_URL",
         "REDIS_URL",
         "SECRET_KEY",
-        "WEAVIATE_URL",
+        "JWT_SECRET_KEY"
     ]
     
-    missing_vars = []
     for var in required_vars:
         if not os.getenv(var):
-            missing_vars.append(var)
+            errors.append(f"Missing required environment variable: {var}")
     
-    if missing_vars:
-        raise ValueError(f"Missing required environment variables: {missing_vars}")
+    # Optional but recommended
+    recommended_vars = [
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY"
+    ]
     
-    return {var: os.getenv(var) for var in required_vars}
-
-def validate_database_url(url: str) -> bool:
-    return url.startswith("postgresql://")
-
-def validate_redis_url(url: str) -> bool:
-    return url.startswith("redis://")
+    for var in recommended_vars:
+        if not os.getenv(var):
+            warnings.append(f"Missing recommended environment variable: {var}")
+    
+    return {"errors": errors, "warnings": warnings}
 
 if __name__ == "__main__":
-    try:
-        config = validate_required_vars()
-        print("✅ Configuration validation passed")
-    except ValueError as e:
-        print(f"❌ Configuration validation failed: {e}")
+    result = validate_environment()
+    
+    if result["errors"]:
+        print("❌ Configuration errors:")
+        for error in result["errors"]:
+            print(f"  - {error}")
         exit(1)
+    
+    if result["warnings"]:
+        print("⚠️  Configuration warnings:")
+        for warning in result["warnings"]:
+            print(f"  - {warning}")
+    
+    print("✅ Configuration validation passed!")
 ```
 
-## 📚 Configuration Best Practices
+## Configuration Management
+
+### Using Configuration Classes
+
+```python
+# config.py
+from pydantic import BaseSettings, validator
+from typing import List, Optional
+
+class Settings(BaseSettings):
+    # Application
+    debug: bool = False
+    environment: str = "development"
+    log_level: str = "INFO"
+    
+    # Database
+    database_url: str
+    
+    # Redis
+    redis_url: str
+    
+    # Security
+    secret_key: str
+    jwt_secret_key: str
+    
+    # AI Providers
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    
+    @validator("secret_key")
+    def validate_secret_key(cls, v):
+        if len(v) < 32:
+            raise ValueError("Secret key must be at least 32 characters")
+        return v
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+### Environment-Specific Configuration Files
+
+```bash
+# Create environment-specific configs
+cp .env .env.development
+cp .env .env.staging
+cp .env .env.production
+
+# Use appropriate config based on environment
+export ENVIRONMENT=production
+export CONFIG_FILE=.env.production
+```
+
+## Best Practices
 
 ### Security Best Practices
+
 1. **Never commit secrets to version control**
-2. **Use environment variables for sensitive data**
-3. **Rotate secrets regularly**
-4. **Use strong, unique passwords**
-5. **Enable SSL/TLS in production**
+2. **Use strong, unique secret keys**
+3. **Rotate API keys regularly**
+4. **Use environment-specific configurations**
+5. **Enable HTTPS in production**
 
 ### Performance Best Practices
-1. **Use connection pooling for databases**
-2. **Configure appropriate cache settings**
-3. **Set up monitoring and alerting**
-4. **Use load balancing for high availability**
-5. **Optimize database queries and indexes**
 
-### Deployment Best Practices
-1. **Use containerization for consistency**
-2. **Implement health checks**
-3. **Set up proper logging**
-4. **Configure backup strategies**
-5. **Use infrastructure as code**
+1. **Optimize database connection pools**
+2. **Configure Redis for your workload**
+3. **Set appropriate rate limits**
+4. **Monitor resource usage**
+5. **Use caching strategies**
 
----
+### Monitoring Best Practices
 
-<div align="center">
+1. **Enable structured logging**
+2. **Set up metrics collection**
+3. **Configure error tracking**
+4. **Monitor API response times**
+5. **Set up alerting for critical issues**
 
-**Ready to deploy your configuration?** [Deployment Guide →](../deployment/docker.md)
+## Troubleshooting Configuration Issues
 
-</div> 
+### Common Configuration Problems
+
+1. **Database Connection Issues**
+   - Check connection string format
+   - Verify database credentials
+   - Ensure database is running
+
+2. **Redis Connection Issues**
+   - Verify Redis is running
+   - Check connection URL format
+   - Test with redis-cli
+
+3. **AI Provider Issues**
+   - Verify API keys are valid
+   - Check API quotas and limits
+   - Test API endpoints directly
+
+4. **Security Issues**
+   - Ensure secret keys are strong
+   - Check CORS configuration
+   - Verify JWT settings
+
+### Configuration Testing
+
+```bash
+# Test configuration
+python -c "
+from config import settings
+print('Configuration loaded successfully')
+print(f'Environment: {settings.environment}')
+print(f'Debug mode: {settings.debug}')
+"
+```
+
+## Next Steps
+
+After configuring your application:
+
+1. **Test the configuration** using the validation script
+2. **Start the application** and verify all services are working
+3. **Monitor logs** for any configuration-related issues
+4. **Set up monitoring** to track application performance
+5. **Document your configuration** for team members
+
+For more detailed information about specific configuration areas, see:
+
+- [Database Configuration](../architecture/database.md)
+- [Security Configuration](../architecture/security.md)
+- [AI Provider Setup](../features/ai-integration.md)
+- [Deployment Configuration](../deployment/production.md) 
