@@ -3,6 +3,7 @@ import { ConfigProvider, theme as antdTheme } from 'antd';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
+import { useThemeStore } from './store/themeStore';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -20,11 +21,15 @@ import McpTools from './pages/McpTools';
 import SystemStatus from './pages/SystemStatus';
 
 const App: React.FC = () => {
+  const { mode, getCurrentTheme } = useThemeStore();
+  const currentTheme = getCurrentTheme();
+
   return (
     <I18nextProvider i18n={i18n}>
       <ConfigProvider
         theme={{
-          algorithm: antdTheme.defaultAlgorithm,
+          algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+          token: currentTheme.token,
         }}
       >
         <Router>
