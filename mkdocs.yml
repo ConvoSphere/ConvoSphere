@@ -66,13 +66,13 @@ markdown_extensions:
         kwds:
           case: lower
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
-      auto_append:
-        - includes/abbreviations.md
+      # auto_append:
+      #   - includes/abbreviations.md
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -100,10 +100,7 @@ markdown_extensions:
           format: !!python/name:mermaid2.fence_mermaid
 
 plugins:
-  - search:
-      separator: '[\s\-,:!=\[\]()"/`|]+'
-      prebuild_index: true
-      indexing: 'full'
+  - search
   - mermaid2:
       arguments:
         theme: default
@@ -117,6 +114,8 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
       type: datetime
+      fallback_to_build_date: true
+      enable_parallel_processing: false
   - minify:
       minify_html: true
   - awesome-pages
