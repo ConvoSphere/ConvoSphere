@@ -29,8 +29,7 @@ const SystemStatus: React.FC = () => {
 
   useEffect(() => {
     if (!isAdmin) return;
-    let timer: NodeJS.Timeout;
-    const fetchStatus = async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
       try {
         const res = await api.get('/users/admin/system-status');
         setData(res.data);
@@ -42,14 +41,33 @@ const SystemStatus: React.FC = () => {
         ramHistory.current.push({ time: now, ram: res.data.system.ram.percent });
         if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
         setError(null);
-      } catch (e) {
+      } catch {
         setError('Failed to load system status');
       } finally {
         setLoading(false);
       }
-    };
-    fetchStatus();
-    timer = setInterval(fetchStatus, 5000);
+    }, 5000);
+    
+    // Initial fetch
+    (async () => {
+      try {
+        const res = await api.get('/users/admin/system-status');
+        setData(res.data);
+        const now = new Date().toLocaleTimeString();
+        // CPU
+        cpuHistory.current.push({ time: now, cpu: res.data.system.cpu_percent });
+        if (cpuHistory.current.length > MAX_POINTS) cpuHistory.current.shift();
+        // RAM
+        ramHistory.current.push({ time: now, ram: res.data.system.ram.percent });
+        if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
+        setError(null);
+      } catch {
+        setError('Failed to load system status');
+      } finally {
+        setLoading(false);
+      }
+    })();
+    
     return () => clearInterval(timer);
   }, [isAdmin]);
 

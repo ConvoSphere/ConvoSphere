@@ -1,3 +1,5 @@
+import pytest
+
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -22,7 +24,8 @@ def test_password_hashing():
     assert verify_password("wrong_password", hashed) == False
 
 
-def test_jwt_token_creation():
+@pytest.mark.asyncio
+async def test_jwt_token_creation():
     """Test JWT token creation and verification."""
     user_id = "test_user_123"
 
@@ -34,17 +37,18 @@ def test_jwt_token_creation():
     assert access_token != refresh_token
 
     # Verify tokens are valid
-    decoded_user_id = verify_token(access_token)
+    decoded_user_id = await verify_token(access_token)
     assert decoded_user_id == user_id
 
-    decoded_refresh_user_id = verify_token(refresh_token)
+    decoded_refresh_user_id = await verify_token(refresh_token)
     assert decoded_refresh_user_id == user_id
 
 
-def test_jwt_token_verification_invalid():
+@pytest.mark.asyncio
+async def test_jwt_token_verification_invalid():
     """Test JWT token verification with invalid token."""
     invalid_token = "invalid.jwt.token"
-    result = verify_token(invalid_token)
+    result = await verify_token(invalid_token)
     assert result is None
 
 
