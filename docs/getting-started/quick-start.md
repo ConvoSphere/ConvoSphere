@@ -1,307 +1,325 @@
 # Quick Start Guide
 
-Get the AI Assistant Platform up and running in under 10 minutes! This guide will walk you through the complete setup process from scratch.
+Get the AI Chat Application up and running in under 10 minutes! This guide will walk you through the fastest way to get started.
 
-## 🎯 What You'll Learn
+## 🎯 What You'll Build
 
 By the end of this guide, you'll have:
-- ✅ A fully functional AI Assistant Platform
-- ✅ All required services running (PostgreSQL, Redis, Weaviate)
-- ✅ A working API with authentication
-- ✅ Basic understanding of the platform architecture
+
+- ✅ A fully functional AI chat application
+- ✅ Real-time messaging with WebSocket support
+- ✅ AI integration with multiple providers
+- ✅ User authentication system
+- ✅ File upload and knowledge base
+- ✅ Modern React frontend with FastAPI backend
 
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-### Required Software
-- **Python 3.13+** - [Download Python](https://www.python.org/downloads/)
-- **Git** - [Download Git](https://git-scm.com/downloads)
-- **Docker** - [Download Docker](https://www.docker.com/products/docker-desktop/) (recommended)
+- **Docker & Docker Compose** (recommended)
+- **Python 3.11+** (for manual setup)
+- **Node.js 18+** (for manual setup)
+- **PostgreSQL 13+** (for manual setup)
+- **Git**
 
-### Required Services
-- **PostgreSQL 14+** - [Download PostgreSQL](https://www.postgresql.org/download/)
-- **Redis 6+** - [Download Redis](https://redis.io/download)
-- **Weaviate** - [Weaviate Documentation](https://weaviate.io/developers/weaviate)
+### Quick Check
 
-> **💡 Tip**: If you prefer to use Docker for all services, we provide a complete `docker-compose.yml` file that sets up everything automatically.
+```bash
+# Check if Docker is installed
+docker --version
+docker-compose --version
 
-## 🚀 Quick Setup
+# Check Python version
+python --version
+
+# Check Node.js version
+node --version
+```
+
+## 🚀 Option 1: Docker (Recommended)
+
+The fastest way to get started is using Docker. This will set up everything automatically.
 
 ### Step 1: Clone the Repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/chatassistant.git
-
-# Navigate to the project directory
-cd chatassistant
-
-# Verify the structure
-ls -la
+git clone https://github.com/your-org/ai-chat-app.git
+cd ai-chat-app
 ```
 
-You should see the following structure:
-```
-chatassistant/
-├── backend/          # FastAPI backend
-├── frontend/         # NiceGUI frontend
-├── docs/            # Documentation
-├── docker/          # Docker configurations
-├── docker-compose.yml
-├── mkdocs.yml
-└── README.md
-```
-
-### Step 2: Set Up Backend Environment
-
-```bash
-# Navigate to the backend directory
-cd backend
-
-# Create a virtual environment
-python3 -m venv venv
-
-# Activate the virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
-
-# Upgrade pip
-pip install --upgrade pip
-
-# Install dependencies
-pip install -r requirements-basic.txt
-```
-
-### Step 3: Configure Environment
+### Step 2: Configure Environment
 
 ```bash
 # Copy the example environment file
-cp .env.example .env
+cp env.example .env
 
 # Edit the environment file with your settings
-nano .env  # or use your preferred editor
+nano .env
 ```
 
-**Required Environment Variables:**
+**Key settings to configure:**
 
 ```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/chatassistant
+# Database
+DATABASE_URL=postgresql://user:password@localhost/ai_chat_app
 
-# Redis Configuration
-REDIS_URL=redis://localhost:6379/0
+# Security
+SECRET_KEY=your-super-secret-key-here
 
-# Weaviate Configuration
-WEAVIATE_URL=http://localhost:8080
-
-# Security Configuration
-SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# AI Provider Configuration (Optional for basic setup)
+# AI Services (choose one or more)
 OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 
-# Application Configuration
-DEBUG=true
-LOG_LEVEL=INFO
-CORS_ORIGINS=["http://localhost:3000", "http://localhost:8080"]
+# External Services
+WEAVIATE_URL=http://localhost:8080
+REDIS_URL=redis://localhost:6379
 ```
 
-> **🔒 Security Note**: Generate a strong secret key using:
-> ```bash
-> python -c "import secrets; print(secrets.token_urlsafe(32))"
-> ```
-
-### Step 4: Start Required Services
-
-You have two options for starting the services:
-
-#### Option A: Using Docker (Recommended)
+### Step 3: Start the Application
 
 ```bash
-# From the project root directory
-docker-compose up -d postgres redis weaviate
+# Build and start all services
+docker-compose up --build
 
-# Verify services are running
-docker-compose ps
+# Or run in background
+docker-compose up -d --build
 ```
 
-#### Option B: Manual Installation
+### Step 4: Access the Application
 
-**PostgreSQL:**
+Once all services are running, you can access:
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Admin Panel**: http://localhost:3000/admin
+
+## 🛠️ Option 2: Manual Setup
+
+If you prefer to set up the application manually, follow these steps:
+
+### Step 1: Clone and Setup
+
 ```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# Start PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Create database and user
-sudo -u postgres psql
-CREATE DATABASE chatassistant;
-CREATE USER chatassistant_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE chatassistant TO chatassistant_user;
-\q
+git clone https://github.com/your-org/ai-chat-app.git
+cd ai-chat-app
 ```
 
-**Redis:**
-```bash
-# Ubuntu/Debian
-sudo apt install redis-server
-
-# Start Redis
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
-
-# Test Redis connection
-redis-cli ping
-```
-
-**Weaviate:**
-```bash
-# Using Docker (easiest method)
-docker run -d \
-  --name weaviate \
-  -p 8080:8080 \
-  -e QUERY_DEFAULTS_LIMIT=25 \
-  -e AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true \
-  -e PERSISTENCE_DATA_PATH='/var/lib/weaviate' \
-  -e DEFAULT_VECTORIZER_MODULE='none' \
-  -e ENABLE_MODULES='text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai' \
-  -e CLUSTER_HOSTNAME='node1' \
-  semitechnologies/weaviate:1.22.4
-```
-
-### Step 5: Initialize the Database
+### Step 2: Backend Setup
 
 ```bash
-# Navigate back to the backend directory
+# Navigate to backend directory
 cd backend
 
-# Run database migrations
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Set up database
+createdb ai_chat_app
 alembic upgrade head
 
-# Create initial admin user (optional)
-python scripts/create_admin.py
+# Start backend server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Step 6: Start the Application
+### Step 3: Frontend Setup
 
 ```bash
-# Start the FastAPI application
-python main.py
+# Open new terminal and navigate to frontend
+cd frontend-react
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with backend API URL
+
+# Start development server
+npm start
 ```
 
-The application will be available at:
-- **API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **ReDoc Documentation**: http://localhost:8000/redoc
+## 🎉 First Steps
 
-### Step 7: Verify Installation
+### 1. Create Your First User
 
-1. **Check API Health:**
-   ```bash
-   curl http://localhost:8000/health
-   ```
+Visit http://localhost:3000 and click "Sign Up" to create your account.
 
-2. **Check API Documentation:**
-   Open http://localhost:8000/docs in your browser
+### 2. Start Your First Conversation
 
-3. **Test Authentication:**
-   ```bash
-   # Register a new user
-   curl -X POST "http://localhost:8000/api/v1/auth/register" \
-     -H "Content-Type: application/json" \
-     -d '{"email": "test@example.com", "password": "testpassword123"}'
-   ```
+1. Click "New Conversation" in the chat interface
+2. Type your first message
+3. The AI will respond using the configured provider
 
-## 🎉 Congratulations!
+### 3. Upload a Document
 
-You've successfully set up the AI Assistant Platform! Here's what you can do next:
+1. Click the file upload button in the chat
+2. Select a PDF, DOCX, or text file
+3. The document will be processed and added to your knowledge base
 
-### Next Steps
+### 4. Explore the API
 
-1. **Explore the API Documentation**
-   - Visit http://localhost:8000/docs
-   - Try out the interactive API endpoints
+Visit http://localhost:8000/docs to explore the interactive API documentation.
 
-2. **Set Up the Frontend**
-   - Follow the [Frontend Setup Guide](../architecture/frontend.md)
+## 🔧 Configuration Options
 
-3. **Configure AI Providers**
-   - Add your OpenAI or Anthropic API keys
-   - Test AI assistant creation
+### AI Providers
 
-4. **Learn More**
-   - Read the [Architecture Overview](../architecture/overview.md)
-   - Explore [API Reference](../api/overview.md)
-   - Check out [Features](../features/ai-integration.md)
+The application supports multiple AI providers through LiteLLM:
 
-## 🔧 Troubleshooting
+```env
+# OpenAI
+OPENAI_API_KEY=your-openai-key
+
+# Anthropic
+ANTHROPIC_API_KEY=your-anthropic-key
+
+# Azure OpenAI
+AZURE_OPENAI_API_KEY=your-azure-key
+AZURE_OPENAI_ENDPOINT=your-azure-endpoint
+
+# Custom providers
+CUSTOM_API_KEY=your-custom-key
+CUSTOM_API_BASE=your-custom-endpoint
+```
+
+### Database Configuration
+
+```env
+# PostgreSQL
+DATABASE_URL=postgresql://user:password@localhost/ai_chat_app
+
+# SQLite (for development)
+DATABASE_URL=sqlite:///./ai_chat_app.db
+```
+
+### Security Settings
+
+```env
+# JWT Settings
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=60
+```
+
+## 🧪 Testing Your Setup
+
+### Health Check
+
+```bash
+# Check if backend is running
+curl http://localhost:8000/health
+
+# Expected response:
+# {"status": "healthy", "timestamp": "2024-01-01T12:00:00Z"}
+```
+
+### API Test
+
+```bash
+# Test authentication endpoint
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test@example.com", "password": "password"}'
+```
+
+### Frontend Test
+
+Visit http://localhost:3000 and verify:
+- ✅ Page loads without errors
+- ✅ Login/signup forms work
+- ✅ Chat interface is responsive
+- ✅ File upload works
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-**Database Connection Error:**
-```bash
-# Check if PostgreSQL is running
-sudo systemctl status postgresql
+#### Docker Issues
 
-# Verify connection string
-psql postgresql://username:password@localhost:5432/chatassistant
+```bash
+# Check if containers are running
+docker-compose ps
+
+# View logs
+docker-compose logs backend
+docker-compose logs frontend
+
+# Restart services
+docker-compose restart
 ```
 
-**Redis Connection Error:**
-```bash
-# Check if Redis is running
-sudo systemctl status redis-server
+#### Database Issues
 
-# Test Redis connection
-redis-cli ping
+```bash
+# Check database connection
+docker-compose exec backend python -c "from app.database import engine; print(engine.execute('SELECT 1').scalar())"
+
+# Reset database
+docker-compose down -v
+docker-compose up --build
 ```
 
-**Weaviate Connection Error:**
+#### Port Conflicts
+
+If ports are already in use:
+
 ```bash
-# Check if Weaviate container is running
-docker ps | grep weaviate
+# Check what's using the ports
+lsof -i :8000
+lsof -i :3000
 
-# Check Weaviate logs
-docker logs weaviate
-```
-
-**Port Already in Use:**
-```bash
-# Find process using port 8000
-sudo lsof -i :8000
-
-# Kill the process
-sudo kill -9 <PID>
+# Change ports in docker-compose.yml
+ports:
+  - "8001:8000"  # Change 8000 to 8001
 ```
 
 ### Getting Help
 
-- **Documentation**: Check the [API Reference](../api/overview.md) and [Architecture](../architecture/overview.md) sections
-- **Issues**: Report problems on [GitHub Issues](https://github.com/your-org/chatassistant/issues)
-- **Community**: Join our [Discord server](https://discord.gg/your-server)
+- **Documentation**: Check the [User Guide](user-guide/getting-started.md)
+- **API Docs**: Visit http://localhost:8000/docs
+- **Issues**: Report problems on [GitHub](https://github.com/your-org/ai-chat-app/issues)
+- **Discord**: Join our [community server](https://discord.gg/your-server)
 
-## 📚 Additional Resources
+## 🚀 Next Steps
 
-- **[Installation Guide](installation.md)** - Detailed installation instructions
-- **[Configuration Guide](configuration.md)** - Advanced configuration options
-- **[Architecture Overview](../architecture/overview.md)** - System architecture details
-- **[API Reference](../api/overview.md)** - Complete API documentation
+Now that you have the application running, explore these features:
+
+1. **[User Guide](user-guide/getting-started.md)** - Learn how to use the chat interface
+2. **[API Reference](api/overview.md)** - Explore the complete API
+3. **[Architecture](architecture/overview.md)** - Understand the system design
+4. **[Deployment](deployment/docker.md)** - Deploy to production
+5. **[Contributing](development/contributing.md)** - Help improve the project
+
+## 📊 Performance Tips
+
+### Development
+
+- Use `docker-compose up --build` for the first run
+- Use `docker-compose up -d` for subsequent runs
+- Monitor logs with `docker-compose logs -f`
+
+### Production
+
+- Set `DEBUG=false` in environment
+- Use proper database credentials
+- Configure SSL/TLS certificates
+- Set up monitoring and logging
 
 ---
 
-<div align="center">
+**🎉 Congratulations!** You now have a fully functional AI chat application running. 
 
-**Ready to build your first AI assistant?** [API Reference →](../api/overview.md)
-
-</div> 
+**Ready to explore more?** Check out the [User Guide](user-guide/getting-started.md) to learn how to use all the features! 
