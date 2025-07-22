@@ -1,10 +1,10 @@
-site_name: AI Assistant Platform
-site_description: Comprehensive AI Assistant Platform with FastAPI backend and modular architecture
-site_author: Development Team
-site_url: https://github.com/your-org/chatassistant
+site_name: AI Chat Application
+site_description: Modern, full-stack AI chat application with FastAPI backend and React frontend
+site_author: AI Chat Development Team
+site_url: https://lichtbaer.github.io/ai-chat-app/
 
-repo_name: chatassistant
-repo_url: https://github.com/your-org/chatassistant
+repo_name: lichtbaer/ai-chat-app
+repo_url: https://github.com/lichtbaer/ai-chat-app
 edit_uri: edit/main/docs/
 
 docs_dir: docs
@@ -17,10 +17,18 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.tracking
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
     - content.code.annotate
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - toc.follow
+    - toc.integrate
   palette:
     - scheme: default
       primary: indigo
@@ -34,48 +42,98 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/favicon.png
+  logo: assets/logo.png
 
 markdown_extensions:
   - admonition
-  - codehilite
+  - codehilite:
+      guess_lang: false
+      use_pygments: true
   - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:mermaid2.fence_mermaid
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
+      # auto_append:
+      #   - includes/abbreviations.md
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.tasklist
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.arithmatex:
       generic: true
   - attr_list
   - md_in_html
+  - def_list
+  - footnotes
   - toc:
       permalink: true
+      title: On this page
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
 
 plugins:
   - search
-  - mermaid2
+  - mermaid2:
+      arguments:
+        theme: default
+        themeVariables:
+          primaryColor: '#3f51b5'
+          primaryTextColor: '#fff'
+          primaryBorderColor: '#3f51b5'
+          lineColor: '#3f51b5'
+          secondaryColor: '#f50057'
+          tertiaryColor: '#f0f0f0'
   - git-revision-date-localized:
       enable_creation_date: true
+      type: datetime
+      fallback_to_build_date: true
+      enable_parallel_processing: false
   - minify:
       minify_html: true
+  - awesome-pages
+  - section-index
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-org/chatassistant
+      link: https://github.com/your-org/ai-chat-app
     - icon: fontawesome/brands/discord
       link: https://discord.gg/your-server
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/your-org
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
 
 extra_css:
   - stylesheets/extra.css
@@ -91,36 +149,51 @@ nav:
     - Quick Start: getting-started/quick-start.md
     - Installation: getting-started/installation.md
     - Configuration: getting-started/configuration.md
+    - First Steps: getting-started/first-steps.md
   - Architecture:
     - Overview: architecture/overview.md
+    - System Design: architecture/system-design.md
     - Backend: architecture/backend.md
     - Frontend: architecture/frontend.md
+    - Database: architecture/database.md
+    - Security: architecture/security.md
   - Development:
-    - Testing: testing.md
+    - Setup: development/setup.md
+    - Testing: development/testing.md
     - Contributing: development/contributing.md
     - Code Style: development/code-style.md
+    - API Development: development/api-development.md
   - API Reference:
     - Overview: api/overview.md
     - Authentication: api/authentication.md
     - Users: api/users.md
-    - Assistants: api/assistants.md
+    - Chat: api/chat.md
     - Conversations: api/conversations.md
-    - Tools: api/tools.md
-    - MCP: api/mcp.md
     - Knowledge Base: api/knowledge.md
+    - Tools: api/tools.md
     - WebSocket: api/websocket.md
     - Errors: api/errors.md
   - Features:
     - AI Integration: features/ai-integration.md
+    - Real-time Chat: features/real-time-chat.md
+    - Knowledge Base: features/knowledge-base.md
+    - File Upload: features/file-upload.md
+    - User Management: features/user-management.md
     - Security: features/security.md
-    - Tools: features/tools.md
-    - Knowledge Base: features/knowledge.md
-    - WebSocket: features/websocket.md
-    - Internationalization: features/internationalization.md
+    - Performance: features/performance.md
   - Deployment:
     - Docker: deployment/docker.md
-    - Automation: deployment/automation.md
+    - Production: deployment/production.md
+    - Monitoring: deployment/monitoring.md
+    - CI/CD: deployment/ci-cd.md
+  - User Guide:
+    - Getting Started: user-guide/getting-started.md
+    - Chat Interface: user-guide/chat-interface.md
+    - File Management: user-guide/file-management.md
+    - Settings: user-guide/settings.md
+    - Troubleshooting: user-guide/troubleshooting.md
   - Project:
     - Status: project/status.md
     - Roadmap: project/roadmap.md
-    - Changelog: project/changelog.md 
+    - Changelog: project/changelog.md
+    - Contributing: project/contributing.md 

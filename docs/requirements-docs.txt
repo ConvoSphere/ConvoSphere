@@ -1,25 +1,30 @@
-# MkDocs Documentation Dependencies
+# MkDocs Core
+mkdocs>=1.5.3
+mkdocs-material>=9.4.8
 
-# Core MkDocs
-mkdocs>=1.5.0
-mkdocs-material>=9.5.0
-
-# MkDocs Extensions
+# MkDocs Plugins
 mkdocs-mermaid2-plugin>=0.6.0
-mkdocs-git-revision-date-localized-plugin>=1.2.0
-mkdocs-minify-plugin>=0.7.0
+mkdocs-git-revision-date-localized-plugin>=1.2.1
+mkdocs-minify-plugin>=0.7.1
+mkdocs-awesome-pages-plugin>=2.9.2
+mkdocs-section-index>=0.3.5
 
 # PyMdown Extensions
-pymdown-extensions>=10.0.0
-mkdocs-material-extensions>=1.3.0
+pymdown-extensions>=10.8
 
-# Additional Extensions
-mkdocs-awesome-pages-plugin>=2.9.0
-mkdocs-section-index>=0.3.0
+# Material Extensions
+materialx>=1.39.3
+
+# Code Highlighting
+Pygments>=2.17.2
 
 # Development Tools
-# mkdocs-serve and mkdocs-build are included in mkdocs core
+pre-commit>=3.6.0
+black>=23.12.1
+ruff>=0.1.6
 
-# Optional: For advanced features
-mkdocs-redirects>=1.2.0
-mkdocs-roamlinks-plugin>=0.3.0 
+# Image Processing (for screenshots and diagrams)
+Pillow>=10.1.0
+
+# Additional Utilities
+python-dateutil>=2.8.2 

@@ -1,10 +1,44 @@
 # AI Chat Application
 
-A modern, full-stack AI chat application built with FastAPI (Backend) and React (Frontend), featuring comprehensive test coverage, real-time messaging, and advanced AI capabilities.
+A modern, full-stack AI chat application built with **FastAPI** (Backend) and **React** (Frontend), featuring comprehensive test coverage, real-time messaging, and advanced AI capabilities.
 
-## 🚀 Features
+<div align="center">
 
-### Core Features
+![AI Chat Application](https://img.shields.io/badge/AI%20Chat%20Application-v1.0.0-blue)
+![Python](https://img.shields.io/badge/Python-3.11+-green)
+![React](https://img.shields.io/badge/React-18+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+[![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://your-org.github.io/ai-chat-app/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/your-org/ai-chat-app/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/your-org/ai-chat-app/actions)
+
+</div>
+
+## 🚀 Quick Start
+
+Get up and running in under 10 minutes:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/ai-chat-app.git
+cd ai-chat-app
+
+# Quick setup with Docker (recommended)
+docker-compose up --build
+
+# Or manual setup
+make setup
+make install
+make dev
+```
+
+**Ready to dive deeper?** Check out our [📚 Documentation](https://your-org.github.io/ai-chat-app/) for detailed guides.
+
+## ✨ Key Features
+
+### Core Capabilities
 - **Real-time Chat**: WebSocket-based messaging with instant delivery
 - **AI Integration**: Powered by LiteLLM with support for multiple AI providers
 - **User Authentication**: JWT-based authentication with social login options
@@ -23,25 +57,67 @@ A modern, full-stack AI chat application built with FastAPI (Backend) and React 
 
 ## 🏗️ Architecture
 
-### Backend (FastAPI)
-- **Framework**: FastAPI with async/await support
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Authentication**: JWT tokens with refresh mechanism
-- **Real-time**: WebSocket connections for live messaging
-- **AI Services**: LiteLLM integration for multiple AI providers
-- **File Processing**: PDF, DOCX, and text file parsing
-- **Search**: Vector-based semantic search with embeddings
+The application follows a **microservices-inspired** architecture with clear separation between frontend, backend, and external services.
 
-### Frontend (React)
-- **Framework**: React 18 with TypeScript
-- **State Management**: Zustand for global state
-- **UI Library**: Ant Design components
-- **Routing**: React Router for navigation
-- **Real-time**: WebSocket client for live updates
-- **Testing**: Jest with React Testing Library
-- **E2E Testing**: Cypress for end-to-end testing
+```mermaid
+graph TB
+    subgraph "Frontend (React)"
+        UI[React UI]
+        WS[WebSocket Client]
+        State[Zustand State]
+    end
+    
+    subgraph "Backend (FastAPI)"
+        API[REST API]
+        WS_Server[WebSocket Server]
+        Auth[JWT Auth]
+        AI[AI Services]
+        Search[Search Engine]
+    end
+    
+    subgraph "External Services"
+        AI_Providers[AI Providers<br/>OpenAI, Anthropic, etc.]
+        Storage[File Storage]
+        VectorDB[Vector Database]
+    end
+    
+    subgraph "Data Layer"
+        PG[(PostgreSQL)]
+        Redis[(Redis Cache)]
+        Weaviate[(Weaviate)]
+    end
+    
+    UI --> API
+    UI --> WS_Server
+    WS --> WS_Server
+    API --> Auth
+    API --> AI
+    API --> Search
+    AI --> AI_Providers
+    Search --> VectorDB
+    API --> PG
+    API --> Redis
+    Search --> Weaviate
+    AI --> Storage
+```
 
-## 📊 Test Coverage
+## 📊 Performance Metrics
+
+### Backend Performance
+- **Response Time**: < 100ms for health checks, < 500ms for API calls
+- **Concurrent Users**: Supports 100+ concurrent connections
+- **Memory Usage**: < 50MB increase under load
+- **Database Queries**: Optimized with connection pooling
+- **File Upload**: Handles 1MB+ files efficiently
+
+### Frontend Performance
+- **Page Load**: < 3 seconds for initial load
+- **Bundle Size**: Optimized with code splitting
+- **Real-time Updates**: < 100ms message delivery
+- **Memory Management**: Efficient component lifecycle
+- **Accessibility**: WCAG 2.1 AA compliant
+
+## 🧪 Test Coverage
 
 ### Backend Test Coverage: **90%+**
 - **Unit Tests**: 200+ tests covering all services and utilities
@@ -55,7 +131,33 @@ A modern, full-stack AI chat application built with FastAPI (Backend) and React 
 - **Service Tests**: API service layer testing with mocking
 - **E2E Tests**: Complete user flow testing with Cypress
 
-## 🛠️ Installation
+## 🛠️ Technology Stack
+
+### Backend
+- **FastAPI**: Modern, fast web framework with automatic API documentation
+- **SQLAlchemy**: SQL toolkit and ORM for database operations
+- **PostgreSQL**: Primary database for user data and conversations
+- **Redis**: Caching and session storage
+- **Weaviate**: Vector database for semantic search
+- **LiteLLM**: AI provider abstraction layer
+
+### Frontend
+- **React 18**: Modern React with concurrent features
+- **TypeScript**: Type-safe JavaScript development
+- **Zustand**: Lightweight state management
+- **Ant Design**: Enterprise UI component library
+- **WebSocket**: Real-time communication
+- **React Router**: Client-side routing
+
+### Development & Testing
+- **Python 3.11+**: Backend programming language
+- **Node.js 18+**: Frontend runtime
+- **Pytest**: Python testing framework
+- **Jest**: JavaScript testing framework
+- **Cypress**: End-to-end testing
+- **Docker**: Containerization and deployment
+
+## 🚀 Installation
 
 ### Prerequisites
 - Python 3.11+ (3.13, 3.12, 3.11 supported)
@@ -347,7 +449,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue on GitHub
-- Check the documentation
+- Check the [documentation](https://your-org.github.io/ai-chat-app/)
 - Review the troubleshooting section
 - Contact the development team
 
@@ -355,15 +457,26 @@ For support and questions:
 
 **Built with ❤️ by the AI Chat Team**
 
-## 🏢 Enterprise User Management
+## 🏢 Enterprise Features
 
-- **SSO (Single Sign-On)**: Unterstützt Google, Microsoft, GitHub, SAML, OIDC mit dynamischer Provider-Anzeige
-- **Account-Linking**: Verknüpfung von SSO-Konten mit lokalen Accounts
-- **JIT-Provisionierung**: Automatisches Anlegen von Usern bei erstem SSO-Login
-- **Erweiterte RBAC**: Hierarchische Rollen (Super Admin, Admin, Manager, User, Guest), Gruppen, Bereichs-Admins
-- **Feingranulare Rechte**: Rechteverwaltung auf Ressourcenebene
-- **2FA/MFA**: Zwei-Faktor-Authentifizierung für erhöhte Sicherheit
-- **Self-Service-UI**: User können API-Token, 2FA, Account-Löschung selbst verwalten
-- **Audit-Log-API und UI**: Vollständiges Logging aller sicherheitsrelevanten Events
-- **Bulk-Import/-Export**: Massenverwaltung von Usern und Rollen
-- **DSGVO-Features**: Datenexport, Account-Löschung, Datenschutz-Compliance
+### SSO (Single Sign-On)
+- Support for OIDC, SAML, OAuth2 (Google, Microsoft, GitHub)
+- SSO login, callback, and account linking
+- Just-in-Time provisioning and SSO attribute mapping
+- SSO configuration guide in deployment section
+
+### Advanced RBAC
+- Hierarchical roles (Super Admin, Admin, Manager, User, Guest)
+- Group-based permissions and department admins
+- Fine-grained permission management (e.g., resource-level)
+- Admin UI for roles, permissions, and groups
+
+### Security & Self-Service
+- 2FA/MFA (TOTP, WebAuthn)
+- Self-service UI for users (API tokens, 2FA, account deletion)
+- Bulk import/export of users/roles
+- GDPR features (data export, account deletion)
+
+### Audit Logging
+- Audit log API and UI for admins
+- Logging of all security-relevant events (login, SSO, role changes)

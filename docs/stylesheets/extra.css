@@ -1,154 +1,277 @@
-/* Custom styles for AI Assistant Platform Documentation */
+/* Custom styles for AI Chat Application Documentation */
 
-/* Custom color variables */
+/* ==========================================================================
+   Typography and Base Styles
+   ========================================================================== */
+
 :root {
   --md-primary-fg-color: #3f51b5;
   --md-primary-fg-color--light: #757de8;
   --md-primary-fg-color--dark: #002984;
-  --md-accent-fg-color: #ff4081;
+  --md-accent-fg-color: #f50057;
+  --md-accent-fg-color--transparent: #f500571a;
 }
 
-/* Header styling */
-.md-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Custom font weights */
+.md-content {
+  font-weight: 400;
+  line-height: 1.6;
 }
 
-/* Navigation styling */
-.md-nav__title {
+.md-content h1 {
+  font-weight: 700;
   color: var(--md-primary-fg-color);
+  border-bottom: 2px solid var(--md-primary-fg-color);
+  padding-bottom: 0.5rem;
+}
+
+.md-content h2 {
   font-weight: 600;
+  color: var(--md-primary-fg-color--dark);
+  margin-top: 2rem;
 }
 
-/* Code blocks */
-.md-typeset code {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 0.85em;
-}
-
-.md-typeset pre {
-  background-color: #f8f9fa;
-  border-left: 4px solid var(--md-primary-fg-color);
-}
-
-/* Admonitions */
-.md-typeset .admonition {
-  border-radius: 8px;
-  border-left-width: 4px;
-}
-
-.md-typeset .admonition.info {
-  border-left-color: #2196f3;
-}
-
-.md-typeset .admonition.warning {
-  border-left-color: #ff9800;
-}
-
-.md-typeset .admonition.danger {
-  border-left-color: #f44336;
-}
-
-.md-typeset .admonition.success {
-  border-left-color: #4caf50;
-}
-
-/* Tables */
-.md-typeset table {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.md-typeset table th {
-  background-color: var(--md-primary-fg-color);
-  color: white;
+.md-content h3 {
   font-weight: 600;
+  color: var(--md-primary-fg-color);
 }
 
-/* Buttons */
-.md-typeset .md-button {
-  border-radius: 6px;
-  font-weight: 500;
-  text-transform: none;
+/* ==========================================================================
+   Grid Cards Component
+   ========================================================================== */
+
+.grid.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.grid.cards > * {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
   transition: all 0.3s ease;
+  background: var(--md-default-bg-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.md-typeset .md-button--primary {
-  background-color: var(--md-primary-fg-color);
+.grid.cards > *:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-color: var(--md-primary-fg-color);
 }
 
-.md-typeset .md-button--primary:hover {
-  background-color: var(--md-primary-fg-color--dark);
-  border-color: var(--md-primary-fg-color--dark);
-  transform: translateY(-1px);
+.grid.cards > * > :first-child {
+  margin-top: 0;
+}
+
+.grid.cards > * > :last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Feature Cards
+   ========================================================================== */
+
+.feature-card {
+  background: linear-gradient(135deg, var(--md-primary-fg-color--light) 0%, var(--md-primary-fg-color) 100%);
+  color: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin: 1.5rem 0;
   box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
 }
 
-/* Progress indicators */
-.progress-bar {
-  background: linear-gradient(90deg, #4caf50 0%, #8bc34a 50%, #ff9800 100%);
-  height: 4px;
-  border-radius: 2px;
-  margin: 1rem 0;
+.feature-card h3 {
+  color: white;
+  margin-top: 0;
 }
 
-/* Status badges */
+.feature-card ul {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Status Badges
+   ========================================================================== */
+
 .status-badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75em;
-  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.status-complete {
-  background-color: #e8f5e8;
-  color: #2e7d32;
+.status-badge.completed {
+  background-color: #4caf50;
+  color: white;
 }
 
-.status-progress {
-  background-color: #fff3e0;
-  color: #f57c00;
+.status-badge.in-progress {
+  background-color: #ff9800;
+  color: white;
 }
 
-.status-planned {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
+.status-badge.planned {
+  background-color: #9e9e9e;
+  color: white;
 }
 
-/* Feature cards */
-.feature-card {
+.status-badge.deprecated {
+  background-color: #f44336;
+  color: white;
+}
+
+/* ==========================================================================
+   Code Blocks
+   ========================================================================== */
+
+.md-content pre {
+  border-radius: 0.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-code-bg-color);
+}
+
+.md-content code {
+  background: var(--md-code-bg-color);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.875em;
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+.md-content table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-content table th {
+  background: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.md-content table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.md-content table tr:hover {
+  background: var(--md-default-fg-color--lightest);
+}
+
+/* ==========================================================================
+   Admonitions
+   ========================================================================== */
+
+.admonition {
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  margin: 1.5rem 0;
+}
+
+.admonition.info {
+  border-left-color: var(--md-primary-fg-color);
+  background: rgba(63, 81, 181, 0.1);
+}
+
+.admonition.warning {
+  border-left-color: #ff9800;
+  background: rgba(255, 152, 0, 0.1);
+}
+
+.admonition.danger {
+  border-left-color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.admonition.success {
+  border-left-color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+.md-nav__link {
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.md-nav__link:hover {
+  background: var(--md-primary-fg-color--transparent);
+}
+
+.md-nav__link--active {
+  background: var(--md-primary-fg-color);
+  color: white;
+}
+
+/* ==========================================================================
+   Search
+   ========================================================================== */
+
+.md-search__input {
+  border-radius: 0.5rem;
+  border: 2px solid var(--md-default-fg-color--lightest);
+}
+
+.md-search__input:focus {
+  border-color: var(--md-primary-fg-color);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.md-button {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.md-button--primary {
+  background: var(--md-primary-fg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
+.md-button--primary:hover {
+  background: var(--md-primary-fg-color--dark);
+  border-color: var(--md-primary-fg-color--dark);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Mermaid Diagrams
+   ========================================================================== */
+
+.mermaid {
   background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin: 1rem 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  border-left: 4px solid var(--md-primary-fg-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--md-default-fg-color--lightest);
 }
 
-.feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
+/* ==========================================================================
+   Timeline Component
+   ========================================================================== */
 
-.feature-card h3 {
-  color: var(--md-primary-fg-color);
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-
-.feature-card p {
-  color: #666;
-  margin-bottom: 0;
-}
-
-/* Timeline styling */
 .timeline {
   position: relative;
   padding-left: 2rem;
@@ -157,11 +280,11 @@
 .timeline::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: 0.5rem;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  background: var(--md-primary-fg-color);
 }
 
 .timeline-item {
@@ -183,77 +306,159 @@
   box-shadow: 0 0 0 2px var(--md-primary-fg-color);
 }
 
-/* Code copy button */
-.md-clipboard {
+/* ==========================================================================
+   Progress Bars
+   ========================================================================== */
+
+.progress-bar {
+  background: var(--md-default-fg-color--lightest);
+  border-radius: 1rem;
+  height: 0.5rem;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--md-primary-fg-color) 0%, var(--md-accent-fg-color) 100%);
+  border-radius: 1rem;
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   Technology Stack Cards
+   ========================================================================== */
+
+.tech-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.tech-card {
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tech-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--md-primary-fg-color);
+}
+
+.tech-card h4 {
+  margin: 0 0 0.5rem 0;
   color: var(--md-primary-fg-color);
 }
 
-.md-clipboard:hover {
-  color: var(--md-primary-fg-color--dark);
+.tech-card p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--md-default-fg-color--light);
 }
 
-/* Search styling */
-.md-search__input {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-}
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
 
-.md-search__input::placeholder {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Footer styling */
-.md-footer {
-  background-color: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
-  .feature-card {
-    margin: 0.5rem 0;
-    padding: 1rem;
+  .grid.cards {
+    grid-template-columns: 1fr;
   }
   
-  .timeline {
-    padding-left: 1rem;
+  .tech-stack {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
   
-  .timeline-item {
-    padding-left: 1rem;
+  .md-content h1 {
+    font-size: 1.75rem;
+  }
+  
+  .md-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .md-content h3 {
+    font-size: 1.25rem;
   }
 }
 
-/* Dark mode adjustments */
-[data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #757de8;
-  --md-primary-fg-color--light: #a7a7ff;
-  --md-primary-fg-color--dark: #3f51b5;
+/* ==========================================================================
+   Dark Mode Adjustments
+   ========================================================================== */
+
+[data-md-color-scheme="slate"] .mermaid {
+  background: var(--md-default-bg-color);
+  border-color: var(--md-default-fg-color--lightest);
 }
 
-[data-md-color-scheme="slate"] .feature-card {
-  background-color: #2d2d2d;
-  border-left-color: var(--md-primary-fg-color);
+[data-md-color-scheme="slate"] .tech-card {
+  background: var(--md-default-bg-color);
+  border-color: var(--md-default-fg-color--lightest);
 }
 
-[data-md-color-scheme="slate"] .feature-card h3 {
-  color: var(--md-primary-fg-color);
+[data-md-color-scheme="slate"] .timeline-item::before {
+  border-color: var(--md-default-bg-color);
 }
 
-[data-md-color-scheme="slate"] .feature-card p {
-  color: #ccc;
-}
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
 
-/* Print styles */
 @media print {
-  .md-header,
-  .md-nav,
-  .md-footer {
+  .grid.cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .tech-stack {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .md-button {
     display: none;
   }
   
-  .feature-card {
-    box-shadow: none;
-    border: 1px solid #ccc;
+  .mermaid {
+    page-break-inside: avoid;
+  }
+}
+
+/* ==========================================================================
+   Accessibility Improvements
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.md-nav__link:focus,
+.md-button:focus,
+.tech-card:focus {
+  outline: 2px solid var(--md-primary-fg-color);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .grid.cards > * {
+    border-width: 2px;
+  }
+  
+  .md-content table th {
+    border-bottom: 2px solid white;
+  }
+  
+  .md-content table td {
+    border-bottom: 1px solid var(--md-default-fg-color--lightest);
   }
 } 
