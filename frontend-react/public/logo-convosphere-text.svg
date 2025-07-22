@@ -1,0 +1,141 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#23224A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#5BC6E8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#23224A;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="sphereGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#5BC6E8;stop-opacity:0.8" />
+      <stop offset="70%" style="stop-color:#23224A;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#1A1A33;stop-opacity:1" />
+    </radialGradient>
+    
+    <linearGradient id="conversationGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5BC6E8;stop-opacity:0.6" />
+      <stop offset="50%" style="stop-color:#B6E74B;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#5BC6E8;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <radialGradient id="aiNodeGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#B6E74B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5BC6E8;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Filter for soft glow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Animation definitions -->
+    <animateTransform
+      xlink:href="#mainSphere"
+      attributeName="transform"
+      type="scale"
+      values="1;1.03;1"
+      dur="3s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animateTransform
+      xlink:href="#conversationLine1"
+      attributeName="transform"
+      type="translate"
+      values="0,0; 3,-1; 0,0"
+      dur="4s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animateTransform
+      xlink:href="#conversationLine2"
+      attributeName="transform"
+      type="translate"
+      values="0,0; -2,2; 0,0"
+      dur="3.5s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    
+    <animate
+      xlink:href="#aiNode1"
+      attributeName="opacity"
+      values="0.6;1;0.6"
+      dur="2s"
+      repeatCount="indefinite"
+    />
+    
+    <animate
+      xlink:href="#aiNode2"
+      attributeName="opacity"
+      values="0.6;1;0.6"
+      dur="2.5s"
+      repeatCount="indefinite"
+    />
+  </defs>
+  
+  <!-- Main conversation sphere (smaller for text logo) -->
+  <circle id="mainSphere" cx="60" cy="60" r="25" fill="url(#sphereGradient)" filter="url(#glow)">
+    <animate attributeName="r" values="25;26;25" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- AI circuit pattern overlay -->
+  <g opacity="0.3">
+    <path d="M40 45 Q50 42 60 45 Q70 48 80 45" stroke="#5BC6E8" stroke-width="0.8" fill="none" opacity="0.6"/>
+    <path d="M40 75 Q50 78 60 75 Q70 72 80 75" stroke="#5BC6E8" stroke-width="0.8" fill="none" opacity="0.6"/>
+    <circle cx="50" cy="45" r="1.5" fill="#B6E74B" opacity="0.8"/>
+    <circle cx="70" cy="75" r="1.5" fill="#B6E74B" opacity="0.8"/>
+  </g>
+  
+  <!-- Flowing conversation lines -->
+  <g id="conversationLine1">
+    <path d="M85 60 Q95 55 105 50" stroke="url(#conversationGradient)" stroke-width="2" fill="none" opacity="0.7">
+      <animate attributeName="stroke-dasharray" values="0,30;15,15;0,30" dur="4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <g id="conversationLine2">
+    <path d="M35 60 Q25 65 15 70" stroke="url(#conversationGradient)" stroke-width="1.5" fill="none" opacity="0.6">
+      <animate attributeName="stroke-dasharray" values="0,25;12,12;0,25" dur="3.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- AI connection nodes -->
+  <circle id="aiNode1" cx="105" cy="50" r="2.5" fill="url(#aiNodeGradient)" filter="url(#glow)"/>
+  <circle id="aiNode2" cx="15" cy="70" r="2" fill="url(#aiNodeGradient)" filter="url(#glow)"/>
+  
+  <!-- Data flow particles -->
+  <g opacity="0.4">
+    <circle cx="95" cy="55" r="1" fill="#B6E74B">
+      <animate attributeName="cx" values="95;105" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="25" cy="65" r="1" fill="#B6E74B">
+      <animate attributeName="cx" values="25;15" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Text "ConvoSphere" -->
+  <text x="130" y="45" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" font-size="28" font-weight="600" fill="url(#textGradient)">
+    Convo
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="4s" repeatCount="indefinite"/>
+  </text>
+  
+  <text x="130" y="75" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" font-size="28" font-weight="600" fill="url(#textGradient)">
+    Sphere
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="4s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Subtle tagline -->
+  <text x="130" y="95" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" font-size="12" font-weight="300" fill="#7A869A" opacity="0.7">
+    AI-Powered Conversations
+  </text>
+</svg>
