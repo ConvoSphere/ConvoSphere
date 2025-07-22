@@ -1,10 +1,10 @@
 site_name: AI Chat Application
 site_description: Modern, full-stack AI chat application with FastAPI backend and React frontend
 site_author: AI Chat Development Team
-site_url: https://github.com/your-org/ai-chat-app
+site_url: https://lichtbaer.github.io/ai-chat-app/
 
-repo_name: ai-chat-app
-repo_url: https://github.com/your-org/ai-chat-app
+repo_name: lichtbaer/ai-chat-app
+repo_url: https://github.com/lichtbaer/ai-chat-app
 edit_uri: edit/main/docs/
 
 docs_dir: docs
