@@ -1,14 +1,14 @@
 """User service for managing users with enterprise features."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from passlib.context import CryptContext
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
 
-from ..core.security import get_password_hash, verify_password
-from ..models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
-from ..schemas.user import (
+from app.core.security import get_password_hash, verify_password
+from app.models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
+from app.schemas.user import (
     SSOUserCreate,
     UserBulkUpdate,
     UserCreate,
@@ -23,7 +23,7 @@ from ..schemas.user import (
     UserStats,
     UserUpdate,
 )
-from ..utils.exceptions import (
+from app.utils.exceptions import (
     GroupNotFoundError,
     InvalidCredentialsError,
     PermissionDeniedError,
@@ -152,18 +152,18 @@ class UserService:
         """Update user."""
         user = self.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise UserNotFoundError(user_id)
 
         # Check permissions
         if not self._can_manage_user(current_user, user):
-            raise PermissionDeniedError("Insufficient permissions to update this user")
+            raise PermissionDeniedError
 
         # Update fields
         update_data = user_data.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(user, field, value)
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(UTC)
         self.db.commit()
         self.db.refresh(user)
 
@@ -173,15 +173,15 @@ class UserService:
         """Delete user."""
         user = self.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise UserNotFoundError(user_id)
 
         # Check permissions
         if not self._can_manage_user(current_user, user):
-            raise PermissionDeniedError("Insufficient permissions to delete this user")
+            raise PermissionDeniedError
 
         # Don't allow deletion of super admins
         if user.role == UserRole.SUPER_ADMIN:
-            raise PermissionDeniedError("Cannot delete super admin users")
+            raise PermissionDeniedError
 
         self.db.delete(user)
         self.db.commit()
@@ -269,9 +269,7 @@ class UserService:
         """Bulk update users."""
         # Check permissions
         if not current_user.has_permission("user:write"):
-            raise PermissionDeniedError(
-                "Insufficient permissions for bulk user operations",
-            )
+            raise PermissionDeniedError
 
         # Get users to update
         users = self.db.query(User).filter(User.id.in_(bulk_data.user_ids)).all()
@@ -289,7 +287,7 @@ class UserService:
                 if field != "group_ids":
                     setattr(user, field, value)
 
-            user.updated_at = datetime.utcnow()
+            user.updated_at = datetime.now(UTC)
             updated_count += 1
 
         # Handle group assignments
@@ -310,7 +308,7 @@ class UserService:
 
         # Check if user is locked
         if user.is_locked:
-            raise UserLockedError("User account is locked")
+            raise UserLockedError
 
         # Check if user is active
         if not user.is_active:
@@ -324,7 +322,7 @@ class UserService:
 
             # Lock account after 5 failed attempts
             if failed_attempts >= 5:
-                user.locked_until = datetime.utcnow() + timedelta(minutes=30)
+                user.locked_until = datetime.now(UTC) + timedelta(minutes=30)
 
             self.db.commit()
             return None
@@ -332,8 +330,8 @@ class UserService:
         # Reset failed login attempts on successful login
         user.failed_login_attempts = "0"
         user.locked_until = None
-        user.last_login = datetime.utcnow()
-        user.last_activity = datetime.utcnow()
+        user.last_login = datetime.now(UTC)
+        user.last_activity = datetime.now(UTC)
         self.db.commit()
 
         return user
@@ -342,16 +340,16 @@ class UserService:
         """Update user password."""
         user = self.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise UserNotFoundError(user_id)
 
         # Verify current password
         if not verify_password(password_data.current_password, user.hashed_password):
-            raise InvalidCredentialsError("Current password is incorrect")
+            raise InvalidCredentialsError
 
         # Update password
         user.hashed_password = get_password_hash(password_data.new_password)
-        user.password_changed_at = datetime.utcnow()
-        user.updated_at = datetime.utcnow()
+        user.password_changed_at = datetime.now(UTC)
+        user.updated_at = datetime.now(UTC)
 
         self.db.commit()
         return True
@@ -360,11 +358,11 @@ class UserService:
         """Verify user email."""
         user = self.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise UserNotFoundError(user_id)
 
         user.is_verified = True
-        user.email_verified_at = datetime.utcnow()
-        user.updated_at = datetime.utcnow()
+        user.email_verified_at = datetime.now(UTC)
+        user.updated_at = datetime.now(UTC)
 
         self.db.commit()
         return True
@@ -448,20 +446,20 @@ class UserService:
         """Update user group."""
         group = self.get_group_by_id(group_id)
         if not group:
-            raise GroupNotFoundError(f"Group with ID {group_id} not found")
+            raise GroupNotFoundError(group_id)
 
         if not current_user.has_permission("group:write"):
-            raise PermissionDeniedError("Insufficient permissions to update groups")
+            raise PermissionDeniedError
 
         # Don't allow updating system groups
         if group.is_system:
-            raise PermissionDeniedError("Cannot update system groups")
+            raise PermissionDeniedError
 
         update_data = group_data.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(group, field, value)
 
-        group.updated_at = datetime.utcnow()
+        group.updated_at = datetime.now(UTC)
         self.db.commit()
         self.db.refresh(group)
 
@@ -471,14 +469,14 @@ class UserService:
         """Delete user group."""
         group = self.get_group_by_id(group_id)
         if not group:
-            raise GroupNotFoundError(f"Group with ID {group_id} not found")
+            raise GroupNotFoundError(group_id)
 
         if not current_user.has_permission("group:delete"):
-            raise PermissionDeniedError("Insufficient permissions to delete groups")
+            raise PermissionDeniedError
 
         # Don't allow deletion of system groups
         if group.is_system:
-            raise PermissionDeniedError("Cannot delete system groups")
+            raise PermissionDeniedError
 
         self.db.delete(group)
         self.db.commit()
@@ -560,7 +558,7 @@ class UserService:
         inactive_users = query.filter(User.status == UserStatus.INACTIVE).count()
         suspended_users = query.filter(User.status == UserStatus.SUSPENDED).count()
         pending_users = query.filter(User.status == UserStatus.PENDING).count()
-        verified_users = query.filter(User.is_verified == True).count()
+        verified_users = query.filter(User.is_verified.is_(True)).count()
 
         # Role counts
         users_by_role = {}
@@ -581,8 +579,8 @@ class UserService:
             users_by_status[status.value] = count
 
         # Recent activity
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
+        seven_days_ago = datetime.now(UTC) - timedelta(days=7)
 
         recent_registrations = query.filter(User.created_at >= thirty_days_ago).count()
         recent_logins = query.filter(User.last_login >= seven_days_ago).count()

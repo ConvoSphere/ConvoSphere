@@ -6,7 +6,6 @@ configuring middleware, routes, and application lifecycle events.
 """
 
 import os
-
 from contextlib import asynccontextmanager
 
 from app.api.v1.api import api_router
@@ -20,36 +19,39 @@ from app.core.weaviate_client import (
     create_schema_if_not_exists,
     init_weaviate,
 )
-from fastapi import FastAPI, Request, status
+from app.services.performance_monitor import performance_monitor
+from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # OpenTelemetry-Setup
-from opentelemetry import trace, metrics
+from opentelemetry import metrics, trace
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from app.services.performance_monitor import performance_monitor
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_):
     """Application lifespan manager."""
     # Startup
     logger.info("Starting AI Assistant Platform...")
     logger.info(f"Environment: {get_settings().environment}")
     logger.info(f"Debug mode: {get_settings().debug}")
+
+    def raise_runtime_error(msg):
+        raise RuntimeError(msg)
 
     try:
         # Initialize database
@@ -57,7 +59,7 @@ async def lifespan(app: FastAPI):
         init_db()
         if not check_db_connection():
             logger.error("Database connection failed")
-            raise RuntimeError("Database connection failed")
+            raise_runtime_error("Database connection failed")
         logger.info("Database initialized successfully")
 
         # Initialize Redis
@@ -65,7 +67,7 @@ async def lifespan(app: FastAPI):
         await init_redis()
         if not await check_redis_connection():
             logger.error("Redis connection failed")
-            raise RuntimeError("Redis connection failed")
+            raise_runtime_error("Redis connection failed")
         logger.info("Redis initialized successfully")
 
         # Initialize Weaviate
@@ -73,15 +75,17 @@ async def lifespan(app: FastAPI):
         init_weaviate()
         if not check_weaviate_connection():
             logger.error("Weaviate connection failed")
-            raise RuntimeError("Weaviate connection failed")
+            raise_runtime_error("Weaviate connection failed")
         create_schema_if_not_exists()
         logger.info("Weaviate initialized successfully")
 
         logger.info("All services initialized successfully")
 
-    except Exception as e:
-        logger.error(f"Failed to initialize services: {e}")
-        raise
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Failed to initialize services: {exc}")
+        def raise_inner(exc=exc):
+            raise RuntimeError("Failed to initialize services: " + str(exc))
+        raise_inner()
 
     yield
 
@@ -91,7 +95,7 @@ async def lifespan(app: FastAPI):
         await close_redis()
         close_weaviate()
         logger.info("All services closed successfully")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error during shutdown: {e}")
 
 
@@ -170,13 +174,13 @@ def create_application() -> FastAPI:
 
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    async def http_exception_handler(_, exc: StarletteHTTPException):
         """Handle HTTP exceptions."""
         logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
         # Translate error message
         translated_detail = t(
             f"errors.{exc.detail.lower().replace(' ', '_')}",
-            request,
+            None,
             fallback=exc.detail,
         )
         return JSONResponse(
@@ -185,9 +189,7 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        request: Request, exc: RequestValidationError,
-    ):
+    async def validation_exception_handler(_, exc: RequestValidationError):
         """Handle validation exceptions."""
         logger.warning(f"Validation error: {exc.errors()}")
         return JSONResponse(
@@ -196,7 +198,7 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(request: Request, exc: Exception):
+    async def general_exception_handler(_, exc: Exception):
         """Handle general exceptions."""
         logger.error(f"Unhandled exception: {exc}")
         return JSONResponse(

@@ -4,6 +4,7 @@ File tools for the AI Assistant Platform.
 This module provides tools for file reading and writing operations.
 """
 
+from pathlib import Path
 from typing import Any
 
 from .base import BaseTool
@@ -24,7 +25,7 @@ class FileReadTool(BaseTool):
     async def execute(self, file_path: str) -> dict[str, Any]:
         """Read a file."""
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
             return {
                 "success": True,
@@ -58,7 +59,7 @@ class FileWriteTool(BaseTool):
     async def execute(self, file_path: str, content: str) -> dict[str, Any]:
         """Write to a file."""
         try:
-            with open(file_path, "w", encoding="utf-8") as f:
+            with Path(file_path).open("w", encoding="utf-8") as f:
                 f.write(content)
             return {
                 "success": True,

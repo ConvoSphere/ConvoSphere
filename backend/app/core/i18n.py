@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
 from loguru import logger
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class I18nManager:

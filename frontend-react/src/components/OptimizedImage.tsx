@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Spin } from 'antd';
 import { useThemeStore } from '../store/themeStore';
 import resourceOptimizer from '../utils/resourceOptimizer';
-import { ImageConfig } from '../utils/resourceOptimizer';
+import type { ImageConfig } from '../utils/resourceOptimizer';
 
 interface OptimizedImageProps extends ImageConfig {
   className?: string;

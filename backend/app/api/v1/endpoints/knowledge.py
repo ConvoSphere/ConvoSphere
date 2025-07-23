@@ -12,18 +12,18 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from ....core.database import get_db
-from ....core.security import get_current_user
-from ....models.user import User
-from ....schemas.knowledge import (
+from app.core.database import get_db
+from app.core.security import get_current_user
+from app.models.user import User
+from app.schemas.knowledge import (
     DocumentList,
     DocumentResponse,
     ProcessingOptions,
     SearchRequest,
     SearchResponse,
 )
-from ....services.docling_processor import docling_processor
-from ....services.knowledge_service import KnowledgeService
+from app.services.docling_processor import docling_processor
+from app.services.knowledge_service import KnowledgeService
 
 router = APIRouter()
 
@@ -364,7 +364,7 @@ async def get_supported_formats():
         all_formats.update(format_list)
 
     return {
-        "all_formats": sorted(list(all_formats)),
+        "all_formats": sorted(all_formats),
         "by_engine": formats,
     }
 
@@ -397,7 +397,7 @@ async def reprocess_document(
             )
         else:
             # Use traditional processing
-            from ....services.document_processor import document_processor
+            from app.services.document_processor import document_processor
 
             result = document_processor.process_document(
                 file_content, document.file_name,

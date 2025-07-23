@@ -42,7 +42,7 @@ class DataAnalysisTool(BaseTool):
                     },
                 }
             if analysis_type == "statistics":
-                if all(isinstance(x, (int, float)) for x in data):
+                if all(isinstance(x, int | float) for x in data):
                     return {
                         "success": True,
                         "analysis_type": analysis_type,

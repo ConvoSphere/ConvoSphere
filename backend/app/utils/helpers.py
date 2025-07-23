@@ -2,7 +2,7 @@
 
 import re
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 def generate_uuid() -> str:
@@ -43,7 +43,10 @@ def parse_datetime(
         Optional[datetime]: Parsed datetime or None if invalid
     """
     try:
-        return datetime.strptime(date_string, format_str)
+        dt = datetime.strptime(date_string, format_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC)
+        return dt
     except ValueError:
         return None
 
@@ -122,6 +125,4 @@ def validate_password_strength(password: str, min_length: int = 8) -> bool:
         return False
     if not any(c.islower() for c in password):
         return False
-    if not any(c.isdigit() for c in password):
-        return False
-    return True
+    return any(c.isdigit() for c in password)

@@ -297,7 +297,8 @@ class EmbeddingService:
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
                 else:
-                    raise e
+                    raise
+        return None
 
     async def _generate_batch_embeddings(
         self, texts: list[str], model: str = None,
@@ -585,7 +586,7 @@ class EmbeddingService:
                 return False
 
             # Check if it's a list of numbers
-            if not all(isinstance(x, (int, float)) for x in embedding):
+            if not all(isinstance(x, int | float) for x in embedding):
                 return False
 
             # Check if it's not all zeros
@@ -740,7 +741,7 @@ class EmbeddingService:
             # Remove diagonal elements
             distances_no_diag = distances[~np.eye(distances.shape[0], dtype=bool)]
 
-            analysis = {
+            return {
                 "n_embeddings": len(embeddings),
                 "dimension": emb_array.shape[1],
                 "magnitude_stats": {
@@ -764,7 +765,6 @@ class EmbeddingService:
                 "quality_score": float(np.mean(magnitudes) * np.mean(variances)),
             }
 
-            return analysis
 
         except Exception as e:
             logger.error(f"Error analyzing embedding quality: {e}")

@@ -51,8 +51,8 @@ git clone https://github.com/your-org/ai-chat-app.git
 cd ai-chat-app
 
 # Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt

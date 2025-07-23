@@ -95,7 +95,7 @@ class MCPClient:
                 headers={"Content-Type": "application/json"},
             ) as response:
                 if response.status == 200:
-                    result = await response.json()
+                    await response.json()
                     logger.info(f"Connected to MCP server: {self.server_name}")
                     self.is_connected = True
 
@@ -472,7 +472,7 @@ class MCPServerManager:
             # Remove associated tools
             tools_to_remove = [
                 tool_id
-                for tool_id in self.tools.keys()
+                for tool_id in list(self.tools)
                 if tool_id.startswith(f"{server_id}_")
             ]
             for tool_id in tools_to_remove:

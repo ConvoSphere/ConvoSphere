@@ -16,8 +16,9 @@ from typing import Any
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from ..core.config import get_settings
-from ..models.knowledge import Document, DocumentChunk, SearchQuery
+from app.core.config import get_settings
+from app.models.knowledge import Document, DocumentChunk, SearchQuery
+
 from .ai_service import AIService
 from .document_processor import document_processor
 from .embedding_service import embedding_service
@@ -354,7 +355,7 @@ class KnowledgeService:
     def _extract_text_from_file(self, file_path: str, file_type: str) -> str | None:
         """Extract text content from various file types."""
         try:
-            if file_type == "txt" or file_type == "md":
+            if file_type in ("txt", "md"):
                 with open(file_path, encoding="utf-8") as f:
                     return f.read()
 
@@ -469,8 +470,7 @@ class KnowledgeService:
         """Generate embedding for text using AI service."""
         try:
             # Use AI service to generate embedding
-            embedding = self.ai_service.generate_embedding(text)
-            return embedding
+            return self.ai_service.generate_embedding(text)
         except Exception as e:
             logger.error(f"Error generating embedding: {e}")
             return None

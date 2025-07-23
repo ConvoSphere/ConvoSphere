@@ -81,13 +81,13 @@ def test_api_endpoints():
             f"✅ AssistantCreate model validation successful: {assistant_create.name}",
         )
 
-        assistant_update = AssistantUpdate(
+        AssistantUpdate(
             description="Updated description",
             status="active",
         )
         print("✅ AssistantUpdate model validation successful")
 
-        tool_assignment = ToolAssignmentRequest(
+        ToolAssignmentRequest(
             tool_id="test-tool-id",
             config={"enabled": True},
         )

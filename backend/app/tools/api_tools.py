@@ -48,6 +48,7 @@ class HTTPRequestTool(BaseTool):
                 url=url,
                 headers=headers or {},
                 json=data or {},
+                timeout=10,
             )
 
             return {

@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-import click
-import sys
+import asyncio
+import json
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import subprocess
-from sqlalchemy.exc import OperationalError
+import sys
+from pathlib import Path
+
+import click
 from app.core.database import SessionLocal as AppSessionLocal
 from app.core.redis_client import get_redis_client
 from app.core.weaviate_client import get_weaviate_client
-import json
-from pathlib import Path
-import asyncio
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker
 
 # Dynamisch Backend-App importieren
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
 from app.core.config import settings
-from app.services.user_service import UserService
-from app.schemas.user import UserCreate
 from app.models.user import UserRole, UserStatus
-from app.models.base import Base
+from app.schemas.user import UserCreate
+from app.services.user_service import UserService
 
 # DB-Session vorbereiten
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
@@ -28,17 +28,15 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 @click.group()
 def cli():
     """Admin CLI for ChatAssistant platform."""
-    pass
 
 @cli.group()
 def db():
     """Database management commands."""
-    pass
 
 @db.command("migrate")
 def migrate():
     """Run Alembic migrations (upgrade head)."""
-    result = subprocess.run(["alembic", "upgrade", "head"], cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(["alembic", "upgrade", "head"], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
@@ -48,7 +46,7 @@ def migrate():
 @click.argument("revision")
 def downgrade(revision):
     """Downgrade DB to a specific revision."""
-    result = subprocess.run(["alembic", "downgrade", revision], cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(["alembic", "downgrade", revision], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
@@ -57,7 +55,7 @@ def downgrade(revision):
 @db.command("status")
 def status():
     """Show Alembic migration status."""
-    result = subprocess.run(["alembic", "current"], cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(["alembic", "current"], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
@@ -66,7 +64,6 @@ def status():
 @cli.group()
 def user():
     """User management commands."""
-    pass
 
 @user.command("create-admin")
 @click.option("--email", prompt=True, help="Admin email")
@@ -103,12 +100,12 @@ def list_users():
     user_service = UserService(db)
     try:
         # Dummy current_user mit Super-Admin-Rechten für vollständige Liste
-        from app.models.user import User as UserModel, UserRole, UserStatus
+        from app.models.user import UserRole
         class DummyUser:
             role = UserRole.SUPER_ADMIN
             organization_id = None
             def has_permission(self, perm): return True
-        search_params = type('Search', (), {"query":None, "role":None, "status":None, "auth_provider":None, "organization_id":None, "group_id":None, "is_verified":None, "created_after":None, "created_before":None, "last_login_after":None, "last_login_before":None, "page":1, "size":100})()
+        search_params = type("Search", (), {"query":None, "role":None, "status":None, "auth_provider":None, "organization_id":None, "group_id":None, "is_verified":None, "created_after":None, "created_before":None, "last_login_after":None, "last_login_before":None, "page":1, "size":100})()
         users = user_service.list_users(search_params, DummyUser()).users
         for user in users:
             click.echo(f"{user.id} | {user.email} | {user.username} | {user.role} | {user.status}")
@@ -121,7 +118,6 @@ def list_users():
 @cli.group()
 def scripts():
     """Run utility scripts from the scripts/ folder."""
-    pass
 
 @scripts.command("run")
 @click.argument("script")
@@ -132,7 +128,7 @@ def run_script(script, args):
     if not os.path.isfile(script_path):
         click.echo(f"❌ Script not found: {script_path}")
         sys.exit(1)
-    result = subprocess.run([sys.executable, script_path, *args], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, script_path, *args], check=False, capture_output=True, text=True)
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
@@ -141,7 +137,6 @@ def run_script(script, args):
 @cli.group()
 def health():
     """System health check commands."""
-    pass
 
 @health.command("check")
 def health_check():
@@ -167,7 +162,7 @@ def health_check():
     # Weaviate
     try:
         weaviate = get_weaviate_client()
-        if hasattr(weaviate, 'is_ready') and weaviate.is_ready():
+        if hasattr(weaviate, "is_ready") and weaviate.is_ready():
             click.echo("Weaviate: ✅")
         else:
             click.echo("Weaviate: ❌ (not ready)")
@@ -177,18 +172,17 @@ def health_check():
 @cli.group()
 def translations():
     """Translation validation commands."""
-    pass
 
 @translations.command("validate")
-@click.option('--frontend-dir', default="frontend-react/src/i18n", help="Frontend translations directory")
-@click.option('--backend-dir', default="backend/app/translations", help="Backend translations directory")
-@click.option('--languages', default="en,de,fr,es", help="Comma-separated language codes")
+@click.option("--frontend-dir", default="frontend-react/src/i18n", help="Frontend translations directory")
+@click.option("--backend-dir", default="backend/app/translations", help="Backend translations directory")
+@click.option("--languages", default="en,de,fr,es", help="Comma-separated language codes")
 def validate_translations(frontend_dir, backend_dir, languages):
     """Validate translation files for structure and parameter consistency."""
     langs = [l.strip() for l in languages.split(",") if l.strip()]
     def load_translation_file(file_path: Path):
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             click.echo(f"Error loading {file_path}: {e}")
@@ -271,7 +265,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
                 value = get_nested_value(data, key)
                 if isinstance(value, str) and "{" in value and "}" in value:
                     import re
-                    params = re.findall(r'\{(\w+)\}', value)
+                    params = re.findall(r"\{(\w+)\}", value)
                     if params:
                         param_keys[lang][key] = set(params)
         reference_lang = "en"
@@ -319,13 +313,12 @@ def validate_translations(frontend_dir, backend_dir, languages):
 @cli.group()
 def mcp():
     """MCP integration commands."""
-    pass
 
 @mcp.command("start-server")
 def start_mcp_server():
     """Start the example MCP server for testing."""
-    import sys as _sys
     import os as _os
+    import sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "app"))
     from app.tools.example_mcp_server import main as mcp_main
     click.echo("Starting Example MCP Server...")
@@ -343,14 +336,13 @@ def start_mcp_server():
 @cli.group()
 def test():
     """Testing and integration commands."""
-    pass
 
 @test.command("api-integration")
-@click.option('--backend-url', default="http://localhost:8000", help="Backend API URL")
+@click.option("--backend-url", default="http://localhost:8000", help="Backend API URL")
 def api_integration(backend_url):
     """Run API integration tests (simuliert scripts/test_api_integration.py)."""
-    import sys as _sys
     import asyncio as _asyncio
+    import sys as _sys
     from pathlib import Path as _Path
     _sys.path.insert(0, str(_Path(__file__).parent.parent / "frontend-react" / "src" / "services"))
     try:
@@ -392,8 +384,8 @@ def api_integration(backend_url):
                 response = await self.api_client.login("test@example.com", "TestPassword123!")
                 if response.success:
                     self.log_test("User Login", True)
-                    if hasattr(response, 'data') and response.data:
-                        token = response.data.get('access_token')
+                    if hasattr(response, "data") and response.data:
+                        token = response.data.get("access_token")
                         if token:
                             self.api_client.set_token(token)
                 else:
@@ -502,4 +494,4 @@ def api_integration(backend_url):
     _asyncio.run(main())
 
 if __name__ == "__main__":
-    cli() 
+    cli()

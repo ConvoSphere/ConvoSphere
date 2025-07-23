@@ -5,15 +5,19 @@ This module provides API endpoints for advanced RAG functionality including
 configuration management, retrieval, and metrics.
 """
 
-from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from loguru import logger
 
 from app.core.exceptions import AIError, ValidationError
 from app.schemas.rag import (
-    RAGConfig, RAGRequest, RAGResponse, RAGMetrics,
-    RAGConfigCreate, RAGConfigUpdate, RAGConfigResponse, RAGConfigList
+    RAGConfigCreate,
+    RAGConfigList,
+    RAGConfigResponse,
+    RAGConfigUpdate,
+    RAGMetrics,
+    RAGRequest,
+    RAGResponse,
 )
 from app.services.rag_service import rag_service
 
@@ -26,10 +30,10 @@ async def retrieve_rag(
 ) -> RAGResponse:
     """
     Perform RAG retrieval with advanced features.
-    
+
     Args:
         request: RAG retrieval request
-        
+
     Returns:
         RAG response with retrieved results
     """
@@ -51,23 +55,23 @@ async def create_rag_config(
 ) -> RAGConfigResponse:
     """
     Create new RAG configuration.
-    
+
     Args:
         config_request: RAG configuration creation request
-        
+
     Returns:
         Created RAG configuration
     """
     try:
         config_id = await rag_service.create_config(config_request.config)
-        
+
         return RAGConfigResponse(
             id=config_id,
             name=config_request.name,
             description=config_request.description,
             config=config_request.config,
             created_at=config_request.config.created_at,
-            updated_at=config_request.config.updated_at
+            updated_at=config_request.config.updated_at,
         )
     except Exception as e:
         logger.error(f"Failed to create RAG config: {e}")
@@ -81,21 +85,21 @@ async def list_rag_configs(
 ) -> RAGConfigList:
     """
     List RAG configurations.
-    
+
     Args:
         skip: Number of configurations to skip
         limit: Maximum number of configurations to return
-        
+
     Returns:
         List of RAG configurations
     """
     try:
         configs = await rag_service.list_configs()
-        
+
         # Apply pagination
         total = len(configs)
         paginated_configs = configs[skip:skip + limit]
-        
+
         config_responses = []
         for config_id, config in paginated_configs:
             config_response = RAGConfigResponse(
@@ -104,15 +108,15 @@ async def list_rag_configs(
                 description=config.description,
                 config=config,
                 created_at=config.created_at,
-                updated_at=config.updated_at
+                updated_at=config.updated_at,
             )
             config_responses.append(config_response)
-        
+
         return RAGConfigList(
             configs=config_responses,
             total=total,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
     except Exception as e:
         logger.error(f"Failed to list RAG configs: {e}")
@@ -125,32 +129,32 @@ async def get_rag_config(
 ) -> RAGConfigResponse:
     """
     Get RAG configuration by ID.
-    
+
     Args:
         config_id: Configuration ID
-        
+
     Returns:
         RAG configuration
     """
     try:
         configs = await rag_service.list_configs()
         config = None
-        
+
         for cid, cfg in configs:
             if cid == config_id:
                 config = cfg
                 break
-        
+
         if not config:
             raise HTTPException(status_code=404, detail="RAG configuration not found")
-        
+
         return RAGConfigResponse(
             id=config_id,
             name=config.name,
             description=config.description,
             config=config,
             created_at=config.created_at,
-            updated_at=config.updated_at
+            updated_at=config.updated_at,
         )
     except HTTPException:
         raise
@@ -166,11 +170,11 @@ async def update_rag_config(
 ) -> RAGConfigResponse:
     """
     Update RAG configuration.
-    
+
     Args:
         config_id: Configuration ID
         config_update: Configuration update request
-        
+
     Returns:
         Updated RAG configuration
     """
@@ -178,15 +182,15 @@ async def update_rag_config(
         # Get existing config
         configs = await rag_service.list_configs()
         existing_config = None
-        
+
         for cid, cfg in configs:
             if cid == config_id:
                 existing_config = cfg
                 break
-        
+
         if not existing_config:
             raise HTTPException(status_code=404, detail="RAG configuration not found")
-        
+
         # Update config
         if config_update.name is not None:
             existing_config.name = config_update.name
@@ -194,21 +198,21 @@ async def update_rag_config(
             existing_config.description = config_update.description
         if config_update.config is not None:
             existing_config = config_update.config
-        
+
         existing_config.updated_at = existing_config.updated_at
-        
+
         # Save updated config
         success = await rag_service.update_config(config_id, existing_config)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to update RAG configuration")
-        
+
         return RAGConfigResponse(
             id=config_id,
             name=existing_config.name,
             description=existing_config.description,
             config=existing_config,
             created_at=existing_config.created_at,
-            updated_at=existing_config.updated_at
+            updated_at=existing_config.updated_at,
         )
     except HTTPException:
         raise
@@ -223,10 +227,10 @@ async def delete_rag_config(
 ) -> dict:
     """
     Delete RAG configuration.
-    
+
     Args:
         config_id: Configuration ID
-        
+
     Returns:
         Success message
     """
@@ -234,7 +238,7 @@ async def delete_rag_config(
         success = await rag_service.delete_config(config_id)
         if not success:
             raise HTTPException(status_code=404, detail="RAG configuration not found")
-        
+
         return {"message": "RAG configuration deleted successfully"}
     except HTTPException:
         raise
@@ -247,13 +251,12 @@ async def delete_rag_config(
 async def get_rag_metrics() -> RAGMetrics:
     """
     Get RAG performance metrics.
-    
+
     Returns:
         RAG metrics
     """
     try:
-        metrics = await rag_service.get_metrics()
-        return metrics
+        return await rag_service.get_metrics()
     except Exception as e:
         logger.error(f"Failed to get RAG metrics: {e}")
         raise HTTPException(status_code=500, detail="Failed to get RAG metrics")
@@ -263,24 +266,24 @@ async def get_rag_metrics() -> RAGMetrics:
 async def rag_health_check() -> dict:
     """
     Check RAG service health.
-    
+
     Returns:
         Health status
     """
     try:
         # Check if RAG service is initialized
         metrics = await rag_service.get_metrics()
-        
+
         return {
             "status": "healthy",
             "service": "rag",
             "total_requests": metrics.total_requests,
-            "success_rate": metrics.successful_requests / max(metrics.total_requests, 1)
+            "success_rate": metrics.successful_requests / max(metrics.total_requests, 1),
         }
     except Exception as e:
         logger.error(f"RAG health check failed: {e}")
         return {
             "status": "unhealthy",
             "service": "rag",
-            "error": str(e)
+            "error": str(e),
         }

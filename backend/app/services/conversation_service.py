@@ -1,6 +1,6 @@
 """Conversation service for managing chat conversations."""
 
-from typing import Any, List, Optional
+from typing import Any
 
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
@@ -11,12 +11,10 @@ from app.core.exceptions import (
     NotFoundError,
     ValidationError,
 )
-from app.models.conversation import Conversation, Message, MessageRole, MessageType
+from app.models.conversation import Conversation, Message, MessageRole
 from app.schemas.conversation import (
     ConversationCreate,
-    ConversationUpdate,
     MessageCreate,
-    MessageUpdate,
 )
 
 
@@ -71,16 +69,16 @@ class ConversationService:
 
         except Exception as e:
             self.db.rollback()
-            if isinstance(e, (ValidationError, ConversationError)):
+            if isinstance(e, ValidationError | ConversationError):
                 raise
             raise DatabaseError(
                 f"Failed to create conversation: {str(e)}",
-                operation="create_conversation"
+                operation="create_conversation",
             )
 
     def get_conversation(
-        self, 
-        conversation_id: str, 
+        self,
+        conversation_id: str,
         user_id: str,
     ) -> dict[str, Any]:
         """
@@ -102,7 +100,7 @@ class ConversationService:
             # Validate inputs
             if not conversation_id or not conversation_id.strip():
                 raise ValidationError("conversation_id", "Conversation ID is required")
-            
+
             if not user_id or not user_id.strip():
                 raise ValidationError("user_id", "User ID is required")
 
@@ -123,11 +121,11 @@ class ConversationService:
             return conversation.to_dict()
 
         except Exception as e:
-            if isinstance(e, (ValidationError, NotFoundError)):
+            if isinstance(e, ValidationError | NotFoundError):
                 raise
             raise DatabaseError(
                 f"Failed to get conversation: {str(e)}",
-                operation="get_conversation"
+                operation="get_conversation",
             )
 
     def get_user_conversations(self, user_id: str) -> list[dict[str, Any]]:
@@ -212,18 +210,18 @@ class ConversationService:
 
         except Exception as e:
             self.db.rollback()
-            if isinstance(e, (ValidationError, NotFoundError)):
+            if isinstance(e, ValidationError | NotFoundError):
                 raise
             raise DatabaseError(
                 f"Failed to add message: {str(e)}",
-                operation="add_message"
+                operation="add_message",
             )
 
     def get_conversation_messages(
-        self, 
+        self,
         conversation_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get messages in a conversation with pagination.
@@ -278,11 +276,11 @@ class ConversationService:
             return [msg.to_dict() for msg in messages]
 
         except Exception as e:
-            if isinstance(e, (ValidationError, NotFoundError)):
+            if isinstance(e, ValidationError | NotFoundError):
                 raise
             raise DatabaseError(
                 f"Failed to get conversation messages: {str(e)}",
-                operation="get_conversation_messages"
+                operation="get_conversation_messages",
             )
 
     def get_conversation_history(self, conversation_id: str) -> list[dict[str, str]]:

@@ -127,7 +127,6 @@ exclude =
     .git,
     __pycache__,
     .venv,
-    venv,
     .env,
     migrations
 ```
@@ -240,7 +239,7 @@ echo "Tests completed successfully!"
 
 ```yaml
 # .bandit
-exclude_dirs: ['tests', 'venv', '.venv']
+exclude_dirs: ['tests', '.venv']
 skips: ['B101', 'B601']
 
 # Run with: bandit -r backend/
@@ -474,8 +473,8 @@ echo "All checks passed!"
 echo "Setting up development environment..."
 
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt

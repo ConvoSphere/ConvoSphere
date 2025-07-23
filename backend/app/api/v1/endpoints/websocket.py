@@ -6,17 +6,18 @@ typing indicators, and chat state management.
 """
 
 import asyncio
+import contextlib
 import json
 
 from fastapi import Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
-from ....core.database import get_db
-from ....core.security import get_current_user_ws
-from ....models.conversation import Conversation
-from ....models.user import User
-from ....services.ai_service import AIService
-from ....services.conversation_service import ConversationService
+from app.core.database import get_db
+from app.core.security import get_current_user_ws
+from app.models.conversation import Conversation
+from app.models.user import User
+from app.services.ai_service import AIService
+from app.services.conversation_service import ConversationService
 
 
 class ConnectionManager:
@@ -297,20 +298,16 @@ async def websocket_endpoint(
                     },
                 },
             )
-            try:
+            with contextlib.suppress(Exception):
                 await manager.send_personal_message(
                     error_message, str(user.id), conversation_id,
                 )
-            except:
-                pass
             manager.disconnect(str(user.id), conversation_id)
 
     except Exception as e:
         # Handle connection errors
-        try:
+        with contextlib.suppress(Exception):
             await websocket.close(code=4000, reason=f"Connection error: {str(e)}")
-        except:
-            pass
 
 
 async def get_current_user_ws(token: str, db: Session) -> User | None:
@@ -327,8 +324,7 @@ async def get_current_user_ws(token: str, db: Session) -> User | None:
             return None
 
         # Get user from database
-        user = db.query(User).filter(User.id == user_id).first()
-        return user
+        return db.query(User).filter(User.id == user_id).first()
 
     except Exception as e:
         logger.error(f"WebSocket JWT validation error: {e}")

@@ -70,7 +70,7 @@ def test_api_endpoints():
         )
         print(f"✅ ToolCreate model validation successful: {tool_create.name}")
 
-        tool_update = ToolUpdate(
+        ToolUpdate(
             description="Updated description",
         )
         print("✅ ToolUpdate model validation successful")

@@ -27,20 +27,20 @@ class Settings(BaseSettings):
 
     # Frontend-Backend Communication
     backend_url: str = Field(
-        default="http://localhost:8000", 
-        description="Backend URL for frontend communication"
+        default="http://localhost:8000",
+        description="Backend URL for frontend communication",
     )
     ws_url: str = Field(
-        default="ws://localhost:8000", 
-        description="WebSocket URL for frontend communication"
+        default="ws://localhost:8000",
+        description="WebSocket URL for frontend communication",
     )
     frontend_url: str = Field(
-        default="http://localhost:5173", 
-        description="Frontend URL for CORS configuration"
+        default="http://localhost:5173",
+        description="Frontend URL for CORS configuration",
     )
     cors_origins: str = Field(
         default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
-        description="Comma-separated list of allowed CORS origins"
+        description="Comma-separated list of allowed CORS origins",
     )
 
     # Database
@@ -144,7 +144,7 @@ class Settings(BaseSettings):
     sso_google_client_secret: str | None = Field(default=None, description="Google OAuth2 client secret")
     sso_google_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/google",
-        description="Google OAuth2 redirect URI"
+        description="Google OAuth2 redirect URI",
     )
 
     # Microsoft OAuth2
@@ -153,7 +153,7 @@ class Settings(BaseSettings):
     sso_microsoft_client_secret: str | None = Field(default=None, description="Microsoft OAuth2 client secret")
     sso_microsoft_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/microsoft",
-        description="Microsoft OAuth2 redirect URI"
+        description="Microsoft OAuth2 redirect URI",
     )
     sso_microsoft_tenant_id: str | None = Field(default=None, description="Microsoft tenant ID")
 
@@ -163,7 +163,7 @@ class Settings(BaseSettings):
     sso_github_client_secret: str | None = Field(default=None, description="GitHub OAuth2 client secret")
     sso_github_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/github",
-        description="GitHub OAuth2 redirect URI"
+        description="GitHub OAuth2 redirect URI",
     )
 
     # SAML Configuration
@@ -171,11 +171,11 @@ class Settings(BaseSettings):
     sso_saml_metadata_url: str | None = Field(default=None, description="SAML metadata URL")
     sso_saml_entity_id: str = Field(
         default="http://localhost:8000",
-        description="SAML entity ID"
+        description="SAML entity ID",
     )
     sso_saml_acs_url: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/saml",
-        description="SAML assertion consumer service URL"
+        description="SAML assertion consumer service URL",
     )
     sso_saml_cert_file: str | None = Field(default=None, description="SAML certificate file path")
     sso_saml_key_file: str | None = Field(default=None, description="SAML private key file path")
@@ -187,7 +187,7 @@ class Settings(BaseSettings):
     sso_oidc_client_secret: str | None = Field(default=None, description="OIDC client secret")
     sso_oidc_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/oidc",
-        description="OIDC redirect URI"
+        description="OIDC redirect URI",
     )
 
     # Registration
@@ -215,7 +215,7 @@ class Settings(BaseSettings):
                     return ["de", "en", "fr", "es"]
                 return langs
             except Exception as e:
-                logging.error(f"Error parsing SUPPORTED_LANGUAGES: {e}. Using default languages ['de', 'en', 'fr', 'es'].")
+                logging.exception(f"Error parsing SUPPORTED_LANGUAGES: {e}. Using default languages ['de', 'en', 'fr', 'es'].")
                 return ["de", "en", "fr", "es"]
         return v
 

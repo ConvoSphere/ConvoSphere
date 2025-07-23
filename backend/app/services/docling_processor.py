@@ -9,11 +9,10 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 try:
     from docling import DocumentConverter
-    from docling.document import DoclingDocument
 
     DOCLING_AVAILABLE = True
 except ImportError:
@@ -21,6 +20,9 @@ except ImportError:
     logging.warning("Docling not available. Install with: pip install docling")
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:
+    from docling.document import DoclingDocument
 
 logger = logging.getLogger(__name__)
 

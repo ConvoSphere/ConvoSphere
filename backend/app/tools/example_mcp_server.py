@@ -87,7 +87,6 @@ class ExampleMCPServer:
                         "target_lang": {
                             "type": "string",
                             "description": "Target language code",
-                            "description": "Target language code",
                         },
                     },
                     "required": ["text", "target_lang"],
@@ -331,14 +330,15 @@ class ExampleMCPServer:
 
             try:
                 # Safe evaluation (in production, use a proper math library)
-                result = eval(expression, {"__builtins__": {}}, {})
+                import ast
+                result = ast.literal_eval(expression)
                 return f"Result: {result}"
             except Exception as e:
                 return f"Calculation error: {str(e)}"
 
         elif tool_name == "translate_text":
             text = arguments.get("text", "")
-            source_lang = arguments.get("source_lang", "auto")
+            arguments.get("source_lang", "auto")
             target_lang = arguments.get("target_lang", "en")
 
             # Simulate translation

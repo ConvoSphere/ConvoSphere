@@ -31,7 +31,7 @@ class ToolService:
             List[Dict[str, Any]]: List of available tools
         """
         try:
-            query = self.db.query(Tool).filter(Tool.is_enabled == True)
+            query = self.db.query(Tool).filter(Tool.is_enabled is True)
 
             # Filter by category if specified
             if category:
@@ -317,7 +317,7 @@ class ToolService:
             List[Dict[str, Any]]: List of tools in the category
         """
         try:
-            tool_category = ToolCategory(category)
+            ToolCategory(category)
             return self.get_available_tools(user_id=user_id, category=category)
 
         except ValueError:
@@ -343,7 +343,7 @@ class ToolService:
                 self.db.query(Tool)
                 .filter(
                     and_(
-                        Tool.is_enabled == True,
+                        Tool.is_enabled is True,
                         (
                             Tool.name.ilike(f"%{query}%")
                             | Tool.description.ilike(f"%{query}%")
@@ -436,7 +436,6 @@ class ToolService:
                 return True
 
             return False
-
         except Exception as e:
             logger.error(f"Error checking edit permission for tool: {e}")
             return False

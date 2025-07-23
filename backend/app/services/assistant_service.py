@@ -123,7 +123,7 @@ class AssistantService:
                 or_(
                     Assistant.creator_id == user_id,
                     and_(
-                        Assistant.is_public == True,
+                        Assistant.is_public is True,
                         Assistant.status == AssistantStatus.ACTIVE,
                     ),
                 ),
@@ -155,7 +155,7 @@ class AssistantService:
         """
         query = self.db.query(Assistant).filter(
             and_(
-                Assistant.is_public == True,
+                Assistant.is_public is True,
                 Assistant.status == AssistantStatus.ACTIVE,
             ),
         )

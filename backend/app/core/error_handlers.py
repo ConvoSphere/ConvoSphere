@@ -5,14 +5,14 @@ This module provides centralized error handling for all API endpoints
 with consistent error responses and proper logging.
 """
 
-from typing import Any, Dict, Union
+from typing import Any
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 
-from .exceptions import ChatError, ERROR_CODES
+from .exceptions import ERROR_CODES, ChatError
 
 
 async def chat_error_handler(request: Request, exc: ChatError) -> JSONResponse:
@@ -26,7 +26,7 @@ async def chat_error_handler(request: Request, exc: ChatError) -> JSONResponse:
             "method": request.method,
         },
     )
-    
+
     return JSONResponse(
         status_code=exc.status_code,
         content=exc.to_dict(),
@@ -34,7 +34,7 @@ async def chat_error_handler(request: Request, exc: ChatError) -> JSONResponse:
 
 
 async def validation_error_handler(
-    request: Request, exc: PydanticValidationError
+    request: Request, exc: PydanticValidationError,
 ) -> JSONResponse:
     """Handle Pydantic validation errors."""
     errors = []
@@ -44,7 +44,7 @@ async def validation_error_handler(
             "message": error["msg"],
             "type": error["type"],
         })
-    
+
     logger.warning(
         f"ValidationError: {len(errors)} validation errors",
         extra={
@@ -53,7 +53,7 @@ async def validation_error_handler(
             "method": request.method,
         },
     )
-    
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -61,13 +61,13 @@ async def validation_error_handler(
                 "code": ERROR_CODES["VALIDATION_ERROR"],
                 "message": "Validation error",
                 "details": {"errors": errors},
-            }
+            },
         },
     )
 
 
 async def general_exception_handler(
-    request: Request, exc: Exception
+    request: Request, exc: Exception,
 ) -> JSONResponse:
     """Handle general exceptions."""
     logger.exception(
@@ -78,7 +78,7 @@ async def general_exception_handler(
             "method": request.method,
         },
     )
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -86,45 +86,45 @@ async def general_exception_handler(
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": "An unexpected error occurred",
                 "details": {},
-            }
+            },
         },
     )
 
 
 def register_error_handlers(app: FastAPI) -> None:
     """Register all error handlers with the FastAPI application."""
-    
+
     # Register ChatError handler
     app.add_exception_handler(ChatError, chat_error_handler)
-    
+
     # Register Pydantic validation error handler
     app.add_exception_handler(PydanticValidationError, validation_error_handler)
-    
+
     # Register general exception handler (should be last)
     app.add_exception_handler(Exception, general_exception_handler)
-    
+
     logger.info("Error handlers registered successfully")
 
 
 def create_error_response(
     error_code: str,
     message: str,
-    details: Dict[str, Any] = None,
+    details: dict[str, Any] = None,
     status_code: int = 500,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a standardized error response."""
     return {
         "error": {
             "code": error_code,
             "message": message,
             "details": details or {},
-        }
+        },
     }
 
 
 def log_error(
     error: Exception,
-    context: Dict[str, Any] = None,
+    context: dict[str, Any] = None,
     level: str = "error",
 ) -> None:
     """Log an error with structured context."""
@@ -132,10 +132,10 @@ def log_error(
         "exception_type": type(error).__name__,
         "message": str(error),
     }
-    
+
     if context:
         log_data.update(context)
-    
+
     if level == "error":
         logger.error(f"Error: {error}", extra=log_data)
     elif level == "warning":

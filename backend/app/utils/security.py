@@ -49,14 +49,13 @@ def sanitize_input(text: str) -> str:
         r"<script.*?</script>", "", sanitized, flags=re.IGNORECASE | re.DOTALL,
     )
     # Remove other potentially dangerous tags
-    sanitized = re.sub(
+    return re.sub(
         r"<(iframe|object|embed|form|input|textarea|select|button).*?>",
         "",
         sanitized,
         flags=re.IGNORECASE,
     )
 
-    return sanitized
 
 
 def validate_permissions(
@@ -108,7 +107,8 @@ async def check_rate_limit(user_id: str, action: str, limit: int, window: int) -
         return True
 
     except Exception as e:
-        logger.error(f"Rate limiting error: {e}")
+        import logging
+        logging.exception(f"Rate limiting error: {e}")
         # Fallback to allow request if Redis is unavailable
         return True
 

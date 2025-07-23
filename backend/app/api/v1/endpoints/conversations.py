@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from ....core.database import get_db
-from ....core.security import get_current_user
-from ....models.user import User
-from ....schemas.conversation import (
+from app.core.database import get_db
+from app.core.security import get_current_user
+from app.models.user import User
+from app.schemas.conversation import (
     ConversationCreate,
     ConversationListResponse,
     ConversationResponse,
@@ -14,7 +14,7 @@ from ....schemas.conversation import (
     MessageCreate,
     MessageResponse,
 )
-from ....services.conversation_service import ConversationService
+from app.services.conversation_service import ConversationService
 
 router = APIRouter()
 
@@ -31,12 +31,11 @@ async def create_conversation(
 ):
     """Create a new conversation."""
     service = ConversationService(db)
-    conv = service.create_conversation(
+    return service.create_conversation(
         user_id=str(conversation_data.user_id),
         assistant_id=str(conversation_data.assistant_id),
         title=conversation_data.title,
     )
-    return conv
 
 
 @router.get("/", response_model=ConversationListResponse)

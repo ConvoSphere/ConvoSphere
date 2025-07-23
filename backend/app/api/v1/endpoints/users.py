@@ -1,16 +1,17 @@
 """Users endpoints for user management with enterprise features."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Body, Request
-from sqlalchemy.orm import Session
 import psutil
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from opentelemetry.trace import get_current_span
+from sqlalchemy.orm import Session
 
-from ....core.database import get_db, check_db_connection, get_db_info
-from ....core.redis_client import check_redis_connection, get_redis_info
-from ....core.weaviate_client import check_weaviate_connection, get_weaviate_info
-from ....core.security import get_current_user
-from ....core.config import get_settings
-from ....models.user import AuthProvider, User, UserRole, UserStatus
-from ....schemas.user import (
+from app.core.config import get_settings
+from app.core.database import check_db_connection, get_db, get_db_info
+from app.core.redis_client import check_redis_connection, get_redis_info
+from app.core.security import get_current_user
+from app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
+from app.models.user import AuthProvider, User, UserRole, UserStatus
+from app.schemas.user import (
     SSOUserCreate,
     UserBulkUpdate,
     UserCreate,
@@ -26,8 +27,8 @@ from ....schemas.user import (
     UserStats,
     UserUpdate,
 )
-from ....services.user_service import UserService
-from ....utils.exceptions import (
+from app.services.user_service import UserService
+from app.utils.exceptions import (
     GroupNotFoundError,
     InvalidCredentialsError,
     PermissionDeniedError,
@@ -35,7 +36,6 @@ from ....utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
-from opentelemetry.trace import get_current_span
 
 router = APIRouter()
 
@@ -176,7 +176,7 @@ async def update_my_profile(
     current_user: User = Depends(get_current_user),
 ):
     """Update current user's profile (including language preference).
-    
+
     You can update the user's language preference by providing the 'language' field (e.g. 'en', 'de').
     """
     try:

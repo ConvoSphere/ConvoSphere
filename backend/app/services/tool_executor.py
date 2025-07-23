@@ -6,15 +6,17 @@ MCP tools with validation, error handling, and result processing.
 """
 
 import asyncio
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
 from app.services.tool_service import tool_service
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class ToolExecutionStatus(Enum):
@@ -255,8 +257,7 @@ class ToolExecutor:
                 raise ValueError(f"MCP tool {tool_def.id} not found")
 
             # Execute MCP tool
-            result = await mcp_tool.execute(parameters)
-            return result
+            return await mcp_tool.execute(parameters)
 
         except Exception as e:
             logger.error(f"Error executing MCP tool {tool_def.id}: {e}")
@@ -301,8 +302,7 @@ class ToolExecutor:
                 raise ValueError(f"API tool {tool_def.id} not found")
 
             # Execute API call
-            result = await api_tool.call(parameters)
-            return result
+            return await api_tool.call(parameters)
 
         except Exception as e:
             logger.error(f"Error executing API tool {tool_def.id}: {e}")
@@ -322,8 +322,7 @@ class ToolExecutor:
                 raise ValueError(f"Custom tool {tool_def.id} not found")
 
             # Execute custom tool
-            result = await custom_tool.execute(parameters, user_id)
-            return result
+            return await custom_tool.execute(parameters, user_id)
 
         except Exception as e:
             logger.error(f"Error executing custom tool {tool_def.id}: {e}")
@@ -371,7 +370,7 @@ class ToolExecutor:
                 if not isinstance(param_value, int):
                     errors.append(f"Parameter '{param_name}' must be an integer")
             elif param.type == "number":
-                if not isinstance(param_value, (int, float)):
+                if not isinstance(param_value, int | float):
                     errors.append(f"Parameter '{param_name}' must be a number")
             elif param.type == "boolean":
                 if not isinstance(param_value, bool):

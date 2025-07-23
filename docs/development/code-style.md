@@ -980,7 +980,6 @@ exclude =
     .git,
     __pycache__,
     .venv,
-    venv,
     .env,
     migrations,
     alembic
@@ -1019,7 +1018,7 @@ warn_untyped_fields = True
 #### VS Code Settings
 ```json
 {
-    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.defaultInterpreterPath": "./.venv/bin/python",
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,

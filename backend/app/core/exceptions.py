@@ -5,7 +5,7 @@ This module provides consistent error handling across all services
 with structured error responses and proper logging.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ChatError(Exception):
@@ -15,7 +15,7 @@ class ChatError(Exception):
         self,
         message: str,
         error_code: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
         status_code: int = 500,
     ):
         self.message = message
@@ -24,14 +24,14 @@ class ChatError(Exception):
         self.status_code = status_code
         super().__init__(self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert exception to dictionary for API response."""
         return {
             "error": {
                 "code": self.error_code,
                 "message": self.message,
                 "details": self.details,
-            }
+            },
         }
 
 
@@ -42,7 +42,7 @@ class ValidationError(ChatError):
         details = {"field": field, "message": message}
         if value is not None:
             details["value"] = str(value)
-        
+
         super().__init__(
             f"Validation error in field '{field}': {message}",
             "VALIDATION_ERROR",
@@ -88,11 +88,11 @@ class NotFoundError(ChatError):
 class ConversationError(ChatError):
     """Exception for conversation related errors."""
 
-    def __init__(self, message: str, conversation_id: Optional[str] = None):
+    def __init__(self, message: str, conversation_id: str | None = None):
         details = {}
         if conversation_id:
             details["conversation_id"] = conversation_id
-        
+
         super().__init__(
             message,
             "CONVERSATION_ERROR",
@@ -104,11 +104,11 @@ class ConversationError(ChatError):
 class AssistantError(ChatError):
     """Exception for assistant related errors."""
 
-    def __init__(self, message: str, assistant_id: Optional[str] = None):
+    def __init__(self, message: str, assistant_id: str | None = None):
         details = {}
         if assistant_id:
             details["assistant_id"] = assistant_id
-        
+
         super().__init__(
             message,
             "ASSISTANT_ERROR",
@@ -123,15 +123,15 @@ class AIError(ChatError):
     def __init__(
         self,
         message: str,
-        model: Optional[str] = None,
-        provider: Optional[str] = None,
+        model: str | None = None,
+        provider: str | None = None,
     ):
         details = {}
         if model:
             details["model"] = model
         if provider:
             details["provider"] = provider
-        
+
         super().__init__(
             message,
             "AI_ERROR",
@@ -146,15 +146,15 @@ class ToolError(ChatError):
     def __init__(
         self,
         message: str,
-        tool_name: Optional[str] = None,
-        tool_input: Optional[Dict[str, Any]] = None,
+        tool_name: str | None = None,
+        tool_input: dict[str, Any] | None = None,
     ):
         details = {}
         if tool_name:
             details["tool_name"] = tool_name
         if tool_input:
             details["tool_input"] = tool_input
-        
+
         super().__init__(
             message,
             "TOOL_ERROR",
@@ -166,11 +166,11 @@ class ToolError(ChatError):
 class RateLimitError(ChatError):
     """Exception for rate limiting errors."""
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: Optional[int] = None):
+    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
         details = {}
         if retry_after:
             details["retry_after"] = retry_after
-        
+
         super().__init__(
             message,
             "RATE_LIMIT_ERROR",
@@ -182,11 +182,11 @@ class RateLimitError(ChatError):
 class DatabaseError(ChatError):
     """Exception for database errors."""
 
-    def __init__(self, message: str, operation: Optional[str] = None):
+    def __init__(self, message: str, operation: str | None = None):
         details = {}
         if operation:
             details["operation"] = operation
-        
+
         super().__init__(
             message,
             "DATABASE_ERROR",
@@ -198,11 +198,11 @@ class DatabaseError(ChatError):
 class ConfigurationError(ChatError):
     """Exception for configuration errors."""
 
-    def __init__(self, message: str, config_key: Optional[str] = None):
+    def __init__(self, message: str, config_key: str | None = None):
         details = {}
         if config_key:
             details["config_key"] = config_key
-        
+
         super().__init__(
             message,
             "CONFIGURATION_ERROR",
@@ -214,11 +214,11 @@ class ConfigurationError(ChatError):
 class WebSocketError(ChatError):
     """Exception for WebSocket related errors."""
 
-    def __init__(self, message: str, connection_id: Optional[str] = None):
+    def __init__(self, message: str, connection_id: str | None = None):
         details = {}
         if connection_id:
             details["connection_id"] = connection_id
-        
+
         super().__init__(
             message,
             "WEBSOCKET_ERROR",

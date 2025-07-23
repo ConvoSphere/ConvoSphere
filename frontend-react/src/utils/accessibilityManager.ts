@@ -20,7 +20,6 @@ class AccessibilityManager {
   private config: AccessibilityConfig;
   private focusableElements: FocusableElement[] = [];
   private focusGroups: Map<string, HTMLElement[]> = new Map();
-  private currentFocusIndex = -1;
   private isInitialized = false;
   private announcementQueue: string[] = [];
   private announcementTimer: NodeJS.Timeout | null = null;
@@ -127,7 +126,7 @@ class AccessibilityManager {
     });
 
     if (bestCandidate) {
-      bestCandidate.focus();
+      (bestCandidate as HTMLElement).focus();
     }
   }
 
@@ -158,19 +157,19 @@ class AccessibilityManager {
     });
 
     if (bestCandidate) {
-      bestCandidate.focus();
+      (bestCandidate as HTMLElement).focus();
     }
   }
 
   private focusFirst() {
     if (this.focusableElements.length > 0) {
-      this.focusableElements[0].element.focus();
+      (this.focusableElements[0].element as HTMLElement).focus();
     }
   }
 
   private focusLast() {
     if (this.focusableElements.length > 0) {
-      this.focusableElements[this.focusableElements.length - 1].element.focus();
+      (this.focusableElements[this.focusableElements.length - 1].element as HTMLElement).focus();
     }
   }
 
@@ -229,7 +228,7 @@ class AccessibilityManager {
       if (this.isElementHidden(htmlElement)) return;
 
       const priority = this.calculateFocusPriority(htmlElement);
-      const group = htmlElement.getAttribute('data-focus-group');
+      const group = htmlElement.getAttribute('data-focus-group') ?? undefined;
 
       this.focusableElements.push({
         element: htmlElement,
@@ -473,7 +472,7 @@ class AccessibilityManager {
     );
     
     const nextIndex = (currentIndex + 1) % this.focusableElements.length;
-    this.focusableElements[nextIndex].element.focus();
+    (this.focusableElements[nextIndex].element as HTMLElement).focus();
   }
 
   focusPrevious() {
@@ -482,7 +481,7 @@ class AccessibilityManager {
     );
     
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : this.focusableElements.length - 1;
-    this.focusableElements[prevIndex].element.focus();
+    (this.focusableElements[prevIndex].element as HTMLElement).focus();
   }
 
   getAccessibilityStatus() {

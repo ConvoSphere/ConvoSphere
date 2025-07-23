@@ -7,25 +7,23 @@ validation, caching, monitoring, and dependency management.
 
 import asyncio
 import json
-import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from uuid import uuid4
 
 from loguru import logger
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
-from app.core.exceptions import ToolError, ValidationError as AppValidationError
-from app.schemas.agent import ToolCall
+from app.core.exceptions import ToolError
 from app.services.tool_service import tool_service
 from app.tools.mcp_tool import mcp_manager
 
 
 class ToolExecutionRequest(BaseModel):
     """Request for tool execution with validation."""
-    
+
     tool_name: str = Field(..., min_length=1, max_length=200, description="Tool name")
-    arguments: Dict[str, Any] = Field(default_factory=dict, description="Tool arguments")
+    arguments: dict[str, Any] = Field(default_factory=dict, description="Tool arguments")
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
     priority: int = Field(default=1, ge=1, le=10, description="Execution priority")
@@ -37,7 +35,7 @@ class ToolExecutionRequest(BaseModel):
     def validate_tool_name(cls, v: str) -> str:
         """Validate tool name."""
         if not v or not v.strip():
-            raise ValueError('Tool name cannot be empty')
+            raise ValueError("Tool name cannot be empty")
         return v.strip()
 
     model_config = {
@@ -48,25 +46,25 @@ class ToolExecutionRequest(BaseModel):
 
 class ToolExecutionResult(BaseModel):
     """Result of tool execution with metadata."""
-    
+
     execution_id: str = Field(..., description="Unique execution ID")
     tool_name: str = Field(..., description="Tool name")
-    arguments: Dict[str, Any] = Field(default_factory=dict, description="Input arguments")
+    arguments: dict[str, Any] = Field(default_factory=dict, description="Input arguments")
     result: Any = Field(None, description="Execution result")
-    error: Optional[str] = Field(None, description="Error message")
+    error: str | None = Field(None, description="Error message")
     status: str = Field(
         default="pending",
         pattern="^(pending|running|completed|failed|cancelled)$",
-        description="Execution status"
+        description="Execution status",
     )
-    start_time: Optional[datetime] = Field(None, description="Start time")
-    end_time: Optional[datetime] = Field(None, description="End time")
-    execution_time: Optional[float] = Field(None, ge=0, description="Execution time in seconds")
-    tokens_used: Optional[int] = Field(None, ge=0, description="Tokens used")
+    start_time: datetime | None = Field(None, description="Start time")
+    end_time: datetime | None = Field(None, description="End time")
+    execution_time: float | None = Field(None, ge=0, description="Execution time in seconds")
+    tokens_used: int | None = Field(None, ge=0, description="Tokens used")
     cache_hit: bool = Field(default=False, description="Whether result was from cache")
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
     model_config = {
         "validate_assignment": True,
@@ -76,47 +74,47 @@ class ToolExecutionResult(BaseModel):
 
 class ToolCache:
     """Cache for tool execution results."""
-    
+
     def __init__(self, max_size: int = 1000, ttl_hours: int = 24):
         self.max_size = max_size
         self.ttl_hours = ttl_hours
-        self.cache: Dict[str, Dict[str, Any]] = {}
-        self.access_times: Dict[str, datetime] = {}
-    
-    def _generate_cache_key(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+        self.cache: dict[str, dict[str, Any]] = {}
+        self.access_times: dict[str, datetime] = {}
+
+    def _generate_cache_key(self, tool_name: str, arguments: dict[str, Any]) -> str:
         """Generate cache key for tool execution."""
         # Create a deterministic key from tool name and arguments
         args_str = json.dumps(arguments, sort_keys=True)
         return f"{tool_name}:{hash(args_str)}"
-    
-    def get(self, tool_name: str, arguments: Dict[str, Any]) -> Optional[Any]:
+
+    def get(self, tool_name: str, arguments: dict[str, Any]) -> Any | None:
         """Get cached result if available and not expired."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-        
+
         if cache_key not in self.cache:
             return None
-        
+
         cached_data = self.cache[cache_key]
         cached_time = cached_data.get("cached_at")
-        
+
         # Check if cache is expired
         if cached_time and datetime.now() - cached_time > timedelta(hours=self.ttl_hours):
             del self.cache[cache_key]
             del self.access_times[cache_key]
             return None
-        
+
         # Update access time for LRU
         self.access_times[cache_key] = datetime.now()
         return cached_data.get("result")
-    
-    def set(self, tool_name: str, arguments: Dict[str, Any], result: Any) -> None:
+
+    def set(self, tool_name: str, arguments: dict[str, Any], result: Any) -> None:
         """Cache tool execution result."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-        
+
         # Implement LRU eviction if cache is full
         if len(self.cache) >= self.max_size:
             self._evict_lru()
-        
+
         self.cache[cache_key] = {
             "result": result,
             "cached_at": datetime.now(),
@@ -124,23 +122,23 @@ class ToolCache:
             "arguments": arguments,
         }
         self.access_times[cache_key] = datetime.now()
-    
+
     def _evict_lru(self) -> None:
         """Evict least recently used cache entry."""
         if not self.access_times:
             return
-        
+
         # Find least recently used entry
         lru_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
         del self.cache[lru_key]
         del self.access_times[lru_key]
-    
+
     def clear(self) -> None:
         """Clear all cached data."""
         self.cache.clear()
         self.access_times.clear()
-    
-    def get_stats(self) -> Dict[str, Any]:
+
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         return {
             "size": len(self.cache),
@@ -148,7 +146,7 @@ class ToolCache:
             "ttl_hours": self.ttl_hours,
             "hit_rate": self._calculate_hit_rate(),
         }
-    
+
     def _calculate_hit_rate(self) -> float:
         """Calculate cache hit rate (simplified)."""
         # This would need to be implemented with actual hit/miss tracking
@@ -157,46 +155,46 @@ class ToolCache:
 
 class ToolDependencyManager:
     """Manage tool dependencies and execution order."""
-    
+
     def __init__(self):
-        self.dependencies: Dict[str, List[str]] = {}
-        self.execution_order: List[str] = []
-    
-    def add_dependency(self, tool_name: str, depends_on: List[str]) -> None:
+        self.dependencies: dict[str, list[str]] = {}
+        self.execution_order: list[str] = []
+
+    def add_dependency(self, tool_name: str, depends_on: list[str]) -> None:
         """Add dependencies for a tool."""
         self.dependencies[tool_name] = depends_on
-    
-    def get_execution_order(self, tools: List[str]) -> List[str]:
+
+    def get_execution_order(self, tools: list[str]) -> list[str]:
         """Get optimal execution order for tools."""
         # Simple topological sort for dependencies
         visited = set()
         temp_visited = set()
         order = []
-        
+
         def visit(tool: str) -> None:
             if tool in temp_visited:
                 raise ValueError(f"Circular dependency detected for tool: {tool}")
             if tool in visited:
                 return
-            
+
             temp_visited.add(tool)
-            
+
             # Visit dependencies first
             for dep in self.dependencies.get(tool, []):
                 if dep in tools:  # Only visit if dependency is in our tool list
                     visit(dep)
-            
+
             temp_visited.remove(tool)
             visited.add(tool)
             order.append(tool)
-        
+
         for tool in tools:
             if tool not in visited:
                 visit(tool)
-        
+
         return order
-    
-    def validate_dependencies(self, tools: List[str]) -> bool:
+
+    def validate_dependencies(self, tools: list[str]) -> bool:
         """Validate that all dependencies are available."""
         for tool in tools:
             deps = self.dependencies.get(tool, [])
@@ -209,18 +207,18 @@ class ToolDependencyManager:
 
 class EnhancedToolExecutor:
     """Enhanced tool executor with validation, caching, and monitoring."""
-    
+
     def __init__(self):
         self.cache = ToolCache()
         self.dependency_manager = ToolDependencyManager()
-        self.execution_history: List[ToolExecutionResult] = []
-        self.active_executions: Dict[str, asyncio.Task] = {}
+        self.execution_history: list[ToolExecutionResult] = []
+        self.active_executions: dict[str, asyncio.Task] = {}
         self.max_concurrent_executions = 10
         self.semaphore = asyncio.Semaphore(self.max_concurrent_executions)
-        
+
         # Initialize dependencies for common tools
         self._initialize_dependencies()
-    
+
     def _initialize_dependencies(self) -> None:
         """Initialize common tool dependencies."""
         # Example dependencies
@@ -228,26 +226,26 @@ class EnhancedToolExecutor:
         self.dependency_manager.add_dependency("file_reader", [])
         self.dependency_manager.add_dependency("data_analyzer", ["file_reader"])
         self.dependency_manager.add_dependency("report_generator", ["data_analyzer", "web_search"])
-    
+
     async def execute_tool(
         self,
         request: ToolExecutionRequest,
     ) -> ToolExecutionResult:
         """
         Execute a tool with validation, caching, and monitoring.
-        
+
         Args:
             request: Tool execution request with validation
-            
+
         Returns:
             ToolExecutionResult: Execution result with metadata
-            
+
         Raises:
             ToolError: If tool execution fails
             ValidationError: If request validation fails
         """
         execution_id = str(uuid4())
-        
+
         # Create execution result
         result = ToolExecutionResult(
             execution_id=execution_id,
@@ -257,7 +255,7 @@ class EnhancedToolExecutor:
             conversation_id=request.conversation_id,
             status="pending",
         )
-        
+
         try:
             # Check cache first
             if request.cache_result:
@@ -270,27 +268,27 @@ class EnhancedToolExecutor:
                     result.execution_time = 0.0
                     logger.info(f"Cache hit for tool {request.tool_name}")
                     return result
-            
+
             # Execute tool with semaphore for concurrency control
             async with self.semaphore:
                 return await self._execute_tool_internal(request, result)
-                
+
         except Exception as e:
             result.status = "failed"
             result.error = str(e)
             result.end_time = datetime.now()
             if result.start_time:
                 result.execution_time = (result.end_time - result.start_time).total_seconds()
-            
+
             logger.error(f"Tool execution failed: {e}")
             raise ToolError(f"Tool execution failed: {str(e)}", request.tool_name, request.arguments)
-        
+
         finally:
             # Store execution history
             self.execution_history.append(result)
             if len(self.execution_history) > 1000:  # Keep last 1000 executions
                 self.execution_history = self.execution_history[-1000:]
-    
+
     async def _execute_tool_internal(
         self,
         request: ToolExecutionRequest,
@@ -299,7 +297,7 @@ class EnhancedToolExecutor:
         """Internal tool execution with timeout and retry logic."""
         result.status = "running"
         result.start_time = datetime.now()
-        
+
         # Try to execute tool with retries
         last_error = None
         for attempt in range(request.retry_count + 1):
@@ -307,80 +305,78 @@ class EnhancedToolExecutor:
                 # Execute with timeout
                 tool_result = await asyncio.wait_for(
                     self._execute_single_tool(request),
-                    timeout=request.timeout
+                    timeout=request.timeout,
                 )
-                
+
                 result.result = tool_result
                 result.status = "completed"
                 result.end_time = datetime.now()
                 result.execution_time = (result.end_time - result.start_time).total_seconds()
-                
+
                 # Cache result if requested
                 if request.cache_result:
                     self.cache.set(request.tool_name, request.arguments, tool_result)
-                
+
                 logger.info(f"Tool {request.tool_name} executed successfully in {result.execution_time:.2f}s")
                 return result
-                
-            except asyncio.TimeoutError:
+
+            except TimeoutError:
                 last_error = f"Tool execution timed out after {request.timeout}s"
                 logger.warning(f"Tool {request.tool_name} timed out on attempt {attempt + 1}")
-                
+
             except Exception as e:
                 last_error = str(e)
                 logger.warning(f"Tool {request.tool_name} failed on attempt {attempt + 1}: {e}")
-                
+
                 if attempt < request.retry_count:
                     await asyncio.sleep(2 ** attempt)  # Exponential backoff
-        
+
         # All attempts failed
         result.status = "failed"
         result.error = last_error
         result.end_time = datetime.now()
         result.execution_time = (result.end_time - result.start_time).total_seconds()
-        
+
         raise ToolError(f"Tool execution failed after {request.retry_count + 1} attempts: {last_error}")
-    
+
     async def _execute_single_tool(self, request: ToolExecutionRequest) -> Any:
         """Execute a single tool (regular or MCP)."""
         tool_name = request.tool_name
         arguments = request.arguments
-        
+
         # Try regular tool first
         try:
-            result = await tool_service.execute_tool(tool_name, request.user_id, **arguments)
-            return result
+            return await tool_service.execute_tool(tool_name, request.user_id, **arguments)
         except Exception as e:
             logger.debug(f"Regular tool {tool_name} failed: {e}")
-        
+
         # Try MCP tool
         try:
-            result = await mcp_manager.execute_tool(tool_name, **arguments)
-            return result
+            return await mcp_manager.execute_tool(tool_name, **arguments)
         except Exception as e:
             logger.debug(f"MCP tool {tool_name} failed: {e}")
-        
+
         # Both failed
         raise ToolError(f"Tool {tool_name} not found or execution failed")
-    
+
     async def execute_tools_batch(
         self,
-        requests: List[ToolExecutionRequest],
-    ) -> List[ToolExecutionResult]:
+        requests: list[ToolExecutionRequest],
+    ) -> list[ToolExecutionResult]:
         """
         Execute multiple tools with dependency management.
-        
+
         Args:
             requests: List of tool execution requests
-            
+
         Returns:
             List[ToolExecutionResult]: Execution results
         """
         tool_names = [req.tool_name for req in requests]
-        
+
         # Get optimal execution order
         execution_order = self.dependency_manager.get_execution_order(tool_names)
-        
+
         # Group requests by execution order
         ordered_requests = []
         for tool_name in execution_order:
@@ -388,7 +384,7 @@ class EnhancedToolExecutor:
                 if req.tool_name == tool_name:
                     ordered_requests.append(req)
                     break
-        
+
         # Execute tools in order
         results = []
         for request in ordered_requests:
@@ -409,13 +405,13 @@ class EnhancedToolExecutor:
                     end_time=datetime.now(),
                 )
                 results.append(failed_result)
-        
+
         return results
-    
-    def get_available_tools(self) -> List[Dict[str, Any]]:
+
+    def get_available_tools(self) -> list[dict[str, Any]]:
         """Get list of available tools with metadata."""
         tools = []
-        
+
         # Get regular tools
         regular_tools = tool_service.get_all_tools()
         for tool in regular_tools:
@@ -426,7 +422,7 @@ class EnhancedToolExecutor:
                 "type": "regular",
                 "dependencies": self.dependency_manager.dependencies.get(tool.get("name"), []),
             })
-        
+
         # Get MCP tools
         mcp_tools = mcp_manager.get_all_tools()
         for tool in mcp_tools:
@@ -437,23 +433,23 @@ class EnhancedToolExecutor:
                 "type": "mcp",
                 "dependencies": self.dependency_manager.dependencies.get(tool.get("name"), []),
             })
-        
+
         return tools
-    
-    def get_execution_stats(self) -> Dict[str, Any]:
+
+    def get_execution_stats(self) -> dict[str, Any]:
         """Get tool execution statistics."""
         total_executions = len(self.execution_history)
         successful_executions = len([r for r in self.execution_history if r.status == "completed"])
         failed_executions = len([r for r in self.execution_history if r.status == "failed"])
-        
+
         avg_execution_time = 0.0
         if successful_executions > 0:
             execution_times = [r.execution_time for r in self.execution_history if r.execution_time]
             if execution_times:
                 avg_execution_time = sum(execution_times) / len(execution_times)
-        
+
         cache_stats = self.cache.get_stats()
-        
+
         return {
             "total_executions": total_executions,
             "successful_executions": successful_executions,
@@ -464,30 +460,30 @@ class EnhancedToolExecutor:
             "active_executions": len(self.active_executions),
             "max_concurrent_executions": self.max_concurrent_executions,
         }
-    
+
     def clear_cache(self) -> None:
         """Clear tool execution cache."""
         self.cache.clear()
         logger.info("Tool execution cache cleared")
-    
+
     def get_recent_executions(
         self,
         limit: int = 50,
-        tool_name: Optional[str] = None,
-        user_id: Optional[str] = None,
-    ) -> List[ToolExecutionResult]:
+        tool_name: str | None = None,
+        user_id: str | None = None,
+    ) -> list[ToolExecutionResult]:
         """Get recent tool executions with optional filtering."""
         executions = self.execution_history.copy()
-        
+
         if tool_name:
             executions = [e for e in executions if e.tool_name == tool_name]
-        
+
         if user_id:
             executions = [e for e in executions if e.user_id == user_id]
-        
+
         # Sort by start time (most recent first)
         executions.sort(key=lambda x: x.start_time or datetime.min, reverse=True)
-        
+
         return executions[:limit]
 
 

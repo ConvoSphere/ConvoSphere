@@ -484,7 +484,7 @@ class AssistantEngine:
         cutoff_time = datetime.now().timestamp() - (max_age_hours * 3600)
 
         results_to_remove = []
-        for request_id, result in self.processing_results.items():
+        for request_id in self.processing_results:
             # Extract timestamp from request_id
             try:
                 timestamp_str = request_id.split("_")[-1]

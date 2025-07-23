@@ -1,5 +1,6 @@
 import React from 'react';
-import { Logo, LogoProps } from './Logo';
+import { Logo } from './Logo';
+import type { LogoProps } from './Logo';
 
 export interface LogoWithTextProps extends Omit<LogoProps, 'variant'> {
   showTagline?: boolean;

@@ -27,7 +27,7 @@ class WeaviateService:
             client = weaviate.Client(self.url, auth_client_secret=auth)
             logger.info(f"Connected to Weaviate at {self.url}")
             return client
-        except Exception as e:
+        except weaviate.exceptions.WeaviateException as e:
             logger.error(f"Failed to connect to Weaviate: {e}")
             return None
 

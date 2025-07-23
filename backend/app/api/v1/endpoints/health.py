@@ -5,9 +5,10 @@ This module provides health check and status endpoints for monitoring
 the AI Assistant Platform.
 """
 
+from datetime import datetime
+
 from fastapi import APIRouter
 from loguru import logger
-from datetime import datetime
 
 from app.core.config import get_settings
 from app.core.database import check_db_connection, get_db_info
@@ -89,7 +90,7 @@ async def detailed_health_check():
 async def database_health():
     """Database-specific health check."""
     try:
-        settings = get_settings()
+        get_settings()
         healthy = check_db_connection()
         info = get_db_info()
 
@@ -111,7 +112,7 @@ async def database_health():
 async def redis_health():
     """Redis-specific health check."""
     try:
-        settings = get_settings()
+        get_settings()
         healthy = await check_redis_connection()
         info = await get_redis_info()
 
@@ -133,7 +134,7 @@ async def redis_health():
 async def weaviate_health():
     """Weaviate-specific health check."""
     try:
-        settings = get_settings()
+        get_settings()
         healthy = check_weaviate_connection()
         info = get_weaviate_info()
 

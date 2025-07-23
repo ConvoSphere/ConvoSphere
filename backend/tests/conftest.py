@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
-from main import app
+
+from backend.main import app
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -47,7 +47,7 @@ async def async_client():
     yield client
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_user_data():
     """Test user data for authentication tests."""
     return {
@@ -59,7 +59,7 @@ def test_user_data():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_assistant_data():
     """Test assistant data for assistant tests."""
     return {
@@ -71,7 +71,7 @@ def test_assistant_data():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_tool_data():
     """Test tool data for tool tests."""
     return {

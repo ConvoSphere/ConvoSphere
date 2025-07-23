@@ -353,7 +353,7 @@ class ConversationsAPITester:
         self.test_get_conversation(conversation_id)
 
         # Test updating conversation
-        updated_conversation = self.test_update_conversation(conversation_id)
+        self.test_update_conversation(conversation_id)
 
         # Test adding messages
         user_message = self.test_add_message(conversation_id)
@@ -361,13 +361,13 @@ class ConversationsAPITester:
         tool_message = self.test_add_tool_message(conversation_id)
 
         # Test listing messages
-        messages = self.test_list_messages(conversation_id)
+        self.test_list_messages(conversation_id)
 
         # Test archiving conversation
         self.test_archive_conversation(conversation_id)
 
         # Test getting archived conversation
-        archived_conversation = self.test_get_conversation(conversation_id)
+        self.test_get_conversation(conversation_id)
 
         # Test deleting conversation
         self.test_delete_conversation(conversation_id)

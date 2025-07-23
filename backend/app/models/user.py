@@ -8,7 +8,7 @@ and authentication functionality with enterprise features support.
 import uuid
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, Text, JSON
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, String, Table, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

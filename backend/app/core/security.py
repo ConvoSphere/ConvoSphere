@@ -74,12 +74,11 @@ def create_access_token(
         )
 
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(
+    return jwt.encode(
         to_encode,
         settings.secret_key,
         algorithm=settings.jwt_algorithm,
     )
-    return encoded_jwt
 
 
 def create_refresh_token(
@@ -105,12 +104,11 @@ def create_refresh_token(
         )
 
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
-    encoded_jwt = jwt.encode(
+    return jwt.encode(
         to_encode,
         settings.secret_key,
         algorithm=settings.jwt_algorithm,
     )
-    return encoded_jwt
 
 
 async def verify_token(token: str) -> str | None:

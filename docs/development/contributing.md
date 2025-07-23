@@ -60,8 +60,8 @@ Before you begin contributing, ensure you have:
 1. **Create virtual environment**
    ```bash
    cd backend
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 2. **Install dependencies**

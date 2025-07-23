@@ -41,12 +41,11 @@ async def semantic_search_conversation(
     Semantic search in chat conversation messages.
     """
     try:
-        results = weaviate_service.semantic_search_messages(
+        return weaviate_service.semantic_search_messages(
             query=search.query,
             conversation_id=search.conversation_id,
             limit=search.limit,
         )
-        return results
     except Exception as e:
         logger.error(f"Semantic search error: {e}")
         raise HTTPException(status_code=500, detail="Semantic search failed")
@@ -62,11 +61,10 @@ async def semantic_search_knowledge(
     Semantic search in knowledge base (RAG).
     """
     try:
-        results = weaviate_service.semantic_search_knowledge(
+        return weaviate_service.semantic_search_knowledge(
             query=search.query,
             limit=search.limit,
         )
-        return results
     except Exception as e:
         logger.error(f"Knowledge search error: {e}")
         raise HTTPException(status_code=500, detail="Knowledge search failed")
