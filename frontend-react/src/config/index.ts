@@ -5,16 +5,16 @@
 
 export const config = {
   // API Configuration
-  apiUrl: import.meta.env.VITE_API_URL || '/api',
-  wsUrl: import.meta.env.VITE_WS_URL || 
-    (import.meta.env.DEV ? 'ws://localhost:8000' : `ws://${window.location.host}`),
+  apiUrl: process.env.VITE_API_URL || import.meta?.env?.VITE_API_URL || '/api',
+  wsUrl: process.env.VITE_WS_URL || import.meta?.env?.VITE_WS_URL || 
+    (process.env.NODE_ENV === 'development' || import.meta?.env?.DEV ? 'ws://localhost:8000' : `ws://${window.location.host}`),
   
   // Environment
-  isDevelopment: import.meta.env.DEV,
-  isProduction: import.meta.env.PROD,
+  isDevelopment: process.env.NODE_ENV === 'development' || import.meta?.env?.DEV,
+  isProduction: process.env.NODE_ENV === 'production' || import.meta?.env?.PROD,
   
   // Feature flags
-  enableDebug: import.meta.env.VITE_ENABLE_DEBUG === 'true',
+  enableDebug: process.env.VITE_ENABLE_DEBUG === 'true' || import.meta?.env?.VITE_ENABLE_DEBUG === 'true',
   
   // WebSocket endpoints
   wsEndpoints: {

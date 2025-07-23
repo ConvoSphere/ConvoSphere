@@ -4,4 +4,7 @@ export default {
     '@babel/preset-typescript',
     ['@babel/preset-react', { runtime: 'automatic' }],
   ],
+  plugins: [
+    ['@babel/plugin-transform-runtime', { regenerator: true }],
+  ],
 };

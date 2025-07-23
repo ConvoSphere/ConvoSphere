@@ -16,6 +16,16 @@ jest.mock('../../store/themeStore', () => ({
   useThemeStore: jest.fn(() => ({
     theme: 'light',
     toggleTheme: jest.fn(),
+    getCurrentColors: () => ({
+      colorBgContainer: '#ffffff',
+      colorBorder: '#d9d9d9',
+      colorText: '#000000',
+      colorPrimary: '#1890ff',
+      colorSuccess: '#52c41a',
+      colorWarning: '#faad14',
+      colorError: '#ff4d4f',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+    }),
   })),
 }));
 
@@ -72,6 +82,16 @@ describe('HeaderBar', () => {
     jest.mocked(require('../../store/themeStore').useThemeStore).mockReturnValue({
       theme: 'light',
       toggleTheme: mockToggleTheme,
+      getCurrentColors: () => ({
+        colorBgContainer: '#ffffff',
+        colorBorder: '#d9d9d9',
+        colorText: '#000000',
+        colorPrimary: '#1890ff',
+        colorSuccess: '#52c41a',
+        colorWarning: '#faad14',
+        colorError: '#ff4d4f',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      }),
     });
 
     renderWithRouter(<HeaderBar />);
@@ -157,10 +177,20 @@ describe('HeaderBar', () => {
   });
 
   test('displays correct theme icon for light theme', () => {
-    jest.mocked(require('../../store/themeStore').useThemeStore).mockReturnValue({
-      theme: 'light',
-      toggleTheme: jest.fn(),
-    });
+      jest.mocked(require('../../store/themeStore').useThemeStore).mockReturnValue({
+    theme: 'light',
+    toggleTheme: jest.fn(),
+    getCurrentColors: () => ({
+      colorBgContainer: '#ffffff',
+      colorBorder: '#d9d9d9',
+      colorText: '#000000',
+      colorPrimary: '#1890ff',
+      colorSuccess: '#52c41a',
+      colorWarning: '#faad14',
+      colorError: '#ff4d4f',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+    }),
+  });
 
     renderWithRouter(<HeaderBar />);
     
@@ -172,6 +202,16 @@ describe('HeaderBar', () => {
     jest.mocked(require('../../store/themeStore').useThemeStore).mockReturnValue({
       theme: 'dark',
       toggleTheme: jest.fn(),
+      getCurrentColors: () => ({
+        colorBgContainer: '#141414',
+        colorBorder: '#434343',
+        colorText: '#ffffff',
+        colorPrimary: '#1890ff',
+        colorSuccess: '#52c41a',
+        colorWarning: '#faad14',
+        colorError: '#ff4d4f',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.45)',
+      }),
     });
 
     renderWithRouter(<HeaderBar />);
