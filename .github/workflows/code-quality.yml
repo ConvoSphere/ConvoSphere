@@ -69,7 +69,7 @@ jobs:
           bandit -r backend/ frontend/ -f json -o bandit-report.json || true
       
       - name: Upload Bandit report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bandit-security-report
@@ -159,7 +159,7 @@ jobs:
           pytest --cov=backend --cov=frontend --cov-report=xml --cov-report=html
       
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
           path: |
@@ -198,7 +198,7 @@ jobs:
           mkdocs build --strict
       
       - name: Upload documentation build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation-build
           path: site/
