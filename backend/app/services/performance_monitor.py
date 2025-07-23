@@ -574,6 +574,11 @@ class DatabaseOptimizer:
         }
 
 
+# Add missing attributes to PerformanceMonitor class
+PerformanceMonitor.db = None
+PerformanceMonitor.redis_client = None
+PerformanceMonitor.weaviate_client = None
+
 # Global performance monitor instance
 performance_monitor = PerformanceMonitor()
 database_optimizer = DatabaseOptimizer(performance_monitor)

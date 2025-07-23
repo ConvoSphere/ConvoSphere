@@ -31,20 +31,41 @@ from app.utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
+from app.core.database import get_db
 
 
 class UserService:
     """Service for managing users with enterprise features."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_db()
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     # User CRUD operations
     def create_user(
-        self, user_data: UserCreate, current_user: User | None = None,
+        self, 
+        user_data: UserCreate | None = None, 
+        current_user: User | None = None,
+        email: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        full_name: str | None = None,
+        **kwargs
     ) -> User:
         """Create a new user."""
+        # Handle both UserCreate object and individual parameters
+        if user_data is None:
+            # Create UserCreate object from individual parameters
+            from app.schemas.user import UserCreate
+            user_data = UserCreate(
+                email=email,
+                username=username,
+                password=password,
+                first_name=full_name.split()[0] if full_name else None,
+                last_name=' '.join(full_name.split()[1:]) if full_name and len(full_name.split()) > 1 else None,
+                **kwargs
+            )
+        
         # Check if user already exists
         if self.get_user_by_email(user_data.email):
             raise UserAlreadyExistsError(

@@ -687,6 +687,39 @@ class AIService:
             logger.error(f"Error generating batch embeddings: {e}")
             raise
 
+    async def generate_response(self, messages: list[dict[str, str]], model: str | None = None) -> AIResponse:
+        """Generate AI response from messages."""
+        try:
+            response = await self.chat_completion(messages, model=model)
+            return AIResponse(
+                content=response.get('choices', [{}])[0].get('message', {}).get('content', ''),
+                metadata=response
+            )
+        except Exception as e:
+            logger.error(f"Error generating response: {e}")
+            return AIResponse(content="Sorry, I encountered an error.")
+
+    async def generate_response_with_tools(self, messages: list[dict[str, str]], tools: list[dict], model: str | None = None) -> AIResponse:
+        """Generate AI response with tool calls."""
+        try:
+            response = await self.chat_completion(messages, tools=tools, model=model)
+            return AIResponse(
+                content=response.get('choices', [{}])[0].get('message', {}).get('content', ''),
+                tool_calls=response.get('choices', [{}])[0].get('message', {}).get('tool_calls'),
+                metadata=response
+            )
+        except Exception as e:
+            logger.error(f"Error generating response with tools: {e}")
+            return AIResponse(content="Sorry, I encountered an error.")
+
+    async def embed_text(self, text: str, model: str = "text-embedding-ada-002") -> list[float]:
+        """Generate embeddings for text."""
+        try:
+            return await self.get_embeddings(text, model)
+        except Exception as e:
+            logger.error(f"Error generating embeddings: {e}")
+            return []
+
     async def get_response(
         self,
         conversation_id: str,

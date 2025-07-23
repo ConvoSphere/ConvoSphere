@@ -40,16 +40,25 @@ class TestUserServiceComprehensive:
             mock_db.add.return_value = None
             mock_db.commit.return_value = None
             mock_db.refresh.return_value = None
+            
+            # Mock query methods to return None (no existing users)
+            mock_query = MagicMock()
+            mock_query.filter.return_value.first.return_value = None
+            mock_db.query.return_value = mock_query
 
-            result = user_service.create_user(
-                email=sample_user_data["email"],
-                username=sample_user_data["username"],
-                password="TestPassword123!",
-                full_name=sample_user_data["full_name"],
-            )
+            # Mock the get_user_by_email and get_user_by_username methods
+            with patch.object(user_service, "get_user_by_email", return_value=None), \
+                 patch.object(user_service, "get_user_by_username", return_value=None):
+                
+                result = user_service.create_user(
+                    email=sample_user_data["email"],
+                    username=sample_user_data["username"],
+                    password="TestPassword123!",
+                    full_name=sample_user_data["full_name"],
+                )
 
-            assert result is not None
-            assert result.email == sample_user_data["email"]
+                assert result is not None
+                assert result.email == sample_user_data["email"]
 
     def test_create_user_duplicate_email(self, user_service, sample_user_data):
         """Test user creation with duplicate email."""

@@ -24,7 +24,20 @@ module.exports = {
     "react/prop-types": "off",
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-require-imports": "off",
+    "no-undef": "warn",
+    "no-case-declarations": "warn",
+    "no-prototype-builtins": "warn",
   },
+  overrides: [
+    {
+      files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**/*"],
+      rules: {
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+      },
+    },
+  ],
   settings: {
     react: {
       version: "detect",

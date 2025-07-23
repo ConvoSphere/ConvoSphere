@@ -23,6 +23,7 @@ from .ai_service import AIService
 from .document_processor import document_processor
 from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +31,8 @@ logger = logging.getLogger(__name__)
 class KnowledgeService:
     """Service for managing knowledge base documents and search."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_db()
         self.weaviate_service = WeaviateService()
         self.ai_service = AIService()
 
