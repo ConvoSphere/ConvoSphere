@@ -270,15 +270,19 @@ class TestConversationServiceComprehensive:
             mock_db.add.return_value = None
             mock_db.commit.return_value = None
             mock_db.refresh.return_value = None
-
-            result = conversation_service.create_conversation(
+    
+            # Create ConversationCreate object
+            from app.schemas.conversation import ConversationCreate
+            conversation_data = ConversationCreate(
                 title=sample_conversation_data["title"],
                 user_id=sample_conversation_data["user_id"],
                 assistant_id=sample_conversation_data["assistant_id"],
             )
+            
+            result = conversation_service.create_conversation(conversation_data)
 
             assert result is not None
-            assert result.title == sample_conversation_data["title"]
+            assert result["title"] == sample_conversation_data["title"]
 
     def test_get_conversation_by_id(self, conversation_service, sample_conversation_data):
         """Test getting conversation by ID."""
@@ -697,63 +701,77 @@ class TestPerformanceMonitorComprehensive:
     def performance_monitor(self):
         return PerformanceMonitor()
 
-    def test_get_system_status(self, performance_monitor):
-        """Test getting system status."""
-        with patch("app.services.performance_monitor.psutil.cpu_percent") as mock_cpu:
-            mock_cpu.return_value = 50.0
+    def test_get_stats(self, performance_monitor):
+        """Test getting performance stats."""
+        result = performance_monitor.get_stats()
 
-            with patch("app.services.performance_monitor.psutil.virtual_memory") as mock_mem:
-                mock_mem.return_value = MagicMock(percent=60.0)
+        assert result is not None
+        assert "current_metrics" in result
+        assert "current_alerts" in result
+        assert "active_alerts" in result
 
-                result = performance_monitor.get_system_status()
+    def test_record_metric(self, performance_monitor):
+        """Test recording a performance metric."""
+        from app.services.performance_monitor import PerformanceMetric
+        
+        metric = PerformanceMetric(
+            metric_name="test_metric",
+            metric_type="counter",
+            value=42
+        )
+        
+        performance_monitor.record_metric(metric)
+        
+        # Check that metric was recorded
+        stats = performance_monitor.get_stats()
+        assert stats["current_metrics"] > 0
 
-                assert result is not None
-                assert "cpu_percent" in result
-                assert "ram" in result
+    def test_record_api_request(self, performance_monitor):
+        """Test recording an API request metric."""
+        from app.services.performance_monitor import APIMetric
+        
+        api_metric = APIMetric(
+            endpoint="/api/test",
+            method="GET",
+            status_code=200,
+            response_time=0.1
+        )
+        
+        performance_monitor.record_api_request(api_metric)
+        
+        # Check that metric was recorded (API metrics are stored separately)
+        assert len(performance_monitor.api_metrics) > 0
 
-    def test_get_database_status(self, performance_monitor):
-        """Test getting database status."""
-        with patch.object(performance_monitor, "db") as mock_db:
-            mock_db.execute.return_value.scalar.return_value = 1
-
-            result = performance_monitor.get_database_status()
-
-            assert result is not None
-            assert result["healthy"] is True
-
-    def test_get_redis_status(self, performance_monitor):
-        """Test getting Redis status."""
-        with patch.object(performance_monitor, "redis_client") as mock_redis:
-            mock_redis.ping.return_value = True
-
-            result = performance_monitor.get_redis_status()
-
-            assert result is not None
-            assert result["healthy"] is True
-
-    def test_get_weaviate_status(self, performance_monitor):
-        """Test getting Weaviate status."""
-        with patch.object(performance_monitor, "weaviate_client") as mock_weaviate:
-            mock_weaviate.is_ready.return_value = True
-
-            result = performance_monitor.get_weaviate_status()
-
-            assert result is not None
-            assert result["healthy"] is True
+    def test_record_cache_operation(self, performance_monitor):
+        """Test recording a cache operation metric."""
+        from app.services.performance_monitor import CacheMetric
+        
+        cache_metric = CacheMetric(
+            operation="get",
+            namespace="test",
+            key="test_key",
+            operation_time=0.01,
+            cache_hit=True
+        )
+        
+        performance_monitor.record_cache_operation(cache_metric)
+        
+        # Check that metric was recorded (cache metrics are stored separately)
+        assert len(performance_monitor.cache_metrics) > 0
 
     def test_start_monitoring(self, performance_monitor):
         """Test starting performance monitoring."""
-        with patch("app.services.performance_monitor.threading.Thread") as mock_thread:
+        with patch("threading.Thread") as mock_thread:
             mock_thread.return_value.start.return_value = None
 
             performance_monitor.start_monitoring()
 
-            assert performance_monitor.monitoring_active is True
+            assert performance_monitor.monitoring_enabled is True
 
     def test_stop_monitoring(self, performance_monitor):
         """Test stopping performance monitoring."""
-        performance_monitor.monitoring_active = True
+        performance_monitor.monitoring_enabled = True
 
         performance_monitor.stop_monitoring()
 
-        assert performance_monitor.monitoring_active is False
+        assert performance_monitor.monitoring_enabled is False

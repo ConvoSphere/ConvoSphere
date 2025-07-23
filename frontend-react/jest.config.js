@@ -21,4 +21,7 @@ export default {
   ],
   testTimeout: 30000,
   maxWorkers: 1,
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons'],
+  },
 }; 
