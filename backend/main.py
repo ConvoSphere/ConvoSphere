@@ -8,18 +8,18 @@ configuring middleware, routes, and application lifecycle events.
 import os
 from contextlib import asynccontextmanager
 
-from app.api.v1.api import api_router
-from app.core.config import get_settings
-from app.core.database import check_db_connection, init_db
-from app.core.i18n import I18nMiddleware, i18n_manager, t
-from app.core.redis_client import check_redis_connection, close_redis, init_redis
-from app.core.weaviate_client import (
+from .app.api.v1.api import api_router
+from .app.core.config import get_settings
+from .app.core.database import check_db_connection, init_db
+from .app.core.i18n import I18nMiddleware, i18n_manager, t
+from .app.core.redis_client import check_redis_connection, close_redis, init_redis
+from .app.core.weaviate_client import (
     check_weaviate_connection,
     close_weaviate,
     create_schema_if_not_exists,
     init_weaviate,
 )
-from app.services.performance_monitor import performance_monitor
+from .app.services.performance_monitor import performance_monitor
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
