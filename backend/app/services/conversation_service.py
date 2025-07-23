@@ -16,13 +16,14 @@ from app.schemas.conversation import (
     ConversationCreate,
     MessageCreate,
 )
+from app.core.database import get_db
 
 
 class ConversationService:
     """Service for managing conversations."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_db()
 
     def create_conversation(
         self,
@@ -53,11 +54,6 @@ class ConversationService:
                 title=conversation_data.title.strip(),
                 description=conversation_data.description,
                 conversation_metadata=conversation_data.conversation_metadata,
-                tags=conversation_data.tags,
-                access=conversation_data.access,
-                group_id=conversation_data.group_id,
-                organization_id=conversation_data.organization_id,
-                participants=conversation_data.participants,
                 is_active=True,
             )
 

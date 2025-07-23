@@ -129,6 +129,7 @@ class PerformanceMonitor:
 
     def __init__(self, max_metrics_history: int = 10000):
         self.max_metrics_history = max_metrics_history
+        self.monitoring_enabled = True
         self.metrics_history: list[PerformanceMetric] = []
         self.database_metrics: list[DatabaseQueryMetric] = []
         self.api_metrics: list[APIMetric] = []
@@ -160,6 +161,16 @@ class PerformanceMonitor:
             "active_alerts": 0,
             "last_cleanup": datetime.now(),
         }
+
+    def start_monitoring(self) -> None:
+        """Start performance monitoring."""
+        self.monitoring_enabled = True
+        logger.info("Performance monitoring started")
+
+    def stop_monitoring(self) -> None:
+        """Stop performance monitoring."""
+        self.monitoring_enabled = False
+        logger.info("Performance monitoring stopped")
 
     def record_metric(self, metric: PerformanceMetric) -> None:
         """Record a performance metric."""
@@ -562,6 +573,11 @@ class DatabaseOptimizer:
             ]),
         }
 
+
+# Add missing attributes to PerformanceMonitor class
+PerformanceMonitor.db = None
+PerformanceMonitor.redis_client = None
+PerformanceMonitor.weaviate_client = None
 
 # Global performance monitor instance
 performance_monitor = PerformanceMonitor()

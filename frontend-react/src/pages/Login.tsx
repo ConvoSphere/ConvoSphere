@@ -27,10 +27,10 @@ const Login: React.FC = () => {
       try {
         const providers = await getSSOProviders();
         setSsoProviders(providers || []); // immer ein Array setzen
-      } catch (error) {
-        setSsoProviders([]); // auch im Fehlerfall ein Array
-        console.log('No SSO providers configured or error loading providers');
-      }
+          } catch {
+      setSsoProviders([]); // auch im Fehlerfall ein Array
+      console.log('No SSO providers configured or error loading providers');
+    }
     };
     loadSSOProviders();
   }, []);
@@ -52,7 +52,7 @@ const Login: React.FC = () => {
   const handleSSOLogin = async (provider: string) => {
     try {
       await ssoLogin(provider);
-    } catch (error) {
+    } catch {
       setError(`SSO login with ${provider} failed.`);
     }
   };
@@ -74,8 +74,13 @@ const Login: React.FC = () => {
     }
   };
 
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
   if (isAuthenticated) {
-    navigate('/');
     return null;
   }
 

@@ -9,13 +9,14 @@ from sqlalchemy.orm import Session
 
 from app.models.tool import Tool, ToolCategory
 from app.models.user import User
+from app.core.database import get_db
 
 
 class ToolService:
     """Service for managing tools."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_db()
 
     def get_available_tools(
         self, user_id: str | None = None, category: str | None = None,

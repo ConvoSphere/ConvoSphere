@@ -766,6 +766,36 @@ class DocumentProcessor:
         sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
         return [word for word, freq in sorted_words[:10]]
 
+    def process_pdf(self, file_path: str) -> str:
+        """Process PDF document and extract text."""
+        try:
+            with open(file_path, 'rb') as file:
+                file_content = file.read()
+            return self._extract_pdf_text(file_content)
+        except Exception as e:
+            logger.error(f"Error processing PDF {file_path}: {e}")
+            return ""
+
+    def process_docx(self, file_path: str) -> str:
+        """Process DOCX document and extract text."""
+        try:
+            with open(file_path, 'rb') as file:
+                file_content = file.read()
+            return self._extract_docx_text(file_content)
+        except Exception as e:
+            logger.error(f"Error processing DOCX {file_path}: {e}")
+            return ""
+
+    def process_txt(self, file_path: str) -> str:
+        """Process TXT document and extract text."""
+        try:
+            with open(file_path, 'rb') as file:
+                file_content = file.read()
+            return self._extract_txt_text(file_content)
+        except Exception as e:
+            logger.error(f"Error processing TXT {file_path}: {e}")
+            return ""
+
     def process_document(self, file_content: bytes, filename: str) -> dict[str, Any]:
         """
         Process a document completely.

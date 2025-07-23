@@ -12,13 +12,14 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from app.models.assistant import Assistant, AssistantStatus
+from app.core.database import get_db
 
 
 class AssistantService:
     """Service for managing AI assistants."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_db()
 
     def create_assistant(
         self,

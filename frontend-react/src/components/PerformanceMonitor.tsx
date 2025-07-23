@@ -3,8 +3,7 @@ import { Card, Statistic, Progress, Button, Space, Typography, Divider } from 'a
 import { 
   DashboardOutlined, 
   ReloadOutlined, 
-  CloseOutlined,
-  InfoCircleOutlined 
+  CloseOutlined
 } from '@ant-design/icons';
 import { useThemeStore } from '../store/themeStore';
 import performanceMonitor from '../utils/performance';

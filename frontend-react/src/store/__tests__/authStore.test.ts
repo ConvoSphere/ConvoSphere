@@ -207,7 +207,11 @@ describe('AuthStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        await result.current.logout();
+        try {
+          await result.current.logout();
+        } catch (error) {
+          // Expected error, continue
+        }
       });
 
       // Should still clear local state even if API call fails

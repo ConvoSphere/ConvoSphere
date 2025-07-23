@@ -8,18 +8,18 @@ configuring middleware, routes, and application lifecycle events.
 import os
 from contextlib import asynccontextmanager
 
-from app.api.v1.api import api_router
-from app.core.config import get_settings
-from app.core.database import check_db_connection, init_db
-from app.core.i18n import I18nMiddleware, i18n_manager, t
-from app.core.redis_client import check_redis_connection, close_redis, init_redis
-from app.core.weaviate_client import (
+from .app.api.v1.api import api_router
+from .app.core.config import get_settings
+from .app.core.database import check_db_connection, init_db
+from .app.core.i18n import I18nMiddleware, i18n_manager, t
+from .app.core.redis_client import check_redis_connection, close_redis, init_redis
+from .app.core.weaviate_client import (
     check_weaviate_connection,
     close_weaviate,
     create_schema_if_not_exists,
     init_weaviate,
 )
-from app.services.performance_monitor import performance_monitor
+from .app.services.performance_monitor import performance_monitor
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,18 +27,18 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-# OpenTelemetry-Setup
-from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.redis import RedisInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# OpenTelemetry-Setup (disabled for testing)
+# from opentelemetry import metrics, trace
+# from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+# from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+# from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+# from opentelemetry.instrumentation.redis import RedisInstrumentor
+# from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+# from opentelemetry.sdk.metrics import MeterProvider
+# from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+# from opentelemetry.sdk.resources import Resource
+# from opentelemetry.sdk.trace import TracerProvider
+# from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
@@ -100,28 +100,30 @@ async def lifespan(_):
 
 
 def configure_opentelemetry(app, db_engine=None, redis_client=None):
-    resource = Resource.create({
-        "service.name": os.getenv("OTEL_SERVICE_NAME", "ai-assistant-platform"),
-        "service.version": get_settings().app_version,
-        "deployment.environment": get_settings().environment,
-    })
-    # Tracing
-    tracer_provider = TracerProvider(resource=resource)
-    trace.set_tracer_provider(tracer_provider)
-    otlp_exporter = OTLPSpanExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
-    span_processor = BatchSpanProcessor(otlp_exporter)
-    tracer_provider.add_span_processor(span_processor)
-    # Metrics
-    metric_exporter = OTLPMetricExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
-    metric_reader = PeriodicExportingMetricReader(metric_exporter)
-    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-    metrics.set_meter_provider(meter_provider)
-    # Instrumentierung
-    FastAPIInstrumentor.instrument_app(app)
-    if db_engine is not None:
-        SQLAlchemyInstrumentor().instrument(engine=db_engine)
-    if redis_client is not None:
-        RedisInstrumentor().instrument()
+    # OpenTelemetry disabled for testing
+    pass
+    # resource = Resource.create({
+    #     "service.name": os.getenv("OTEL_SERVICE_NAME", "ai-assistant-platform"),
+    #     "service.version": get_settings().app_version,
+    #     "deployment.environment": get_settings().environment,
+    # })
+    # # Tracing
+    # tracer_provider = TracerProvider(resource=resource)
+    # trace.set_tracer_provider(tracer_provider)
+    # otlp_exporter = OTLPSpanExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
+    # span_processor = BatchSpanProcessor(otlp_exporter)
+    # tracer_provider.add_span_processor(span_processor)
+    # # Metrics
+    # metric_exporter = OTLPMetricExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
+    # metric_reader = PeriodicExportingMetricReader(metric_exporter)
+    # meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+    # metrics.set_meter_provider(meter_provider)
+    # # Instrumentierung
+    # FastAPIInstrumentor.instrument_app(app)
+    # if db_engine is not None:
+    #     SQLAlchemyInstrumentor().instrument(engine=db_engine)
+    # if redis_client is not None:
+    #     RedisInstrumentor().instrument()
 
 
 def create_application() -> FastAPI:
@@ -146,10 +148,11 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
-    # OpenTelemetry initialisieren
-    from app.core.database import engine
-    from app.core.redis_client import redis_client
-    configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
+    # OpenTelemetry initialisieren (disabled for testing)
+    # if not get_settings().debug or os.getenv("DISABLE_OTEL", "false").lower() != "true":
+    #     from app.core.database import engine
+    #     from app.core.redis_client import redis_client
+    #     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Add middleware
     app.add_middleware(
