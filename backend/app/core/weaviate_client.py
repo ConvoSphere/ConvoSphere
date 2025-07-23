@@ -5,6 +5,7 @@ This module provides Weaviate connection setup and utility functions
 for the AI Assistant Platform.
 """
 
+from datetime import datetime
 from typing import Any
 
 import weaviate

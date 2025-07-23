@@ -38,7 +38,6 @@ class ConversationIntelligenceService:
     """Service for conversation intelligence features."""
 
     def __init__(self):
-        self.conversation_service = ConversationService()
         self.metrics = self._initialize_metrics()
         self._cache_enabled = True
         self._ai_models = {

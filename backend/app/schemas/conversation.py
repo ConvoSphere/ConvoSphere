@@ -5,7 +5,7 @@ This module provides comprehensive schemas for conversation and message manageme
 with full Pydantic v2 validation and type safety.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
@@ -94,7 +94,13 @@ class MessageBase(BaseModel):
 
 
 class MessageCreate(MessageBase):
-    pass
+    """Message creation schema with relaxed validation."""
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        extra="forbid",  # Forbid extra fields
+    )
 
 
 class MessageUpdate(BaseModel):
@@ -183,8 +189,15 @@ class ConversationBase(BaseModel):
     def validate_tags(cls, v: list[str] | None) -> list[str] | None:
         """Validate conversation tags."""
         if v is not None:
-            # Remove empty tags and duplicates
-            cleaned_tags = list({tag.strip() for tag in v if tag and tag.strip()})
+            # Remove empty tags and duplicates while preserving order
+            seen = set()
+            cleaned_tags = []
+            for tag in v:
+                if tag and tag.strip():
+                    clean_tag = tag.strip()
+                    if clean_tag not in seen:
+                        seen.add(clean_tag)
+                        cleaned_tags.append(clean_tag)
             if len(cleaned_tags) > 20:
                 raise ValueError("Maximum 20 tags allowed")
             return cleaned_tags
@@ -325,8 +338,14 @@ class ConversationSearchParams(BaseModel):
     @classmethod
     def validate_date_range(cls, v: datetime | None) -> datetime | None:
         """Validate date range."""
-        if v is not None and v > datetime.now():
-            raise ValueError("Date cannot be in the future")
+        if v is not None:
+            # Make timezone-aware if it's naive
+            if v.tzinfo is None:
+                v = v.replace(tzinfo=timezone.utc)
+            # Compare with current time in the same timezone
+            now = datetime.now(v.tzinfo)
+            if v > now:
+                raise ValueError("Date cannot be in the future")
         return v
 
     @field_validator("created_before")

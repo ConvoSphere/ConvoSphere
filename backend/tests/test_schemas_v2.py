@@ -15,7 +15,7 @@ from app.schemas.agent import (
     ToolCall,
 )
 from app.schemas.agent import (
-    AgentResponse as AgentResponseSchema,
+    AgentResponseSchema,
 )
 from app.schemas.conversation import (
     ConversationCreate,
@@ -36,7 +36,6 @@ class TestMessageSchemas:
             "content": "Hello, world!",
             "role": MessageRole.USER,
             "message_type": MessageType.TEXT,
-            "conversation_id": str(uuid4()),
         }
 
         message = MessageCreate(**message_data)
@@ -49,7 +48,6 @@ class TestMessageSchemas:
         message_data = {
             "content": "",
             "role": MessageRole.USER,
-            "conversation_id": str(uuid4()),
         }
 
         with pytest.raises(ValidationError) as exc_info:
@@ -62,7 +60,6 @@ class TestMessageSchemas:
         message_data = {
             "content": "   ",
             "role": MessageRole.USER,
-            "conversation_id": str(uuid4()),
         }
 
         with pytest.raises(ValidationError) as exc_info:
@@ -76,7 +73,6 @@ class TestMessageSchemas:
         message_data = {
             "content": long_content,
             "role": MessageRole.USER,
-            "conversation_id": str(uuid4()),
         }
 
         with pytest.raises(ValidationError) as exc_info:
@@ -92,7 +88,6 @@ class TestMessageSchemas:
             "tool_name": "test_tool",
             "tool_input": {"param": "value"},
             "tool_output": {"result": "success"},
-            "conversation_id": str(uuid4()),
         }
 
         message = MessageCreate(**message_data)
@@ -106,7 +101,6 @@ class TestMessageSchemas:
             "content": "Tool result",
             "role": MessageRole.TOOL,
             "tool_name": "",
-            "conversation_id": str(uuid4()),
         }
 
         with pytest.raises(ValidationError) as exc_info:
@@ -120,7 +114,6 @@ class TestMessageSchemas:
             "content": "Test message",
             "role": MessageRole.USER,
             "tokens_used": -1,
-            "conversation_id": str(uuid4()),
         }
 
         with pytest.raises(ValidationError) as exc_info:
@@ -262,7 +255,7 @@ class TestConversationSchemas:
 
     def test_conversation_search_params_future_date(self):
         """Test conversation search with future date."""
-        future_date = datetime(2025, 1, 1, tzinfo=UTC)
+        future_date = datetime(2030, 1, 1, tzinfo=UTC)
         search_params = {
             "query": "test",
             "created_after": future_date,
@@ -502,7 +495,6 @@ class TestSchemaIntegration:
         message_data = {
             "content": "Test message",
             "role": MessageRole.USER,
-            "conversation_id": str(uuid4()),
             "extra_field": "should_fail",  # Extra field
         }
 
@@ -516,7 +508,6 @@ class TestSchemaIntegration:
         message = MessageCreate(
             content="Test message",
             role=MessageRole.USER,
-            conversation_id=str(uuid4()),
         )
 
         # This should raise an error due to validate_assignment=True

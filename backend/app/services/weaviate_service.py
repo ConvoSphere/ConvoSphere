@@ -24,10 +24,10 @@ class WeaviateService:
     def _init_client(self):
         try:
             auth = weaviate.AuthApiKey(api_key=self.api_key) if self.api_key else None
-            client = weaviate.Client(self.url, auth_client_secret=auth)
+            client = weaviate.Client(self.url, auth_client_secret=auth) if auth else weaviate.Client(self.url)
             logger.info(f"Connected to Weaviate at {self.url}")
             return client
-        except weaviate.exceptions.WeaviateException as e:
+        except Exception as e:
             logger.error(f"Failed to connect to Weaviate: {e}")
             return None
 

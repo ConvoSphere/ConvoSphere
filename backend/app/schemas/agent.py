@@ -145,8 +145,16 @@ class AgentConfig(BaseModel):
         """Validate tools list."""
         if len(v) > 50:
             raise ValueError("Maximum 50 tools allowed")
-        # Remove duplicates and empty strings
-        return list({tool.strip() for tool in v if tool and tool.strip()})
+        # Remove duplicates and empty strings while preserving order
+        seen = set()
+        cleaned_tools = []
+        for tool in v:
+            if tool and tool.strip():
+                clean_tool = tool.strip()
+                if clean_tool not in seen:
+                    seen.add(clean_tool)
+                    cleaned_tools.append(clean_tool)
+        return cleaned_tools
 
     @field_validator("personality")
     @classmethod
@@ -171,7 +179,7 @@ class AgentConfig(BaseModel):
     )
 
 
-class AgentResponse(BaseModel):
+class AgentResponseSchema(BaseModel):
     """AI agent response schema."""
 
     content: str = Field(..., min_length=1, description="Response content")

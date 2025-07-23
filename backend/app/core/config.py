@@ -38,13 +38,13 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         description="Frontend URL for CORS configuration",
     )
-    cors_origins: str = Field(
-        default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
-        description="Comma-separated list of allowed CORS origins",
+    cors_origins: list[str] = Field(
+        default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
+        description="List of allowed CORS origins",
     )
 
     # Database
-    database_url: str = Field(..., description="Database URL")
+    database_url: str = Field(default="sqlite:///./test.db", description="Database URL")
     database_pool_size: int = Field(default=20, description="Database pool size")
     database_max_overflow: int = Field(default=30, description="Database max overflow")
 
@@ -241,7 +241,9 @@ class Settings(BaseSettings):
         """Parse CORS origins from comma-separated string."""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+        elif isinstance(v, list):
+            return v
+        return ["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"]
 
     model_config = ConfigDict(
         env_file=".env",

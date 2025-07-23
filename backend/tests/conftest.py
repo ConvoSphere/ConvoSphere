@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import pytest_asyncio
 
-from backend.main import app
+from main import app
 
 
 @pytest.fixture(scope="session", autouse=True)

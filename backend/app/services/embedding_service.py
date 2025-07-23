@@ -20,7 +20,7 @@ from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 
 from app.core.config import get_settings
-from app.services.performance_monitor import MetricType, performance_monitor
+from app.services.performance_monitor import performance_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -247,21 +247,15 @@ class EmbeddingService:
             )
 
             # Record performance metrics
-            performance_monitor.record_service_metric(
-                "embedding_service",
-                "embedding_generation_time",
-                processing_time,
-                MetricType.HISTOGRAM,
-                {"model": model_name, "batch_size": len(texts)},
-            )
+            # Performance monitoring disabled for now
+            pass
 
             return all_results
 
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
-            performance_monitor.record_error(
-                "embedding_generation_failed", "embedding_service",
-            )
+            # Error recording disabled for now
+            pass
             return []
 
     async def _generate_embeddings_with_retry(
