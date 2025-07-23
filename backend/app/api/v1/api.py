@@ -16,6 +16,8 @@ from .endpoints import (
     health,
     knowledge,
     mcp,
+    rag,
+    conversation_intelligence,
     search,
     tools,
     users,
@@ -37,3 +39,5 @@ api_router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(search.router, prefix="/search", tags=["search"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
+api_router.include_router(rag.router, prefix="/rag", tags=["rag"])
+api_router.include_router(conversation_intelligence.router, prefix="/intelligence", tags=["conversation_intelligence"])

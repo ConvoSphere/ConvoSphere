@@ -28,19 +28,28 @@ This roadmap outlines the evolution of the AI Assistant Platform, with a focus o
 
 ## 🛣️ Next Phases
 
-### Phase 1: Advanced User Experience
+### Phase 1: Chat & Agent Logic Improvements
+- **Pydantic v2 Migration**: Complete migration to Pydantic v2 patterns
+- **AI Agent Framework**: Integration with Pydantic AI agent patterns
+- **Type Safety**: Comprehensive type hints and validation
+- **Error Handling**: Standardized error responses and logging
+- **Performance**: Caching, async processing, and scalability improvements
+
+📋 [Detailed Roadmap](./chat_agent_improvements.md)
+
+### Phase 2: Advanced User Experience
 - Multi-chat support (split windows, parallel conversations)
 - Voice integration (speech-to-text, text-to-speech)
 - Enhanced notifications and activity feeds
 - Improved mobile experience
 
-### Phase 2: AI & Agent Features
+### Phase 3: AI & Agent Features
 - Code interpreter and secure code execution
 - Advanced agent system (web browsing, file system agents)
 - Persona/character system for assistants
 - Image generation and gallery
 
-### Phase 3: Enterprise & Integration
+### Phase 4: Enterprise & Integration
 - SSO (SAML, OAuth)
 - Advanced RBAC and multi-tenancy
 - Monitoring, analytics, and audit logging
