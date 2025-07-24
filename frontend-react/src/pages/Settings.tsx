@@ -34,8 +34,10 @@ const Settings: React.FC = () => {
             loading={saving}
             disabled={saving}
           >
-            <Select.Option value="en">English</Select.Option>
-            <Select.Option value="de">Deutsch</Select.Option>
+            <Select.Option value="en">{t('language.en')}</Select.Option>
+            <Select.Option value="de">{t('language.de')}</Select.Option>
+            <Select.Option value="fr">{t('language.fr')}</Select.Option>
+            <Select.Option value="es">{t('language.es')}</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item label={t('settings.theme', 'Theme')}>

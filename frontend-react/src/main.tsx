@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import './App.css';
 import './styles/animations.css';
+import './i18n/index.ts';
 
 // Import optimization utilities
 import initializePolyfills from './utils/polyfills';
