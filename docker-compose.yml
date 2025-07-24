@@ -23,12 +23,12 @@ services:
       - CHUNK_OVERLAP=${CHUNK_OVERLAP:-50}
       - DEFAULT_EMBEDDING_MODEL=${DEFAULT_EMBEDDING_MODEL:-text-embedding-ada-002}
       - DEFAULT_CHAT_MODEL=${DEFAULT_CHAT_MODEL:-gpt-3.5-turbo}
-      - SUPPORTED_LANGUAGES=["en","de","fr","es","ar","ja"]
+      - SUPPORTED_LANGUAGES=en,de,fr,es,ar,ja
       - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-en}
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
       - WS_URL=${WS_URL:-ws://backend:8000}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend:8080}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://frontend:8080,http://localhost:8081}
+
     volumes:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs

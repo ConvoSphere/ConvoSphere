@@ -38,10 +38,10 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         description="Frontend URL for CORS configuration",
     )
-    cors_origins: list[str] = Field(
-        default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
-        description="List of allowed CORS origins",
-    )
+    # cors_origins: list[str] = Field(
+    #     default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
+    #     description="List of allowed CORS origins",
+    # )
 
     # Database
     database_url: str = Field(default="sqlite:///./test.db", description="Database URL")
@@ -195,7 +195,7 @@ class Settings(BaseSettings):
 
     performance_monitoring_enabled: bool = Field(default=True, env="PERFORMANCE_MONITORING_ENABLED")
     performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
-    performance_alert_thresholds: dict = Field(default_factory=dict, env="PERFORMANCE_ALERT_THRESHOLDS")
+    performance_alert_thresholds: dict = Field(default_factory=dict)
 
     default_ai_model: str = Field(default="gpt-4", env="DEFAULT_AI_MODEL")
 
@@ -246,8 +246,6 @@ class Settings(BaseSettings):
         return ["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"]
 
     model_config = ConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
         case_sensitive=False,
     )
 

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
+import autoprefixer from 'autoprefixer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -126,7 +127,7 @@ export default defineConfig({
     postcss: {
       plugins: [
         // Add autoprefixer for better browser support
-        require('autoprefixer')({
+        autoprefixer({
           overrideBrowserslist: ['> 1%', 'last 2 versions', 'not dead'],
         }),
       ],
