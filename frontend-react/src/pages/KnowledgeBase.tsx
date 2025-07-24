@@ -8,13 +8,10 @@ import {
   Input, 
   Select, 
   DatePicker, 
-  Tag,
   Typography,
-  Divider,
   Alert,
   Tabs,
   Statistic,
-  Tooltip,
   Modal,
   message
 } from 'antd';
@@ -31,12 +28,10 @@ import UploadArea from '../components/knowledge/UploadArea';
 import TagManager from '../components/knowledge/TagManager';
 import BulkActions from '../components/knowledge/BulkActions';
 import SystemStats from '../components/admin/SystemStats';
-import type { Document, DocumentFilter } from '../services/knowledge';
 import { useAuthStore } from '../store/authStore';
 
 const { Search } = Input;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
 const KnowledgeBase: React.FC = () => {
@@ -53,18 +48,15 @@ const KnowledgeBase: React.FC = () => {
     setFilters,
     refreshDocuments
   } = useKnowledgeStore();
-  const { tags, fetchTags } = useKnowledgeStore();
   const { stats, statsLoading } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadArea, setShowUploadArea] = useState(false);
-  const [showTagManager, setShowTagManager] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
   useEffect(() => {
     fetchDocuments();
-    fetchTags();
-  }, [fetchDocuments, fetchTags]);
+  }, [fetchDocuments]);
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -84,17 +76,17 @@ const KnowledgeBase: React.FC = () => {
     clearFilters();
   };
 
-  const handleViewDocument = (document: Document) => {
+  const handleViewDocument = () => {
     // TODO: Implement view functionality
     message.info('View functionality coming soon');
   };
 
-  const handleEditDocument = (document: Document) => {
+  const handleEditDocument = () => {
     // TODO: Implement edit functionality
     message.info('Edit functionality coming soon');
   };
 
-  const handleDeleteDocument = async (documentId: string) => {
+  const handleDeleteDocument = async () => {
     try {
       // TODO: Implement delete functionality
       message.success('Document deleted successfully');
@@ -104,12 +96,12 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
-  const handleDownloadDocument = (document: Document) => {
+  const handleDownloadDocument = () => {
     // TODO: Implement download functionality
     message.info('Download functionality coming soon');
   };
 
-  const handleReprocessDocument = async (documentId: string) => {
+  const handleReprocessDocument = async () => {
     try {
       // TODO: Implement reprocess functionality
       message.success('Document reprocessing started');
@@ -130,7 +122,7 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
-  const handleBulkTag = async (documentIds: string[], tagNames: string[]) => {
+  const handleBulkTag = async (documentIds: string[]) => {
     try {
       // TODO: Implement bulk tag API call
       message.success(`Tags applied to ${documentIds.length} documents`);

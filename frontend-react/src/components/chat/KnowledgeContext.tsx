@@ -6,16 +6,11 @@ import {
   Tag,
   Select,
   Input,
-  Modal,
-  Form,
   message
 } from 'antd';
 import { 
   BookOutlined, 
-  SearchOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined
+  SearchOutlined
 } from '@ant-design/icons';
 import { useKnowledgeStore } from '../../store/knowledgeStore';
 import type { Document } from '../../services/knowledge';
@@ -35,87 +30,22 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   selectedDocuments = [],
   maxDocuments = 5
 }) => {
-  const { documents, tags, documentTypes, getTags } = useKnowledgeStore();
+  const { documents } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
-
-  useEffect(() => {
-    getTags();
-  }, [getTags]);
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = !searchQuery || 
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesTags = selectedTags.length === 0 || 
-      doc.tags?.some(tag => selectedTags.includes(tag.name));
-    
-    const matchesTypes = selectedTypes.length === 0 || 
-      (doc.document_type && selectedTypes.includes(doc.document_type));
-    
-    return matchesSearch && matchesTags && matchesTypes;
+    return matchesSearch;
   });
-
-  const handleDocumentSelect = (document: Document) => {
-    if (selectedDocuments.length >= maxDocuments) {
-      message.warning(`Maximum ${maxDocuments} documents allowed`);
-      return;
-    }
-    onDocumentSelect?.(document);
-  };
-
-  const handleDocumentRemove = (documentId: string) => {
-    // TODO: Implement document removal
-    message.info('Document removal coming soon');
-  };
-
-  const handleAddDocument = () => {
-    setShowAddModal(true);
-  };
-
-  const handleEditDocument = (document: Document) => {
-    setEditingDocument(document);
-    setShowEditModal(true);
-  };
-
-  const handleSaveDocument = (values: any) => {
-    // TODO: Implement document saving
-    message.success('Document saved successfully');
-    setShowAddModal(false);
-    setShowEditModal(false);
-    setEditingDocument(null);
-  };
-
-  const handleDeleteDocument = (documentId: string) => {
-    // TODO: Implement document deletion
-    message.success('Document deleted successfully');
-  };
 
   const renderDocumentItem = (document: Document) => (
     <List.Item
       key={document.id}
-      actions={[
-        <Button 
-          key="edit" 
-          type="text" 
-          size="small" 
-          icon={<EditOutlined />}
-          onClick={() => handleEditDocument(document)}
-        />,
-        <Button 
-          key="delete" 
-          type="text" 
-          size="small" 
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleDeleteDocument(document.id)}
-        />
-      ]}
+      onClick={() => onDocumentSelect?.(document)}
+      style={{ cursor: 'pointer' }}
     >
       <List.Item.Meta
         avatar={<BookOutlined />}
@@ -159,22 +89,16 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '16px' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <Title level={5} style={{ margin: 0 }}>
+          <Title level={4} style={{ margin: 0 }}>
             <BookOutlined /> Knowledge Context
           </Title>
-          {/* Removed Switch as per new_code */}
         </div>
-        
-        {/* Removed Text as per new_code */}
       </div>
 
-      {/* Removed Empty message as per new_code */}
-
       {/* Search */}
-      <div style={{ marginBottom: '16px' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
         <Input
           placeholder="Search documents..."
           value={searchQuery}
@@ -184,79 +108,66 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
         />
       </div>
 
-      {/* Filters */}
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Removed Filters button as per new_code */}
-          {/* Removed Clear button as per new_code */}
-        </div>
-
-        {/* Removed Filters section as per new_code */}
-      </div>
-
       {/* Selected Documents */}
       {selectedDocuments.length > 0 && (
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <Text strong style={{ fontSize: '12px' }}>
               Selected Documents ({selectedDocuments.length})
             </Text>
-            <Button
-              type="text"
+            <Button 
+              type="text" 
               size="small"
-              onClick={() => selectedDocuments.forEach(doc => onDocumentSelect?.(doc))}
+              onClick={() => {
+                // TODO: Implement clear all
+                message.info('Clear all coming soon');
+              }}
             >
               Clear All
             </Button>
           </div>
-          <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
-            {selectedDocuments.map(doc => (
-              <div
+          <List
+            size="small"
+            dataSource={selectedDocuments}
+            renderItem={(doc) => (
+              <List.Item
                 key={doc.id}
-                style={{
-                  padding: '4px 8px',
-                  backgroundColor: '#f6ffed',
-                  border: '1px solid #b7eb8f',
-                  borderRadius: '4px',
-                  marginBottom: '4px',
-                  fontSize: '11px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
+                style={{ padding: '4px 0' }}
+                actions={[
+                  <Button 
+                    key="remove" 
+                    type="text" 
+                    size="small" 
+                    danger
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Implement remove
+                      message.info('Remove coming soon');
+                    }}
+                  >
+                    Remove
+                  </Button>
+                ]}
               >
-                <Text style={{ fontSize: '11px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {doc.title}
-                </Text>
-                <Button
-                  type="text"
-                  size="small"
-                  style={{ padding: '0 4px', minWidth: 'auto' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDocumentSelect?.(doc);
-                  }}
-                >
-                  ×
-                </Button>
-              </div>
-            ))}
-          </div>
+                <List.Item.Meta
+                  title={<Text style={{ fontSize: '12px' }}>{doc.title}</Text>}
+                  description={<Text type="secondary" style={{ fontSize: '10px' }}>{doc.document_type}</Text>}
+                />
+              </List.Item>
+            )}
+          />
         </div>
       )}
 
-      {/* Removed Divider as per new_code */}
-
       {/* Search Results */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', padding: '16px 16px 0' }}>
           <Text strong style={{ fontSize: '12px' }}>
-            Search Results ({filteredDocuments.length})
+            Available Documents ({filteredDocuments.length})
           </Text>
-          {/* Removed Spin as per new_code */}
         </div>
 
-        <div style={{ height: 'calc(100% - 30px)', overflowY: 'auto' }}>
+        <div style={{ height: 'calc(100% - 30px)', overflowY: 'auto', padding: '0 16px 16px' }}>
           {filteredDocuments.length === 0 ? (
             <div style={{ padding: '20px 0' }}>
               <Text type="secondary">No documents found</Text>

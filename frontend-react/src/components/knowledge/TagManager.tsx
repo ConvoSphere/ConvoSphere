@@ -1,32 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
-  List, 
   Button, 
   Input, 
-  Modal, 
   Form, 
   Select, 
-  Tag, 
   Space, 
   Typography, 
-  message,
-  Popconfirm
+  message
 } from 'antd';
 import { 
-  PlusOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
-  SearchOutlined,
-  TagOutlined
+  PlusOutlined
 } from '@ant-design/icons';
 import type { Tag as TagType } from '../../services/knowledge';
 import { useKnowledgeStore } from '../../store/knowledgeStore';
-import TagStatistics from './TagStatistics';
-import TagCloud from './TagCloud';
-import TagTable from './TagTable';
-import CreateTagModal from './CreateTagModal';
-import EditTagModal from './EditTagModal';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -58,7 +45,7 @@ const TagManager: React.FC<TagManagerProps> = ({
     fetchTags();
   }, [fetchTags]);
 
-  const handleCreateTag = async (values: any) => {
+  const handleCreateTag = async () => {
     try {
       // TODO: Implement create tag API call
       message.success('Tag created successfully');
@@ -70,7 +57,7 @@ const TagManager: React.FC<TagManagerProps> = ({
     }
   };
 
-  const handleEditTag = async (values: any) => {
+  const handleEditTag = async () => {
     if (!selectedTag) return;
     try {
       // TODO: Implement edit tag API call
@@ -84,7 +71,7 @@ const TagManager: React.FC<TagManagerProps> = ({
     }
   };
 
-  const handleDeleteTag = async (tagId: string) => {
+  const handleDeleteTag = async () => {
     try {
       // TODO: Implement delete tag API call
       message.success('Tag deleted successfully');
@@ -112,74 +99,121 @@ const TagManager: React.FC<TagManagerProps> = ({
 
   return (
     <div>
-      {/* Error Alert removed as per new_code */}
+      {showStatistics && <div>Statistics: {stats.totalTags} tags</div>}
 
-      {showStatistics && <TagStatistics {...stats} />}
-
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      <Card
+        title={
+          <Space>
+            <span>Tags ({filteredTags.length})</span>
+          </Space>
+        }
+        extra={
           <Space>
             <Search
               placeholder="Search tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: 300 }}
+              style={{ width: 200 }}
+              size="small"
             />
             <Select
               value={filterType}
               onChange={setFilterType}
+              size="small"
               style={{ width: 120 }}
             >
-              <Option value="all">All Tags</Option>
+              <Option value="all">All</Option>
               <Option value="system">System</Option>
               <Option value="user">User</Option>
             </Select>
+            {showCreateButton && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="small"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Create Tag
+              </Button>
+            )}
           </Space>
-          {showCreateButton && mode === 'management' && (
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />}
-              onClick={() => setShowCreateModal(true)}
-            >
-              Create Tag
-            </Button>
-          )}
+        }
+      >
+        <div>
+          {filteredTags.map(tag => (
+            <div key={tag.id} style={{ padding: '8px', border: '1px solid #f0f0f0', marginBottom: '4px' }}>
+              <Text>{tag.name}</Text>
+            </div>
+          ))}
         </div>
-        <TagTable
-          tags={filteredTags}
-          loading={false} // Loading state removed from store, so set to false
-          mode={mode}
-          onTagSelect={onTagSelect}
-          onEditTag={(tag) => {
-            setSelectedTag(tag);
-            if (editForm && editForm.setFieldsValue) {
-              editForm.setFieldsValue({
-                name: tag.name,
-                description: tag.description,
-                color: tag.color,
-                is_system: tag.is_system
-              });
-            }
-            setShowEditModal(true);
-          }}
-          onDeleteTag={handleDeleteTag}
-        />
       </Card>
 
-      {showStatistics && <TagCloud tags={tags} onTagSelect={onTagSelect} />}
+      {/* Create Tag Modal */}
+      <Form form={form} onFinish={handleCreateTag} layout="vertical">
+        <Form.Item
+          name="name"
+          label="Tag Name"
+          rules={[{ required: true, message: 'Please enter tag name' }]}
+        >
+          <Input placeholder="Enter tag name" />
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="Description"
+        >
+          <Input.TextArea placeholder="Enter tag description" />
+        </Form.Item>
+        <Form.Item
+          name="color"
+          label="Color"
+          initialValue="#1890ff"
+        >
+          <Input type="color" />
+        </Form.Item>
+        <Form.Item>
+          <Space>
+            <Button type="primary" htmlType="submit">
+              Create
+            </Button>
+            <Button onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
 
-      <CreateTagModal
-        open={showCreateModal}
-        form={form}
-        onFinish={handleCreateTag}
-        onCancel={() => setShowCreateModal(false)}
-      />
-      <EditTagModal
-        open={showEditModal}
-        form={editForm}
-        onFinish={handleEditTag}
-        onCancel={() => setShowEditModal(false)}
-      />
+      {/* Edit Tag Modal */}
+      <Form form={editForm} onFinish={handleEditTag} layout="vertical">
+        <Form.Item
+          name="name"
+          label="Tag Name"
+          rules={[{ required: true, message: 'Please enter tag name' }]}
+        >
+          <Input placeholder="Enter tag name" />
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="Description"
+        >
+          <Input.TextArea placeholder="Enter tag description" />
+        </Form.Item>
+        <Form.Item
+          name="color"
+          label="Color"
+        >
+          <Input type="color" />
+        </Form.Item>
+        <Form.Item>
+          <Space>
+            <Button type="primary" htmlType="submit">
+              Update
+            </Button>
+            <Button onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
     </div>
   );
 };
