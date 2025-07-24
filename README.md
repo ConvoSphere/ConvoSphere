@@ -457,26 +457,69 @@ For support and questions:
 
 **Built with ❤️ by the AI Chat Team**
 
-## 🏢 Enterprise Features
+## 🚦 DevOps, CI/CD & Workflows
 
-### SSO (Single Sign-On)
-- Support for OIDC, SAML, OAuth2 (Google, Microsoft, GitHub)
-- SSO login, callback, and account linking
-- Just-in-Time provisioning and SSO attribute mapping
-- SSO configuration guide in deployment section
+Die Entwicklung und der Betrieb werden durch eine moderne CI/CD-Pipeline und automatisierte Workflows unterstützt:
 
-### Advanced RBAC
-- Hierarchical roles (Super Admin, Admin, Manager, User, Guest)
-- Group-based permissions and department admins
-- Fine-grained permission management (e.g., resource-level)
-- Admin UI for roles, permissions, and groups
+- **GitHub Actions** für Tests, Code-Qualität, Security-Scans, Doku-Deployment und Multi-Stage-Deployments
+- **Workflows:**
+  - Dokumentations-Deployment (MkDocs, GitHub Pages)
+  - Code-Quality-Checks (Ruff, Bandit, MyPy, Pytest)
+  - CI/CD-Pipeline (Build, Test, Docker, Staging/Production Deploy, Security, Performance)
+- **Monitoring & Reports:**
+  - Coverage, Security, Performance, Build- und Test-Reports als Artefakte
+- **Lokale Entwicklung:**
+  - `make install`, `make test`, `make code-quality`, `make docs-build`, `make docs-serve`
+  - Pre-commit Hooks: `make pre-commit-install`, `make pre-commit-run`, `make pre-commit-update`
+- **Troubleshooting:**
+  - Detaillierte Hinweise zu häufigen Fehlern, Debugging und Workflow-Logs in [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
 
-### Security & Self-Service
-- 2FA/MFA (TOTP, WebAuthn)
-- Self-service UI for users (API tokens, 2FA, account deletion)
-- Bulk import/export of users/roles
-- GDPR features (data export, account deletion)
+Weitere Details und Beispiele siehe [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md) und [docs/development/setup.md](docs/development/setup.md).
 
-### Audit Logging
-- Audit log API and UI for admins
-- Logging of all security-relevant events (login, SSO, role changes)
+## 📚 Knowledge Base & UI Features
+
+Die Knowledge Base bietet:
+- **Dokumenten-Management**: Upload, Metadaten, Bulk-Import, Tagging, Status, Download, Reprocessing
+- **Erweiterte Suche**: Volltext, Filter, Tag-Filter, Advanced Search, History
+- **Tag-Management**: Tag-Cloud, Tag-Statistiken, System- und User-Tags, Bulk-Tagging
+- **Statistiken**: Dashboard, Chunks, Tokens, Speicher, Dokumenten-Typen
+- **Rollenbasierte Berechtigungen**: User, Premium, Moderator, Admin (siehe Tabelle unten)
+- **Chat-Integration**: Dokumente im Chat-Kontext, Suche, Auswahl, Einstellungen
+- **Performance**: Virtualisierung, Lazy Loading, Caching, Debouncing, Responsive Design
+
+**Rollenmatrix:**
+
+| Funktion                    | User | Premium | Moderator | Admin |
+|----------------------------|------|---------|-----------|-------|
+| Dokumente hochladen         | ✓    | ✓       | ✓         | ✓     |
+| Eigene Dokumente verwalten  | ✓    | ✓       | ✓         | ✓     |
+| Bulk-Import                 | ✗    | ✓       | ✓         | ✓     |
+| Tag-Management              | ✗    | ✓       | ✓         | ✓     |
+| System-Tags erstellen       | ✗    | ✗       | ✗         | ✓     |
+| Alle Dokumente einsehen     | ✗    | ✗       | ✓         | ✓     |
+| Benutzer-Management         | ✗    | ✗       | ✗         | ✓     |
+| System-Statistiken          | ✗    | ✗       | ✗         | ✓     |
+
+**Technische Verbesserungen:**
+- Performance-Optimierungen (Virtualisierung, Caching, Debouncing)
+- Responsive Design (Mobile, Tablet, Desktop)
+- Benutzerfreundlichkeit (Tooltips, Badges, Dialoge)
+- Fehlerbehandlung und visuelles Feedback
+
+**Weitere Details und Screenshots:** Siehe [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
+
+## 🗺️ Roadmap & Nächste Schritte
+
+Die aktuelle und geplante Entwicklung ist in der [Roadmap](docs/project/roadmap.md) dokumentiert. Wichtige Punkte:
+- **Internationalisierung (i18n)**
+- **Performance Monitoring**
+- **Voice Integration, Multi-Chat, Code Interpreter, Advanced Agents, Enterprise Features**
+- **Refactoring der Teststruktur**: Migration aller alten zentralen Tests in komponentennahe `__tests__`-Ordner
+
+## 📝 Weitere Dokumentation
+
+- **Vollständige User- und Entwicklerdokumentation:** [docs/index.md](docs/index.md)
+- **API-Referenz:** [docs/api/overview.md](docs/api/overview.md)
+- **Deployment & Betrieb:** [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
+- **Feature-Details:** [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
+- **Roadmap & Status:** [docs/project/roadmap.md](docs/project/roadmap.md)
