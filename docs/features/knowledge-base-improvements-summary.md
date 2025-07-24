@@ -31,6 +31,46 @@ Die Knowledge Base wurde umfassend erweitert und verbessert, um eine moderne, sk
 - **RAG-Integration**: Nahtlose Integration in AI-Antworten
 - **Echtzeit-Suche**: Automatische Dokumenten-Suche während des Chats
 
+### 🚧 Phase 4: Admin-Funktionen (In Planung/Umsetzung)
+- **Benutzer-Management**: Übersicht, Rollenverwaltung, Aktivierung/Deaktivierung, Passwort-Reset, User-Details, Aktionen
+- **Job-Monitoring**: Übersicht und Details aller Background-Jobs, Filter, Live-Status, Abbruch
+- **Backup-Management**: Backup-Übersicht, manuelle und automatische Backups, Restore, Löschung
+- **System-Monitoring**: Systemmetriken (CPU, RAM, Storage, DB, API), Health-Checks, Logs, Alarme
+- **WebSocket-Events**: Live-Updates für Jobs und Systemmetriken
+- **Berechtigungen**: Strikte Admin/Moderator-Prüfung für alle Endpunkte
+- **Migrationen**: Neue Tabellen für Jobs, Backups, Systemmetriken, User-Erweiterung
+- **Tests**: Unit- und Integrationstests für alle neuen Admin-APIs und Services
+
+### ⏳ Phase 5: Erweiterte Features (Geplant)
+- **Intelligente Vorschläge**: AI-basierte Tag- und Dokumenten-Empfehlungen
+- **Export-Funktionen**: Umfassende Export-Optionen
+- **Collaboration**: Geteilte Tags und Dokumente
+- **Advanced Analytics**: Machine Learning Insights
+
+## Roadmap (Aktualisiert)
+
+1. **Backend-Verbesserungen** (abgeschlossen)
+2. **UI-Verbesserungen** (abgeschlossen)
+3. **Chat-Integration** (abgeschlossen)
+4. **Admin-Funktionen** (in Umsetzung)
+   - Benutzer-Management (User CRUD, Rollen, Aktivierung)
+   - Job-Monitoring (Status, Filter, Abbruch, Live-Updates)
+   - Backup-Management (Backup/Restore, Automatisierung)
+   - System-Monitoring (Metriken, Health, Logs, Alarme)
+   - WebSocket-Events für Admin-Panel
+   - Migrationen und Tests
+5. **Erweiterte Features** (geplant)
+   - AI-Vorschläge, Export, Collaboration, Advanced Analytics
+
+## Nächste Schritte
+
+- Implementierung der neuen Datenmodelle und Migrationen für Admin-Funktionen
+- Entwicklung der Admin-API-Endpunkte und Services
+- Aufbau der Admin-UI-Komponenten im Frontend
+- Erweiterung der Tests und Monitoring-Funktionen
+
+## (Die Details zu den Admin-Funktionen finden sich in der Datei `docs/features/admin-functions-design.md`)
+
 ## Technische Architektur
 
 ### Backend (Python/FastAPI)
@@ -235,20 +275,6 @@ class Tag(Base):
 - **Usage-Statistiken**: Benutzer-Verhalten
 - **Search-Analytics**: Suchverhalten und -trends
 - **Document-Analytics**: Beliebte Dokumente und Tags
-
-## Nächste Schritte
-
-### Phase 4: Admin-Funktionen (Geplant)
-1. **Benutzer-Management**: Vollständige Benutzer-Verwaltung
-2. **System-Monitoring**: Erweiterte Job-Überwachung
-3. **Backup-Management**: System-Backup und -Wiederherstellung
-4. **Performance-Monitoring**: System-Performance-Analytics
-
-### Phase 5: Erweiterte Features (Geplant)
-1. **Intelligente Vorschläge**: AI-basierte Tag- und Dokumenten-Empfehlungen
-2. **Export-Funktionen**: Umfassende Export-Optionen
-3. **Collaboration**: Geteilte Tags und Dokumente
-4. **Advanced Analytics**: Machine Learning Insights
 
 ## Fazit
 
