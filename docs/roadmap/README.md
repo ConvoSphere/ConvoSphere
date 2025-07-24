@@ -63,4 +63,4 @@ This roadmap outlines the evolution of the AI Assistant Platform, with a focus o
 
 ## Contribution
 
-We welcome feedback and contributions! See the [contributing guide](../development/contributing.md) for details.
+We welcome feedback and contributions! See the [contributing guide](../project/contributing.md) for details.

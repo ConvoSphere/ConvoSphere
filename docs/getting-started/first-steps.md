@@ -241,24 +241,24 @@ curl -X POST "http://localhost:8000/api/v1/auth/login" \
 Now that you've completed your first steps:
 
 1. **Explore Advanced Features**:
-   - [File Management](user-guide/file-management.md)
-   - [Knowledge Base](features/knowledge-base.md)
-   - [API Integration](api/overview.md)
+   - [File Management](../user-guide/file-management.md)
+   - [Knowledge Base](../features/knowledge-base.md)
+   - [API Integration](../api/overview.md)
 
 2. **Learn Best Practices**:
-   - [Effective Prompting](user-guide/chat-interface.md)
-   - [Security Guidelines](architecture/security.md)
-   - [Performance Tips](features/performance.md)
+   - [Effective Prompting](../user-guide/chat-interface.md)
+   - [Security Guidelines](../architecture/security.md)
+   - [Performance Tips](../features/performance.md)
 
 3. **Customize Your Setup**:
-   - [User Settings](user-guide/settings.md)
+   - [User Settings](../user-guide/settings.md)
    - [AI Provider Configuration](configuration.md)
-   - [Advanced Configuration](deployment/production.md)
+   - [Advanced Configuration](../deployment/production.md)
 
 4. **Get Help**:
-   - [Troubleshooting Guide](user-guide/troubleshooting.md)
-   - [FAQ](user-guide/faq.md)
-   - [Community Support](project/contributing.md)
+   - [Troubleshooting Guide](../user-guide/troubleshooting.md)
+   - [FAQ](../user-guide/faq.md)
+   - [Community Support](../project/contributing.md)
 
 ## Example Workflows
 
@@ -287,7 +287,7 @@ Now that you've completed your first steps:
 
 If you encounter any issues:
 
-1. **Check the Documentation**: Browse the [User Guide](user-guide/) section
+1. **Check the Documentation**: Browse the [User Guide](../user-guide/) section
 2. **Review Logs**: Check application logs for error messages
 3. **Community Support**: Join our [Discord server](https://discord.gg/your-server)
 4. **Report Issues**: Open an issue on [GitHub](https://github.com/your-org/ai-chat-app/issues)
@@ -301,4 +301,4 @@ You've successfully completed your first steps with the AI Chat Application. You
 - ✅ Understanding of key features
 - ✅ Knowledge of how to get help
 
-Ready to explore more? Check out the [User Guide](user-guide/) for detailed information about all features and capabilities.
+Ready to explore more? Check out the [User Guide](../user-guide/) for detailed information about all features and capabilities.

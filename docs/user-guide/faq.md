@@ -233,7 +233,7 @@ We welcome contributions! See our [Contributing Guide](../project/contributing.m
 
 ### Is there a roadmap?
 
-Yes! Check our [Development Roadmap](../project/development-roadmap.md) for upcoming features and improvements.
+Yes! Check our [Development Roadmap](../project/roadmap.md) for upcoming features and improvements.
 
 ---
 
