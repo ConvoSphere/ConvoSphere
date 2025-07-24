@@ -1,0 +1,54 @@
+"""
+Processing-related API endpoints (jobs, engines, supported formats, bulk import).
+"""
+from fastapi import APIRouter, Depends, HTTPException, Form, Query
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.core.security import get_current_user
+from app.models.user import User
+from app.schemas.knowledge import DocumentProcessingJobResponse, DocumentProcessingJobList, BulkImportRequest, BulkImportResponse
+from app.services.docling_processor import docling_processor
+from app.services.knowledge_service import KnowledgeService
+
+router = APIRouter()
+
+# Get processing jobs
+@router.get("/processing/jobs", response_model=DocumentProcessingJobList)
+async def get_processing_jobs(
+    status: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # ... existing code ...
+
+# Create processing job
+@router.post("/processing/jobs")
+async def create_processing_job(
+    document_id: str,
+    job_type: str = Form("process"),
+    priority: int = Form(0, ge=0, le=10),
+    processing_options: str | None = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # ... existing code ...
+
+# Bulk import
+@router.post("/bulk-import", response_model=BulkImportResponse)
+async def bulk_import_documents(
+    request: BulkImportRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # ... existing code ...
+
+# Get processing engines
+@router.get("/processing/engines")
+async def get_processing_engines():
+    # ... existing code ...
+
+# Get supported formats
+@router.get("/processing/supported-formats")
+async def get_supported_formats():
+    # ... existing code ...
