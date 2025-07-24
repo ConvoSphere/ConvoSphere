@@ -26,7 +26,9 @@
     "sort": "Trier",
     "refresh": "Actualiser",
     "upload": "Télécharger",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "sources": "Sources",
+    "or": "ou"
   },
   "settings.title": "Paramètres",
   "settings.language": "Langue",
@@ -55,7 +57,7 @@
   "chat.send": "Envoyer",
   "chat.placeholder": "Tapez votre message...",
   "chat.loading": "Chargement des messages...",
-  "chat.empty": "Aucun message pour le moment",
+  "chat.empty": "Commencez une conversation ou activez le contexte de la Base de Connaissances pour des réponses enrichies",
   "chat.error": "Échec du chargement des messages",
   "chat.typing": "L'assistant tape...",
   "chat.new_conversation": "Nouvelle Conversation",
@@ -64,7 +66,7 @@
   "knowledge.search": "Rechercher des documents...",
   "knowledge.upload_success": "Document téléchargé avec succès",
   "knowledge.upload_failed": "Échec du téléchargement",
-  "knowledge.processing": "Traitement du document...",
+  "knowledge.processing": "La Base de Connaissances est activée. Vos messages seront enrichis avec le contexte de documents pertinents",
   "knowledge.no_results": "Aucun document trouvé",
   "knowledge.delete_confirm": "Êtes-vous sûr de vouloir supprimer ce document?",
   "tools.title": "Outils",
@@ -88,7 +90,13 @@
     "register.title": "S'inscrire",
     "register.button": "S'inscrire",
     "register.failed": "Échec de l'inscription",
-    "register.success": "Inscription réussie"
+    "register.success": "Inscription réussie",
+    "register.link": "Pas de compte? S'inscrire maintenant",
+    "register.email": "E-mail",
+    "register.confirm_email": "Confirmer l'e-mail",
+    "login.link": "Retour à la connexion",
+    "forgot_password": "Mot de passe oublié?",
+    "forgot_password_message": "Veuillez contacter le support ou utiliser la fonction de réinitialisation du mot de passe (pas encore implémentée)."
   },
   "errors": {
     "network": "Erreur réseau",
@@ -103,6 +111,13 @@
     "required": "Ce champ est requis",
     "email": "Veuillez saisir un email valide",
     "password": "Le mot de passe doit contenir au moins 8 caractères",
-    "confirm_password": "Les mots de passe ne correspondent pas"
+    "confirm_password": "Les adresses e-mail ne correspondent pas"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "assistants": "Assistants",
+    "conversations": "Conversations",
+    "mcp_tools": "Outils MCP",
+    "user": "Utilisateur"
   }
 }

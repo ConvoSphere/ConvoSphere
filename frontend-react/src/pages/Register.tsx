@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, Alert } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
+  const { t } = useTranslation();
   const register = useAuthStore((s) => s.register);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ const Register: React.FC = () => {
       await register(values.username, values.password, values.email);
       setSuccess(true);
     } catch {
-      setError('Registration failed.');
+      setError(t('auth.register.failed'));
     } finally {
       setLoading(false);
     }
@@ -32,52 +34,52 @@ const Register: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 320, margin: 'auto', marginTop: 64 }}>
-      <h2>Register</h2>
+      <h2>{t('auth.register.title')}</h2>
       {success ? (
         <Alert
           type="success"
-          message="Registration successful! Please check your email to confirm your account or log in."
+          message={t('auth.register.success')}
           showIcon
           style={{ marginBottom: 16 }}
         />
       ) : (
         <>
           {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-          <Form name="register" onFinish={onFinish} layout="vertical" aria-label="Register form">
-            <Form.Item name="username" label="Username" rules={[{ required: true, message: 'Please enter Username' }]}> 
-              <Input autoFocus aria-label="Username" />
+          <Form name="register" onFinish={onFinish} layout="vertical" aria-label={t('auth.register.title')}>
+            <Form.Item name="username" label={t('auth.login.username')} rules={[{ required: true, message: t('validation.required') }]}> 
+              <Input autoFocus aria-label={t('auth.login.username')} />
             </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter Email' }]}> 
-              <Input aria-label="Email" />
+            <Form.Item name="email" label={t('auth.register.email')} rules={[{ required: true, type: 'email', message: t('validation.email') }]}> 
+              <Input aria-label={t('auth.register.email')} />
             </Form.Item>
             <Form.Item
               name="confirmEmail"
-              label="Confirm Email"
+              label={t('auth.register.confirm_email')}
               dependencies={["email"]}
-              rules={[{ required: true, message: 'Please confirm your email' },
+              rules={[{ required: true, message: t('validation.required') },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue('email') === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('Email addresses do not match'));
+                    return Promise.reject(new Error(t('validation.confirm_password')));
                   },
                 }),
               ]}
             >
-              <Input aria-label="Confirm Email" type="email" />
+              <Input aria-label={t('auth.register.confirm_email')} type="email" />
             </Form.Item>
-            <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Please enter Password' }]}> 
-              <Input.Password aria-label="Password" />
+            <Form.Item name="password" label={t('auth.login.password')} rules={[{ required: true, message: t('validation.password') }]}> 
+              <Input.Password aria-label={t('auth.login.password')} />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading} block aria-label="Register">Register</Button>
+              <Button type="primary" htmlType="submit" loading={loading} block aria-label={t('auth.register.button')}>{t('auth.register.button')}</Button>
             </Form.Item>
           </Form>
         </>
       )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-        <a onClick={() => navigate('/login')} tabIndex={0} aria-label="Back to login">Zurück zum Login</a>
+        <a onClick={() => navigate('/login')} tabIndex={0} aria-label={t('auth.login.link')}>{t('auth.login.link')}</a>
       </div>
     </div>
   );

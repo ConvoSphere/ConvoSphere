@@ -26,7 +26,9 @@
     "sort": "Sortieren",
     "refresh": "Aktualisieren",
     "upload": "Hochladen",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "sources": "Quellen",
+    "or": "oder"
   },
   "settings.title": "Einstellungen",
   "settings.language": "Sprache",
@@ -55,7 +57,7 @@
   "chat.send": "Senden",
   "chat.placeholder": "Nachricht eingeben...",
   "chat.loading": "Lade Nachrichten...",
-  "chat.empty": "Noch keine Nachrichten",
+  "chat.empty": "Starten Sie eine Unterhaltung oder aktivieren Sie die Knowledge Base für erweiterte Antworten",
   "chat.error": "Fehler beim Laden der Nachrichten",
   "chat.typing": "Assistent schreibt...",
   "chat.new_conversation": "Neue Unterhaltung",
@@ -64,7 +66,7 @@
   "knowledge.search": "Dokumente durchsuchen...",
   "knowledge.upload_success": "Dokument erfolgreich hochgeladen",
   "knowledge.upload_failed": "Upload fehlgeschlagen",
-  "knowledge.processing": "Dokument wird verarbeitet...",
+  "knowledge.processing": "Knowledge Base ist aktiviert. Ihre Nachrichten werden mit relevantem Dokumentkontext erweitert",
   "knowledge.no_results": "Keine Dokumente gefunden",
   "knowledge.delete_confirm": "Sind Sie sicher, dass Sie dieses Dokument löschen möchten?",
   "tools.title": "Tools",
@@ -88,7 +90,13 @@
     "register.title": "Registrieren",
     "register.button": "Registrieren",
     "register.failed": "Registrierung fehlgeschlagen",
-    "register.success": "Registrierung erfolgreich"
+    "register.success": "Registrierung erfolgreich",
+    "register.link": "Noch keinen Account? Jetzt registrieren",
+    "register.email": "E-Mail",
+    "register.confirm_email": "E-Mail bestätigen",
+    "login.link": "Zurück zum Login",
+    "forgot_password": "Passwort vergessen?",
+    "forgot_password_message": "Bitte kontaktieren Sie den Support oder nutzen Sie die Passwort-Reset-Funktion (noch nicht implementiert)."
   },
   "errors": {
     "network": "Netzwerkfehler",
@@ -103,6 +111,13 @@
     "required": "Dieses Feld ist erforderlich",
     "email": "Bitte geben Sie eine gültige E-Mail ein",
     "password": "Passwort muss mindestens 8 Zeichen haben",
-    "confirm_password": "Passwörter stimmen nicht überein"
+    "confirm_password": "E-Mail-Adressen stimmen nicht überein"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "assistants": "Assistenten",
+    "conversations": "Unterhaltungen",
+    "mcp_tools": "MCP-Tools",
+    "user": "Benutzer"
   }
 } 

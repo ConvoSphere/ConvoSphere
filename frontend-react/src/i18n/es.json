@@ -26,7 +26,9 @@
     "sort": "Ordenar",
     "refresh": "Actualizar",
     "upload": "Subir",
-    "download": "Descargar"
+    "download": "Descargar",
+    "sources": "Fuentes",
+    "or": "o"
   },
   "settings.title": "Configuración",
   "settings.language": "Idioma",
@@ -55,7 +57,7 @@
   "chat.send": "Enviar",
   "chat.placeholder": "Escribe tu mensaje...",
   "chat.loading": "Cargando mensajes...",
-  "chat.empty": "Aún no hay mensajes",
+  "chat.empty": "Inicie una conversación o active el contexto de la Base de Conocimientos para respuestas mejoradas",
   "chat.error": "Error al cargar mensajes",
   "chat.typing": "El asistente está escribiendo...",
   "chat.new_conversation": "Nueva Conversación",
@@ -64,7 +66,7 @@
   "knowledge.search": "Buscar documentos...",
   "knowledge.upload_success": "Documento subido correctamente",
   "knowledge.upload_failed": "Error en la subida",
-  "knowledge.processing": "Procesando documento...",
+  "knowledge.processing": "La Base de Conocimientos está activada. Sus mensajes serán mejorados con contexto de documentos relevantes",
   "knowledge.no_results": "No se encontraron documentos",
   "knowledge.delete_confirm": "¿Está seguro de que desea eliminar este documento?",
   "tools.title": "Herramientas",
@@ -88,7 +90,13 @@
     "register.title": "Registrarse",
     "register.button": "Registrarse",
     "register.failed": "Error en el registro",
-    "register.success": "Registro exitoso"
+    "register.success": "Registro exitoso",
+    "register.link": "¿No tienes cuenta? Regístrate ahora",
+    "register.email": "Correo electrónico",
+    "register.confirm_email": "Confirmar correo electrónico",
+    "login.link": "Volver al inicio de sesión",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "forgot_password_message": "Por favor contacte al soporte o use la función de restablecimiento de contraseña (aún no implementada)."
   },
   "errors": {
     "network": "Error de red",
@@ -103,6 +111,13 @@
     "required": "Este campo es requerido",
     "email": "Por favor ingrese un email válido",
     "password": "La contraseña debe tener al menos 8 caracteres",
-    "confirm_password": "Las contraseñas no coinciden"
+    "confirm_password": "Las direcciones de correo electrónico no coinciden"
+  },
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "assistants": "Asistentes",
+    "conversations": "Conversaciones",
+    "mcp_tools": "Herramientas MCP",
+    "user": "Usuario"
   }
 }

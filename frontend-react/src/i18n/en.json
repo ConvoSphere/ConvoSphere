@@ -26,7 +26,9 @@
     "sort": "Sort",
     "refresh": "Refresh",
     "upload": "Upload",
-    "download": "Download"
+    "download": "Download",
+    "sources": "Sources",
+    "or": "or"
   },
   "settings.title": "Settings",
   "settings.language": "Language",
@@ -55,7 +57,7 @@
   "chat.send": "Send",
   "chat.placeholder": "Type your message...",
   "chat.loading": "Loading messages...",
-  "chat.empty": "No messages yet",
+  "chat.empty": "Start a conversation or enable Knowledge Base context for enhanced responses",
   "chat.error": "Failed to load messages",
   "chat.typing": "Assistant is typing...",
   "chat.new_conversation": "New Conversation",
@@ -64,7 +66,7 @@
   "knowledge.search": "Search documents...",
   "knowledge.upload_success": "Document uploaded successfully",
   "knowledge.upload_failed": "Upload failed",
-  "knowledge.processing": "Processing document...",
+  "knowledge.processing": "Knowledge Base is enabled. Your messages will be enhanced with relevant document context",
   "knowledge.no_results": "No documents found",
   "knowledge.delete_confirm": "Are you sure you want to delete this document?",
   "tools.title": "Tools",
@@ -88,7 +90,13 @@
     "register.title": "Register",
     "register.button": "Register",
     "register.failed": "Registration failed",
-    "register.success": "Registration successful"
+    "register.success": "Registration successful",
+    "register.link": "Don't have an account? Register now",
+    "register.email": "Email",
+    "register.confirm_email": "Confirm Email",
+    "login.link": "Back to login",
+    "forgot_password": "Forgot password?",
+    "forgot_password_message": "Please contact support or use the password reset function (not yet implemented)."
   },
   "errors": {
     "network": "Network error",
@@ -103,6 +111,13 @@
     "required": "This field is required",
     "email": "Please enter a valid email",
     "password": "Password must be at least 8 characters",
-    "confirm_password": "Passwords do not match"
+    "confirm_password": "Email addresses do not match"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "assistants": "Assistants",
+    "conversations": "Conversations",
+    "mcp_tools": "MCP Tools",
+    "user": "User"
   }
 } 
