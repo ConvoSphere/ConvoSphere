@@ -1,131 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Input, Space, Typography } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
-import { Document } from '../../services/knowledge';
-import SmartSuggestions from './SmartSuggestions';
-import QuickActions from './QuickActions';
-import DocumentList from './DocumentList';
-import DocumentDetailsModal from './DocumentDetailsModal';
-import SettingsModal from './SettingsModal';
-import HistoryModal from './HistoryModal';
+import React from 'react';
+import { Card, List, Typography, Space, Button } from 'antd';
+import { BookOutlined, ExportOutlined, ShareAltOutlined } from '@ant-design/icons';
+import type { Document } from '../../services/knowledge';
 
 const { Text } = Typography;
 
 interface ChatEnhancementsProps {
   documents: Document[];
-  onDocumentSelect: (document: Document) => void;
-  onExportConversation: () => void;
-  onShareConversation: () => void;
-  conversationHistory: any[];
-  selectedDocuments: Document[];
 }
 
-const ChatEnhancements: React.FC<ChatEnhancementsProps> = ({
-  documents,
-  onDocumentSelect,
-  onExportConversation,
-  onShareConversation,
-  conversationHistory,
-  selectedDocuments
-}) => {
-  const [showDocumentModal, setShowDocumentModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>(documents);
+const ChatEnhancements: React.FC<ChatEnhancementsProps> = ({ documents }) => {
+  const handleExportConversation = () => {
+    // TODO: Implement export functionality
+    console.log('Export conversation');
+  };
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const filtered = documents.filter(doc =>
-        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.tags?.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredDocuments(filtered);
-    } else {
-      setFilteredDocuments(documents);
-    }
-  }, [documents, searchQuery]);
-
-  const handleDocumentClick = (document: Document) => {
-    setSelectedDocument(document);
-    setShowDocumentModal(true);
+  const handleShareConversation = () => {
+    // TODO: Implement share functionality
+    console.log('Share conversation');
   };
 
   const handleDocumentSelect = (document: Document) => {
-    onDocumentSelect(document);
-    setShowDocumentModal(false);
+    // TODO: Implement document selection
+    console.log('Select document:', document);
   };
 
   return (
-    <div>
-      {/* Smart Suggestions */}
-      {selectedDocuments.length > 0 && <SmartSuggestions />}
-
-      {/* Quick Actions */}
-      <QuickActions
-        onShowHistory={() => setShowHistory(true)}
-        onExportConversation={onExportConversation}
-        onShareConversation={onShareConversation}
-        onShowSettings={() => setShowSettings(true)}
-      />
-
-      {/* Document References */}
-      {documents.length > 0 && (
-        <Card 
-          size="small" 
-          title={
-            <Space>
-              <BookOutlined />
-              <span>Document References ({documents.length})</span>
-            </Space>
-          }
-          extra={
-            <Input.Search
-              placeholder="Search documents..."
-              size="small"
-              style={{ width: 200 }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          }
-        >
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {filteredDocuments.length === 0 ? (
-              <Text type="secondary">No documents found</Text>
-            ) : (
-              <DocumentList
-                documents={filteredDocuments}
-                selectedDocuments={selectedDocuments}
-                onDocumentClick={handleDocumentClick}
-              />
+    <Card title="Chat Enhancements" size="small" style={{ marginBottom: 16 }}>
+      <Space direction="vertical" style={{ width: '100%' }}>
+        <div>
+          <Text strong>Available Documents:</Text>
+          <List
+            size="small"
+            dataSource={documents.slice(0, 3)}
+            renderItem={(document) => (
+              <List.Item
+                style={{ padding: '4px 0', cursor: 'pointer' }}
+                onClick={() => handleDocumentSelect(document)}
+              >
+                <List.Item.Meta
+                  avatar={<BookOutlined />}
+                  title={
+                    <Text style={{ fontSize: '12px' }}>
+                      {document.title}
+                    </Text>
+                  }
+                  description={
+                    <Text type="secondary" style={{ fontSize: '10px' }}>
+                      {document.document_type} • {document.file_size} bytes
+                    </Text>
+                  }
+                />
+              </List.Item>
             )}
-          </div>
-        </Card>
-      )}
-
-      {/* Document Details Modal */}
-      <DocumentDetailsModal
-        open={showDocumentModal}
-        document={selectedDocument}
-        onClose={() => setShowDocumentModal(false)}
-        onUse={handleDocumentSelect}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
-
-      {/* History Modal */}
-      <HistoryModal
-        open={showHistory}
-        conversationHistory={conversationHistory}
-        onClose={() => setShowHistory(false)}
-      />
-    </div>
+          />
+        </div>
+        
+        <Space>
+          <Button 
+            size="small" 
+            icon={<ExportOutlined />}
+            onClick={handleExportConversation}
+          >
+            Export
+          </Button>
+          <Button 
+            size="small" 
+            icon={<ShareAltOutlined />}
+            onClick={handleShareConversation}
+          >
+            Share
+          </Button>
+        </Space>
+      </Space>
+    </Card>
   );
 };
 

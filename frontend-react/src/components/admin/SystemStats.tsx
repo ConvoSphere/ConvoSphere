@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { 
   Card, 
   Row, 
@@ -9,65 +9,39 @@ import {
   Progress, 
   Space, 
   Button, 
-  DatePicker, 
   Select,
   Alert,
-  Divider,
-  List,
-  Tag,
-  Tooltip
+  Tag
 } from 'antd';
 import { 
-  BarChartOutlined, 
   FileTextOutlined, 
-  UserOutlined, 
   DatabaseOutlined,
   CloudOutlined,
   ClockCircleOutlined,
-  ReloadOutlined,
-  DownloadOutlined,
-  PieChartOutlined,
-  LineChartOutlined
+  ReloadOutlined
 } from '@ant-design/icons';
 import { useKnowledgeStore, useStats } from '../../store/knowledgeStore';
-import { KnowledgeStats, DocumentProcessingJob } from '../../services/knowledge';
-import { formatFileSize, formatDate, formatRelativeTime } from '../../utils/formatters';
+import type { DocumentProcessingJob } from '../../services/knowledge';
+import { formatFileSize, formatRelativeTime } from '../../utils/formatters';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-interface SystemStatsProps {
-  showDetailedStats?: boolean;
-  showCharts?: boolean;
-  refreshInterval?: number; // in seconds
-}
-
-const SystemStats: React.FC<SystemStatsProps> = ({
-  showDetailedStats = true,
-  showCharts = true,
-  refreshInterval = 30
-}) => {
+const SystemStats: React.FC = () => {
   const { stats, loading, fetchStats } = useStats();
   const { processingJobs, fetchProcessingJobs } = useKnowledgeStore();
-  
-  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'custom'>('7d');
-  const [customRange, setCustomRange] = useState<[Date, Date] | null>(null);
-  const [selectedMetric, setSelectedMetric] = useState<string>('documents');
 
   useEffect(() => {
     fetchStats();
     fetchProcessingJobs();
     
-    if (refreshInterval > 0) {
-      const interval = setInterval(() => {
-        fetchStats();
-        fetchProcessingJobs();
-      }, refreshInterval * 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [fetchStats, fetchProcessingJobs, refreshInterval]);
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchProcessingJobs();
+    }, 30 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [fetchStats, fetchProcessingJobs]);
 
   const getStorageUsagePercentage = () => {
     if (!stats?.storage_used) return 0;
@@ -146,7 +120,7 @@ const SystemStats: React.FC<SystemStatsProps> = ({
             title="Total Tokens"
             value={stats?.total_tokens || 0}
             formatter={(value) => `${(Number(value) / 1000).toFixed(1)}K`}
-            prefix={<BarChartOutlined />}
+            prefix={<FileTextOutlined />}
             loading={loading}
           />
         </Card>
@@ -203,7 +177,7 @@ const SystemStats: React.FC<SystemStatsProps> = ({
               title="Completed Jobs"
               value={processingStatus.completed}
               valueStyle={{ color: '#52c41a' }}
-              prefix={<BarChartOutlined />}
+              prefix={<FileTextOutlined />}
             />
           </Card>
         </Col>
@@ -213,7 +187,7 @@ const SystemStats: React.FC<SystemStatsProps> = ({
               title="Failed Jobs"
               value={processingStatus.failed}
               valueStyle={{ color: '#ff4d4f' }}
-              prefix={<BarChartOutlined />}
+              prefix={<FileTextOutlined />}
             />
           </Card>
         </Col>
@@ -409,8 +383,10 @@ const SystemStats: React.FC<SystemStatsProps> = ({
         <Title level={3}>System Statistics</Title>
         <Space>
           <Select
-            value={timeRange}
-            onChange={setTimeRange}
+            value="7d" // Default to 7 days for now
+            onChange={(value) => {
+              // TODO: Implement custom range selection
+            }}
             style={{ width: 120 }}
           >
             <Option value="24h">Last 24 Hours</Option>
@@ -418,12 +394,12 @@ const SystemStats: React.FC<SystemStatsProps> = ({
             <Option value="30d">Last 30 Days</Option>
             <Option value="custom">Custom Range</Option>
           </Select>
-          {timeRange === 'custom' && (
+          {/* {timeRange === 'custom' && (
             <RangePicker
               value={customRange}
               onChange={(dates) => setCustomRange(dates)}
             />
-          )}
+          )} */}
           <Button 
             icon={<ReloadOutlined />} 
             onClick={() => {
@@ -433,14 +409,14 @@ const SystemStats: React.FC<SystemStatsProps> = ({
           >
             Refresh
           </Button>
-          <Button 
+          {/* <Button 
             icon={<DownloadOutlined />}
             onClick={() => {
               // TODO: Implement export functionality
             }}
           >
             Export
-          </Button>
+          </Button> */}
         </Space>
       </div>
 
@@ -465,7 +441,7 @@ const SystemStats: React.FC<SystemStatsProps> = ({
         </Col>
       </Row>
 
-      {showDetailedStats && (
+      {/* {showDetailedStats && (
         <Card title="Detailed Statistics" style={{ marginTop: 16 }}>
           <Row gutter={16}>
             <Col span={8}>
@@ -493,7 +469,7 @@ const SystemStats: React.FC<SystemStatsProps> = ({
             </Col>
           </Row>
         </Card>
-      )}
+      )} */}
     </div>
   );
 };

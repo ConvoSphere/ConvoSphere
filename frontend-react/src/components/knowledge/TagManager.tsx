@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Input, Button, Space, Alert, Select } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useKnowledgeStore, useTags } from '../../store/knowledgeStore';
-import { Tag as TagType } from '../../services/knowledge';
+import type { Tag as TagType } from '../../services/knowledge';
 import TagStatistics from './TagStatistics';
 import TagCloud from './TagCloud';
 import TagTable from './TagTable';

@@ -43,6 +43,30 @@ export interface ChatWebSocketMessage {
   };
 }
 
+export interface WorkerMessage {
+  type: string;
+  data: unknown;
+  id: string;
+}
+
+export interface WorkerResponse {
+  type: 'success' | 'error' | 'ready';
+  data: unknown;
+  id: string;
+  workerId: string;
+  timestamp: number;
+}
+
+export interface WorkerTask {
+  id: string;
+  type: string;
+  data: unknown;
+  resolve: (value: unknown) => void;
+  reject: (error: unknown) => void;
+  timestamp: number;
+  timeout: number;
+}
+
 type MessageHandler = (msg: ChatMessage) => void;
 type KnowledgeUpdateHandler = (documents: Document[], searchQuery: string) => void;
 type ProcessingJobHandler = (jobId: string, status: string, progress: number) => void;
@@ -57,6 +81,10 @@ class ChatWebSocket {
   private reconnectDelay = 1000;
   private pingInterval: NodeJS.Timeout | null = null;
   private isConnecting = false;
+
+  private isChatWebSocketMessage(data: unknown): data is ChatWebSocketMessage {
+    return typeof data === 'object' && data !== null && 'type' in data && 'data' in data;
+  }
 
   connect(token: string, onMessage: MessageHandler, onKnowledgeUpdate?: KnowledgeUpdateHandler, onProcessingJob?: ProcessingJobHandler) {
     if (this.isConnecting) return;
@@ -102,7 +130,11 @@ class ChatWebSocket {
     };
   }
 
-  private handleMessage(data: any) {
+  private handleMessage(data: unknown) {
+    if (!this.isChatWebSocketMessage(data)) {
+      console.error('Received invalid WebSocket message:', data);
+      return;
+    }
     const { type, data: messageData } = data;
     
     switch (type) {

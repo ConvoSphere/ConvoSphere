@@ -23,91 +23,56 @@ import {
   FilterOutlined, 
   UploadOutlined, 
   ReloadOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  TagOutlined,
-  BarChartOutlined,
-  SettingOutlined
+  PlusOutlined
 } from '@ant-design/icons';
-import { useKnowledgeStore, useDocuments, useTags, useStats } from '../store/knowledgeStore';
+import { useKnowledgeStore } from '../store/knowledgeStore';
 import DocumentList from '../components/knowledge/DocumentList';
 import UploadArea from '../components/knowledge/UploadArea';
 import TagManager from '../components/knowledge/TagManager';
 import BulkActions from '../components/knowledge/BulkActions';
 import SystemStats from '../components/admin/SystemStats';
-import { Document, DocumentFilter } from '../services/knowledge';
+import type { Document, DocumentFilter } from '../services/knowledge';
 import { useAuthStore } from '../store/authStore';
 
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
 const KnowledgeBase: React.FC = () => {
   const { user } = useAuthStore();
-  const { documents, loading, error } = useDocuments();
-  const { tags, loading: tagsLoading } = useTags();
-  const { stats, loading: statsLoading } = useStats();
-  
-  const {
-    fetchDocuments,
-    fetchTags,
-    fetchStats,
-    search,
-    advancedSearch,
-    setFilters,
-    applyFilters,
+  const { 
+    documents, 
+    documentsLoading: loading, 
+    documentsError: error, 
+    fetchDocuments, 
+    search, 
+    applyFilters, 
     clearFilters,
-    refreshDocuments,
-    clearSearchResults
+    currentFilters,
+    setFilters,
+    refreshDocuments
   } = useKnowledgeStore();
-
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const { tags, fetchTags } = useKnowledgeStore();
+  const { stats, statsLoading } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentFilters, setCurrentFilters] = useState<DocumentFilter>({});
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showDocumentModal, setShowDocumentModal] = useState(false);
-  const [showBulkActionsModal, setShowBulkActionsModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-
-  // Check user permissions
-  const isPremium = user?.role === 'premium' || user?.role === 'admin';
-  const isAdmin = user?.role === 'admin';
-  const isModerator = user?.role === 'moderator' || user?.role === 'admin';
+  const [showUploadArea, setShowUploadArea] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
   useEffect(() => {
     fetchDocuments();
     fetchTags();
-    fetchStats();
-  }, [fetchDocuments, fetchTags, fetchStats]);
+  }, [fetchDocuments, fetchTags]);
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
     if (value.trim()) {
       search(value);
     } else {
-      clearSearchResults();
+      refreshDocuments();
     }
-  };
-
-  const handleAdvancedSearch = () => {
-    const request = {
-      query: searchQuery,
-      filters: currentFilters,
-      sort_by: 'created_at',
-      sort_order: 'desc' as const,
-      page: 1,
-      page_size: 20
-    };
-    advancedSearch(request);
-  };
-
-  const handleFilterChange = (key: keyof DocumentFilter, value: any) => {
-    const newFilters = { ...currentFilters, [key]: value };
-    setCurrentFilters(newFilters);
-    setFilters(newFilters);
   };
 
   const handleApplyFilters = () => {
@@ -115,13 +80,13 @@ const KnowledgeBase: React.FC = () => {
   };
 
   const handleClearFilters = () => {
-    setCurrentFilters({});
+    setFilters({});
     clearFilters();
   };
 
   const handleViewDocument = (document: Document) => {
-    setSelectedDocument(document);
-    setShowDocumentModal(true);
+    // TODO: Implement view functionality
+    message.info('View functionality coming soon');
   };
 
   const handleEditDocument = (document: Document) => {
@@ -246,7 +211,7 @@ const KnowledgeBase: React.FC = () => {
             allowClear
             style={{ width: '100%' }}
             value={currentFilters.document_type}
-            onChange={(value) => handleFilterChange('document_type', value)}
+            onChange={(value) => setFilters({ ...currentFilters, document_type: value })}
           >
             <Option value="PDF">PDF</Option>
             <Option value="DOCUMENT">Word Document</Option>
@@ -258,7 +223,7 @@ const KnowledgeBase: React.FC = () => {
           <Input
             placeholder="Author"
             value={currentFilters.author}
-            onChange={(e) => handleFilterChange('author', e.target.value)}
+            onChange={(e) => setFilters({ ...currentFilters, author: e.target.value })}
           />
         </Col>
         <Col span={4}>
@@ -266,7 +231,7 @@ const KnowledgeBase: React.FC = () => {
             placeholder="Year"
             type="number"
             value={currentFilters.year}
-            onChange={(e) => handleFilterChange('year', e.target.value ? parseInt(e.target.value) : undefined)}
+            onChange={(e) => setFilters({ ...currentFilters, year: e.target.value ? parseInt(e.target.value) : undefined })}
           />
         </Col>
         <Col span={4}>
@@ -275,7 +240,7 @@ const KnowledgeBase: React.FC = () => {
             allowClear
             style={{ width: '100%' }}
             value={currentFilters.language}
-            onChange={(value) => handleFilterChange('language', value)}
+            onChange={(value) => setFilters({ ...currentFilters, language: value })}
           >
             <Option value="en">English</Option>
             <Option value="de">German</Option>
@@ -311,14 +276,14 @@ const KnowledgeBase: React.FC = () => {
           <Button 
             type="primary" 
             icon={<UploadOutlined />}
-            onClick={() => setShowUploadModal(true)}
+            onClick={() => setShowUploadArea(true)}
           >
             Upload Documents
           </Button>
-          {isPremium && (
+          {user?.role === 'premium' && (
             <Button 
               icon={<PlusOutlined />}
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => setShowUploadArea(true)}
             >
               Bulk Import
             </Button>
@@ -339,9 +304,8 @@ const KnowledgeBase: React.FC = () => {
                 {selectedRowKeys.length} selected
               </Text>
               <Button 
-                icon={<DeleteOutlined />}
-                danger
-                onClick={() => setShowBulkActionsModal(true)}
+                icon={<ReloadOutlined />}
+                onClick={() => setShowBulkActions(true)}
               >
                 Bulk Actions
               </Button>
@@ -368,14 +332,14 @@ const KnowledgeBase: React.FC = () => {
         <Col span={8}>
           <Space>
             <Button 
-              type={showAdvancedSearch ? 'primary' : 'default'}
+              type={false ? 'primary' : 'default'}
               icon={<FilterOutlined />}
-              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+              onClick={() => {}}
             >
               Advanced Search
             </Button>
-            {showAdvancedSearch && (
-              <Button onClick={handleAdvancedSearch}>
+            {false && (
+              <Button onClick={() => search(searchQuery)}>
                 Search
               </Button>
             )}
@@ -401,10 +365,10 @@ const KnowledgeBase: React.FC = () => {
       )}
 
       <Tabs defaultActiveKey="documents">
-        <TabPane tab="Documents" key="documents">
+        <Tabs.TabPane tab="Documents" key="documents">
           {renderStats()}
           {renderSearch()}
-          {showAdvancedSearch && renderFilters()}
+          {false && renderFilters()}
           {renderActions()}
           
           <DocumentList
@@ -418,28 +382,24 @@ const KnowledgeBase: React.FC = () => {
             selectedRowKeys={selectedRowKeys}
             onSelectionChange={setSelectedRowKeys}
           />
-        </TabPane>
+        </Tabs.TabPane>
         
-        <TabPane tab="Tags" key="tags">
+        <Tabs.TabPane tab="Tags" key="tags">
           <TagManager 
-            showCreateButton={isPremium}
+            showCreateButton={user?.role === 'premium'}
             showStatistics={true}
             mode="management"
           />
-        </TabPane>
+        </Tabs.TabPane>
         
-        {isAdmin && (
-          <TabPane tab="Statistics" key="stats">
-            <SystemStats 
-              showDetailedStats={true}
-              showCharts={true}
-              refreshInterval={30}
-            />
-          </TabPane>
+        {user?.role === 'admin' && (
+          <Tabs.TabPane tab="Statistics" key="stats">
+            <SystemStats />
+          </Tabs.TabPane>
         )}
         
-        {isAdmin && (
-          <TabPane tab="Settings" key="settings">
+        {user?.role === 'admin' && (
+          <Tabs.TabPane tab="Settings" key="settings">
             <Card>
               <Title level={4}>Knowledge Base Settings</Title>
               <Text type="secondary">
@@ -447,129 +407,34 @@ const KnowledgeBase: React.FC = () => {
               </Text>
               {/* TODO: Implement Settings component */}
             </Card>
-          </TabPane>
+          </Tabs.TabPane>
         )}
       </Tabs>
 
       {/* Upload Modal */}
       <Modal
         title="Upload Documents"
-        open={showUploadModal}
-        onCancel={() => setShowUploadModal(false)}
+        open={showUploadArea}
+        onCancel={() => setShowUploadArea(false)}
         footer={null}
         width={800}
       >
         <UploadArea
           onUploadComplete={() => {
-            setShowUploadModal(false);
+            setShowUploadArea(false);
             refreshDocuments();
           }}
-          maxFiles={isPremium ? 50 : 10}
+          maxFiles={user?.role === 'premium' ? 50 : 10}
           maxFileSize={100 * 1024 * 1024} // 100MB
           allowedTypes={['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx']}
           showQueue={true}
         />
       </Modal>
 
-      {/* Document Details Modal */}
-      <Modal
-        title="Document Details"
-        open={showDocumentModal}
-        onCancel={() => {
-          setShowDocumentModal(false);
-          setSelectedDocument(null);
-        }}
-        footer={[
-          <Button key="close" onClick={() => setShowDocumentModal(false)}>
-            Close
-          </Button>,
-          <Button 
-            key="edit" 
-            type="primary"
-            onClick={() => {
-              if (selectedDocument) {
-                handleEditDocument(selectedDocument);
-              }
-            }}
-          >
-            Edit
-          </Button>
-        ]}
-        width={800}
-      >
-        {selectedDocument && (
-          <div>
-            <Title level={4}>{selectedDocument.title}</Title>
-            <Text type="secondary">{selectedDocument.file_name}</Text>
-            
-            <Divider />
-            
-            <Row gutter={16}>
-              <Col span={12}>
-                <Text strong>Type:</Text> {selectedDocument.document_type || 'Unknown'}
-              </Col>
-              <Col span={12}>
-                <Text strong>Size:</Text> {(selectedDocument.file_size / 1024 / 1024).toFixed(2)} MB
-              </Col>
-            </Row>
-            
-            <Row gutter={16}>
-              <Col span={12}>
-                <Text strong>Author:</Text> {selectedDocument.author || 'Unknown'}
-              </Col>
-              <Col span={12}>
-                <Text strong>Language:</Text> {selectedDocument.language || 'Unknown'}
-              </Col>
-            </Row>
-            
-            <Row gutter={16}>
-              <Col span={12}>
-                <Text strong>Year:</Text> {selectedDocument.year || 'Unknown'}
-              </Col>
-              <Col span={12}>
-                <Text strong>Status:</Text> {selectedDocument.status}
-              </Col>
-            </Row>
-            
-            {selectedDocument.description && (
-              <>
-                <Divider />
-                <Text strong>Description:</Text>
-                <p>{selectedDocument.description}</p>
-              </>
-            )}
-            
-            {selectedDocument.tag_names && selectedDocument.tag_names.length > 0 && (
-              <>
-                <Divider />
-                <Text strong>Tags:</Text>
-                <div style={{ marginTop: 8 }}>
-                  {selectedDocument.tag_names.map((tag, index) => (
-                    <Tag key={index} color="blue">{tag}</Tag>
-                  ))}
-                </div>
-              </>
-            )}
-            
-            {selectedDocument.keywords && selectedDocument.keywords.length > 0 && (
-              <>
-                <Divider />
-                <Text strong>Keywords:</Text>
-                <div style={{ marginTop: 8 }}>
-                  {selectedDocument.keywords.map((keyword, index) => (
-                    <Tag key={index} size="small">{keyword}</Tag>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </Modal>
-
       {/* Bulk Actions Modal */}
       <BulkActions
-        visible={showBulkActionsModal}
-        onCancel={() => setShowBulkActionsModal(false)}
+        visible={showBulkActions}
+        onCancel={() => setShowBulkActions(false)}
         selectedDocuments={documents.filter(doc => selectedRowKeys.includes(doc.id))}
         onBulkDelete={handleBulkDelete}
         onBulkTag={handleBulkTag}

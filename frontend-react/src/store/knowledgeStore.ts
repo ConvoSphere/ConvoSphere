@@ -1,12 +1,14 @@
 import { create } from 'zustand';
-import { 
+import type { 
   Document, 
   Tag, 
   SearchResponse, 
   DocumentFilter, 
   AdvancedSearchRequest,
   DocumentProcessingJob,
-  KnowledgeStats,
+  KnowledgeStats
+} from '../services/knowledge';
+import {
   getDocuments,
   getTags,
   searchDocuments,
@@ -37,6 +39,7 @@ interface KnowledgeState {
   tags: Tag[];
   tagsLoading: boolean;
   tagsError: string | null;
+  documentTypes: string[];
   
   // Search
   searchResults: SearchResponse | null;
@@ -68,6 +71,8 @@ interface KnowledgeState {
   fetchSearchHistory: () => Promise<void>;
   fetchProcessingJobs: () => Promise<void>;
   fetchStats: () => Promise<void>;
+  getTags: () => Promise<void>;
+  getDocuments: () => Promise<void>;
   
   // Upload actions
   addToUploadQueue: (files: File[]) => void;
@@ -95,6 +100,7 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
   documentsError: null,
   
   tags: [],
+  documentTypes: [],
   tagsLoading: false,
   tagsError: null,
   
@@ -320,6 +326,25 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       tagsError: null, 
       searchError: null 
     });
+  },
+
+  getTags: async () => {
+    // Placeholder: fetch tags and set state
+    try {
+      const tags = await getTags();
+      set({ tags });
+    } catch (error) {
+      set({ tags: [] });
+    }
+  },
+  getDocuments: async () => {
+    // Placeholder: fetch documents and set state
+    try {
+      const documents = await getDocuments();
+      set({ documents });
+    } catch (error) {
+      set({ documents: [] });
+    }
   }
 }));
 
@@ -355,5 +380,6 @@ export const useFilters = () => useKnowledgeStore(state => ({
 
 export const useStats = () => useKnowledgeStore(state => ({
   stats: state.stats,
-  loading: state.statsLoading
+  loading: state.statsLoading,
+  fetchStats: state.fetchStats,
 }));

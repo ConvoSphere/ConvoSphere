@@ -32,9 +32,13 @@ const loadPolyfills = async () => {
     polyfills.push(Promise.resolve().then(() => {
       if (!('PerformanceObserver' in window)) {
         (window as any).PerformanceObserver = class PerformanceObserver {
-          private callback: any;
-          constructor(callback: any) {
-            this.callback = callback;
+          private callback: Function;
+          constructor(callback: unknown) {
+            if (typeof callback === 'function') {
+              this.callback = callback;
+            } else {
+              this.callback = () => {};
+            }
           }
           observe() {}
           disconnect() {}
@@ -46,14 +50,17 @@ const loadPolyfills = async () => {
   if (!('requestIdleCallback' in window)) {
     polyfills.push(Promise.resolve().then(() => {
       if (!('requestIdleCallback' in window)) {
-        (window as any).requestIdleCallback = (callback: any) => {
+        (window as any).requestIdleCallback = (callback: unknown) => {
           const start = Date.now();
-          return setTimeout(() => {
-            callback({
-              didTimeout: false,
-              timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
-            });
-          }, 1);
+          if (typeof callback === 'function') {
+            return setTimeout(() => {
+              callback({
+                didTimeout: false,
+                timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+              });
+            }, 1);
+          }
+          return undefined;
         };
         (window as any).cancelIdleCallback = (id: number) => clearTimeout(id);
       }
@@ -76,7 +83,7 @@ const loadPolyfills = async () => {
   if (!('structuredClone' in window)) {
     polyfills.push(Promise.resolve().then(() => {
       if (!('structuredClone' in window)) {
-        (window as any).structuredClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+        (window as any).structuredClone = (obj: unknown) => JSON.parse(JSON.stringify(obj));
       }
     }));
   }

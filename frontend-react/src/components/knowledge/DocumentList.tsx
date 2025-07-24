@@ -21,7 +21,7 @@ import {
   FileWordOutlined,
   FileExcelOutlined
 } from '@ant-design/icons';
-import { Document } from '../../services/knowledge';
+import type { Document } from '../../services/knowledge';
 import { formatFileSize, formatDate } from '../../utils/formatters';
 
 const { Text } = Typography;
@@ -263,7 +263,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
             <Text strong>Keywords:</Text>
             <Space wrap style={{ marginLeft: 8 }}>
               {record.keywords.map((keyword, index) => (
-                <Tag key={index} size="small">{keyword}</Tag>
+                <Tag key={index}>{keyword}</Tag>
               ))}
             </Space>
           </div>

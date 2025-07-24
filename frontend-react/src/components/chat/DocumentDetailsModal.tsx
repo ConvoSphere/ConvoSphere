@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Button, Typography, Divider, Space, Tag } from 'antd';
-import { Document } from '../../services/knowledge';
+import type { Document } from '../../services/knowledge';
 import { formatDate, formatFileSize, formatDocumentType } from '../../utils/formatters';
 
 const { Title, Text } = Typography;
@@ -82,7 +82,7 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, docum
               <Text strong>Keywords:</Text>
               <div style={{ marginTop: 8 }}>
                 {document.keywords.map((keyword, index) => (
-                  <Tag key={index} size="small">{keyword}</Tag>
+                  <Tag key={index}>{keyword}</Tag>
                 ))}
               </div>
             </div>

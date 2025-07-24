@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Card, Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
 import { SendOutlined, UserOutlined, RobotOutlined, BookOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
-import { chatWebSocket, ChatMessage, KnowledgeContext } from '../services/chat';
+import { chatWebSocket } from '../services/chat';
+import type { ChatMessage, KnowledgeContext } from '../services/chat';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { useKnowledgeStore } from '../store/knowledgeStore';
-import KnowledgeContext from '../components/chat/KnowledgeContext';
-import { Document } from '../services/knowledge';
+import KnowledgeContextComponent from '../components/chat/KnowledgeContext';
+import type { Document } from '../services/knowledge';
 import type { InputRef } from 'antd';
 
 const { Title, Text } = Typography;
@@ -404,7 +405,7 @@ const Chat: React.FC = () => {
             style={{ height: '100%', overflowY: 'auto' }}
             size="small"
           >
-            <KnowledgeContext
+            <KnowledgeContextComponent
               onDocumentSelect={handleDocumentSelect}
               onSearch={handleKnowledgeSearch}
               selectedDocuments={selectedDocuments}

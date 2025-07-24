@@ -28,6 +28,7 @@ export interface Document {
   tag_names?: string[];
   created_at: string;
   updated_at: string;
+  tags?: Tag[]; // <-- added for frontend compatibility
 }
 
 export interface DocumentChunk {

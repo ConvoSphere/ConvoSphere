@@ -19,7 +19,7 @@ import {
   DownloadOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
-import { Document, Tag as TagType } from '../../services/knowledge';
+import type { Document, Tag as TagType } from '../../services/knowledge';
 import { useTags } from '../../store/knowledgeStore';
 
 const { Title, Text } = Typography;
@@ -174,7 +174,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
               {tags.map(tag => (
                 <Option key={tag.id} value={tag.name}>
                   <Space>
-                    <Tag color={tag.color || '#1890ff'} size="small">{tag.name}</Tag>
+                    <Tag color={tag.color || '#1890ff'}>{tag.name}</Tag>
                     <Text type="secondary">({tag.usage_count})</Text>
                   </Space>
                 </Option>
@@ -234,7 +234,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
               title={doc.title}
               description={
                 <Space size="small">
-                  <Tag size="small">{doc.document_type || 'Unknown'}</Tag>
+                  <Tag>{doc.document_type || 'Unknown'}</Tag>
                   <Text type="secondary">{doc.file_name}</Text>
                   {doc.author && (
                     <Text type="secondary">by {doc.author}</Text>

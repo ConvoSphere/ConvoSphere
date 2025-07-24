@@ -1,6 +1,6 @@
 import React from 'react';
 import { List, Tag, Typography, Badge } from 'antd';
-import { Document } from '../../services/knowledge';
+import type { Document } from '../../services/knowledge';
 import { formatDate, formatFileSize, formatDocumentType } from '../../utils/formatters';
 
 const { Text } = Typography;
@@ -43,11 +43,11 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, selectedDocument
                   {document.title}
                 </Text>
                 <div style={{ marginTop: '4px' }}>
-                  <Tag size="small" color="blue">
+                  <Tag color="blue">
                     {formatDocumentType(document.document_type)}
                   </Tag>
                   {document.language && (
-                    <Tag size="small" color="green">
+                    <Tag color="green">
                       {document.language.toUpperCase()}
                     </Tag>
                   )}
@@ -55,7 +55,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, selectedDocument
                 {document.tags && document.tags.length > 0 && (
                   <div style={{ marginTop: '4px' }}>
                     {document.tags.slice(0, 2).map(tag => (
-                      <Tag key={tag.id} size="small" color="purple">
+                      <Tag key={tag.id} color="purple">
                         {tag.name}
                       </Tag>
                     ))}

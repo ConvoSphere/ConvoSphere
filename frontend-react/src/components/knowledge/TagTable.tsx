@@ -26,7 +26,7 @@ const TagTable: React.FC<TagTableProps> = ({ tags, loading, mode, onTagSelect, o
             {record.name}
           </Tag>
           {record.is_system && (
-            <Tag color="red" size="small">System</Tag>
+            <Tag color="red">System</Tag>
           )}
         </Space>
       ),

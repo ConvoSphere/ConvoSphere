@@ -28,7 +28,7 @@ import {
   ClearOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
-import { Document, Tag as TagType } from '../services/knowledge';
+import type { Document, Tag as TagType } from '../services/knowledge';
 import { useKnowledgeStore } from '../../store/knowledgeStore';
 import { formatFileSize, formatDate, formatDocumentType } from '../../utils/formatters';
 
@@ -170,16 +170,16 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
               </Text>
               
               <div style={{ marginTop: '4px' }}>
-                <Tag size="small" color="blue">
+                <Tag color="blue">
                   {formatDocumentType(document.document_type)}
                 </Tag>
                 {document.language && (
-                  <Tag size="small" color="green">
+                  <Tag color="green">
                     {document.language.toUpperCase()}
                   </Tag>
                 )}
                 {document.page_count && (
-                  <Tag size="small" color="orange">
+                  <Tag color="orange">
                     {document.page_count} pages
                   </Tag>
                 )}
@@ -188,7 +188,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
               {document.tags && document.tags.length > 0 && (
                 <div style={{ marginTop: '4px' }}>
                   {document.tags.slice(0, 2).map(tag => (
-                    <Tag key={tag.id} size="small" color="purple">
+                    <Tag key={tag.id} color="purple">
                       {tag.name}
                     </Tag>
                   ))}
