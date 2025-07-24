@@ -33,13 +33,13 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   const { documents } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredDocuments = documents.filter(doc => {
+  const filteredDocuments = Array.isArray(documents) ? documents.filter(doc => {
     const matchesSearch = !searchQuery || 
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesSearch;
-  });
+  }) : [];
 
   const renderDocumentItem = (document: Document) => (
     <List.Item

@@ -16,7 +16,8 @@ psycopg2-binary
 redis
 
 # Vector Database
-weaviate-client
+weaviate-client>=4.0.0
+protobuf>=6.0.0
 
 # Authentication & Security
 python-jose[cryptography]

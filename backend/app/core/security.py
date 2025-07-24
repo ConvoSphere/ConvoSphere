@@ -5,7 +5,7 @@ This module provides JWT token management, password hashing,
 and security utilities for the AI Assistant Platform.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
@@ -16,8 +16,12 @@ from passlib.context import CryptContext
 
 from app.core.config import get_settings
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing context with optimized bcrypt settings
+pwd_context = CryptContext(
+    schemes=["bcrypt"], 
+    deprecated="auto",
+    bcrypt__rounds=12  # Increased rounds for better security
+)
 
 security = HTTPBearer()
 
@@ -67,9 +71,9 @@ def create_access_token(
     """
     settings = get_settings()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.jwt_access_token_expire_minutes,
         )
 
@@ -97,9 +101,9 @@ def create_refresh_token(
     """
     settings = get_settings()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             days=settings.jwt_refresh_token_expire_days,
         )
 
@@ -124,9 +128,8 @@ async def verify_token(token: str) -> str | None:
     try:
         # Check if token is blacklisted (only if Redis is available)
         try:
-            from app.core.redis_client import get_redis
-            redis = await get_redis()
-            is_blacklisted = await redis.get(f"{BLACKLIST_PREFIX}{token}")
+            from app.core.redis_client import is_token_blacklisted
+            is_blacklisted = await is_token_blacklisted(token)
             if is_blacklisted:
                 logger.warning("JWT token is blacklisted")
                 return None

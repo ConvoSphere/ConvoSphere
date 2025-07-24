@@ -34,9 +34,12 @@ services:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs
     depends_on:
-      - postgres
-      - redis
-      - weaviate
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_started
     restart: unless-stopped
     networks:
       - chatassistant-network
@@ -70,14 +73,30 @@ services:
     restart: unless-stopped
     networks:
       - chatassistant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatassistant -d chatassistant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
     restart: unless-stopped
     networks:
       - chatassistant-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   weaviate:
     image: semitechnologies/weaviate:1.23.7
@@ -95,10 +114,17 @@ services:
     restart: unless-stopped
     networks:
       - chatassistant-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   postgres_data:
   weaviate_data:
+  redis_data:
 
 networks:
   chatassistant-network:

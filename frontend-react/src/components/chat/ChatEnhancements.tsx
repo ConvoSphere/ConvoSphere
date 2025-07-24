@@ -32,7 +32,7 @@ const ChatEnhancements: React.FC<ChatEnhancementsProps> = ({ documents }) => {
           <Text strong>Available Documents:</Text>
           <List
             size="small"
-            dataSource={documents.slice(0, 3)}
+            dataSource={Array.isArray(documents) ? documents.slice(0, 3) : []}
             renderItem={(document) => (
               <List.Item
                 style={{ padding: '4px 0', cursor: 'pointer' }}

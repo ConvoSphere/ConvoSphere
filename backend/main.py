@@ -7,6 +7,7 @@ configuring middleware, routes, and application lifecycle events.
 
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from .app.api.v1.api import api_router
 from .app.core.config import get_settings
@@ -62,13 +63,13 @@ async def lifespan(_):
             raise_runtime_error("Database connection failed")
         logger.info("Database initialized successfully")
 
-        # Initialize Redis
+        # Initialize Redis with graceful degradation
         logger.info("Initializing Redis...")
-        await init_redis()
-        if not await check_redis_connection():
-            logger.error("Redis connection failed")
-            raise_runtime_error("Redis connection failed")
-        logger.info("Redis initialized successfully")
+        redis_client = await init_redis()
+        if redis_client is None:
+            logger.warning("Redis not available - continuing without caching")
+        else:
+            logger.info("Redis initialized successfully")
 
         # Initialize Weaviate
         logger.info("Initializing Weaviate...")
@@ -212,12 +213,30 @@ def create_application() -> FastAPI:
     # Health check endpoint
     @app.get("/health")
     async def health_check():
-        """Health check endpoint."""
+        """Health check endpoint with service status."""
+        from app.core.redis_client import get_redis_info, check_redis_connection
+        
+        # Check Redis status
+        try:
+            redis_connected = await check_redis_connection()
+            redis_info = await get_redis_info()
+            redis_status = "connected" if redis_connected else "unavailable"
+        except Exception as e:
+            redis_status = "error"
+            redis_info = {"error": str(e)}
+        
         return {
             "status": "healthy",
             "app_name": get_settings().app_name,
             "version": get_settings().app_version,
             "environment": get_settings().environment,
+            "timestamp": datetime.now().isoformat(),
+            "services": {
+                "redis": {
+                    "status": redis_status,
+                    "info": redis_info
+                }
+            }
         }
 
     # Config endpoint for frontend (must be before API routers)

@@ -122,9 +122,9 @@ async def login(
     refresh_token = create_refresh_token(subject=user.id)
 
     # Update last login
-    from datetime import datetime
+    from datetime import UTC, datetime
 
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(UTC)
     db.commit()
 
     log_security_event(

@@ -116,8 +116,21 @@ class CacheService:
         }
 
     async def initialize(self) -> None:
-        """Initialize Redis connection."""
+        """Initialize Redis connection with graceful degradation."""
         try:
+            # Use the global Redis client if available
+            from app.core.redis_client import get_redis, is_redis_available
+            
+            if is_redis_available():
+                self.redis_client = await get_redis()
+                if self.redis_client is not None:
+                    self._initialized = True
+                    logger.info("Cache service initialized with global Redis client")
+                    return
+
+            # Fallback to creating our own connection if global client is not available
+            logger.warning("Global Redis client not available, creating fallback connection")
+            
             # Create connection pool
             self.connection_pool = redis.ConnectionPool.from_url(
                 self.config.redis_url,
@@ -135,11 +148,12 @@ class CacheService:
             await self.redis_client.ping()
 
             self._initialized = True
-            logger.info("Cache service initialized successfully")
+            logger.info("Cache service initialized with fallback connection")
 
         except Exception as e:
-            logger.error(f"Failed to initialize cache service: {e}")
-            raise ConfigurationError(f"Cache initialization failed: {str(e)}")
+            logger.warning(f"Failed to initialize cache service: {e}")
+            self._initialized = False
+            # Don't raise exception - allow application to continue without caching
 
     async def close(self) -> None:
         """Close Redis connection."""

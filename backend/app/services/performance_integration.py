@@ -71,11 +71,15 @@ class PerformanceIntegration:
         try:
             logger.info("Initializing performance integration services...")
 
-            # Initialize cache service
+            # Initialize cache service with graceful degradation
             if self.config.enable_caching:
-                await cache_service.initialize()
-                self.services_status["cache"] = True
-                logger.info("Cache service initialized")
+                try:
+                    await cache_service.initialize()
+                    self.services_status["cache"] = True
+                    logger.info("Cache service initialized")
+                except Exception as e:
+                    logger.warning(f"Cache service initialization failed: {e}")
+                    self.services_status["cache"] = False
 
             # Initialize async processor
             if self.config.enable_async_processing:

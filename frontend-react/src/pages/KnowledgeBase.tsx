@@ -364,7 +364,7 @@ const KnowledgeBase: React.FC = () => {
           {renderActions()}
           
           <DocumentList
-            documents={documents}
+            documents={Array.isArray(documents) ? documents : []}
             loading={loading}
             onView={handleViewDocument}
             onEdit={handleEditDocument}
@@ -427,7 +427,7 @@ const KnowledgeBase: React.FC = () => {
       <BulkActions
         visible={showBulkActions}
         onCancel={() => setShowBulkActions(false)}
-        selectedDocuments={documents.filter(doc => selectedRowKeys.includes(doc.id))}
+        selectedDocuments={Array.isArray(documents) ? documents.filter(doc => selectedRowKeys.includes(doc.id)) : []}
         onBulkDelete={handleBulkDelete}
         onBulkTag={handleBulkTag}
         onBulkReprocess={handleBulkReprocess}
