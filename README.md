@@ -523,3 +523,21 @@ Die aktuelle und geplante Entwicklung ist in der [Roadmap](docs/project/roadmap.
 - **Deployment & Betrieb:** [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
 - **Feature-Details:** [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
 - **Roadmap & Status:** [docs/project/roadmap.md](docs/project/roadmap.md)
+
+## 🔌 Frontend-Backend-Kommunikation testen
+
+Um die Verbindung zwischen Frontend und Backend zu prüfen, steht ein Hilfsskript zur Verfügung:
+
+```bash
+make test-communication
+```
+
+Das Skript `scripts/test-communication.sh` prüft:
+- Erreichbarkeit von Backend, WebSocket und Frontend
+- Wichtige API-Endpunkte
+- CORS-Konfiguration
+- WebSocket-Verbindung (optional mit websocat)
+- Docker Compose-Konfiguration
+- Korrekte Umgebungsvariablen
+
+**Hinweis:** Bei Problemen siehe die Hinweise im Skript und die Dokumentation unter [docs/development/setup.md](docs/development/setup.md).
