@@ -13,6 +13,8 @@ const LanguageSwitcher: React.FC = () => {
       options={[
         { value: 'en', label: t('language.en') },
         { value: 'de', label: t('language.de') },
+        { value: 'fr', label: t('language.fr') },
+        { value: 'es', label: t('language.es') },
       ]}
     />
   );

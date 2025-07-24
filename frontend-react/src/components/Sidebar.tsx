@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Avatar } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   DashboardOutlined,
   MessageOutlined,
@@ -18,6 +19,7 @@ import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
 const Sidebar: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -51,58 +53,58 @@ const Sidebar: React.FC = () => {
     { 
       key: '/', 
       icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />, 
-      label: 'Dashboard' 
+      label: t('navigation.dashboard') 
     },
     { 
       key: '/chat', 
       icon: <MessageOutlined style={{ color: colors.colorSecondary }} />, 
-      label: 'Chat' 
+      label: t('chat.title') 
     },
     { 
       key: '/assistants', 
       icon: <TeamOutlined style={{ color: colors.colorAccent }} />, 
-      label: 'Assistants' 
+      label: t('navigation.assistants') 
     },
     { 
       key: '/knowledge-base', 
       icon: <BookOutlined style={{ color: colors.colorPrimary }} />, 
-      label: 'Knowledge Base' 
+      label: t('knowledge.title') 
     },
     { 
       key: '/tools', 
       icon: <ToolOutlined style={{ color: colors.colorSecondary }} />, 
-      label: 'Tools' 
+      label: t('tools.title') 
     },
     { 
       key: '/conversations', 
       icon: <AppstoreOutlined style={{ color: colors.colorAccent }} />, 
-      label: 'Conversations' 
+      label: t('navigation.conversations') 
     },
     { 
       key: '/mcp-tools', 
       icon: <ApiOutlined style={{ color: colors.colorPrimary }} />, 
-      label: 'MCP Tools' 
+      label: t('navigation.mcp_tools') 
     },
     { 
       key: '/settings', 
       icon: <SettingOutlined style={{ color: colors.colorSecondary }} />, 
-      label: 'Settings' 
+      label: t('settings.title') 
     },
     { 
       key: '/profile', 
       icon: <UserOutlined style={{ color: colors.colorAccent }} />, 
-      label: 'Profile' 
+      label: t('profile.title') 
     },
     ...(isAdmin ? [
       { 
         key: '/admin', 
         icon: <TeamOutlined style={{ color: colors.colorPrimary }} />, 
-        label: 'Admin' 
+        label: t('admin.title') 
       },
       { 
         key: '/admin/system-status', 
         icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />, 
-        label: 'System Status' 
+        label: t('admin.system_status') 
       }
     ] : []),
   ];
@@ -125,13 +127,13 @@ const Sidebar: React.FC = () => {
             fontSize: '16px',
             color: colors.colorTextBase,
           }}>
-            AI Assistant
+            {t('app.title')}
           </div>
           <div style={{ 
             fontSize: '12px',
             color: colors.colorTextSecondary,
           }}>
-            {user?.role || 'User'}
+            {user?.role || t('navigation.user')}
           </div>
         </div>
       </div>
@@ -170,7 +172,7 @@ const Sidebar: React.FC = () => {
               fontWeight: 500,
               color: colors.colorTextBase,
             }}>
-              {user?.username || 'User'}
+              {user?.username || t('navigation.user')}
             </div>
             <div style={{ 
               fontSize: '12px',

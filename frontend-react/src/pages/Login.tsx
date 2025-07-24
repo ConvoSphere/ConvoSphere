@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Alert, Modal, message, Divider } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { getSSOProviders, ssoLogin } from '../services/auth';
@@ -13,6 +14,7 @@ interface SSOProvider {
 }
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const login = useAuthStore((s) => s.login);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
@@ -40,10 +42,10 @@ const Login: React.FC = () => {
     setError(null);
     try {
       await login(values.username, values.password);
-      message.success('Login successful');
+      message.success(t('auth.login.success'));
       navigate('/');
     } catch {
-      setError('Login failed.');
+      setError(t('auth.login.failed'));
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ const Login: React.FC = () => {
     try {
       await ssoLogin(provider);
     } catch {
-      setError(`SSO login with ${provider} failed.`);
+      setError(t('auth.login.failed'));
     }
   };
 
@@ -86,7 +88,7 @@ const Login: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 400, margin: 'auto', marginTop: 64 }}>
-      <h2>Login</h2>
+      <h2>{t('auth.login.title')}</h2>
       {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
       
       {/* SSO Login Buttons */}
@@ -102,45 +104,45 @@ const Login: React.FC = () => {
                 onClick={() => handleSSOLogin(provider.id)}
                 icon={<span>{getProviderIcon(provider.id)}</span>}
               >
-                Login with {provider.name}
+                {t('auth.login.button')} {provider.name}
               </Button>
             ))}
           </div>
-          <Divider>oder</Divider>
+          <Divider>{t('common.or')}</Divider>
         </>
       )}
 
       {/* Local Login Form */}
-      <Form name="login" onFinish={onFinish} layout="vertical" aria-label="Login form">
-        <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-          <Input autoFocus aria-label="Username" />
+      <Form name="login" onFinish={onFinish} layout="vertical" aria-label={t('auth.login.title')}>
+        <Form.Item name="username" label={t('auth.login.username')} rules={[{ required: true, message: t('validation.required') }]}>
+          <Input autoFocus aria-label={t('auth.login.username')} />
         </Form.Item>
-        <Form.Item name="password" label="Password" rules={[{ required: true }]}>
-          <Input.Password aria-label="Password" />
+        <Form.Item name="password" label={t('auth.login.password')} rules={[{ required: true, message: t('validation.required') }]}>
+          <Input.Password aria-label={t('auth.login.password')} />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block aria-label="Login">
-            Login
+          <Button type="primary" htmlType="submit" loading={loading} block aria-label={t('auth.login.button')}>
+            {t('auth.login.button')}
           </Button>
         </Form.Item>
       </Form>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-        <a onClick={() => navigate('/register')} tabIndex={0} aria-label="Register">
-          Noch keinen Account? Jetzt registrieren
+        <a onClick={() => navigate('/register')} tabIndex={0} aria-label={t('auth.register.title')}>
+          {t('auth.register.link')}
         </a>
-        <a onClick={() => setForgotVisible(true)} tabIndex={0} aria-label="Forgot password?">
-          Passwort vergessen?
+        <a onClick={() => setForgotVisible(true)} tabIndex={0} aria-label={t('auth.forgot_password')}>
+          {t('auth.forgot_password')}
         </a>
       </div>
       
       <Modal
         open={forgotVisible}
         onCancel={() => setForgotVisible(false)}
-        title="Passwort zurücksetzen"
-        footer={<Button onClick={() => setForgotVisible(false)}>Schließen</Button>}
+        title={t('auth.forgot_password')}
+        footer={<Button onClick={() => setForgotVisible(false)}>{t('common.close')}</Button>}
       >
-        <p>Bitte kontaktiere den Support oder nutze die Passwort-Reset-Funktion (noch nicht implementiert).</p>
+        <p>{t('auth.forgot_password_message')}</p>
       </Modal>
     </div>
   );

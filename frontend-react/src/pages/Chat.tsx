@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Card, Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
 import { SendOutlined, UserOutlined, RobotOutlined, BookOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { chatWebSocket } from '../services/chat';
 import type { ChatMessage, KnowledgeContext } from '../services/chat';
 import { useAuthStore } from '../store/authStore';
@@ -13,6 +14,7 @@ import type { InputRef } from 'antd';
 const { Title, Text } = Typography;
 
 const Chat: React.FC = () => {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const Chat: React.FC = () => {
         handleProcessingJobUpdate
       );
     } catch {
-      setError('WebSocket connection failed');
+      setError(t('chat.error'));
       setLoading(false);
     }
     return () => chatWebSocket.disconnect();
@@ -255,7 +257,7 @@ const Chat: React.FC = () => {
               maxWidth: '300px'
             }}>
               <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                Sources ({msg.documents.length}):
+                {t('common.sources')} ({msg.documents.length}):
               </Text>
               <div style={{ marginTop: '4px' }}>
                 {msg.documents.slice(0, 3).map((doc, idx) => (
@@ -297,27 +299,27 @@ const Chat: React.FC = () => {
         <Card 
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>Chat Assistant</span>
+              <span>{t('chat.title')}</span>
               {!chatWebSocket.isConnected() && (
-                <Badge status="error" text="Disconnected" />
+                <Badge status="error" text={t('errors.network')} />
               )}
               {isTyping && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <LoadingOutlined style={{ fontSize: '12px' }} />
-                  <span style={{ fontSize: '12px', color: colors.colorSecondary }}>Assistant is typing...</span>
+                  <span style={{ fontSize: '12px', color: colors.colorSecondary }}>{t('chat.typing')}</span>
                 </div>
               )}
             </div>
           }
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
           extra={
-            <Tooltip title={knowledgeContextEnabled ? "Knowledge Base enabled" : "Enable Knowledge Base"}>
+            <Tooltip title={knowledgeContextEnabled ? t('knowledge.processing') : t('knowledge.title')}>
               <Button
                 icon={<BookOutlined />}
                 type={knowledgeContextEnabled ? 'primary' : 'default'}
                 onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
               >
-                Knowledge Base
+                {t('knowledge.title')}
                 {selectedDocuments.length > 0 && (
                   <Badge count={selectedDocuments.length} style={{ marginLeft: '8px' }} />
                 )}
@@ -327,7 +329,7 @@ const Chat: React.FC = () => {
         >
           {error && (
             <Alert
-              message="Connection Error"
+              message={t('errors.network')}
               description={error}
               type="error"
               showIcon
@@ -351,19 +353,19 @@ const Chat: React.FC = () => {
             {loading ? (
               <div style={{ textAlign: 'center', padding: '40px' }}>
                 <Spin size="large" />
-                <div style={{ marginTop: 16 }}>Connecting to chat...</div>
+                <div style={{ marginTop: 16 }}>{t('chat.loading')}</div>
               </div>
             ) : messages.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px', color: colors.colorSecondary }}>
                 <RobotOutlined style={{ fontSize: '48px', marginBottom: 16 }} />
-                <Title level={4}>Welcome to Chat Assistant</Title>
+                <Title level={4}>{t('chat.title')}</Title>
                 <Text type="secondary">
-                  Start a conversation or enable Knowledge Base context for enhanced responses.
+                  {t('chat.empty')}
                 </Text>
                 {knowledgeContextEnabled && (
                   <div style={{ marginTop: '16px' }}>
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      Knowledge Base is enabled. Your messages will be enhanced with relevant document context.
+                      {t('knowledge.processing')}
                     </Text>
                   </div>
                 )}
@@ -380,8 +382,8 @@ const Chat: React.FC = () => {
               onChange={handleInputChange}
               onPressEnter={handleSend}
               placeholder={knowledgeContextEnabled ? 
-                "Type your message (Knowledge Base enabled)..." : 
-                "Type your message..."}
+                t('chat.placeholder') + ' (' + t('knowledge.title') + ')' : 
+                t('chat.placeholder')}
               disabled={sending}
               style={{ flex: 1 }}
             />
@@ -392,7 +394,7 @@ const Chat: React.FC = () => {
               loading={sending}
               disabled={!input.trim()}
             >
-              Send
+              {t('chat.send')}
             </Button>
           </div>
         </Card>
@@ -401,7 +403,7 @@ const Chat: React.FC = () => {
       {showKnowledgeDrawer && (
         <Col span={6} style={{ height: '100%' }}>
           <Card 
-            title="Knowledge Base Context" 
+            title={t('knowledge.title')} 
             style={{ height: '100%', overflowY: 'auto' }}
             size="small"
           >
