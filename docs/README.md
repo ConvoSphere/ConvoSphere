@@ -129,7 +129,7 @@ Willkommen zur umfassenden Dokumentation von ConvoSphere - der modernen, vollst�
 ## 🤝 Beitragen
 
 Wir freuen uns über Beiträge! Siehe:
-- **[Contributing Guide](development/contributing.md)**
+- **[Contributing Guide](project/contributing.md)**
 - **[Code Style](development/code-style.md)**
 - **[Testing Guide](development/testing.md)**
 

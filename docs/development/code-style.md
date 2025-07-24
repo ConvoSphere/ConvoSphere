@@ -1054,6 +1054,6 @@ warn_untyped_fields = True
 
 <div align="center">
 
-**Ready to write clean, maintainable code?** [Contributing Guide →](contributing.md)
+**Ready to write clean, maintainable code?** [Contributing Guide →](../project/contributing.md)
 
 </div> 

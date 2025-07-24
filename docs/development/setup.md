@@ -187,4 +187,4 @@ npm install
 - Read the [Testing Guide](testing.md) to learn how to run tests
 - Check the [API Development Guide](api-development.md) for backend development
 - Review the [Code Style Guide](code-style.md) for coding standards
-- See the [Contributing Guide](contributing.md) for contribution guidelines
+- See the [Contributing Guide](../project/contributing.md) for contribution guidelines
