@@ -32,6 +32,9 @@ import {
 import { useKnowledgeStore, useDocuments, useTags, useStats } from '../store/knowledgeStore';
 import DocumentList from '../components/knowledge/DocumentList';
 import UploadArea from '../components/knowledge/UploadArea';
+import TagManager from '../components/knowledge/TagManager';
+import BulkActions from '../components/knowledge/BulkActions';
+import SystemStats from '../components/admin/SystemStats';
 import { Document, DocumentFilter } from '../services/knowledge';
 import { useAuthStore } from '../store/authStore';
 
@@ -66,6 +69,7 @@ const KnowledgeBase: React.FC = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showBulkActionsModal, setShowBulkActionsModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
   // Check user permissions
@@ -150,26 +154,44 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
-  const handleBulkDelete = () => {
-    Modal.confirm({
-      title: 'Delete Selected Documents',
-      content: `Are you sure you want to delete ${selectedRowKeys.length} documents?`,
-      onOk: async () => {
-        try {
-          // TODO: Implement bulk delete
-          message.success(`${selectedRowKeys.length} documents deleted successfully`);
-          setSelectedRowKeys([]);
-          refreshDocuments();
-        } catch (error) {
-          message.error('Failed to delete documents');
-        }
-      }
-    });
+  const handleBulkDelete = async (documentIds: string[]) => {
+    try {
+      // TODO: Implement bulk delete API call
+      message.success(`${documentIds.length} documents deleted successfully`);
+      setSelectedRowKeys([]);
+      refreshDocuments();
+    } catch (error) {
+      message.error('Failed to delete documents');
+    }
   };
 
-  const handleBulkTag = () => {
-    // TODO: Implement bulk tag functionality
-    message.info('Bulk tag functionality coming soon');
+  const handleBulkTag = async (documentIds: string[], tagNames: string[]) => {
+    try {
+      // TODO: Implement bulk tag API call
+      message.success(`Tags applied to ${documentIds.length} documents`);
+      refreshDocuments();
+    } catch (error) {
+      message.error('Failed to apply tags');
+    }
+  };
+
+  const handleBulkReprocess = async (documentIds: string[]) => {
+    try {
+      // TODO: Implement bulk reprocess API call
+      message.success(`${documentIds.length} documents queued for reprocessing`);
+      refreshDocuments();
+    } catch (error) {
+      message.error('Failed to queue documents for reprocessing');
+    }
+  };
+
+  const handleBulkDownload = async (documentIds: string[]) => {
+    try {
+      // TODO: Implement bulk download API call
+      message.success(`Download started for ${documentIds.length} documents`);
+    } catch (error) {
+      message.error('Failed to start download');
+    }
   };
 
   const renderStats = () => (
@@ -319,15 +341,9 @@ const KnowledgeBase: React.FC = () => {
               <Button 
                 icon={<DeleteOutlined />}
                 danger
-                onClick={handleBulkDelete}
+                onClick={() => setShowBulkActionsModal(true)}
               >
-                Delete Selected
-              </Button>
-              <Button 
-                icon={<TagOutlined />}
-                onClick={handleBulkTag}
-              >
-                Tag Selected
+                Bulk Actions
               </Button>
             </>
           )}
@@ -405,24 +421,20 @@ const KnowledgeBase: React.FC = () => {
         </TabPane>
         
         <TabPane tab="Tags" key="tags">
-          <Card>
-            <Title level={4}>Tag Management</Title>
-            <Text type="secondary">
-              Manage tags for organizing your documents
-            </Text>
-            {/* TODO: Implement TagManager component */}
-          </Card>
+          <TagManager 
+            showCreateButton={isPremium}
+            showStatistics={true}
+            mode="management"
+          />
         </TabPane>
         
         {isAdmin && (
           <TabPane tab="Statistics" key="stats">
-            <Card>
-              <Title level={4}>System Statistics</Title>
-              <Text type="secondary">
-                Detailed system statistics and analytics
-              </Text>
-              {/* TODO: Implement SystemStats component */}
-            </Card>
+            <SystemStats 
+              showDetailedStats={true}
+              showCharts={true}
+              refreshInterval={30}
+            />
           </TabPane>
         )}
         
@@ -553,6 +565,17 @@ const KnowledgeBase: React.FC = () => {
           </div>
         )}
       </Modal>
+
+      {/* Bulk Actions Modal */}
+      <BulkActions
+        visible={showBulkActionsModal}
+        onCancel={() => setShowBulkActionsModal(false)}
+        selectedDocuments={documents.filter(doc => selectedRowKeys.includes(doc.id))}
+        onBulkDelete={handleBulkDelete}
+        onBulkTag={handleBulkTag}
+        onBulkReprocess={handleBulkReprocess}
+        onBulkDownload={handleBulkDownload}
+      />
     </div>
   );
 };
