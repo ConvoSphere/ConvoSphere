@@ -9,9 +9,11 @@ from fastapi import APIRouter, Depends
 from app.utils.security import rate_limiter
 
 from .endpoints import (
+    ai,
     assistants,
     auth,
     chat,
+    config,
     conversation_intelligence,
     conversations,
     health,
@@ -28,6 +30,7 @@ from .endpoints import (
 api_router = APIRouter()  # Temporarily disabled rate_limiter dependency
 
 # Include all endpoint routers
+api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(assistants.router, prefix="/assistants", tags=["assistants"])
@@ -43,3 +46,4 @@ api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledg
 api_router.include_router(rag.router, prefix="/rag", tags=["rag"])
 api_router.include_router(conversation_intelligence.router, prefix="/intelligence", tags=["conversation_intelligence"])
 api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+api_router.include_router(config.router, prefix="/config", tags=["config"])

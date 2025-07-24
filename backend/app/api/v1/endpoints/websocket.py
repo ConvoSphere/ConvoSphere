@@ -171,6 +171,61 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+@router.websocket("/")
+async def websocket_general_endpoint(
+    websocket: WebSocket,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    """General WebSocket endpoint for connection testing."""
+    try:
+        # Authenticate user
+        user = await get_current_user_ws(token, db)
+        if not user:
+            await websocket.close(code=4001, reason="Authentication failed")
+            return
+
+        # Accept connection
+        await websocket.accept()
+        
+        # Send connection confirmation
+        await websocket.send_text(
+            json.dumps(
+                {
+                    "type": "connection_established",
+                    "data": {
+                        "user_id": str(user.id),
+                        "message": "Connected to general WebSocket",
+                    },
+                },
+            ),
+        )
+
+        try:
+            while True:
+                # Keep connection alive
+                data = await websocket.receive_text()
+                message_data = json.loads(data)
+                
+                if message_data.get("type") == "ping":
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "type": "pong",
+                                "data": {"timestamp": asyncio.get_event_loop().time()},
+                            },
+                        ),
+                    )
+
+        except WebSocketDisconnect:
+            logger.info(f"WebSocket disconnected for user {user.id}")
+
+    except Exception as e:
+        logger.error(f"General WebSocket error: {e}")
+        with contextlib.suppress(Exception):
+            await websocket.close(code=4000, reason=f"Connection error: {str(e)}")
+
+
 @router.websocket("/{conversation_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
@@ -227,24 +282,25 @@ async def websocket_endpoint(
                         continue
 
                     # Save message to database
-                    message = conversation_service.add_message(
+                    from app.schemas.conversation import MessageCreate
+                    message_data = MessageCreate(
                         conversation_id=conversation_id,
-                        user_id=str(user.id),
                         content=content,
                         role="user",
                     )
+                    message_dict = conversation_service.add_message(message_data)
 
                     # Broadcast message to conversation
                     broadcast_message = json.dumps(
                         {
                             "type": "message",
                             "data": {
-                                "id": str(message.id),
+                                "id": str(message_dict["id"]),
                                 "conversation_id": conversation_id,
                                 "user_id": str(user.id),
                                 "content": content,
                                 "role": "user",
-                                "timestamp": message.timestamp.isoformat(),
+                                "timestamp": message_dict["created_at"],
                             },
                         },
                     )
@@ -307,19 +363,19 @@ async def websocket_endpoint(
                                 metadata["searchQuery"] = search_query
 
                             # Save AI response
-                            ai_message = conversation_service.add_message(
+                            ai_message_data = MessageCreate(
                                 conversation_id=conversation_id,
-                                user_id=str(conversation.assistant_id),
                                 content=response_content,
                                 role="assistant",
                             )
+                            ai_message_dict = conversation_service.add_message(ai_message_data)
 
                             # Broadcast AI response with knowledge context
                             ai_broadcast = json.dumps(
                                 {
                                     "type": "message",
                                     "data": {
-                                        "id": str(ai_message.id),
+                                        "id": str(ai_message_dict["id"]),
                                         "conversation_id": conversation_id,
                                         "user_id": str(conversation.assistant_id),
                                         "content": response_content,
@@ -445,7 +501,7 @@ async def get_current_user_ws(token: str, db: Session) -> User | None:
         # Proper JWT validation for WebSocket
         from app.core.security import verify_token
 
-        user_id = verify_token(token)
+        user_id = await verify_token(token)
         if not user_id:
             return None
 

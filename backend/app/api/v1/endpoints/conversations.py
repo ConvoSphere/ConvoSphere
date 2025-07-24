@@ -31,11 +31,7 @@ async def create_conversation(
 ):
     """Create a new conversation."""
     service = ConversationService(db)
-    return service.create_conversation(
-        user_id=str(conversation_data.user_id),
-        assistant_id=str(conversation_data.assistant_id),
-        title=conversation_data.title,
-    )
+    return service.create_conversation(conversation_data)
 
 
 @router.get("/", response_model=ConversationListResponse)

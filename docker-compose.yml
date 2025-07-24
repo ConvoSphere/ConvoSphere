@@ -13,11 +13,12 @@ services:
       - DATABASE_URL=postgresql://chatassistant:chatassistant_password@postgres:5432/chatassistant
       - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=http://weaviate:8080
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-3dd4I14gJ4rqM3mWsVbGRw
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LITELLM_PROXY_HOST=https://admin-litellm.internal.sanjo.foo
       - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-in-production-minimum-32-chars}
       - ALGORITHM=${ALGORITHM:-HS256}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
       - UPLOAD_DIR=/app/uploads
       - CHUNK_SIZE=${CHUNK_SIZE:-500}
       - CHUNK_OVERLAP=${CHUNK_OVERLAP:-50}

@@ -42,7 +42,7 @@ mypy
 
 # File Processing
 python-magic
-PyPDF2
+pypdf
 markdown
 
 # Advanced Document Processing with Docling

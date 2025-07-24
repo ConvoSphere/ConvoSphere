@@ -25,6 +25,12 @@ from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
 from app.core.database import get_db
 
+try:
+    import pypdf
+    PYPDF_AVAILABLE = True
+except ImportError:
+    PYPDF_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -95,11 +101,14 @@ class MetadataExtractor:
     def extract_pdf_metadata(file_path: str) -> Dict[str, Any]:
         """Extract metadata from PDF files."""
         try:
-            import PyPDF2
+            if not PYPDF_AVAILABLE:
+                logger.warning("pypdf not available for PDF metadata extraction")
+                return {}
+                
             metadata = {}
             
             with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
+                pdf_reader = pypdf.PdfReader(file)
                 
                 # Extract document info
                 if pdf_reader.metadata:
@@ -179,7 +188,7 @@ class KnowledgeService:
         self.metadata_extractor = MetadataExtractor()
 
         # Ensure upload directory exists
-        self.upload_dir = Path(get_settings().UPLOAD_DIR)
+        self.upload_dir = Path(get_settings().upload_dir)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
 
     def create_document(
@@ -722,19 +731,16 @@ class KnowledgeService:
                 try:
                     import io
 
-                    import PyPDF2
+                    if not PYPDF_AVAILABLE:
+                        logger.error("pypdf not installed. Install with: pip install pypdf")
+                        return None
 
                     with open(file_path, "rb") as file:
-                        pdf_reader = PyPDF2.PdfReader(file)
+                        pdf_reader = pypdf.PdfReader(file)
                         text = ""
                         for page in pdf_reader.pages:
                             text += page.extract_text() + "\n"
                         return text.strip()
-                except ImportError:
-                    logger.error(
-                        "PyPDF2 not installed. Install with: pip install PyPDF2",
-                    )
-                    return None
                 except Exception as e:
                     logger.error(f"PDF extraction error: {e}")
                     return None

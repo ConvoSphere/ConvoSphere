@@ -15,7 +15,7 @@ from typing import Any
 
 import magic
 import markdown
-import PyPDF2
+import pypdf
 import tiktoken
 from docx import Document
 
@@ -192,7 +192,7 @@ class DocumentProcessor:
         """Extract text from PDF file."""
         try:
             pdf_file = io.BytesIO(file_content)
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            pdf_reader = pypdf.PdfReader(pdf_file)
 
             text = ""
             for page in pdf_reader.pages:

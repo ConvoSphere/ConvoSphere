@@ -41,9 +41,9 @@ bandit>=1.7.5
 mypy>=1.7.1
 
 # File Processing
-python-magic>=0.4.27
-PyPDF2>=3.0.1
-markdown>=3.8.2
+python-magic
+pypdf>=3.0.0
+markdown
 
 # Advanced Document Processing with Docling
 docling>=0.1.0

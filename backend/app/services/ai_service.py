@@ -115,6 +115,12 @@ class AIService:
             # Set default model
             litellm.default_model = get_settings().default_ai_model
 
+            # Configure proxy host if provided
+            if get_settings().litellm_proxy_host:
+                import os
+                os.environ["LITELLM_PROXY_HOST"] = get_settings().litellm_proxy_host
+                logger.info(f"LiteLLM proxy host configured: {get_settings().litellm_proxy_host}")
+
             logger.info("LiteLLM configured successfully")
         except Exception as e:
             logger.error(f"Failed to configure LiteLLM: {e}")

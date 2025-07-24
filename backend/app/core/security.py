@@ -122,14 +122,19 @@ async def verify_token(token: str) -> str | None:
         Optional[str]: Token subject (user ID) if valid, None otherwise
     """
     try:
-        # Check if token is blacklisted
-        from app.core.redis_client import get_redis
-
-        redis = await get_redis()
-        is_blacklisted = await redis.get(f"{BLACKLIST_PREFIX}{token}")
-        if is_blacklisted:
-            logger.warning("JWT token is blacklisted")
-            return None
+        # Check if token is blacklisted (only if Redis is available)
+        try:
+            from app.core.redis_client import get_redis
+            redis = await get_redis()
+            is_blacklisted = await redis.get(f"{BLACKLIST_PREFIX}{token}")
+            if is_blacklisted:
+                logger.warning("JWT token is blacklisted")
+                return None
+        except Exception as e:
+            # If Redis is not available, skip blacklist check but continue with token verification
+            logger.debug(f"Redis not available for token blacklist check: {e}")
+            # Continue without blacklist check - this is normal during startup
+            pass
 
         settings = get_settings()
         payload = jwt.decode(

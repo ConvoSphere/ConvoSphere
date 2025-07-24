@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     litellm_model: str = Field(default="gpt-4", description="LiteLLM model")
     litellm_max_tokens: int = Field(default=4096, description="LiteLLM max tokens")
     litellm_temperature: float = Field(default=0.7, description="LiteLLM temperature")
+    litellm_proxy_host: str | None = Field(default=None, description="LiteLLM proxy host")
 
     # Weaviate Configuration
     weaviate_url: str = Field(
@@ -122,7 +123,6 @@ class Settings(BaseSettings):
     languages: list[str] = Field(
         default=["de", "en", "fr", "es"],
         description="Supported languages",
-        env=None,
     )
 
     # Email Configuration
@@ -191,13 +191,25 @@ class Settings(BaseSettings):
     )
 
     # Registration
-    registration_enabled: bool = Field(default=True, env="REGISTRATION_ENABLED")
+    registration_enabled: bool = Field(
+        default=True, 
+        json_schema_extra={"env": "REGISTRATION_ENABLED"}
+    )
 
-    performance_monitoring_enabled: bool = Field(default=True, env="PERFORMANCE_MONITORING_ENABLED")
-    performance_monitoring_interval: int = Field(default=60, env="PERFORMANCE_MONITORING_INTERVAL")
+    performance_monitoring_enabled: bool = Field(
+        default=True, 
+        json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"}
+    )
+    performance_monitoring_interval: int = Field(
+        default=60, 
+        json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"}
+    )
     performance_alert_thresholds: dict = Field(default_factory=dict)
 
-    default_ai_model: str = Field(default="gpt-4", env="DEFAULT_AI_MODEL")
+    default_ai_model: str = Field(
+        default="gpt-4", 
+        json_schema_extra={"env": "DEFAULT_AI_MODEL"}
+    )
 
 
 

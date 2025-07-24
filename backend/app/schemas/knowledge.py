@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, List, Optional
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class DocumentStatus(str, Enum):
@@ -57,8 +57,7 @@ class TagResponse(TagBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TagList(BaseModel):
@@ -124,8 +123,7 @@ class DocumentResponse(DocumentBase):
     tag_names: List[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentList(BaseModel):
@@ -157,9 +155,8 @@ class DocumentChunkResponse(BaseModel):
     )
     chunk_metadata: dict[str, Any] = Field(default_factory=dict, description="Chunk metadata")
     created_at: str = Field(..., description="Creation timestamp")
-
-    class Config:
-        from_attributes = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchRequest(BaseModel):
@@ -309,9 +306,8 @@ class SearchHistoryItem(BaseModel):
     result_count: int = Field(..., description="Number of results")
     execution_time: float | None = Field(None, description="Execution time in seconds")
     created_at: str = Field(..., description="Search timestamp")
-
-    class Config:
-        from_attributes = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchHistoryResponse(BaseModel):
@@ -372,8 +368,7 @@ class DocumentProcessingJobResponse(DocumentProcessingJobBase):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentProcessingJobList(BaseModel):

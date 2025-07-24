@@ -209,12 +209,6 @@ def create_application() -> FastAPI:
             content={"detail": "Internal server error", "status_code": 500},
         )
 
-    # Add routes
-    app.include_router(api_router, prefix="/api/v1")
-    from app.api.v1.endpoints import health, users
-    api_router.include_router(health.router, prefix="/health", tags=["health"])
-    api_router.include_router(users.router, prefix="/users", tags=["users"])
-
     # Health check endpoint
     @app.get("/health")
     async def health_check():
@@ -225,6 +219,54 @@ def create_application() -> FastAPI:
             "version": get_settings().app_version,
             "environment": get_settings().environment,
         }
+
+    # Config endpoint for frontend (must be before API routers)
+    @app.get("/api/config")
+    async def get_config():
+        """Get application configuration for frontend."""
+        return {
+            "apiUrl": "/api",
+            "wsUrl": get_settings().ws_url,
+            "isDevelopment": get_settings().debug,
+            "isProduction": not get_settings().debug,
+            "enableDebug": get_settings().debug,
+            "wsEndpoints": {
+                "chat": "/api/v1/ws/",
+                "notifications": "/api/v1/ws/notifications"
+            },
+            "apiEndpoints": {
+                "auth": "/api/v1/auth",
+                "users": "/api/v1/users",
+                "conversations": "/api/v1/conversations",
+                "chat": "/api/v1/chat",
+                "tools": "/api/v1/tools",
+                "assistants": "/api/v1/assistants",
+                "knowledge": "/api/v1/knowledge",
+                "health": "/api/v1/health"
+            }
+        }
+
+    # Add missing endpoints for frontend compatibility (must be before API routers)
+    @app.get("/api/assistants")
+    async def get_assistants_legacy():
+        """Legacy assistants endpoint."""
+        return {"message": "Use /api/v1/assistants instead"}
+    
+    @app.get("/api/knowledge/documents")
+    async def get_knowledge_documents_legacy():
+        """Legacy knowledge documents endpoint."""
+        return {"message": "Use /api/v1/knowledge/documents instead"}
+    
+    @app.get("/api/ai/models")
+    async def get_ai_models_legacy():
+        """Legacy AI models endpoint."""
+        return {"message": "Use /api/v1/ai/models instead"}
+
+    # Add routes
+    app.include_router(api_router, prefix="/api/v1")
+    
+    # Add legacy routes for frontend compatibility
+    app.include_router(api_router, prefix="/api")
 
     # Root endpoint
     @app.get("/")

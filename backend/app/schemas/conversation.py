@@ -96,6 +96,8 @@ class MessageBase(BaseModel):
 class MessageCreate(MessageBase):
     """Message creation schema with relaxed validation."""
     
+    conversation_id: UUID = Field(..., description="Conversation ID")
+    
     model_config = ConfigDict(
         from_attributes=True,
         validate_assignment=True,

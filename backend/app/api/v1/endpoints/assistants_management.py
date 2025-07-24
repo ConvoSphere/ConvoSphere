@@ -8,7 +8,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # Pydantic models
 class AssistantCreate(BaseModel):
@@ -62,8 +62,7 @@ class AssistantResponse(BaseModel):
     creator_id: str
     version: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 router = APIRouter()
 

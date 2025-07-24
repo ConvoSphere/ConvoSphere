@@ -32,10 +32,9 @@ python-dotenv>=1.0.0
 loguru>=0.7.2
 
 # File Processing (Minimal - without Docling)
-python-magic>=0.4.27
-PyPDF2>=3.0.1
-python-docx>=0.8.11
-markdown>=3.8.2
+python-magic
+pypdf>=3.0.0
+markdown
 pytesseract>=0.3.10
 Pillow>=10.0.0
 beautifulsoup4>=4.12.3

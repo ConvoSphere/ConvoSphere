@@ -346,7 +346,6 @@ class ResourceOptimizer {
     const criticalResources: PreloadConfig[] = [
       // Add your critical resources here
       { href: '/api/config', as: 'fetch' },
-      { href: '/fonts/main.woff2', as: 'font', type: 'font/woff2' },
       { href: '/images/logo.webp', as: 'image' },
     ];
 

@@ -8,8 +8,7 @@ used across all database entities in the AI Assistant Platform.
 from typing import Any
 
 from sqlalchemy import Column, DateTime, func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import declared_attr
+from sqlalchemy.orm import declarative_base, declared_attr
 
 
 class Base:
@@ -37,5 +36,5 @@ class Base:
         return f"<{self.__class__.__name__}(id={getattr(self, 'id', 'N/A')})>"
 
 
-# Create declarative base
+# Create declarative base using SQLAlchemy 2.0 syntax
 Base = declarative_base(cls=Base)
