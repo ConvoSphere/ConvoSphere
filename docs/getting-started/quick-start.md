@@ -288,7 +288,7 @@ ports:
 
 ### Getting Help
 
-- **Documentation**: Check the [User Guide](user-guide/getting-started.md)
+- **Documentation**: Check the [User Guide](../user-guide/getting-started.md)
 - **API Docs**: Visit http://localhost:8000/docs
 - **Issues**: Report problems on [GitHub](https://github.com/your-org/ai-chat-app/issues)
 - **Discord**: Join our [community server](https://discord.gg/your-server)
@@ -297,11 +297,11 @@ ports:
 
 Now that you have the application running, explore these features:
 
-1. **[User Guide](user-guide/getting-started.md)** - Learn how to use the chat interface
-2. **[API Reference](api/overview.md)** - Explore the complete API
-3. **[Architecture](architecture/overview.md)** - Understand the system design
-4. **[Deployment](deployment/docker.md)** - Deploy to production
-5. **[Contributing](development/contributing.md)** - Help improve the project
+1. **[User Guide](../user-guide/getting-started.md)** - Learn how to use the chat interface
+2. **[API Reference](../api/overview.md)** - Explore the complete API
+3. **[Architecture](../architecture/overview.md)** - Understand the system design
+4. **[Deployment](../deployment/docker.md)** - Deploy to production
+5. **[Contributing](../development/contributing.md)** - Help improve the project
 
 ## 📊 Performance Tips
 
@@ -322,4 +322,4 @@ Now that you have the application running, explore these features:
 
 **🎉 Congratulations!** You now have a fully functional AI chat application running. 
 
-**Ready to explore more?** Check out the [User Guide](user-guide/getting-started.md) to learn how to use all the features! 
+**Ready to explore more?** Check out the [User Guide](../user-guide/getting-started.md) to learn how to use all the features! 

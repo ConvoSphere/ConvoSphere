@@ -345,7 +345,7 @@ Wir freuen uns über Beiträge! Bitte schauen Sie sich unseren [Contributing Gui
 
 ## 📄 License
 
-Dieses Projekt ist unter der MIT License lizenziert - siehe die [LICENSE](../LICENSE) Datei für Details.
+Dieses Projekt ist unter der MIT License lizenziert - siehe die [LICENSE](../../LICENSE) Datei für Details.
 
 ## 🆘 Support
 
