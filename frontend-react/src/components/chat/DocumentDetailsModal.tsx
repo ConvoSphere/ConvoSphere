@@ -39,7 +39,7 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, docum
         <Divider />
         <Space direction="vertical" style={{ width: '100%' }}>
           <div>
-            <Text strong>Type:</Text> {formatDocumentType(document.document_type)}
+            <Text strong>Type:</Text> {formatDocumentType(document.document_type || 'Unknown')}
           </div>
           {document.author && (
             <div>

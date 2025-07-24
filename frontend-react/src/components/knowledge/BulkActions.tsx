@@ -19,7 +19,7 @@ import {
   DownloadOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
-import type { Document, Tag as TagType } from '../../services/knowledge';
+import type { Document } from '../../services/knowledge';
 import { useTags } from '../../store/knowledgeStore';
 
 const { Title, Text } = Typography;

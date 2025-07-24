@@ -44,7 +44,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents, selectedDocument
                 </Text>
                 <div style={{ marginTop: '4px' }}>
                   <Tag color="blue">
-                    {formatDocumentType(document.document_type)}
+                    {formatDocumentType(document.document_type || 'Unknown')}
                   </Tag>
                   {document.language && (
                     <Tag color="green">
