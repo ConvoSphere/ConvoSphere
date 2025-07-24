@@ -17,4 +17,6 @@ async def get_knowledge_base_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Get knowledge base statistics for the current user."""
+    service = KnowledgeService(db)
+    return await service.get_knowledge_base_stats(current_user)

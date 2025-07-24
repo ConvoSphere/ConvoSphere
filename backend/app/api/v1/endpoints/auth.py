@@ -33,7 +33,8 @@ router = APIRouter()
 
 # Pydantic models for request/response
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None
+    username: str | None = None
     password: str
 
 
@@ -73,7 +74,7 @@ async def login(
     Authenticate user and return access token.
 
     Args:
-        user_credentials: User login credentials
+        user_credentials: User login credentials (email or username)
         db: Database session
 
     Returns:
@@ -82,15 +83,25 @@ async def login(
     Raises:
         HTTPException: If credentials are invalid
     """
-    # Find user by email
-    user = db.query(User).filter(User.email == user_credentials.email).first()
+    # Find user by email or username
+    if user_credentials.email:
+        user = db.query(User).filter(User.email == user_credentials.email).first()
+        identifier = user_credentials.email
+    elif user_credentials.username:
+        user = db.query(User).filter(User.username == user_credentials.username).first()
+        identifier = user_credentials.username
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either email or username must be provided",
+        )
 
     if not user or not verify_password(user_credentials.password, user.hashed_password):
-        logger.warning(f"Failed login attempt for email: {user_credentials.email}")
+        logger.warning(f"Failed login attempt for identifier: {identifier}")
         log_security_event(
             event_type="user_login",
             user_id=None,
-            description=f"Failed login attempt for {user_credentials.email}",
+            description=f"Failed login attempt for {identifier}",
             severity="warning",
         )
         raise HTTPException(

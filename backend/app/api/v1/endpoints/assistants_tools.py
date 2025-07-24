@@ -9,7 +9,11 @@ from app.core.security import get_current_user_id
 from app.services.assistant_service import AssistantService
 from pydantic import BaseModel, Field
 
-# ... Pydantic model ToolAssignmentRequest ...
+# Pydantic model
+class ToolAssignmentRequest(BaseModel):
+    """Model for assigning a tool to an assistant."""
+    tool_id: str = Field(..., description="Tool ID to assign")
+    config: dict | None = Field(None, description="Tool configuration")
 
 router = APIRouter()
 
@@ -21,7 +25,11 @@ async def add_tool_to_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    # ... existing code ...
+    """Add a tool to an assistant."""
+    service = AssistantService(db)
+    return await service.add_tool_to_assistant(
+        assistant_id, tool_data.tool_id, tool_data.config, current_user_id
+    )
 
 # Remove tool from assistant
 @router.delete("/{assistant_id}/tools/{tool_id}", response_model=Any)
@@ -31,4 +39,8 @@ async def remove_tool_from_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    # ... existing code ...
+    """Remove a tool from an assistant."""
+    service = AssistantService(db)
+    return await service.remove_tool_from_assistant(
+        assistant_id, tool_id, current_user_id
+    )

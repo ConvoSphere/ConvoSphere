@@ -8,12 +8,11 @@ RUN npm install --frozen-lockfile || npm install
 COPY ../../frontend-react ./
 RUN npm run build
 
-# Stage 2: Serve the built app with a static server
-FROM node:20-alpine
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/dist ./dist
+# Stage 2: Serve the built app with nginx for proxy support
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY docker/nginx/conf.d/frontend.conf /etc/nginx/conf.d/default.conf
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD wget --spider -q http://localhost:8080 || exit 1
-CMD ["serve", "-s", "dist", "-l", "8080"] 
+CMD ["nginx", "-g", "daemon off;"] 

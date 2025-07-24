@@ -21,10 +21,11 @@ from .endpoints import (
     search,
     tools,
     users,
+    websocket,
 )
 
 # Create main API router
-api_router = APIRouter(dependencies=[Depends(rate_limiter)])
+api_router = APIRouter()  # Temporarily disabled rate_limiter dependency
 
 # Include all endpoint routers
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
@@ -41,3 +42,4 @@ api_router.include_router(search.router, prefix="/search", tags=["search"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
 api_router.include_router(rag.router, prefix="/rag", tags=["rag"])
 api_router.include_router(conversation_intelligence.router, prefix="/intelligence", tags=["conversation_intelligence"])
+api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])

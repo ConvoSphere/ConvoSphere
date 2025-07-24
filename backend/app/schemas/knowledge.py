@@ -40,7 +40,7 @@ class TagBase(BaseModel):
     
     name: str = Field(..., min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
-    color: str | None = Field(None, regex=r'^#[0-9A-Fa-f]{6}$')
+    color: str | None = Field(None, pattern=r'^#[0-9A-Fa-f]{6}$')
 
 
 class TagCreate(TagBase):

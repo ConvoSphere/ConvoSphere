@@ -20,7 +20,9 @@ async def get_processing_jobs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Get processing jobs for the current user."""
+    service = KnowledgeService(db)
+    return await service.get_processing_jobs(current_user, status, limit)
 
 # Create processing job
 @router.post("/processing/jobs")
@@ -32,7 +34,11 @@ async def create_processing_job(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Create a new processing job."""
+    service = KnowledgeService(db)
+    return await service.create_processing_job(
+        document_id, job_type, priority, processing_options, current_user
+    )
 
 # Bulk import
 @router.post("/bulk-import", response_model=BulkImportResponse)
@@ -41,14 +47,18 @@ async def bulk_import_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Bulk import documents."""
+    service = KnowledgeService(db)
+    return await service.bulk_import_documents(request, current_user)
 
 # Get processing engines
 @router.get("/processing/engines")
 async def get_processing_engines():
-    # ... existing code ...
+    """Get available processing engines."""
+    return docling_processor.get_engines()
 
 # Get supported formats
 @router.get("/processing/supported-formats")
 async def get_supported_formats():
-    # ... existing code ...
+    """Get supported file formats."""
+    return docling_processor.get_supported_formats()

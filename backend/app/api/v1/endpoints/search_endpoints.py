@@ -19,7 +19,9 @@ async def search_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Search documents."""
+    service = KnowledgeService(db)
+    return await service.search_documents(request, current_user)
 
 # Advanced search
 @router.post("/search/advanced", response_model=AdvancedSearchResponse)
@@ -28,7 +30,9 @@ async def advanced_search(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Advanced search with filters."""
+    service = KnowledgeService(db)
+    return await service.advanced_search(request, current_user)
 
 # Search history
 @router.get("/search/history")
@@ -38,4 +42,6 @@ async def get_search_history(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Get search history for the current user."""
+    service = KnowledgeService(db)
+    return await service.get_search_history(current_user, skip, limit)

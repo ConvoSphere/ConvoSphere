@@ -18,7 +18,9 @@ async def get_tags(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Get all tags."""
+    service = KnowledgeService(db)
+    return await service.get_tags(current_user, limit)
 
 # Search tags
 @router.get("/tags/search", response_model=TagList)
@@ -28,4 +30,6 @@ async def search_tags(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ... existing code ...
+    """Search tags by query."""
+    service = KnowledgeService(db)
+    return await service.search_tags(current_user, query, limit)

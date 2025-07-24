@@ -37,10 +37,12 @@ RUN apt-get update \
         odt2txt \
     && rm -rf /var/lib/apt/lists/*
 
+# Install UV package manager
+RUN pip install --no-cache-dir uv
+
 # Install Python dependencies
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip==24.0 \
-    && pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --system --no-cache -r requirements.txt
 
 # Copy project
 COPY backend/ ./backend/

@@ -145,18 +145,20 @@ class I18nMiddleware(BaseHTTPMiddleware):
 i18n_manager = I18nManager()
 
 
-def get_language(request: Request) -> str:
+def get_language(request: Request | None) -> str:
     """Get current language from request state."""
+    if request is None:
+        return i18n_manager.default_language
     return getattr(request.state, "language", i18n_manager.default_language)
 
 
-def t(key: str, request: Request, **kwargs) -> str:
+def t(key: str, request: Request | None, **kwargs) -> str:
     """Translate key using request language context."""
     language = get_language(request)
     return i18n_manager.translate(key, language, **kwargs)
 
 
-def translate_response(data: Any, request: Request) -> Any:
+def translate_response(data: Any, request: Request | None) -> Any:
     """
     Translate response data recursively.
 

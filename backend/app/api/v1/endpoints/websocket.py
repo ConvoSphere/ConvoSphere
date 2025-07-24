@@ -11,11 +11,13 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from fastapi import Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
+router = APIRouter()
+
 from app.core.database import get_db
-from app.core.security import get_current_user_ws
+# get_current_user_ws is defined in this file
 from app.models.conversation import Conversation
 from app.models.user import User
 from app.services.ai_service import AIService
@@ -169,6 +171,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+@router.websocket("/{conversation_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
     conversation_id: str,

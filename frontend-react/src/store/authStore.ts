@@ -32,9 +32,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     await (useAuthStore.getState().fetchProfile());
   },
   register: async (username, password, email) => {
-    const token = await apiRegister(username, password, email);
-    set({ token, isAuthenticated: true });
-    await (useAuthStore.getState().fetchProfile());
+    await apiRegister(username, password, email);
+    // Registration successful, but user needs to login separately
   },
   logout: () => {
     apiLogout();

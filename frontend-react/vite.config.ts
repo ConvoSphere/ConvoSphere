@@ -111,6 +111,14 @@ export default defineConfig({
     hmr: {
       overlay: false, // Disable error overlay for better performance
     },
+    // Proxy API requests to backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   preview: {
     port: 4173,

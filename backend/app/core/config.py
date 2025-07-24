@@ -38,10 +38,10 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         description="Frontend URL for CORS configuration",
     )
-    # cors_origins: list[str] = Field(
-    #     default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
-    #     description="List of allowed CORS origins",
-    # )
+    cors_origins: list[str] = Field(
+        default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
+        description="List of allowed CORS origins",
+    )
 
     # Database
     database_url: str = Field(default="sqlite:///./test.db", description="Database URL")
@@ -119,10 +119,10 @@ class Settings(BaseSettings):
 
     # Internationalization
     default_language: str = Field(default="de", description="Default language")
-    supported_languages: list[str] = Field(
+    languages: list[str] = Field(
         default=["de", "en", "fr", "es"],
         description="Supported languages",
-        env="SUPPORTED_LANGUAGES",
+        env=None,
     )
 
     # Email Configuration
@@ -199,25 +199,7 @@ class Settings(BaseSettings):
 
     default_ai_model: str = Field(default="gpt-4", env="DEFAULT_AI_MODEL")
 
-    @field_validator("supported_languages", mode="before")
-    @classmethod
-    def parse_supported_languages(cls, v):
-        """Parse supported languages from comma-separated string."""
-        import logging
-        if v is None or (isinstance(v, str) and not v.strip()):
-            logging.warning("SUPPORTED_LANGUAGES is empty or not set. Using default languages ['de', 'en', 'fr', 'es'].")
-            return ["de", "en", "fr", "es"]
-        if isinstance(v, str):
-            try:
-                langs = [lang.strip() for lang in v.split(",") if lang.strip()]
-                if not langs:
-                    logging.warning("SUPPORTED_LANGUAGES is empty after parsing. Using default languages ['de', 'en', 'fr', 'es'].")
-                    return ["de", "en", "fr", "es"]
-                return langs
-            except Exception as e:
-                logging.exception(f"Error parsing SUPPORTED_LANGUAGES: {e}. Using default languages ['de', 'en', 'fr', 'es'].")
-                return ["de", "en", "fr", "es"]
-        return v
+
 
     @field_validator("secret_key")
     @classmethod
@@ -247,6 +229,7 @@ class Settings(BaseSettings):
 
     model_config = ConfigDict(
         case_sensitive=False,
+        env_ignore_empty=True,
     )
 
 

@@ -1,21 +1,20 @@
 import api from './api';
 
 export async function login(username: string, password: string) {
-  const response = await api.post('/auth/login', { username, password });
-  const { token } = response.data;
-  localStorage.setItem('token', token);
-  return token;
+  const response = await api.post('/v1/auth/login', { username, password });
+  const { access_token } = response.data;
+  localStorage.setItem('token', access_token);
+  return access_token;
 }
 
 export async function register(username: string, password: string, email: string) {
-  const response = await api.post('/auth/register', { username, password, email });
-  const { token } = response.data;
-  localStorage.setItem('token', token);
-  return token;
+  const response = await api.post('/v1/auth/register', { username, password, email });
+  // Registration doesn't return a token, user needs to login after registration
+  return null;
 }
 
 export async function getSSOProviders() {
-  const response = await api.get('/auth/sso/providers');
+  const response = await api.get('/v1/auth/sso/providers');
   return response.data.providers;
 }
 
@@ -26,7 +25,7 @@ export async function ssoLogin(provider: string) {
 
 export async function ssoLink(provider: string) {
   // Call backend SSO link endpoint
-  const response = await api.post(`/auth/sso/link/${provider}`);
+  const response = await api.post(`/v1/auth/sso/link/${provider}`);
   return response.data;
 }
 
