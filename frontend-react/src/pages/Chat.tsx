@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, Card, Spin, Alert, message, Avatar } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
-import { chatWebSocket } from '../services/chat';
+import { Input, Button, Card, Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
+import { SendOutlined, UserOutlined, RobotOutlined, BookOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { chatWebSocket, ChatMessage, KnowledgeContext } from '../services/chat';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+import { useKnowledgeStore } from '../store/knowledgeStore';
+import KnowledgeContext from '../components/chat/KnowledgeContext';
+import { Document } from '../services/knowledge';
 import type { InputRef } from 'antd';
 
-interface ChatMessage {
-  sender: string;
-  text: string;
-  timestamp?: Date;
-}
+const { Title, Text } = Typography;
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -18,8 +17,17 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [showKnowledgeDrawer, setShowKnowledgeDrawer] = useState(false);
+  const [knowledgeContextEnabled, setKnowledgeContextEnabled] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
+  const [searchResults, setSearchResults] = useState<Document[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  
   const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
+  const { searchDocuments, getDocuments } = useKnowledgeStore();
   const colors = getCurrentColors();
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);
@@ -29,10 +37,12 @@ const Chat: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      chatWebSocket.connect(token, (msg) => {
-        setMessages((prev) => [...prev, { ...msg, timestamp: new Date() }]);
-        setLoading(false);
-      });
+      chatWebSocket.connect(
+        token,
+        handleMessage,
+        handleKnowledgeUpdate,
+        handleProcessingJobUpdate
+      );
     } catch {
       setError('WebSocket connection failed');
       setLoading(false);
@@ -46,17 +56,59 @@ const Chat: React.FC = () => {
     }
   }, [messages]);
 
+  const handleMessage = (msg: ChatMessage) => {
+    setMessages((prev) => [...prev, { ...msg, timestamp: msg.timestamp || new Date() }]);
+    setLoading(false);
+    setIsTyping(false);
+  };
+
+  const handleKnowledgeUpdate = (documents: Document[], searchQuery: string) => {
+    setSearchResults(documents);
+    // Add a system message about knowledge search
+    const searchMessage: ChatMessage = {
+      sender: 'System',
+      text: `Found ${documents.length} relevant documents for "${searchQuery}"`,
+      messageType: 'system',
+      timestamp: new Date(),
+      documents
+    };
+    setMessages((prev) => [...prev, searchMessage]);
+  };
+
+  const handleProcessingJobUpdate = (jobId: string, status: string, progress: number) => {
+    // Update processing job status in knowledge store
+    // This could be used to show upload progress or processing status
+    console.log(`Job ${jobId}: ${status} (${progress}%)`);
+  };
+
   const handleSend = () => {
     if (input.trim()) {
       setSending(true);
       try {
-        chatWebSocket.send(input);
+        // Create knowledge context if enabled
+        const knowledgeContext: KnowledgeContext | undefined = knowledgeContextEnabled ? {
+          enabled: true,
+          documentIds: selectedDocuments.map(doc => doc.id),
+          searchQuery: input,
+          maxChunks: 5,
+          filters: {
+            tags: selectedDocuments.flatMap(doc => doc.tags?.map(tag => tag.name) || []),
+            documentTypes: [...new Set(selectedDocuments.map(doc => doc.document_type))]
+          }
+        } : undefined;
+        
+        // Send message via WebSocket
+        chatWebSocket.sendMessage(input, knowledgeContext);
+        
+        // Add user message to local state
         setMessages((prev) => [...prev, { 
           sender: 'You', 
           text: input, 
           timestamp: new Date() 
         }]);
+        
         setInput('');
+        setSelectedDocuments([]); // Clear selected documents after sending
         message.success('Message sent');
         setTimeout(() => inputRef.current?.focus(), 100);
       } catch {
@@ -67,12 +119,70 @@ const Chat: React.FC = () => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+    
+    // Send typing indicator
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    setIsTyping(true);
+    chatWebSocket.sendTypingIndicator(true);
+    
+    const timeout = setTimeout(() => {
+      setIsTyping(false);
+      chatWebSocket.sendTypingIndicator(false);
+    }, 1000);
+    
+    setTypingTimeout(timeout);
+  };
+
+  const handleKnowledgeSearch = async (query: string) => {
+    try {
+      const results = await searchDocuments(query);
+      setSearchResults(results.documents || []);
+      
+      // Send knowledge search via WebSocket for real-time updates
+      chatWebSocket.sendKnowledgeSearch(query);
+      
+      return results.documents || [];
+    } catch (error) {
+      console.error('Knowledge search failed:', error);
+      message.error('Search failed');
+      return [];
+    }
+  };
+
+  const handleDocumentSelect = (document: Document) => {
+    setSelectedDocuments(prev => {
+      const exists = prev.find(doc => doc.id === document.id);
+      if (exists) {
+        return prev.filter(doc => doc.id !== document.id);
+      } else {
+        return [...prev, document];
+      }
+    });
+  };
+
+  const handleToggleKnowledgeContext = (enabled: boolean) => {
+    setKnowledgeContextEnabled(enabled);
+    if (!enabled) {
+      setSelectedDocuments([]);
+      setSearchResults([]);
+    }
+  };
+
   const formatTime = (timestamp: Date) => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const renderMessage = (msg: ChatMessage, index: number) => {
     const isUser = msg.sender === 'You';
+    const isSystem = msg.messageType === 'system';
+    const isError = msg.messageType === 'error';
+    
     const messageStyle: React.CSSProperties = {
       display: 'flex',
       flexDirection: isUser ? 'row-reverse' : 'row',
@@ -85,184 +195,227 @@ const Chat: React.FC = () => {
     };
 
     const bubbleStyle: React.CSSProperties = {
-      background: isUser ? colors.colorChatUserBubble : colors.colorChatAIBubble,
-      color: isUser ? colors.colorChatUserText : colors.colorChatAIText,
+      background: isError ? '#ff4d4f' : 
+                  isSystem ? '#f0f0f0' :
+                  isUser ? colors.colorChatUserBubble : colors.colorChatAIBubble,
+      color: isError ? '#fff' :
+             isSystem ? '#666' :
+             isUser ? colors.colorChatUserText : colors.colorChatAIText,
       padding: '12px 16px',
       borderRadius: '18px',
       boxShadow: colors.boxShadow,
       position: 'relative',
       wordWrap: 'break-word',
       maxWidth: '100%',
+      border: isSystem ? '1px dashed #d9d9d9' : 'none',
     };
 
     const avatarStyle: React.CSSProperties = {
-      backgroundColor: isUser ? colors.colorPrimary : colors.colorSecondary,
+      backgroundColor: isError ? '#ff4d4f' :
+                      isSystem ? '#d9d9d9' :
+                      isUser ? colors.colorPrimary : colors.colorSecondary,
       flexShrink: 0,
     };
 
     return (
       <div key={index} style={messageStyle}>
         <Avatar 
-          icon={isUser ? <UserOutlined /> : <RobotOutlined />} 
+          icon={isUser ? <UserOutlined /> : 
+                isSystem ? <SearchOutlined /> :
+                <RobotOutlined />} 
           style={avatarStyle}
-          size="small"
         />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={bubbleStyle}>
-            <div style={{ fontWeight: 500, marginBottom: '4px' }}>
-              {msg.sender}
-            </div>
-            <div>{msg.text}</div>
+            {msg.text}
+            {msg.metadata && (
+              <div style={{ 
+                fontSize: '10px', 
+                marginTop: '8px', 
+                opacity: 0.7,
+                borderTop: '1px solid rgba(0,0,0,0.1)',
+                paddingTop: '4px'
+              }}>
+                {msg.metadata.contextChunks && `Context: ${msg.metadata.contextChunks} chunks`}
+                {msg.metadata.confidence && ` | Confidence: ${(msg.metadata.confidence * 100).toFixed(1)}%`}
+                {msg.metadata.processingTime && ` | Time: ${msg.metadata.processingTime}ms`}
+              </div>
+            )}
           </div>
-          {msg.timestamp && (
+          
+          {msg.documents && msg.documents.length > 0 && (
             <div style={{ 
               fontSize: '12px', 
-              color: colors.colorTextSecondary, 
+              color: colors.colorSecondary,
               marginTop: '4px',
-              marginLeft: isUser ? '0' : '8px',
-              marginRight: isUser ? '8px' : '0',
+              padding: '8px',
+              background: 'rgba(0,0,0,0.05)',
+              borderRadius: '8px',
+              maxWidth: '300px'
             }}>
-              {formatTime(msg.timestamp)}
+              <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+                Sources ({msg.documents.length}):
+              </Text>
+              <div style={{ marginTop: '4px' }}>
+                {msg.documents.slice(0, 3).map((doc, idx) => (
+                  <div key={idx} style={{ 
+                    fontSize: '11px', 
+                    marginBottom: '2px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    • {doc.title}
+                  </div>
+                ))}
+                {msg.documents.length > 3 && (
+                  <div style={{ fontSize: '11px', color: colors.colorSecondary }}>
+                    +{msg.documents.length - 3} more
+                  </div>
+                )}
+              </div>
             </div>
           )}
+          
+          <div style={{ 
+            fontSize: '11px', 
+            color: colors.colorSecondary,
+            marginLeft: isUser ? 'auto' : '0',
+            marginRight: isUser ? '0' : 'auto',
+          }}>
+            {msg.timestamp && formatTime(msg.timestamp)}
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div style={{ 
-      maxWidth: '800px', 
-      margin: '0 auto', 
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '20px',
-      backgroundColor: colors.colorBgBase,
-    }}>
-      <Card 
-        title={
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            color: colors.colorTextBase,
-          }}>
-            <RobotOutlined style={{ color: colors.colorPrimary }} />
-            AI Chat Assistant
-          </div>
-        }
-        style={{ 
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: colors.colorBgContainer,
-          border: `1px solid ${colors.colorBorder}`,
-          borderRadius: '12px',
-          boxShadow: colors.boxShadow,
-        }}
-        bodyStyle={{ 
-          flex: 1, 
-          display: 'flex', 
-          flexDirection: 'column',
-          padding: '20px',
-        }}
-      >
-        {error && (
-          <Alert 
-            type="error" 
-            message={error} 
-            showIcon 
-            style={{ 
-              marginBottom: '16px',
-              backgroundColor: colors.colorError + '10',
-              borderColor: colors.colorError,
-            }} 
-          />
-        )}
-        
-        <div
-          ref={listRef}
-          style={{ 
-            flex: 1,
-            overflowY: 'auto', 
-            marginBottom: '16px',
-            padding: '8px',
-            backgroundColor: colors.colorBgBase,
-            borderRadius: '8px',
-            border: `1px solid ${colors.colorBorderSecondary}`,
-          }}
-          aria-live="polite"
-          aria-label="Chat messages"
-          tabIndex={0}
+    <Row style={{ height: '100vh' }}>
+      <Col span={showKnowledgeDrawer ? 18 : 24} style={{ height: '100%' }}>
+        <Card 
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Chat Assistant</span>
+              {!chatWebSocket.isConnected() && (
+                <Badge status="error" text="Disconnected" />
+              )}
+              {isTyping && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <LoadingOutlined style={{ fontSize: '12px' }} />
+                  <span style={{ fontSize: '12px', color: colors.colorSecondary }}>Assistant is typing...</span>
+                </div>
+              )}
+            </div>
+          }
+          style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+          extra={
+            <Tooltip title={knowledgeContextEnabled ? "Knowledge Base enabled" : "Enable Knowledge Base"}>
+              <Button
+                icon={<BookOutlined />}
+                type={knowledgeContextEnabled ? 'primary' : 'default'}
+                onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
+              >
+                Knowledge Base
+                {selectedDocuments.length > 0 && (
+                  <Badge count={selectedDocuments.length} style={{ marginLeft: '8px' }} />
+                )}
+              </Button>
+            </Tooltip>
+          }
         >
-          {loading ? (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              height: '200px' 
-            }}>
-              <Spin size="large" />
-            </div>
-          ) : messages.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              color: colors.colorTextSecondary,
-              padding: '40px 20px',
-            }}>
-              <RobotOutlined style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }} />
-              <p>Start a conversation with the AI assistant</p>
-            </div>
-          ) : (
-            <div>
-              {messages.map((msg, index) => renderMessage(msg, index))}
-            </div>
+          {error && (
+            <Alert
+              message="Connection Error"
+              description={error}
+              type="error"
+              showIcon
+              closable
+              style={{ marginBottom: 16 }}
+            />
           )}
-        </div>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: '8px',
-          alignItems: 'flex-end',
-        }}>
-          <Input
-            ref={inputRef}
-            style={{ 
-              flex: 1,
-              borderRadius: '24px',
-              border: `1px solid ${colors.colorBorder}`,
-              backgroundColor: colors.colorBgContainer,
-              color: colors.colorTextBase,
-            }}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onPressEnter={handleSend}
-            placeholder="Type your message..."
-            aria-label="Type your message"
-            disabled={loading || sending}
-          />
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={handleSend}
-            loading={sending}
-            disabled={loading || sending || !input.trim()}
-            aria-label="Send message"
+
+          <div
+            ref={listRef}
             style={{
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.colorPrimary,
-              borderColor: colors.colorPrimary,
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              marginBottom: '16px',
+              border: '1px solid #f0f0f0',
+              borderRadius: '8px',
+              background: colors.colorBackground
             }}
-          />
-        </div>
-      </Card>
-    </div>
+          >
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Spin size="large" />
+                <div style={{ marginTop: 16 }}>Connecting to chat...</div>
+              </div>
+            ) : messages.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: colors.colorSecondary }}>
+                <RobotOutlined style={{ fontSize: '48px', marginBottom: 16 }} />
+                <Title level={4}>Welcome to Chat Assistant</Title>
+                <Text type="secondary">
+                  Start a conversation or enable Knowledge Base context for enhanced responses.
+                </Text>
+                {knowledgeContextEnabled && (
+                  <div style={{ marginTop: '16px' }}>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Knowledge Base is enabled. Your messages will be enhanced with relevant document context.
+                    </Text>
+                  </div>
+                )}
+              </div>
+            ) : (
+              messages.map(renderMessage)
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={handleInputChange}
+              onPressEnter={handleSend}
+              placeholder={knowledgeContextEnabled ? 
+                "Type your message (Knowledge Base enabled)..." : 
+                "Type your message..."}
+              disabled={sending}
+              style={{ flex: 1 }}
+            />
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={handleSend}
+              loading={sending}
+              disabled={!input.trim()}
+            >
+              Send
+            </Button>
+          </div>
+        </Card>
+      </Col>
+
+      {showKnowledgeDrawer && (
+        <Col span={6} style={{ height: '100%' }}>
+          <Card 
+            title="Knowledge Base Context" 
+            style={{ height: '100%', overflowY: 'auto' }}
+            size="small"
+          >
+            <KnowledgeContext
+              onDocumentSelect={handleDocumentSelect}
+              onSearch={handleKnowledgeSearch}
+              selectedDocuments={selectedDocuments}
+              searchResults={searchResults}
+              onToggleContext={handleToggleKnowledgeContext}
+              contextEnabled={knowledgeContextEnabled}
+            />
+          </Card>
+        </Col>
+      )}
+    </Row>
   );
 };
 

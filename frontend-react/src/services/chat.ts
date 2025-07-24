@@ -1,34 +1,246 @@
 import config from '../config';
+import { Document } from './knowledge';
 
-type MessageHandler = (msg: { sender: string; text: string }) => void;
+export interface ChatMessage {
+  id?: string;
+  sender: string;
+  text: string;
+  timestamp?: Date;
+  documents?: Document[]; // Knowledge Base documents used for this response
+  messageType?: 'text' | 'knowledge' | 'error' | 'system';
+  metadata?: {
+    searchQuery?: string;
+    contextChunks?: number;
+    confidence?: number;
+    processingTime?: number;
+  };
+}
+
+export interface KnowledgeContext {
+  enabled: boolean;
+  documentIds?: string[];
+  searchQuery?: string;
+  maxChunks?: number;
+  filters?: {
+    tags?: string[];
+    documentTypes?: string[];
+    dateRange?: {
+      start: string;
+      end: string;
+    };
+  };
+}
+
+export interface ChatWebSocketMessage {
+  type: 'message' | 'knowledge_search' | 'typing' | 'ping' | 'knowledge_update';
+  data: {
+    content?: string;
+    knowledgeContext?: KnowledgeContext;
+    isTyping?: boolean;
+    documents?: Document[];
+    searchQuery?: string;
+    processingJobId?: string;
+  };
+}
+
+type MessageHandler = (msg: ChatMessage) => void;
+type KnowledgeUpdateHandler = (documents: Document[], searchQuery: string) => void;
+type ProcessingJobHandler = (jobId: string, status: string, progress: number) => void;
 
 class ChatWebSocket {
   private ws: WebSocket | null = null;
-  private handler: MessageHandler | null = null;
+  private messageHandler: MessageHandler | null = null;
+  private knowledgeUpdateHandler: KnowledgeUpdateHandler | null = null;
+  private processingJobHandler: ProcessingJobHandler | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
+  private pingInterval: NodeJS.Timeout | null = null;
+  private isConnecting = false;
 
-  connect(token: string, onMessage: MessageHandler) {
-    this.handler = onMessage;
+  connect(token: string, onMessage: MessageHandler, onKnowledgeUpdate?: KnowledgeUpdateHandler, onProcessingJob?: ProcessingJobHandler) {
+    if (this.isConnecting) return;
+    
+    this.isConnecting = true;
+    this.messageHandler = onMessage;
+    this.knowledgeUpdateHandler = onKnowledgeUpdate || null;
+    this.processingJobHandler = onProcessingJob || null;
     
     const wsUrl = `${config.wsUrl}${config.wsEndpoints.chat}?token=${token}`;
     this.ws = new WebSocket(wsUrl);
     
+    this.ws.onopen = () => {
+      console.log('WebSocket connected');
+      this.isConnecting = false;
+      this.reconnectAttempts = 0;
+      this.startPingInterval();
+    };
+    
     this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (this.handler) this.handler(data);
+      try {
+        const data = JSON.parse(event.data);
+        this.handleMessage(data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+    
+    this.ws.onclose = (event) => {
+      console.log('WebSocket disconnected:', event.code, event.reason);
+      this.isConnecting = false;
+      this.stopPingInterval();
+      
+      // Attempt reconnection if not a normal closure
+      if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.attemptReconnect(token);
+      }
+    };
+    
+    this.ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      this.isConnecting = false;
     };
   }
 
-  send(text: string) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ text }));
+  private handleMessage(data: any) {
+    const { type, data: messageData } = data;
+    
+    switch (type) {
+      case 'message':
+        if (this.messageHandler) {
+          const chatMessage: ChatMessage = {
+            id: messageData.id,
+            sender: messageData.role === 'user' ? 'You' : 'Assistant',
+            text: messageData.content,
+            timestamp: new Date(messageData.timestamp),
+            documents: messageData.documents || [],
+            messageType: messageData.messageType || 'text',
+            metadata: messageData.metadata
+          };
+          this.messageHandler(chatMessage);
+        }
+        break;
+        
+      case 'knowledge_update':
+        if (this.knowledgeUpdateHandler && messageData.documents) {
+          this.knowledgeUpdateHandler(messageData.documents, messageData.searchQuery || '');
+        }
+        break;
+        
+      case 'processing_job_update':
+        if (this.processingJobHandler && messageData.processingJobId) {
+          this.processingJobHandler(
+            messageData.processingJobId,
+            messageData.status,
+            messageData.progress || 0
+          );
+        }
+        break;
+        
+      case 'pong':
+        // Handle ping response
+        break;
+        
+      case 'error':
+        if (this.messageHandler) {
+          const errorMessage: ChatMessage = {
+            sender: 'System',
+            text: messageData.message || 'An error occurred',
+            messageType: 'error',
+            timestamp: new Date()
+          };
+          this.messageHandler(errorMessage);
+        }
+        break;
+        
+      default:
+        console.log('Unknown message type:', type);
     }
   }
 
+  private attemptReconnect(token: string) {
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+    
+    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    
+    setTimeout(() => {
+      if (this.messageHandler) {
+        this.connect(token, this.messageHandler, this.knowledgeUpdateHandler, this.processingJobHandler);
+      }
+    }, delay);
+  }
+
+  private startPingInterval() {
+    this.pingInterval = setInterval(() => {
+      this.send({ type: 'ping', data: {} });
+    }, 30000); // Ping every 30 seconds
+  }
+
+  private stopPingInterval() {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
+  send(message: ChatWebSocketMessage) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected');
+    }
+  }
+
+  sendMessage(text: string, knowledgeContext?: KnowledgeContext) {
+    const message: ChatWebSocketMessage = {
+      type: 'message',
+      data: {
+        content: text,
+        knowledgeContext
+      }
+    };
+    this.send(message);
+  }
+
+  sendKnowledgeSearch(searchQuery: string, filters?: any) {
+    const message: ChatWebSocketMessage = {
+      type: 'knowledge_search',
+      data: {
+        searchQuery,
+        knowledgeContext: {
+          enabled: true,
+          searchQuery,
+          filters
+        }
+      }
+    };
+    this.send(message);
+  }
+
+  sendTypingIndicator(isTyping: boolean) {
+    const message: ChatWebSocketMessage = {
+      type: 'typing',
+      data: {
+        isTyping
+      }
+    };
+    this.send(message);
+  }
+
   disconnect() {
+    this.stopPingInterval();
     if (this.ws) {
-      this.ws.close();
+      this.ws.close(1000, 'User disconnected');
       this.ws = null;
     }
+    this.messageHandler = null;
+    this.knowledgeUpdateHandler = null;
+    this.processingJobHandler = null;
+  }
+
+  isConnected(): boolean {
+    return this.ws?.readyState === WebSocket.OPEN;
   }
 }
 
