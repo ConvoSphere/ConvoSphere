@@ -21,6 +21,16 @@ from app.schemas.knowledge import (
     ProcessingOptions,
     SearchRequest,
     SearchResponse,
+    TagList,
+    TagResponse,
+    DocumentUpdate,
+    DocumentProcessingJobResponse,
+    DocumentProcessingJobList,
+    AdvancedSearchRequest,
+    AdvancedSearchResponse,
+    BulkImportRequest,
+    BulkImportResponse,
+    KnowledgeBaseStats,
 )
 from app.services.docling_processor import docling_processor
 from app.services.knowledge_service import KnowledgeService
@@ -82,23 +92,7 @@ async def upload_document(
             metadata=processing_opts,
         )
 
-        return DocumentResponse(
-            id=str(document.id),
-            title=document.title,
-            description=document.description,
-            file_name=document.file_name,
-            file_type=document.file_type,
-            file_size=document.file_size,
-            status=document.status,
-            tags=document.tags,
-            chunk_count=document.chunk_count,
-            total_tokens=document.total_tokens,
-            created_at=document.created_at.isoformat(),
-            updated_at=document.updated_at.isoformat(),
-            processed_at=document.processed_at.isoformat()
-            if document.processed_at
-            else None,
-        )
+        return DocumentResponse.from_orm(document)
 
     except Exception as e:
         raise HTTPException(
@@ -111,17 +105,32 @@ async def get_documents(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     status: str | None = Query(None),
+    document_type: str | None = Query(None),
+    author: str | None = Query(None),
+    year: int | None = Query(None),
+    language: str | None = Query(None),
+    tag_names: str | None = Query(None),  # Comma-separated tag names
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get documents for the current user."""
+    """Get documents for the current user with advanced filtering."""
     try:
+        # Parse tag names
+        tag_list = None
+        if tag_names:
+            tag_list = [tag.strip() for tag in tag_names.split(",") if tag.strip()]
+
         knowledge_service = KnowledgeService(db)
         documents, total = knowledge_service.get_documents(
             user_id=str(current_user.id),
             skip=skip,
             limit=limit,
             status=status,
+            document_type=document_type,
+            author=author,
+            year=year,
+            language=language,
+            tag_names=tag_list,
         )
 
         return DocumentList(
@@ -158,6 +167,42 @@ async def get_document(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error retrieving document: {str(e)}",
+        )
+
+
+@router.put("/documents/{document_id}", response_model=DocumentResponse)
+async def update_document(
+    document_id: str,
+    document_update: DocumentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update document metadata."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        document = knowledge_service.update_document_metadata(
+            document_id=document_id,
+            user_id=str(current_user.id),
+            title=document_update.title,
+            description=document_update.description,
+            author=document_update.author,
+            source=document_update.source,
+            year=document_update.year,
+            language=document_update.language,
+            keywords=document_update.keywords,
+            tags=document_update.tags,
+        )
+
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        return DocumentResponse.from_orm(document)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error updating document: {str(e)}",
         )
 
 
@@ -258,14 +303,14 @@ async def search_documents(
         knowledge_service = KnowledgeService(db)
 
         if request.search_type == "knowledge":
-            results = knowledge_service.search_documents(
+            results = await knowledge_service.search_documents(
                 query=request.query,
                 user_id=str(current_user.id),
                 limit=request.limit,
                 filters=request.filters,
             )
         elif request.search_type == "conversation":
-            results = knowledge_service.search_conversations(
+            results = await knowledge_service.search_conversations(
                 query=request.query,
                 user_id=str(current_user.id),
                 conversation_id=request.conversation_id,
@@ -286,6 +331,50 @@ async def search_documents(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error searching documents: {str(e)}",
+        )
+
+
+@router.post("/search/advanced", response_model=AdvancedSearchResponse)
+async def advanced_search(
+    request: AdvancedSearchRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Advanced search with complex filtering and sorting."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        
+        # Convert filters to Weaviate format
+        filters = {}
+        if request.filters:
+            if request.filters.document_type:
+                filters["document_type"] = request.filters.document_type
+            if request.filters.author:
+                filters["author"] = request.filters.author
+            if request.filters.language:
+                filters["language"] = request.filters.language
+            if request.filters.year:
+                filters["year"] = request.filters.year
+
+        results = await knowledge_service.search_documents(
+            query=request.query,
+            user_id=str(current_user.id),
+            limit=request.limit,
+            filters=filters,
+        )
+
+        return AdvancedSearchResponse(
+            query=request.query,
+            results=results,
+            total=len(results),
+            offset=request.offset,
+            limit=request.limit,
+            filters_applied=request.filters,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error performing advanced search: {str(e)}",
         )
 
 
@@ -315,6 +404,214 @@ async def get_search_history(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error retrieving search history: {str(e)}",
+        )
+
+
+@router.get("/tags", response_model=TagList)
+async def get_tags(
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get all tags for the current user's documents."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        tags = knowledge_service.get_tags(str(current_user.id), limit)
+
+        return TagList(
+            tags=[TagResponse.from_orm(tag) for tag in tags],
+            total=len(tags),
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving tags: {str(e)}",
+        )
+
+
+@router.get("/tags/search", response_model=TagList)
+async def search_tags(
+    query: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Search tags by name."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        tags = knowledge_service.search_tags(query, str(current_user.id), limit)
+
+        return TagList(
+            tags=[TagResponse.from_orm(tag) for tag in tags],
+            total=len(tags),
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error searching tags: {str(e)}",
+        )
+
+
+@router.get("/processing/jobs", response_model=DocumentProcessingJobList)
+async def get_processing_jobs(
+    status: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get document processing jobs for the current user."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        jobs = knowledge_service.get_processing_jobs(
+            user_id=str(current_user.id),
+            status=status,
+            limit=limit,
+        )
+
+        return DocumentProcessingJobList(
+            jobs=[DocumentProcessingJobResponse.from_orm(job) for job in jobs],
+            total=len(jobs),
+            skip=0,
+            limit=limit,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving processing jobs: {str(e)}",
+        )
+
+
+@router.post("/processing/jobs")
+async def create_processing_job(
+    document_id: str,
+    job_type: str = Form("process"),
+    priority: int = Form(0, ge=0, le=10),
+    processing_options: str | None = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a new document processing job."""
+    try:
+        # Parse processing options
+        options = {}
+        if processing_options:
+            try:
+                import json
+                options = json.loads(processing_options)
+            except json.JSONDecodeError:
+                raise HTTPException(
+                    status_code=400, detail="Invalid processing options JSON",
+                )
+
+        knowledge_service = KnowledgeService(db)
+        job = knowledge_service.create_processing_job(
+            document_id=document_id,
+            user_id=str(current_user.id),
+            job_type=job_type,
+            priority=priority,
+            processing_options=options,
+        )
+
+        return DocumentProcessingJobResponse.from_orm(job)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error creating processing job: {str(e)}",
+        )
+
+
+@router.post("/bulk-import", response_model=BulkImportResponse)
+async def bulk_import_documents(
+    request: BulkImportRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Bulk import multiple documents."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        
+        # Create a bulk import job
+        job = knowledge_service.create_processing_job(
+            document_id="",  # Will be set for each document
+            user_id=str(current_user.id),
+            job_type="bulk_import",
+            priority=5,
+            processing_options={
+                "files": request.files,
+                "default_tags": request.tags,
+                "processing_options": request.processing_options.dict() if request.processing_options else {},
+            },
+        )
+
+        return BulkImportResponse(
+            job_id=str(job.id),
+            total_files=len(request.files),
+            message="Bulk import job created successfully",
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error creating bulk import job: {str(e)}",
+        )
+
+
+@router.get("/stats", response_model=KnowledgeBaseStats)
+async def get_knowledge_base_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get knowledge base statistics for the current user."""
+    try:
+        knowledge_service = KnowledgeService(db)
+        
+        # Get documents with different statuses
+        documents, total = knowledge_service.get_documents(str(current_user.id), limit=10000)
+        
+        # Calculate statistics
+        processed_count = sum(1 for doc in documents if doc.status == "processed")
+        processing_count = sum(1 for doc in documents if doc.status == "processing")
+        error_count = sum(1 for doc in documents if doc.status == "error")
+        
+        # Calculate total chunks and tokens
+        total_chunks = sum(doc.chunk_count or 0 for doc in documents)
+        total_tokens = sum(doc.total_tokens or 0 for doc in documents)
+        
+        # Calculate storage used
+        storage_used = sum(doc.file_size for doc in documents)
+        
+        # Get documents by type
+        documents_by_type = {}
+        for doc in documents:
+            doc_type = doc.document_type or "unknown"
+            documents_by_type[doc_type] = documents_by_type.get(doc_type, 0) + 1
+        
+        # Get documents by status
+        documents_by_status = {
+            "uploaded": sum(1 for doc in documents if doc.status == "uploaded"),
+            "processing": processing_count,
+            "processed": processed_count,
+            "error": error_count,
+        }
+        
+        # Get last processed document
+        last_processed = None
+        processed_docs = [doc for doc in documents if doc.processed_at]
+        if processed_docs:
+            last_processed = max(processed_docs, key=lambda x: x.processed_at).processed_at.isoformat()
+
+        return KnowledgeBaseStats(
+            total_documents=total,
+            total_chunks=total_chunks,
+            total_tokens=total_tokens,
+            documents_by_status=documents_by_status,
+            documents_by_type=documents_by_type,
+            storage_used=storage_used,
+            last_processed=last_processed,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving statistics: {str(e)}",
         )
 
 
