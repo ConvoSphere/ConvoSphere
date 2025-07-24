@@ -192,6 +192,7 @@ nav:
     - File Management: user-guide/file-management.md
     - Settings: user-guide/settings.md
     - Troubleshooting: user-guide/troubleshooting.md
+    - FAQ: user-guide/faq.md
   - Project:
     - Status: project/status.md
     - Roadmap: project/roadmap.md
