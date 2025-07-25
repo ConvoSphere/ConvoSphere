@@ -1,6 +1,6 @@
 # AI Assistant Platform Makefile
 
-.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean pre-commit-install pre-commit-run pre-commit-update code-quality test-communication
+.PHONY: help install dev test clean docker-up docker-down docker-build docker-logs migrate migrate-create format lint security-check docs-install docs-serve docs-build docs-deploy docs-clean pre-commit-install pre-commit-run pre-commit-update code-quality test-communication admin-cli admin-backup admin-health admin-config admin-test-data
 
 # Default target
 help:
@@ -29,6 +29,13 @@ help:
 	@echo "Database:"
 	@echo "  migrate        Run database migrations"
 	@echo "  migrate-create Create new migration"
+	@echo ""
+	@echo "Admin CLI:"
+	@echo "  admin-cli      Show admin CLI help"
+	@echo "  admin-backup   Create database backup"
+	@echo "  admin-health   Check system health"
+	@echo "  admin-config   Show configuration"
+	@echo "  admin-test-data Create test data"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  clean          Clean up temporary files"
@@ -138,6 +145,56 @@ migrate:
 migrate-create:
 	@echo "Creating new migration..."
 	cd backend && alembic revision --autogenerate -m "$(message)"
+
+# Admin CLI Commands
+admin-cli:
+	@echo "ChatAssistant Admin CLI - Available Commands:"
+	@echo ""
+	@echo "Database Management:"
+	@echo "  python admin.py db migrate"
+	@echo "  python admin.py db status"
+	@echo "  python admin.py db test-connection"
+	@echo ""
+	@echo "User Management:"
+	@echo "  python admin.py user create-admin"
+	@echo "  python admin.py user list"
+	@echo "  python admin.py user reset-password"
+	@echo ""
+	@echo "Backup & Recovery:"
+	@echo "  python admin.py backup create"
+	@echo "  python admin.py backup restore <file>"
+	@echo "  python admin.py backup list"
+	@echo ""
+	@echo "Monitoring:"
+	@echo "  python admin.py monitoring health"
+	@echo "  python admin.py monitoring logs"
+	@echo ""
+	@echo "Configuration:"
+	@echo "  python admin.py config show"
+	@echo "  python admin.py config validate"
+	@echo ""
+	@echo "Development:"
+	@echo "  python admin.py dev test-data"
+	@echo "  python admin.py dev quality-check"
+	@echo "  python admin.py dev api-test"
+	@echo ""
+	@echo "For detailed help: python admin.py --help"
+
+admin-backup:
+	@echo "Creating database backup..."
+	cd backend && python admin.py backup create
+
+admin-health:
+	@echo "Checking system health..."
+	cd backend && python admin.py monitoring health
+
+admin-config:
+	@echo "Showing configuration..."
+	cd backend && python admin.py config show
+
+admin-test-data:
+	@echo "Creating test data..."
+	cd backend && python admin.py dev test-data
 
 # Utilities
 clean:
