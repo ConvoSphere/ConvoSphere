@@ -58,6 +58,33 @@ python3 admin.py backup list --backup-dir /path/to/backups
 - PostgreSQL (mit pg_dump/pg_restore)
 - SQLite (Datei-Kopie)
 
+### Benutzerverwaltung
+
+```bash
+# Admin-Benutzer erstellen
+python3 admin.py user create-admin
+
+# Alle Benutzer auflisten
+python3 admin.py user list
+
+# Benutzerdetails anzeigen
+python3 admin.py user show <email|username|id>
+
+# Neuen Benutzer erstellen
+python3 admin.py user create --email user@example.com --username newuser --password secret123
+
+# Benutzer aktualisieren
+python3 admin.py user update <email|username|id> --role admin --status active
+
+# Benutzer löschen
+python3 admin.py user delete <email|username|id>
+
+# Benutzerpasswort zurücksetzen
+python3 admin.py user reset-password
+```
+
+**Hinweis:** Diese Commands benötigen eine Backend-Umgebung mit installierten Dependencies.
+
 ### System-Monitoring
 
 ```bash
@@ -116,6 +143,9 @@ python3 admin.py config validate
 
 # 3. System-Health prüfen
 python3 admin.py monitoring health
+
+# 4. Admin-Benutzer erstellen
+python3 admin.py user create-admin
 ```
 
 ### Tägliche Verwaltung
@@ -126,6 +156,9 @@ python3 admin.py monitoring health
 
 # 2. Konfiguration validieren
 python3 admin.py config validate
+
+# 3. Benutzerliste prüfen
+python3 admin.py user list
 ```
 
 ### Backup-Strategie
