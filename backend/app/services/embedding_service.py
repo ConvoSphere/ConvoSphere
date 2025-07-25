@@ -670,7 +670,7 @@ class EmbeddingService:
 
             # Simple grouping based on first dimension instead of ML clustering
             labels = []
-            for i, embedding in enumerate(embeddings):
+            for _i, embedding in enumerate(embeddings):
                 if embedding:
                     # Simple grouping: assign to cluster based on first dimension value
                     cluster_id = int(abs(embedding[0]) * n_clusters) % n_clusters

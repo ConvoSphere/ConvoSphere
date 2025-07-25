@@ -180,7 +180,7 @@ class AuditService:
             return audit_log
 
         except Exception as e:
-            logger.error(f"Failed to log audit event: {str(e)}")
+            logger.exception(f"Failed to log audit event: {str(e)}")
             raise AuditError(f"Failed to log audit event: {str(e)}")
 
     def audit_context(
@@ -322,7 +322,7 @@ class AuditService:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get audit logs: {str(e)}")
+            logger.exception(f"Failed to get audit logs: {str(e)}")
             raise AuditError(f"Failed to get audit logs: {str(e)}")
 
     async def generate_compliance_report(
@@ -390,7 +390,7 @@ class AuditService:
             return report
 
         except Exception as e:
-            logger.error(f"Failed to generate compliance report: {str(e)}")
+            logger.exception(f"Failed to generate compliance report: {str(e)}")
             raise ComplianceError(f"Failed to generate compliance report: {str(e)}")
 
     async def cleanup_expired_logs(self) -> int:
@@ -401,7 +401,7 @@ class AuditService:
             # Get all retention rules
             retention_rules = (
                 self.db.query(AuditRetentionRule)
-                .filter(AuditRetentionRule.enabled == True)
+                .filter(AuditRetentionRule.enabled)
                 .all()
             )
 
@@ -443,7 +443,7 @@ class AuditService:
                     )
 
                 # Exclude logs under legal hold
-                query = query.filter(ExtendedAuditLog.legal_hold == False)
+                query = query.filter(not ExtendedAuditLog.legal_hold)
 
                 # Get logs to delete
                 logs_to_delete = query.all()
@@ -470,7 +470,7 @@ class AuditService:
             return cleaned_count
 
         except Exception as e:
-            logger.error(f"Failed to cleanup expired logs: {str(e)}")
+            logger.exception(f"Failed to cleanup expired logs: {str(e)}")
             raise AuditError(f"Failed to cleanup expired logs: {str(e)}")
 
     async def get_audit_statistics(
@@ -579,7 +579,7 @@ class AuditService:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get audit statistics: {str(e)}")
+            logger.exception(f"Failed to get audit statistics: {str(e)}")
             raise AuditError(f"Failed to get audit statistics: {str(e)}")
 
     # Private methods
@@ -593,7 +593,7 @@ class AuditService:
         try:
             # Get applicable policies
             policies = (
-                self.db.query(AuditPolicy).filter(AuditPolicy.enabled == True).all()
+                self.db.query(AuditPolicy).filter(AuditPolicy.enabled).all()
             )
 
             for policy in policies:
@@ -617,7 +617,7 @@ class AuditService:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to check audit policy: {str(e)}")
+            logger.exception(f"Failed to check audit policy: {str(e)}")
             return True  # Default to logging on error
 
     async def _apply_retention_rules(self, audit_log: ExtendedAuditLog) -> None:
@@ -625,7 +625,7 @@ class AuditService:
         try:
             rules = (
                 self.db.query(AuditRetentionRule)
-                .filter(AuditRetentionRule.enabled == True)
+                .filter(AuditRetentionRule.enabled)
                 .all()
             )
 
@@ -668,12 +668,12 @@ class AuditService:
                 break
 
         except Exception as e:
-            logger.error(f"Failed to apply retention rules: {str(e)}")
+            logger.exception(f"Failed to apply retention rules: {str(e)}")
 
     async def _check_alerts(self, audit_log: ExtendedAuditLog) -> None:
         """Check if audit log triggers any alerts."""
         try:
-            alerts = self.db.query(AuditAlert).filter(AuditAlert.enabled == True).all()
+            alerts = self.db.query(AuditAlert).filter(AuditAlert.enabled).all()
 
             for alert in alerts:
                 # Check if alert criteria match
@@ -693,10 +693,7 @@ class AuditService:
                 key = f"{self.alert_prefix}{alert.id}"
                 current_count = self.redis_client.get(key)
 
-                if current_count is None:
-                    current_count = 0
-                else:
-                    current_count = int(current_count)
+                current_count = 0 if current_count is None else int(current_count)
 
                 current_count += 1
 
@@ -708,7 +705,7 @@ class AuditService:
                     await self._trigger_alert(alert, audit_log, current_count)
 
         except Exception as e:
-            logger.error(f"Failed to check alerts: {str(e)}")
+            logger.exception(f"Failed to check alerts: {str(e)}")
 
     async def _trigger_alert(
         self,
@@ -735,7 +732,7 @@ class AuditService:
             # - Webhook calls
 
         except Exception as e:
-            logger.error(f"Failed to trigger alert: {str(e)}")
+            logger.exception(f"Failed to trigger alert: {str(e)}")
 
     async def _cache_audit_event(self, audit_log: ExtendedAuditLog) -> None:
         """Cache audit event for performance."""
@@ -752,7 +749,7 @@ class AuditService:
             self.redis_client.setex(key, 3600, json.dumps(data))
 
         except Exception as e:
-            logger.error(f"Failed to cache audit event: {str(e)}")
+            logger.exception(f"Failed to cache audit event: {str(e)}")
 
     async def _analyze_compliance_findings(
         self,
@@ -897,7 +894,7 @@ class AuditService:
             logger.info(f"Archived {len(logs)} audit logs")
 
         except Exception as e:
-            logger.error(f"Failed to archive logs: {str(e)}")
+            logger.exception(f"Failed to archive logs: {str(e)}")
             raise AuditError(f"Failed to archive logs: {str(e)}")
 
 

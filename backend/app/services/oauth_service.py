@@ -30,7 +30,7 @@ class OAuthService:
 
     def _setup_oauth_clients(self):
         """Setup OAuth clients for configured providers."""
-        config = Config(".env")  # Load from environment variables
+        Config(".env")  # Load from environment variables
 
         # Google OAuth2
         if self.settings.sso_google_enabled and self.settings.sso_google_client_id:

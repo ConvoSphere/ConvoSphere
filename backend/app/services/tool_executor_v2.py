@@ -563,3 +563,6 @@ class EnhancedToolExecutor:
 
 # Global enhanced tool executor instance
 enhanced_tool_executor = EnhancedToolExecutor()
+
+# Alias for backward compatibility
+tool_executor = enhanced_tool_executor

@@ -5,8 +5,6 @@ This module tests the hybrid mode management functionality including
 mode decisions, reasoning, and state management.
 """
 
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.schemas.hybrid_mode import (
@@ -439,7 +437,7 @@ class TestHybridModeManagerIntegration:
     async def test_full_workflow(self):
         """Test complete hybrid mode workflow."""
         # 1. Initialize conversation
-        state = self.manager.initialize_conversation(
+        self.manager.initialize_conversation(
             conversation_id="55555555-5555-5555-5555-555555555555",
             user_id="66666666-6666-6666-6666-666666666666",
             initial_mode=ConversationMode.AUTO,

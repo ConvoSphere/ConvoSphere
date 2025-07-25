@@ -86,7 +86,7 @@ class AuditMetrics:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to record audit metrics: {str(e)}")
+            logger.exception(f"Failed to record audit metrics: {str(e)}")
 
     async def record_query_performance(
         self,
@@ -111,7 +111,7 @@ class AuditMetrics:
             self.redis_client.expire(key, 86400)  # Keep for 24 hours
 
         except Exception as e:
-            logger.error(f"Failed to record query performance: {str(e)}")
+            logger.exception(f"Failed to record query performance: {str(e)}")
 
     async def record_cache_performance(
         self,
@@ -137,7 +137,7 @@ class AuditMetrics:
             self.redis_client.expire(perf_key, 86400)
 
         except Exception as e:
-            logger.error(f"Failed to record cache performance: {str(e)}")
+            logger.exception(f"Failed to record cache performance: {str(e)}")
 
     async def get_performance_metrics(
         self,
@@ -193,7 +193,7 @@ class AuditMetrics:
             return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get performance metrics: {str(e)}")
+            logger.exception(f"Failed to get performance metrics: {str(e)}")
             raise AuditError(f"Failed to get performance metrics: {str(e)}")
 
     async def get_real_time_metrics(self) -> dict[str, Any]:
@@ -246,7 +246,7 @@ class AuditMetrics:
             return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get real-time metrics: {str(e)}")
+            logger.exception(f"Failed to get real-time metrics: {str(e)}")
             raise AuditError(f"Failed to get real-time metrics: {str(e)}")
 
     async def get_performance_alerts(self) -> list[dict[str, Any]]:
@@ -304,7 +304,7 @@ class AuditMetrics:
             return alerts
 
         except Exception as e:
-            logger.error(f"Failed to get performance alerts: {str(e)}")
+            logger.exception(f"Failed to get performance alerts: {str(e)}")
             raise AuditError(f"Failed to get performance alerts: {str(e)}")
 
     # Private methods
@@ -390,7 +390,7 @@ class AuditMetrics:
             return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get event metrics: {str(e)}")
+            logger.exception(f"Failed to get event metrics: {str(e)}")
             return {}
 
     async def _get_performance_metrics(
@@ -400,7 +400,7 @@ class AuditMetrics:
     ) -> dict[str, Any]:
         """Get overall performance metrics."""
         try:
-            metrics = {
+            return {
                 "total_queries": 0,
                 "avg_query_duration_ms": 0,
                 "slow_queries": 0,
@@ -411,10 +411,9 @@ class AuditMetrics:
             # This would implement actual performance metrics collection
             # For now, return placeholder data
 
-            return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get performance metrics: {str(e)}")
+            logger.exception(f"Failed to get performance metrics: {str(e)}")
             return {}
 
     async def _get_cache_metrics(
@@ -424,7 +423,7 @@ class AuditMetrics:
     ) -> dict[str, Any]:
         """Get cache performance metrics."""
         try:
-            metrics = {
+            return {
                 "total_operations": 0,
                 "cache_hits": 0,
                 "cache_misses": 0,
@@ -435,10 +434,9 @@ class AuditMetrics:
             # This would implement actual cache metrics collection
             # For now, return placeholder data
 
-            return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get cache metrics: {str(e)}")
+            logger.exception(f"Failed to get cache metrics: {str(e)}")
             return {}
 
     async def _get_database_metrics(
@@ -448,7 +446,7 @@ class AuditMetrics:
     ) -> dict[str, Any]:
         """Get database performance metrics."""
         try:
-            metrics = {
+            return {
                 "total_queries": 0,
                 "slow_queries": 0,
                 "avg_query_duration_ms": 0,
@@ -459,10 +457,9 @@ class AuditMetrics:
             # This would implement actual database metrics collection
             # For now, return placeholder data
 
-            return metrics
 
         except Exception as e:
-            logger.error(f"Failed to get database metrics: {str(e)}")
+            logger.exception(f"Failed to get database metrics: {str(e)}")
             return {}
 
 
@@ -488,14 +485,14 @@ class AuditPerformanceMonitor:
             asyncio.create_task(self._cleanup_old_metrics())
 
         except Exception as e:
-            logger.error(f"Failed to start performance monitoring: {str(e)}")
+            logger.exception(f"Failed to start performance monitoring: {str(e)}")
 
     async def _monitor_performance(self) -> None:
         """Background task to monitor performance."""
         while True:
             try:
                 # Get current metrics
-                metrics = await self.metrics.get_real_time_metrics()
+                await self.metrics.get_real_time_metrics()
 
                 # Check for alerts
                 alerts = await self.metrics.get_performance_alerts()
@@ -508,7 +505,7 @@ class AuditPerformanceMonitor:
                 await asyncio.sleep(60)  # Check every minute
 
             except Exception as e:
-                logger.error(f"Error in performance monitoring: {str(e)}")
+                logger.exception(f"Error in performance monitoring: {str(e)}")
                 await asyncio.sleep(60)
 
     async def _cleanup_old_metrics(self) -> None:
@@ -516,7 +513,7 @@ class AuditPerformanceMonitor:
         while True:
             try:
                 # Cleanup metrics older than 30 days
-                cutoff_date = datetime.now() - timedelta(days=30)
+                datetime.now() - timedelta(days=30)
 
                 # This would implement actual cleanup logic
                 # For now, just log the cleanup
@@ -526,7 +523,7 @@ class AuditPerformanceMonitor:
                 await asyncio.sleep(3600)  # Cleanup every hour
 
             except Exception as e:
-                logger.error(f"Error in metrics cleanup: {str(e)}")
+                logger.exception(f"Error in metrics cleanup: {str(e)}")
                 await asyncio.sleep(3600)
 
     async def _process_alert(self, alert: dict[str, Any]) -> None:
@@ -541,12 +538,12 @@ class AuditPerformanceMonitor:
             # - Update monitoring dashboards
 
         except Exception as e:
-            logger.error(f"Failed to process alert: {str(e)}")
+            logger.exception(f"Failed to process alert: {str(e)}")
 
     async def get_monitoring_dashboard(self) -> dict[str, Any]:
         """Get comprehensive monitoring dashboard data."""
         try:
-            dashboard = {
+            return {
                 "timestamp": datetime.now().isoformat(),
                 "overview": await self._get_overview_metrics(),
                 "performance": await self._get_performance_overview(),
@@ -554,10 +551,9 @@ class AuditPerformanceMonitor:
                 "trends": await self._get_performance_trends(),
             }
 
-            return dashboard
 
         except Exception as e:
-            logger.error(f"Failed to get monitoring dashboard: {str(e)}")
+            logger.exception(f"Failed to get monitoring dashboard: {str(e)}")
             raise AuditError(f"Failed to get monitoring dashboard: {str(e)}")
 
     async def _get_overview_metrics(self) -> dict[str, Any]:
@@ -597,7 +593,7 @@ class AuditPerformanceMonitor:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get overview metrics: {str(e)}")
+            logger.exception(f"Failed to get overview metrics: {str(e)}")
             return {}
 
     async def _get_performance_overview(self) -> dict[str, Any]:
@@ -621,7 +617,7 @@ class AuditPerformanceMonitor:
             return performance
 
         except Exception as e:
-            logger.error(f"Failed to get performance overview: {str(e)}")
+            logger.exception(f"Failed to get performance overview: {str(e)}")
             return {}
 
     async def _get_performance_trends(self) -> dict[str, Any]:
@@ -680,7 +676,7 @@ class AuditPerformanceMonitor:
             return trends
 
         except Exception as e:
-            logger.error(f"Failed to get performance trends: {str(e)}")
+            logger.exception(f"Failed to get performance trends: {str(e)}")
             return {}
 
 

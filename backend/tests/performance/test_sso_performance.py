@@ -35,7 +35,6 @@ class TestSSOPerformance:
 
         # Should complete 100 requests in under 5 seconds
         assert total_time < 5.0
-        print(f"SSO providers endpoint: 100 requests in {total_time:.2f}s")
 
     def test_concurrent_sso_providers_requests(self, client):
         """Test concurrent SSO providers requests."""
@@ -57,7 +56,6 @@ class TestSSOPerformance:
         assert all(results)
         # Should complete in under 3 seconds
         assert total_time < 3.0
-        print(f"Concurrent SSO providers: 50 requests in {total_time:.2f}s")
 
     @pytest.mark.asyncio
     async def test_oauth_service_initialization_performance(self):
@@ -76,7 +74,6 @@ class TestSSOPerformance:
 
         # Should complete in under 2 seconds
         assert total_time < 2.0
-        print(f"OAuth service initialization: 10 instances in {total_time:.2f}s")
 
     @pytest.mark.asyncio
     async def test_saml_service_initialization_performance(self):
@@ -95,7 +92,6 @@ class TestSSOPerformance:
 
         # Should complete in under 3 seconds
         assert total_time < 3.0
-        print(f"SAML service initialization: 5 instances in {total_time:.2f}s")
 
     def test_sso_login_endpoint_performance(self, client):
         """Test SSO login endpoint performance."""
@@ -114,7 +110,6 @@ class TestSSOPerformance:
 
         # Should complete in under 2 seconds
         assert total_time < 2.0
-        print(f"SSO login endpoints: {len(providers)} providers in {total_time:.2f}s")
 
     def test_saml_metadata_endpoint_performance(self, client):
         """Test SAML metadata endpoint performance."""
@@ -131,7 +126,6 @@ class TestSSOPerformance:
 
         # Should complete in under 3 seconds
         assert total_time < 3.0
-        print(f"SAML metadata endpoint: 20 requests in {total_time:.2f}s")
 
     @pytest.mark.asyncio
     async def test_user_processing_performance(self):
@@ -146,7 +140,7 @@ class TestSSOPerformance:
 
         # Test OAuth user processing
         oauth_service = OAuthService()
-        saml_service = SAMLService()
+        SAMLService()
 
         # Mock user info
         user_info = {
@@ -173,7 +167,6 @@ class TestSSOPerformance:
 
         # Should complete in under 2 seconds
         assert total_time < 2.0
-        print(f"User processing: 50 attempts in {total_time:.2f}s")
 
     def test_memory_usage_under_load(self, client):
         """Test memory usage under load."""
@@ -193,9 +186,6 @@ class TestSSOPerformance:
 
         # Memory increase should be reasonable (< 50MB)
         assert memory_increase < 50.0
-        print(
-            f"Memory usage: {initial_memory:.1f}MB -> {final_memory:.1f}MB (+{memory_increase:.1f}MB)",
-        )
 
     def test_response_time_consistency(self, client):
         """Test that response times are consistent."""
@@ -220,9 +210,6 @@ class TestSSOPerformance:
         # Min should be reasonable (> 1ms)
         assert min_time > 0.001
 
-        print(
-            f"Response times: avg={avg_time * 1000:.1f}ms, min={min_time * 1000:.1f}ms, max={max_time * 1000:.1f}ms",
-        )
 
 
 class TestSSOLoadTesting:
@@ -271,7 +258,6 @@ class TestSSOLoadTesting:
         # Should complete in under 10 seconds
         assert total_time < 10.0
 
-        print(f"High concurrency: {success_count}/100 successful in {total_time:.2f}s")
 
     def test_sustained_load(self, client):
         """Test sustained load over time."""
@@ -293,7 +279,7 @@ class TestSSOLoadTesting:
             # Small delay to prevent overwhelming
             time.sleep(0.01)
 
-        total_time = time.time() - start_time
+        time.time() - start_time
 
         # Should handle at least 500 requests
         assert request_count >= 500
@@ -305,9 +291,6 @@ class TestSSOLoadTesting:
         )
         assert error_rate < 0.1
 
-        print(
-            f"Sustained load: {request_count} requests, {error_count} errors in {total_time:.1f}s (error rate: {error_rate * 100:.1f}%)",
-        )
 
 
 class TestSSOSecurityPerformance:
@@ -347,9 +330,6 @@ class TestSSOSecurityPerformance:
 
         # Malicious requests shouldn't be significantly slower
         assert malicious_time < valid_time * 2
-        print(
-            f"CSRF protection: valid={valid_time:.2f}s, malicious={malicious_time:.2f}s",
-        )
 
     def test_rate_limiting_simulation(self, client):
         """Test that the system can handle rapid requests without degradation."""
@@ -358,7 +338,7 @@ class TestSSOSecurityPerformance:
         # Make rapid requests
         for i in range(200):
             start_time = time.time()
-            response = client.get("/api/v1/auth/sso/providers")
+            client.get("/api/v1/auth/sso/providers")
             end_time = time.time()
 
             response_times.append(end_time - start_time)
@@ -371,6 +351,3 @@ class TestSSOSecurityPerformance:
                 # Recent requests shouldn't be significantly slower
                 assert recent_avg < early_avg * 1.5
 
-        print(
-            f"Rate limiting simulation: {len(response_times)} requests, no significant degradation",
-        )

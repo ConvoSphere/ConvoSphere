@@ -128,7 +128,7 @@ class TestSAMLService:
             with patch("app.services.saml_service.rsa") as mock_rsa:
                 with patch(
                     "app.services.saml_service.serialization",
-                ) as mock_serialization:
+                ):
                     # Mock private key
                     mock_private_key = MagicMock()
                     mock_rsa.generate_private_key.return_value = mock_private_key

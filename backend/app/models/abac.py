@@ -228,13 +228,13 @@ class ABACRule(Base):
         if operator == OperatorType.IN:
             return (
                 attribute_value in expected_value
-                if isinstance(expected_value, (list, tuple))
+                if isinstance(expected_value, list | tuple)
                 else False
             )
         if operator == OperatorType.NOT_IN:
             return (
                 attribute_value not in expected_value
-                if isinstance(expected_value, (list, tuple))
+                if isinstance(expected_value, list | tuple)
                 else True
             )
         if operator == OperatorType.EXISTS:

@@ -5,10 +5,9 @@ This module provides hybrid chat/agent mode management with structured output,
 agent memory, and reasoning capabilities using Pydantic AI framework.
 """
 
-import asyncio
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.core.exceptions import ConversationError
 from app.schemas.hybrid_mode import (
@@ -21,9 +20,7 @@ from app.schemas.hybrid_mode import (
     ModeChangeResponse,
     ModeDecision,
     ModeDecisionReason,
-    StructuredResponse,
 )
-from app.services.ai_service import ai_service
 from app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
 from loguru import logger
 from pydantic import BaseModel
@@ -32,7 +29,7 @@ from pydantic import BaseModel
 class ComplexityAnalyzer(BaseModel):
     """Analyzes query complexity for mode decisions."""
 
-    def analyze_complexity(self, user_message: str, context: Dict[str, Any]) -> float:
+    def analyze_complexity(self, user_message: str, context: dict[str, Any]) -> float:
         """
         Analyze query complexity and return a score between 0.0 and 1.0.
 
@@ -68,12 +65,11 @@ class ComplexityAnalyzer(BaseModel):
         words = len(message.split())
         if words < 10:
             return 0.2
-        elif words < 30:
+        if words < 30:
             return 0.5
-        elif words < 60:
+        if words < 60:
             return 0.7
-        else:
-            return 0.9
+        return 0.9
 
     def _analyze_keywords(self, message: str) -> float:
         """Analyze keyword complexity."""
@@ -105,24 +101,22 @@ class ComplexityAnalyzer(BaseModel):
 
         if complex_count == 0:
             return 0.2
-        elif complex_count == 1:
+        if complex_count == 1:
             return 0.5
-        elif complex_count == 2:
+        if complex_count == 2:
             return 0.7
-        else:
-            return 0.9
+        return 0.9
 
-    def _analyze_context_dependency(self, context: Dict[str, Any]) -> float:
+    def _analyze_context_dependency(self, context: dict[str, Any]) -> float:
         """Analyze context dependency complexity."""
         context_size = len(context.get("messages", []))
         if context_size < 3:
             return 0.2
-        elif context_size < 10:
+        if context_size < 10:
             return 0.5
-        elif context_size < 20:
+        if context_size < 20:
             return 0.7
-        else:
-            return 0.9
+        return 0.9
 
     def _analyze_multi_step(self, message: str) -> float:
         """Analyze multi-step task complexity."""
@@ -143,19 +137,18 @@ class ComplexityAnalyzer(BaseModel):
 
         if step_count == 0:
             return 0.2
-        elif step_count == 1:
+        if step_count == 1:
             return 0.5
-        elif step_count == 2:
+        if step_count == 2:
             return 0.7
-        else:
-            return 0.9
+        return 0.9
 
 
 class AgentMemoryManager(BaseModel):
     """Manages agent memory for context retention."""
 
     config: HybridModeConfig
-    memories: Dict[str, List[AgentMemory]] = {}
+    memories: dict[str, list[AgentMemory]] = {}
 
     def __init__(self, config: HybridModeConfig):
         super().__init__(config=config)
@@ -166,7 +159,7 @@ class AgentMemoryManager(BaseModel):
         conversation_id: str,
         user_id: str,
         memory_type: str,
-        content: Dict[str, Any],
+        content: dict[str, Any],
         importance: float = 0.5,
     ) -> AgentMemory:
         """Add a new memory entry."""
@@ -195,7 +188,7 @@ class AgentMemoryManager(BaseModel):
         conversation_id: str,
         query: str,
         limit: int = 5,
-    ) -> List[AgentMemory]:
+    ) -> list[AgentMemory]:
         """Get relevant memories for a query."""
         if conversation_id not in self.memories:
             return []
@@ -248,9 +241,9 @@ class AgentReasoningEngine(BaseModel):
         self,
         conversation_id: str,
         user_message: str,
-        context: Dict[str, Any],
-        available_tools: List[str],
-    ) -> List[AgentReasoning]:
+        context: dict[str, Any],
+        available_tools: list[str],
+    ) -> list[AgentReasoning]:
         """Generate reasoning steps for mode decision."""
         reasoning_steps = []
 
@@ -309,8 +302,8 @@ class AgentReasoningEngine(BaseModel):
         return reasoning_steps[: self.config.reasoning_steps_max]
 
     def _analyze_tool_relevance(
-        self, user_message: str, available_tools: List[str]
-    ) -> List[tuple[str, float]]:
+        self, user_message: str, available_tools: list[str]
+    ) -> list[tuple[str, float]]:
         """Analyze which tools are relevant to the user message."""
         tool_relevance = []
         message_lower = user_message.lower()
@@ -329,7 +322,7 @@ class AgentReasoningEngine(BaseModel):
 
         return sorted(tool_relevance, key=lambda x: x[1], reverse=True)
 
-    def _evaluate_context_relevance(self, context: Dict[str, Any]) -> float:
+    def _evaluate_context_relevance(self, context: dict[str, Any]) -> float:
         """Evaluate how much the context requires agent mode."""
         messages = context.get("messages", [])
         if not messages:
@@ -354,7 +347,7 @@ class HybridModeManager:
     """Manages hybrid chat/agent mode switching with structured output and reasoning."""
 
     def __init__(self):
-        self.active_states: Dict[str, HybridModeState] = {}
+        self.active_states: dict[str, HybridModeState] = {}
         self.complexity_analyzer = ComplexityAnalyzer()
         self.default_config = HybridModeConfig()
 
@@ -363,7 +356,7 @@ class HybridModeManager:
         conversation_id: str,
         user_id: str,
         initial_mode: ConversationMode = ConversationMode.AUTO,
-        config: Optional[HybridModeConfig] = None,
+        config: HybridModeConfig | None = None,
     ) -> HybridModeState:
         """Initialize hybrid mode for a conversation."""
         if config is None:
@@ -388,8 +381,8 @@ class HybridModeManager:
         self,
         conversation_id: str,
         user_message: str,
-        context: Dict[str, Any],
-        force_mode: Optional[ConversationMode] = None,
+        context: dict[str, Any],
+        force_mode: ConversationMode | None = None,
     ) -> ModeDecision:
         """Decide the appropriate mode for the next response."""
         state = self.active_states.get(conversation_id)
@@ -433,7 +426,7 @@ class HybridModeManager:
         )
 
         # Create mode decision
-        decision = ModeDecision(
+        return ModeDecision(
             conversation_id=state.conversation_id,
             user_message=user_message,
             current_mode=state.current_mode,
@@ -448,15 +441,14 @@ class HybridModeManager:
             reasoning_steps=reasoning_steps,
         )
 
-        return decision
 
     def _determine_recommended_mode(
         self,
         state: HybridModeState,
         complexity_score: float,
-        reasoning_steps: List[AgentReasoning],
-        available_tools: List[str],
-        context: Dict[str, Any],
+        reasoning_steps: list[AgentReasoning],
+        available_tools: list[str],
+        context: dict[str, Any],
     ) -> ConversationMode:
         """Determine the recommended mode based on analysis."""
         config = state.config
@@ -486,23 +478,20 @@ class HybridModeManager:
         self,
         recommended_mode: ConversationMode,
         complexity_score: float,
-        reasoning_steps: List[AgentReasoning],
+        reasoning_steps: list[AgentReasoning],
     ) -> ModeDecisionReason:
         """Determine the reason for the mode decision."""
         if recommended_mode == ConversationMode.AGENT:
             if complexity_score > 0.7:
                 return ModeDecisionReason.COMPLEXITY_HIGH
-            elif any("tool" in step.conclusion.lower() for step in reasoning_steps):
+            if any("tool" in step.conclusion.lower() for step in reasoning_steps):
                 return ModeDecisionReason.TOOLS_AVAILABLE
-            else:
-                return ModeDecisionReason.CONTEXT_REQUIRES_AGENT
-        else:
-            if complexity_score < 0.3:
-                return ModeDecisionReason.SIMPLE_QUERY
-            else:
-                return ModeDecisionReason.CONTINUATION
+            return ModeDecisionReason.CONTEXT_REQUIRES_AGENT
+        if complexity_score < 0.3:
+            return ModeDecisionReason.SIMPLE_QUERY
+        return ModeDecisionReason.CONTINUATION
 
-    def _calculate_confidence(self, reasoning_steps: List[AgentReasoning]) -> float:
+    def _calculate_confidence(self, reasoning_steps: list[AgentReasoning]) -> float:
         """Calculate confidence in the mode decision."""
         if not reasoning_steps:
             return 0.5
@@ -511,7 +500,7 @@ class HybridModeManager:
         total_confidence = sum(step.confidence for step in reasoning_steps)
         return total_confidence / len(reasoning_steps)
 
-    def _calculate_context_relevance(self, context: Dict[str, Any]) -> float:
+    def _calculate_context_relevance(self, context: dict[str, Any]) -> float:
         """Calculate context relevance score."""
         messages = context.get("messages", [])
         if not messages:
@@ -557,7 +546,7 @@ class HybridModeManager:
             reason=request.reason or "Mode changed by user",
         )
 
-    def get_state(self, conversation_id: str) -> Optional[HybridModeState]:
+    def get_state(self, conversation_id: str) -> HybridModeState | None:
         """Get the current state for a conversation."""
         return self.active_states.get(conversation_id)
 
@@ -569,7 +558,7 @@ class HybridModeManager:
                 f"Cleaned up hybrid mode state for conversation {conversation_id}"
             )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics about hybrid mode usage."""
         total_conversations = len(self.active_states)
         mode_counts = {}

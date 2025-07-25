@@ -6,7 +6,7 @@ switching, configuration, and status queries.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
@@ -31,7 +31,7 @@ class ModeChangeRequestModel(BaseModel):
     """Request model for mode change."""
 
     target_mode: ConversationMode = Field(..., description="Target conversation mode")
-    reason: Optional[str] = Field(
+    reason: str | None = Field(
         None, description="User-provided reason for mode change"
     )
     force_change: bool = Field(
@@ -74,7 +74,7 @@ class ConversationModeStatus(BaseModel):
     conversation_id: str = Field(..., description="Conversation ID")
     current_mode: ConversationMode = Field(..., description="Current conversation mode")
     last_mode_change: str = Field(..., description="Last mode change timestamp")
-    mode_history: List[Dict[str, Any]] = Field(
+    mode_history: list[dict[str, Any]] = Field(
         default_factory=list, description="Mode change history"
     )
     config: HybridModeConfigModel = Field(..., description="Current configuration")
@@ -84,10 +84,10 @@ class ModeDecisionRequest(BaseModel):
     """Request model for mode decision."""
 
     user_message: str = Field(..., description="User message to analyze")
-    context: Optional[Dict[str, Any]] = Field(
+    context: dict[str, Any] | None = Field(
         default_factory=dict, description="Conversation context"
     )
-    force_mode: Optional[ConversationMode] = Field(
+    force_mode: ConversationMode | None = Field(
         None, description="Force specific mode"
     )
 
@@ -98,7 +98,7 @@ class ModeDecisionRequest(BaseModel):
 async def initialize_hybrid_mode(
     conversation_id: str,
     initial_mode: ConversationMode = ConversationMode.AUTO,
-    config: Optional[HybridModeConfigModel] = None,
+    config: HybridModeConfigModel | None = None,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -262,14 +262,13 @@ async def decide_conversation_mode(
                 initial_mode=ConversationMode.AUTO,
             )
 
-        decision = await hybrid_mode_manager.decide_mode(
+        return await hybrid_mode_manager.decide_mode(
             conversation_id=conversation_id,
             user_message=request.user_message,
             context=request.context or {},
             force_mode=request.force_mode,
         )
 
-        return decision
 
     except Exception as e:
         logger.error(f"Error deciding conversation mode: {e}")
@@ -419,8 +418,7 @@ async def get_hybrid_mode_stats(
         Dict: Hybrid mode statistics
     """
     try:
-        stats = hybrid_mode_manager.get_stats()
-        return stats
+        return hybrid_mode_manager.get_stats()
 
     except Exception as e:
         logger.error(f"Error getting hybrid mode stats: {e}")

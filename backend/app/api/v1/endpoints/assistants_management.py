@@ -9,7 +9,7 @@ from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
 
 

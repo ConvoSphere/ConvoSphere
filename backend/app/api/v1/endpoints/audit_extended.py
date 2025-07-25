@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from app.api.deps import get_current_user, get_db
+from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models.audit_extended import (
     AuditAlert,
     AuditArchive,
@@ -112,7 +113,7 @@ async def get_audit_logs(
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid severity level")
 
-        result = await audit_service.get_audit_logs(
+        return await audit_service.get_audit_logs(
             user_id=user_id,
             event_type=event_type,
             event_category=event_category,
@@ -129,12 +130,11 @@ async def get_audit_logs(
             include_metadata=include_metadata,
         )
 
-        return result
 
     except AuditError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to get audit logs: {str(e)}")
+        logger.exception(f"Failed to get audit logs: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -207,7 +207,7 @@ async def get_audit_log(
         }
 
     except Exception as e:
-        logger.error(f"Failed to get audit log: {str(e)}")
+        logger.exception(f"Failed to get audit log: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -249,7 +249,7 @@ async def update_audit_log(
         return {"message": "Audit log updated successfully", "id": str(audit_log.id)}
 
     except Exception as e:
-        logger.error(f"Failed to update audit log: {str(e)}")
+        logger.exception(f"Failed to update audit log: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -279,18 +279,17 @@ async def get_audit_statistics(
         if current_user.role == UserRole.ADMIN:
             organization_id = str(current_user.organization_id)
 
-        result = await audit_service.get_audit_statistics(
+        return await audit_service.get_audit_statistics(
             start_date=start_date,
             end_date=end_date,
             organization_id=organization_id,
         )
 
-        return result
 
     except AuditError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to get audit statistics: {str(e)}")
+        logger.exception(f"Failed to get audit statistics: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -321,7 +320,7 @@ async def export_audit_logs(
         )
 
     except Exception as e:
-        logger.error(f"Failed to export audit logs: {str(e)}")
+        logger.exception(f"Failed to export audit logs: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -348,7 +347,7 @@ async def get_audit_policies(
         )
 
     except Exception as e:
-        logger.error(f"Failed to get audit policies: {str(e)}")
+        logger.exception(f"Failed to get audit policies: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -376,7 +375,7 @@ async def create_audit_policy(
         return policy
 
     except Exception as e:
-        logger.error(f"Failed to create audit policy: {str(e)}")
+        logger.exception(f"Failed to create audit policy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -400,7 +399,7 @@ async def get_audit_policy(
         return policy
 
     except Exception as e:
-        logger.error(f"Failed to get audit policy: {str(e)}")
+        logger.exception(f"Failed to get audit policy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -433,7 +432,7 @@ async def update_audit_policy(
         return policy
 
     except Exception as e:
-        logger.error(f"Failed to update audit policy: {str(e)}")
+        logger.exception(f"Failed to update audit policy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -458,7 +457,7 @@ async def delete_audit_policy(
         db.commit()
 
     except Exception as e:
-        logger.error(f"Failed to delete audit policy: {str(e)}")
+        logger.exception(f"Failed to delete audit policy: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -485,7 +484,7 @@ async def get_retention_rules(
         )
 
     except Exception as e:
-        logger.error(f"Failed to get retention rules: {str(e)}")
+        logger.exception(f"Failed to get retention rules: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -513,7 +512,7 @@ async def create_retention_rule(
         return rule
 
     except Exception as e:
-        logger.error(f"Failed to create retention rule: {str(e)}")
+        logger.exception(f"Failed to create retention rule: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -541,7 +540,7 @@ async def get_retention_rule(
         return rule
 
     except Exception as e:
-        logger.error(f"Failed to get retention rule: {str(e)}")
+        logger.exception(f"Failed to get retention rule: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -578,7 +577,7 @@ async def update_retention_rule(
         return rule
 
     except Exception as e:
-        logger.error(f"Failed to update retention rule: {str(e)}")
+        logger.exception(f"Failed to update retention rule: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -607,7 +606,7 @@ async def delete_retention_rule(
         db.commit()
 
     except Exception as e:
-        logger.error(f"Failed to delete retention rule: {str(e)}")
+        logger.exception(f"Failed to delete retention rule: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -647,7 +646,7 @@ async def get_compliance_reports(
         )
 
     except Exception as e:
-        logger.error(f"Failed to get compliance reports: {str(e)}")
+        logger.exception(f"Failed to get compliance reports: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -675,7 +674,7 @@ async def create_compliance_report(
         return report
 
     except Exception as e:
-        logger.error(f"Failed to create compliance report: {str(e)}")
+        logger.exception(f"Failed to create compliance report: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -693,7 +692,7 @@ async def generate_compliance_report(
 
         audit_service = get_audit_service(db)
 
-        report = await audit_service.generate_compliance_report(
+        return await audit_service.generate_compliance_report(
             framework=report_params.framework,
             report_type=report_params.report_type,
             report_period=report_params.report_period,
@@ -702,12 +701,11 @@ async def generate_compliance_report(
             user_id=report_params.user_id,
         )
 
-        return report
 
     except ComplianceError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to generate compliance report: {str(e)}")
+        logger.exception(f"Failed to generate compliance report: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -733,7 +731,7 @@ async def get_compliance_report(
         return report
 
     except Exception as e:
-        logger.error(f"Failed to get compliance report: {str(e)}")
+        logger.exception(f"Failed to get compliance report: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -768,7 +766,7 @@ async def update_compliance_report(
         return report
 
     except Exception as e:
-        logger.error(f"Failed to update compliance report: {str(e)}")
+        logger.exception(f"Failed to update compliance report: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -798,7 +796,7 @@ async def delete_compliance_report(
         db.commit()
 
     except Exception as e:
-        logger.error(f"Failed to delete compliance report: {str(e)}")
+        logger.exception(f"Failed to delete compliance report: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -825,7 +823,7 @@ async def get_audit_alerts(
         )
 
     except Exception as e:
-        logger.error(f"Failed to get audit alerts: {str(e)}")
+        logger.exception(f"Failed to get audit alerts: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -853,7 +851,7 @@ async def create_audit_alert(
         return alert
 
     except Exception as e:
-        logger.error(f"Failed to create audit alert: {str(e)}")
+        logger.exception(f"Failed to create audit alert: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -877,7 +875,7 @@ async def get_audit_alert(
         return alert
 
     except Exception as e:
-        logger.error(f"Failed to get audit alert: {str(e)}")
+        logger.exception(f"Failed to get audit alert: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -910,7 +908,7 @@ async def update_audit_alert(
         return alert
 
     except Exception as e:
-        logger.error(f"Failed to update audit alert: {str(e)}")
+        logger.exception(f"Failed to update audit alert: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -935,7 +933,7 @@ async def delete_audit_alert(
         db.commit()
 
     except Exception as e:
-        logger.error(f"Failed to delete audit alert: {str(e)}")
+        logger.exception(f"Failed to delete audit alert: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -962,7 +960,7 @@ async def get_audit_archives(
         )
 
     except Exception as e:
-        logger.error(f"Failed to get audit archives: {str(e)}")
+        logger.exception(f"Failed to get audit archives: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -986,7 +984,7 @@ async def get_audit_archive(
         return archive
 
     except Exception as e:
-        logger.error(f"Failed to get audit archive: {str(e)}")
+        logger.exception(f"Failed to get audit archive: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -1019,7 +1017,7 @@ async def update_audit_archive(
         return archive
 
     except Exception as e:
-        logger.error(f"Failed to update audit archive: {str(e)}")
+        logger.exception(f"Failed to update audit archive: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -1046,7 +1044,7 @@ async def cleanup_expired_logs(
     except AuditError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to cleanup expired logs: {str(e)}")
+        logger.exception(f"Failed to cleanup expired logs: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -1079,5 +1077,5 @@ async def audit_health_check(
         }
 
     except Exception as e:
-        logger.error(f"Failed to perform health check: {str(e)}")
+        logger.exception(f"Failed to perform health check: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")

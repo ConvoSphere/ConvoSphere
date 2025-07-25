@@ -175,7 +175,7 @@ class LDAPProvider(SSOProvider):
             return user, additional_data
 
         except Exception as e:
-            logger.error(f"LDAP authentication failed: {str(e)}")
+            logger.exception(f"LDAP authentication failed: {str(e)}")
             raise AuthenticationError(f"LDAP authentication failed: {str(e)}")
 
     async def get_user_info(self, user_id: str, db: Session) -> dict[str, Any]:
@@ -226,7 +226,7 @@ class LDAPProvider(SSOProvider):
             }
 
         except Exception as e:
-            logger.error(f"Failed to get LDAP user info: {str(e)}")
+            logger.exception(f"Failed to get LDAP user info: {str(e)}")
             return {"error": str(e)}
 
     async def sync_user_groups(self, user: User, db: Session) -> list[str]:
@@ -290,7 +290,7 @@ class LDAPProvider(SSOProvider):
             return app_groups
 
         except Exception as e:
-            logger.error(f"Failed to sync LDAP groups: {str(e)}")
+            logger.exception(f"Failed to sync LDAP groups: {str(e)}")
             raise GroupSyncError(f"LDAP group sync failed: {str(e)}")
 
     async def _get_or_create_user(
@@ -362,7 +362,7 @@ class LDAPProvider(SSOProvider):
             return domain_group
 
         except Exception as e:
-            logger.error(f"Failed to create domain group from LDAP: {str(e)}")
+            logger.exception(f"Failed to create domain group from LDAP: {str(e)}")
             return None
 
 
@@ -432,7 +432,7 @@ class SAMLProvider(SSOProvider):
             self.saml_client = Saml2Client(self.saml_config)
 
         except Exception as e:
-            logger.error(f"Failed to initialize SAML client: {str(e)}")
+            logger.exception(f"Failed to initialize SAML client: {str(e)}")
             raise SSOConfigurationError(f"SAML configuration error: {str(e)}")
 
     async def authenticate(
@@ -442,7 +442,7 @@ class SAMLProvider(SSOProvider):
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user via SAML."""
         saml_response = credentials.get("saml_response")
-        relay_state = credentials.get("relay_state")
+        credentials.get("relay_state")
 
         if not saml_response:
             raise AuthenticationError("SAML response required")
@@ -476,7 +476,7 @@ class SAMLProvider(SSOProvider):
             )
 
             # Sync groups
-            synced_groups = await self.sync_user_groups(user, groups, db)
+            await self.sync_user_groups(user, groups, db)
 
             additional_data = {
                 "saml_session_index": authn_response.session_index,
@@ -489,7 +489,7 @@ class SAMLProvider(SSOProvider):
             return user, additional_data
 
         except Exception as e:
-            logger.error(f"SAML authentication failed: {str(e)}")
+            logger.exception(f"SAML authentication failed: {str(e)}")
             raise AuthenticationError(f"SAML authentication failed: {str(e)}")
 
     async def get_user_info(self, user_id: str, db: Session) -> dict[str, Any]:
@@ -533,7 +533,7 @@ class SAMLProvider(SSOProvider):
             return app_groups
 
         except Exception as e:
-            logger.error(f"Failed to sync SAML groups: {str(e)}")
+            logger.exception(f"Failed to sync SAML groups: {str(e)}")
             raise GroupSyncError(f"SAML group sync failed: {str(e)}")
 
     async def _get_or_create_user(
@@ -606,7 +606,7 @@ class SAMLProvider(SSOProvider):
             return domain_group
 
         except Exception as e:
-            logger.error(f"Failed to create domain group from SAML: {str(e)}")
+            logger.exception(f"Failed to create domain group from SAML: {str(e)}")
             return None
 
 
@@ -698,7 +698,7 @@ class OAuthProvider(SSOProvider):
             )
 
             # Sync groups
-            synced_groups = await self.sync_user_groups(user, groups, db)
+            await self.sync_user_groups(user, groups, db)
 
             additional_data = {
                 "oauth_access_token": access_token,
@@ -711,7 +711,7 @@ class OAuthProvider(SSOProvider):
             return user, additional_data
 
         except Exception as e:
-            logger.error(f"OAuth authentication failed: {str(e)}")
+            logger.exception(f"OAuth authentication failed: {str(e)}")
             raise AuthenticationError(f"OAuth authentication failed: {str(e)}")
 
     async def get_user_info(self, user_id: str, db: Session) -> dict[str, Any]:
@@ -732,7 +732,7 @@ class OAuthProvider(SSOProvider):
                 "last_sync": user.last_login.isoformat() if user.last_login else None,
             }
         except Exception as e:
-            logger.error(f"Failed to get OAuth user info: {str(e)}")
+            logger.exception(f"Failed to get OAuth user info: {str(e)}")
             return {"error": str(e)}
 
     async def sync_user_groups(
@@ -760,7 +760,7 @@ class OAuthProvider(SSOProvider):
             return app_groups
 
         except Exception as e:
-            logger.error(f"Failed to sync OAuth groups: {str(e)}")
+            logger.exception(f"Failed to sync OAuth groups: {str(e)}")
             raise GroupSyncError(f"OAuth group sync failed: {str(e)}")
 
     async def _exchange_code_for_token(
@@ -860,7 +860,7 @@ class OAuthProvider(SSOProvider):
             return domain_group
 
         except Exception as e:
-            logger.error(f"Failed to create domain group from OAuth: {str(e)}")
+            logger.exception(f"Failed to create domain group from OAuth: {str(e)}")
             return None
 
 
@@ -892,7 +892,7 @@ class SSOManager:
                     logger.warning(f"Unknown SSO provider type: {provider_type}")
 
             except Exception as e:
-                logger.error(
+                logger.exception(
                     f"Failed to initialize SSO provider {provider_name}: {str(e)}",
                 )
 

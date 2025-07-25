@@ -868,3 +868,7 @@ class KnowledgeService:
         except Exception as e:
             logger.exception(f"Error generating embedding: {e}")
             return None
+
+
+# Global knowledge service instance
+knowledge_service = KnowledgeService()

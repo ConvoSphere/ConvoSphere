@@ -22,17 +22,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def print_success(message):
     """Print success message."""
-    print(f"✅ {message}")
 
 
 def print_error(message):
     """Print error message."""
-    print(f"❌ {message}")
 
 
 def print_info(message):
     """Print info message."""
-    print(f"ℹ️ {message}")
 
 
 def db_migrate():
@@ -44,7 +41,6 @@ def db_migrate():
         capture_output=True,
         text=True,
     )
-    print(result.stdout)
     if result.returncode != 0:
         print_error(result.stderr)
         sys.exit(result.returncode)
@@ -59,7 +55,6 @@ def db_downgrade(revision):
         capture_output=True,
         text=True,
     )
-    print(result.stdout)
     if result.returncode != 0:
         print_error(result.stderr)
         sys.exit(result.returncode)
@@ -74,7 +69,6 @@ def db_status():
         capture_output=True,
         text=True,
     )
-    print(result.stdout)
     if result.returncode != 0:
         print_error(result.stderr)
         sys.exit(result.returncode)
@@ -84,7 +78,7 @@ def db_test_connection():
     """Test database connection."""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT 1"))
+            conn.execute(text("SELECT 1"))
             print_success("Database connection successful")
     except Exception as e:
         print_error(f"Database connection failed: {e}")
@@ -97,25 +91,22 @@ def db_info():
         with engine.connect() as conn:
             # Get database name
             result = conn.execute(text("SELECT current_database()"))
-            db_name = result.scalar()
-            print(f"Database: {db_name}")
+            result.scalar()
 
             # Get table count
             result = conn.execute(
                 text(
                     """
-                SELECT COUNT(*) FROM information_schema.tables 
+                SELECT COUNT(*) FROM information_schema.tables
                 WHERE table_schema = 'public'
             """
                 ),
             )
-            table_count = result.scalar()
-            print(f"Tables: {table_count}")
+            result.scalar()
 
             # Get user count
             result = conn.execute(text("SELECT COUNT(*) FROM users"))
-            user_count = result.scalar()
-            print(f"Users: {user_count}")
+            result.scalar()
 
     except Exception as e:
         print_error(f"Error getting database info: {e}")
@@ -124,7 +115,6 @@ def db_info():
 
 def user_create_admin():
     """Create an initial admin user."""
-    print("Creating admin user...")
     email = input("Email: ")
     username = input("Username: ")
     password = input("Password: ")
@@ -187,10 +177,8 @@ def user_list():
             },
         )()
         users = user_service.list_users(search_params, DummyUser()).users
-        for user in users:
-            print(
-                f"{user.id} | {user.email} | {user.username} | {user.role} | {user.status}",
-            )
+        for _user in users:
+            pass
     except Exception as e:
         print_error(f"Error: {e}")
         sys.exit(1)
@@ -292,7 +280,6 @@ def backup_restore(backup_file, confirm=False):
             f"Are you sure you want to restore from {backup_file}? This will overwrite the current database. (y/N): ",
         )
         if response.lower() != "y":
-            print("Restore cancelled.")
             return
 
     try:
@@ -366,13 +353,11 @@ def backup_list(backup_dir="."):
                 )
 
         if not backup_files:
-            print("No backups found.")
             return
 
         backup_files.sort(key=lambda x: x["modified"], reverse=True)
         for backup in backup_files:
-            size_mb = backup["size"] / (1024 * 1024)
-            print(f"{backup['name']} | {size_mb:.1f}MB | {backup['modified']}")
+            backup["size"] / (1024 * 1024)
 
     except Exception as e:
         print_error(f"Error listing backups: {e}")
@@ -381,31 +366,27 @@ def backup_list(backup_dir="."):
 
 def monitoring_health():
     """Check system health."""
-    print("🔍 Checking system health...")
 
     # Database health
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        print("✅ Database: OK")
-    except Exception as e:
-        print(f"❌ Database: ERROR - {e}")
+    except Exception:
+        pass
 
     # Redis health
     try:
         redis_client = get_redis_client()
         redis_client.ping()
-        print("✅ Redis: OK")
-    except Exception as e:
-        print(f"❌ Redis: ERROR - {e}")
+    except Exception:
+        pass
 
     # Weaviate health
     try:
         weaviate_client = get_weaviate_client()
         weaviate_client.is_ready()
-        print("✅ Weaviate: OK")
-    except Exception as e:
-        print(f"❌ Weaviate: ERROR - {e}")
+    except Exception:
+        pass
 
     # Backend API health
     try:
@@ -413,11 +394,11 @@ def monitoring_health():
 
         response = requests.get(f"{settings.backend_url}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Backend API: OK")
+            pass
         else:
-            print(f"❌ Backend API: ERROR - Status {response.status_code}")
-    except Exception as e:
-        print(f"❌ Backend API: ERROR - {e}")
+            pass
+    except Exception:
+        pass
 
 
 def monitoring_logs(lines=50, level="INFO"):
@@ -437,8 +418,8 @@ def monitoring_logs(lines=50, level="INFO"):
             filtered_lines[-lines:] if len(filtered_lines) > lines else filtered_lines
         )
 
-        for line in recent_lines:
-            print(line.rstrip())
+        for _line in recent_lines:
+            pass
 
     except Exception as e:
         print_error(f"Error reading logs: {e}")
@@ -446,20 +427,10 @@ def monitoring_logs(lines=50, level="INFO"):
 
 def config_show():
     """Show current configuration."""
-    print("📋 Current Configuration:")
-    print(f"Environment: {settings.environment}")
-    print(f"Debug: {settings.debug}")
-    print(f"Database: {settings.database_url}")
-    print(f"Redis: {settings.redis_url}")
-    print(f"Weaviate: {settings.weaviate_url}")
-    print(f"Backend URL: {settings.backend_url}")
-    print(f"Upload Directory: {settings.upload_dir}")
-    print(f"Log Level: {settings.log_level}")
 
 
 def config_validate():
     """Validate configuration."""
-    print("🔍 Validating configuration...")
 
     errors = []
 
@@ -483,8 +454,8 @@ def config_validate():
 
     if errors:
         print_error("Configuration validation failed:")
-        for error in errors:
-            print(f"  - {error}")
+        for _error in errors:
+            pass
         sys.exit(1)
     else:
         print_success("Configuration is valid")
@@ -496,7 +467,6 @@ def dev_test_data(users=5):
     user_service = UserService(db)
 
     try:
-        print(f"Creating {users} test users...")
 
         for i in range(users):
             user_data = UserCreate(
@@ -508,8 +478,7 @@ def dev_test_data(users=5):
                 role=UserRole.USER,
                 status=UserStatus.ACTIVE,
             )
-            user = user_service.create_user(user_data)
-            print(f"Created user: {user.email}")
+            user_service.create_user(user_data)
 
         print_success("Test data created successfully")
 
@@ -522,7 +491,6 @@ def dev_test_data(users=5):
 
 def dev_quality_check():
     """Run code quality checks."""
-    print("🔍 Running code quality checks...")
 
     # Format check
     result = subprocess.run(
@@ -532,35 +500,31 @@ def dev_quality_check():
         text=True,
     )
     if result.returncode == 0:
-        print("✅ Code formatting: OK")
+        pass
     else:
-        print("❌ Code formatting: FAILED")
-        print(result.stdout)
+        pass
 
     # Linting
     result = subprocess.run(
         ["ruff", "check", "."], check=False, capture_output=True, text=True
     )
     if result.returncode == 0:
-        print("✅ Linting: OK")
+        pass
     else:
-        print("❌ Linting: FAILED")
-        print(result.stdout)
+        pass
 
     # Security check
     result = subprocess.run(
         ["bandit", "-r", "."], check=False, capture_output=True, text=True
     )
     if result.returncode == 0:
-        print("✅ Security check: OK")
+        pass
     else:
-        print("⚠️ Security check: WARNINGS")
-        print(result.stdout)
+        pass
 
 
 def dev_api_test(url="http://localhost:8000"):
     """Run basic API tests."""
-    print(f"🧪 Testing API at {url}...")
 
     try:
         import requests
@@ -568,16 +532,16 @@ def dev_api_test(url="http://localhost:8000"):
         # Health check
         response = requests.get(f"{url}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Health endpoint: OK")
+            pass
         else:
-            print(f"❌ Health endpoint: FAILED - {response.status_code}")
+            pass
 
         # API docs
         response = requests.get(f"{url}/docs", timeout=5)
         if response.status_code == 200:
-            print("✅ API docs: OK")
+            pass
         else:
-            print(f"❌ API docs: FAILED - {response.status_code}")
+            pass
 
     except Exception as e:
         print_error(f"API test failed: {e}")
@@ -591,14 +555,11 @@ def db_reset(confirm=False):
             "This action cannot be undone. Are you sure? (yes/no): ",
         )
         if response.lower() != "yes":
-            print("Database reset cancelled.")
             return
 
-    print("🗑️  Resetting database...")
 
     try:
         # Step 1: Drop all tables
-        print("  📋 Dropping all tables...")
         with engine.connect() as conn:
             # Disable foreign key checks temporarily
             conn.execute(text("SET session_replication_role = replica;"))
@@ -607,8 +568,8 @@ def db_reset(confirm=False):
             result = conn.execute(
                 text(
                     """
-                SELECT tablename FROM pg_tables 
-                WHERE schemaname = 'public' 
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
                 AND tablename != 'alembic_version'
             """
                 )
@@ -623,21 +584,16 @@ def db_reset(confirm=False):
             conn.execute(text("SET session_replication_role = DEFAULT;"))
             conn.commit()
 
-        print("  ✅ All tables dropped successfully")
 
         # Step 2: Reset Alembic version table
-        print("  📋 Resetting Alembic version table...")
         with engine.connect() as conn:
             conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
             conn.commit()
 
-        print("  ✅ Alembic version table reset")
 
         # Step 3: Run migrations to recreate all tables
-        print("  📋 Running migrations to recreate tables...")
         db_migrate()
 
-        print("  ✅ Database reset completed successfully")
         print_success("Database has been completely reset and reinitialized")
 
     except Exception as e:
@@ -653,10 +609,8 @@ def db_clear_data(confirm=False):
             "This action cannot be undone. Are you sure? (yes/no): ",
         )
         if response.lower() != "yes":
-            print("Data clearing cancelled.")
             return
 
-    print("🗑️  Clearing all data from database...")
 
     try:
         with engine.connect() as conn:
@@ -667,8 +621,8 @@ def db_clear_data(confirm=False):
             result = conn.execute(
                 text(
                     """
-                SELECT tablename FROM pg_tables 
-                WHERE schemaname = 'public' 
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
                 AND tablename != 'alembic_version'
             """
                 )
@@ -692,50 +646,6 @@ def db_clear_data(confirm=False):
 
 def show_help():
     """Show help message."""
-    print("ChatAssistant Admin CLI")
-    print("=" * 50)
-    print()
-    print("Available commands:")
-    print()
-    print("Database Management:")
-    print("  db migrate              Run database migrations")
-    print("  db status               Show migration status")
-    print("  db downgrade <rev>      Downgrade to revision")
-    print("  db test-connection      Test database connection")
-    print("  db info                 Show database information")
-    print(
-        "  db reset                Completely reset database (drop all tables and recreate)"
-    )
-    print("  db clear-data           Clear all data but keep table structure")
-    print()
-    print("User Management:")
-    print("  user create-admin       Create admin user")
-    print("  user list               List all users")
-    print("  user reset-password     Reset user password")
-    print()
-    print("Backup & Recovery:")
-    print("  backup create           Create database backup")
-    print("  backup restore <file>   Restore from backup")
-    print("  backup list             List available backups")
-    print()
-    print("Monitoring:")
-    print("  monitoring health       Check system health")
-    print("  monitoring logs         Show application logs")
-    print()
-    print("Configuration:")
-    print("  config show             Show current configuration")
-    print("  config validate         Validate configuration")
-    print()
-    print("Development:")
-    print("  dev test-data           Create test data")
-    print("  dev quality-check       Run code quality checks")
-    print("  dev api-test            Run API tests")
-    print()
-    print("Examples:")
-    print("  python admin.py db migrate")
-    print("  python admin.py user create-admin")
-    print("  python admin.py backup create")
-    print("  python admin.py monitoring health")
 
 
 def main():

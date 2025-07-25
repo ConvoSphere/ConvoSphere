@@ -11,7 +11,6 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from app.core.security import create_access_token
-from app.main import app
 from app.models.knowledge import (
     Document,
     DocumentProcessingJob,
@@ -21,6 +20,7 @@ from app.models.knowledge import (
 )
 from app.models.user import User
 from fastapi.testclient import TestClient
+from main import app
 from sqlalchemy.orm import Session
 
 client = TestClient(app)

@@ -7,11 +7,11 @@ capabilities, structured output, and integration with the HybridModeManager.
 
 import asyncio
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.core.config import get_settings
-from app.core.exceptions import ConversationError
 from app.schemas.hybrid_mode import (
     ConversationMode,
     HybridModeConfig,
@@ -34,15 +34,15 @@ class ProcessingRequest:
     user_id: str
     conversation_id: str
     message: str
-    assistant_id: Optional[str] = None
+    assistant_id: str | None = None
     use_knowledge_base: bool = True
     use_tools: bool = True
     max_context_chunks: int = 5
     temperature: float = 0.7
-    max_tokens: Optional[int] = None
-    model: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-    force_mode: Optional[ConversationMode] = None
+    max_tokens: int | None = None
+    model: str | None = None
+    metadata: dict[str, Any] | None = None
+    force_mode: ConversationMode | None = None
 
 
 @dataclass
@@ -52,13 +52,13 @@ class ProcessingResult:
     request_id: str
     success: bool
     content: str
-    tool_calls: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    tool_calls: list[dict[str, Any]]
+    metadata: dict[str, Any]
     model_used: str
     tokens_used: int
     processing_time: float
-    error_message: Optional[str] = None
-    structured_response: Optional[StructuredResponse] = None
+    error_message: str | None = None
+    structured_response: StructuredResponse | None = None
 
 
 @dataclass
@@ -66,8 +66,8 @@ class AIResponse:
     """AI response with structured output."""
 
     content: str
-    tool_calls: Optional[List[Dict[str, Any]]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    tool_calls: list[dict[str, Any]] | None = None
+    metadata: dict[str, Any] | None = None
     message_type: str = "text"
 
 
@@ -76,8 +76,8 @@ class AssistantEngine:
 
     def __init__(self):
         """Initialize the assistant engine."""
-        self.processing_requests: Dict[str, ProcessingRequest] = {}
-        self.processing_results: Dict[str, ProcessingResult] = {}
+        self.processing_requests: dict[str, ProcessingRequest] = {}
+        self.processing_results: dict[str, ProcessingResult] = {}
         self.max_concurrent_requests = 5
         self.default_model = get_settings().default_ai_model
         self.default_max_tokens = 2048
@@ -90,15 +90,15 @@ class AssistantEngine:
         user_id: str,
         conversation_id: str,
         message: str,
-        assistant_id: Optional[str] = None,
+        assistant_id: str | None = None,
         use_knowledge_base: bool = True,
         use_tools: bool = True,
         max_context_chunks: int = 5,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-        model: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        force_mode: Optional[ConversationMode] = None,
+        max_tokens: int | None = None,
+        model: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        force_mode: ConversationMode | None = None,
     ) -> ProcessingResult:
         """
         Process a user message and generate a response with hybrid mode support.
@@ -273,7 +273,7 @@ class AssistantEngine:
 
     async def _get_conversation_context(
         self, request: ProcessingRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get conversation context for mode decision."""
         try:
             # Get recent messages
@@ -287,7 +287,7 @@ class AssistantEngine:
                 request.conversation_id
             )
 
-            context = {
+            return {
                 "messages": [
                     {
                         "role": msg.role.value,
@@ -301,7 +301,6 @@ class AssistantEngine:
                 "assistant_id": request.assistant_id,
             }
 
-            return context
 
         except Exception as e:
             logger.error(f"Error getting conversation context: {e}")
@@ -353,7 +352,7 @@ class AssistantEngine:
             logger.error(f"Error preparing knowledge context: {e}")
             return ""
 
-    async def _prepare_tools(self, user_message: str) -> List[Dict[str, Any]]:
+    async def _prepare_tools(self, user_message: str) -> list[dict[str, Any]]:
         """Prepare tools for AI completion."""
         try:
             available_tools = tool_executor.get_available_tools()
@@ -374,9 +373,9 @@ class AssistantEngine:
     async def _generate_structured_response(
         self,
         request: ProcessingRequest,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         knowledge_context: str,
-        tools: List[Dict[str, Any]],
+        tools: list[dict[str, Any]],
         mode_decision,
     ) -> AIResponse:
         """Generate AI response with structured output."""
@@ -426,10 +425,10 @@ class AssistantEngine:
     def _prepare_messages_for_ai(
         self,
         request: ProcessingRequest,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         knowledge_context: str,
         mode_decision,
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """Prepare messages for AI completion."""
         messages = []
 
@@ -486,8 +485,8 @@ Confidence: {mode_decision.confidence:.2f}
         return base_message
 
     async def _execute_tools(
-        self, tool_calls: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, tool_calls: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Execute tool calls and return results."""
         results = []
 
@@ -556,22 +555,21 @@ Confidence: {mode_decision.confidence:.2f}
         except Exception as e:
             logger.error(f"Error saving response to conversation: {e}")
 
-    def get_processing_status(self, request_id: str) -> Optional[Dict[str, Any]]:
+    def get_processing_status(self, request_id: str) -> dict[str, Any] | None:
         """Get processing status for a request."""
         if request_id in self.processing_requests:
             return {
                 "status": "processing",
                 "request": self.processing_requests[request_id],
             }
-        elif request_id in self.processing_results:
+        if request_id in self.processing_results:
             return {
                 "status": "completed",
                 "result": self.processing_results[request_id],
             }
-        else:
-            return None
+        return None
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get assistant engine statistics."""
         return {
             "active_requests": len(self.processing_requests),
