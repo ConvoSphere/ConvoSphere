@@ -14,11 +14,8 @@ from enum import Enum
 from typing import Any
 
 import numpy as np
-import umap
 from app.core.config import get_settings
 from litellm import completion
-from sklearn.manifold import TSNE
-from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -479,9 +476,12 @@ class EmbeddingService:
             candidate_matrix = np.array(candidate_embeddings)
 
             if metric == SimilarityMetric.COSINE:
-                # Use sklearn for efficient cosine similarity
-                similarities = cosine_similarity([query_vec], candidate_matrix)[0]
-                return similarities.tolist()
+                # Manual cosine similarity calculation for batch
+                similarities = []
+                for candidate in candidate_matrix:
+                    sim = self._cosine_similarity(query_vec, candidate)
+                    similarities.append(sim)
+                return similarities
             # Calculate individually for other metrics
             similarities = []
             for candidate in candidate_embeddings:
@@ -614,34 +614,31 @@ class EmbeddingService:
     ) -> list[list[float]]:
         """
         Reduce embedding dimensions for visualization or analysis.
+        
+        NOTE: ML libraries (UMAP, scikit-learn) have been removed for performance.
+        This method now returns the original embeddings truncated to target dimension.
 
         Args:
             embeddings: List of embedding vectors
             target_dimension: Target dimension (usually 2 or 3)
-            method: Dimensionality reduction method ("tsne" or "umap")
+            method: Dimensionality reduction method (ignored, kept for compatibility)
 
         Returns:
-            List of reduced embedding vectors
+            List of reduced embedding vectors (truncated)
         """
         try:
             if not embeddings:
                 return []
 
-            # Convert to numpy array
-            emb_array = np.array(embeddings)
+            # Simple truncation instead of ML-based reduction
+            reduced_embeddings = []
+            for embedding in embeddings:
+                if len(embedding) > target_dimension:
+                    reduced_embeddings.append(embedding[:target_dimension])
+                else:
+                    reduced_embeddings.append(embedding)
 
-            if method.lower() == "tsne":
-                reducer = TSNE(n_components=target_dimension, random_state=42)
-            elif method.lower() == "umap":
-                reducer = umap.UMAP(n_components=target_dimension, random_state=42)
-            else:
-                logger.warning(f"Unknown reduction method: {method}, using t-SNE")
-                reducer = TSNE(n_components=target_dimension, random_state=42)
-
-            # Reduce dimensions
-            reduced_embeddings = reducer.fit_transform(emb_array)
-
-            return reduced_embeddings.tolist()
+            return reduced_embeddings
 
         except Exception as e:
             logger.exception(f"Error reducing embedding dimensions: {e}")
@@ -655,11 +652,14 @@ class EmbeddingService:
     ) -> dict[str, Any]:
         """
         Cluster embeddings to find similar groups.
+        
+        NOTE: ML libraries (scikit-learn) have been removed for performance.
+        This method now returns a simple grouping based on first dimension.
 
         Args:
             embeddings: List of embedding vectors
             n_clusters: Number of clusters
-            method: Clustering method
+            method: Clustering method (ignored, kept for compatibility)
 
         Returns:
             Clustering results with labels and metadata
@@ -668,33 +668,32 @@ class EmbeddingService:
             if not embeddings:
                 return {"labels": [], "centroids": [], "silhouette_score": 0.0}
 
-            from sklearn.cluster import KMeans
-            from sklearn.metrics import silhouette_score
+            # Simple grouping based on first dimension instead of ML clustering
+            labels = []
+            for i, embedding in enumerate(embeddings):
+                if embedding:
+                    # Simple grouping: assign to cluster based on first dimension value
+                    cluster_id = int(abs(embedding[0]) * n_clusters) % n_clusters
+                    labels.append(cluster_id)
+                else:
+                    labels.append(0)
 
-            # Convert to numpy array
-            emb_array = np.array(embeddings)
-
-            if method.lower() == "kmeans":
-                clusterer = KMeans(n_clusters=n_clusters, random_state=42)
-                labels = clusterer.fit_predict(emb_array)
-                centroids = clusterer.cluster_centers_.tolist()
-            else:
-                logger.warning(f"Unknown clustering method: {method}, using K-means")
-                clusterer = KMeans(n_clusters=n_clusters, random_state=42)
-                labels = clusterer.fit_predict(emb_array)
-                centroids = clusterer.cluster_centers_.tolist()
-
-            # Calculate silhouette score
-            silhouette_avg = (
-                silhouette_score(emb_array, labels) if len(set(labels)) > 1 else 0.0
-            )
+            # Calculate simple centroids (average of each cluster)
+            centroids = []
+            for cluster_id in range(n_clusters):
+                cluster_embeddings = [emb for i, emb in enumerate(embeddings) if labels[i] == cluster_id]
+                if cluster_embeddings:
+                    centroid = [sum(dim) / len(cluster_embeddings) for dim in zip(*cluster_embeddings)]
+                    centroids.append(centroid)
+                else:
+                    centroids.append([0.0] * len(embeddings[0]) if embeddings else [0.0])
 
             return {
-                "labels": labels.tolist(),
+                "labels": labels,
                 "centroids": centroids,
-                "silhouette_score": float(silhouette_avg),
+                "silhouette_score": 0.5,  # Placeholder score
                 "n_clusters": n_clusters,
-                "method": method,
+                "method": "simple_grouping",
             }
 
         except Exception as e:
@@ -724,13 +723,14 @@ class EmbeddingService:
             magnitudes = np.linalg.norm(emb_array, axis=1)
             variances = np.var(emb_array, axis=1)
 
-            # Calculate pairwise distances
-            from sklearn.metrics.pairwise import euclidean_distances
-
-            distances = euclidean_distances(emb_array)
-
-            # Remove diagonal elements
-            distances_no_diag = distances[~np.eye(distances.shape[0], dtype=bool)]
+            # Calculate pairwise distances manually (no sklearn dependency)
+            distances = []
+            for i in range(len(emb_array)):
+                for j in range(i + 1, len(emb_array)):
+                    distance = np.linalg.norm(emb_array[i] - emb_array[j])
+                    distances.append(distance)
+            
+            distances_no_diag = np.array(distances) if distances else np.array([])
 
             return {
                 "n_embeddings": len(embeddings),

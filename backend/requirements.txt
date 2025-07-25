@@ -26,6 +26,7 @@ python-multipart
 authlib[fastapi]
 fastapi-sso
 pysaml2
+itsdangerous
 
 # HTTP Client
 httpx
@@ -59,9 +60,9 @@ requests
 # Validation
 email-validator
 
-# Machine Learning (for embedding analysis)
-umap-learn
-scikit-learn
+# Machine Learning (for embedding analysis) - OPTIONAL
+# umap-learn
+# scikit-learn
 numpy
 
 # Observability & Monitoring

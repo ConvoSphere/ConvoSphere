@@ -8,7 +8,7 @@ import {
   UserOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
-  TrendingUpOutlined,
+  RiseOutlined,
   RobotOutlined,
   ApiOutlined
 } from '@ant-design/icons';
@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
                 title={
                   <Space>
                     <Text strong>{item.title}</Text>
-                    <Tag size="small" color="blue">{item.user}</Tag>
+                    <Tag color="blue">{item.user}</Tag>
                   </Space>
                 }
                 description={
@@ -338,7 +338,7 @@ const Dashboard: React.FC = () => {
                 title={t('dashboard.admin.system_load')}
                 value={23}
                 suffix="%"
-                prefix={<TrendingUpOutlined />}
+                prefix={<RiseOutlined />}
               />
             </Col>
             <Col span={8}>

@@ -284,7 +284,7 @@ def create_application() -> FastAPI:
 
     # Initialize OAuth
     from app.services.oauth_service import oauth_service
-    oauth_service.oauth.init_app(app)
+    # oauth_service.oauth.init_app(app)  # Commented out - Starlette OAuth doesn't need init_app
 
     # Add routes
     app.include_router(api_router, prefix="/api/v1")

@@ -145,7 +145,6 @@ export function formatLanguage(language: string): string {
     'my': 'Burmese',
     'km': 'Khmer',
     'lo': 'Lao',
-    'ka': 'Georgian',
     'am': 'Amharic',
     'sw': 'Swahili',
     'zu': 'Zulu',
@@ -196,8 +195,7 @@ export function formatLanguage(language: string): string {
     'aec': 'Saidi Arabic',
     'avl': 'Eastern Egyptian Bedawi Arabic',
     'qaf': 'Qaf',
-    'arb': 'Standard Arabic',
-    'ar': 'Arabic'
+    'arb': 'Standard Arabic'
   };
   
   return languageMap[language.toLowerCase()] || language;

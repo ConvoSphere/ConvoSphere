@@ -56,9 +56,9 @@ requests>=2.32.2
 email-validator>=2.1.0
 
 # Machine Learning (for embedding analysis)
-umap-learn>=0.5.9
-scikit-learn>=1.7.1
-numpy>=1.24.0
+#umap-learn>=0.5.9
+#scikit-learn>=1.7.1
+#numpy>=1.24.0
 
 # Observability & Monitoring (commented out - disabled in code)
 # opentelemetry-api>=1.24.0

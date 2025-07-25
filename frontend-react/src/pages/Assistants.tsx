@@ -21,7 +21,6 @@ import {
   Popconfirm,
   Badge,
   Tabs,
-  TextArea,
   Upload,
   Progress
 } from 'antd';
@@ -42,7 +41,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '../store/themeStore';
-import { getAssistants, addAssistant, deleteAssistant, updateAssistant } from '../services/assistants';
+import { getAssistants, addAssistant, deleteAssistant } from '../services/assistants';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -404,7 +403,7 @@ const Assistants: React.FC = () => {
                   <div style={{ marginTop: 12 }}>
                     <Space wrap>
                       {assistant.tags.map(tag => (
-                        <Tag key={tag} size="small">{tag}</Tag>
+                        <Tag key={tag}>{tag}</Tag>
                       ))}
                     </Space>
                   </div>
@@ -454,14 +453,14 @@ const Assistants: React.FC = () => {
           </Row>
 
           <Form.Item name="description" label={t('assistants.form.description')}>
-            <TextArea 
+            <Input.TextArea 
               rows={3} 
               placeholder={t('assistants.form.description_placeholder')}
             />
           </Form.Item>
 
           <Form.Item name="personality" label={t('assistants.form.personality')}>
-            <TextArea 
+            <Input.TextArea 
               rows={4} 
               placeholder={t('assistants.form.personality_placeholder')}
             />

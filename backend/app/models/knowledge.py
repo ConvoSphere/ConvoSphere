@@ -86,7 +86,7 @@ class Tag(Base):
 
     # Relationships
     documents = relationship(
-        "Document", secondary=document_tag_association, back_populates="tags",
+        "Document", secondary=document_tag_association, back_populates="tag_objects",
     )
 
     def __repr__(self):
@@ -149,6 +149,9 @@ class Document(Base):
         "DocumentChunk",
         back_populates="document",
         cascade="all, delete-orphan",
+    )
+    tag_objects = relationship(
+        "Tag", secondary=document_tag_association, back_populates="documents",
     )
 
     # Indexes for better query performance
