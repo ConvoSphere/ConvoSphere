@@ -151,9 +151,8 @@ async def get_ldap_user_info(
             )
 
         sso_manager = get_sso_manager()
-        user_info = await sso_manager.get_user_info("ldap", str(current_user.id), db)
+        return await sso_manager.get_user_info("ldap", str(current_user.id), db)
 
-        return user_info
 
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -299,9 +298,8 @@ async def saml_metadata():
             )
 
         # Generate SP metadata
-        metadata = entity_descriptor(provider.saml_config)
+        return entity_descriptor(provider.saml_config)
 
-        return metadata
 
     except SSOConfigurationError as e:
         raise HTTPException(
@@ -418,13 +416,12 @@ async def get_oauth_user_info(
             )
 
         sso_manager = get_sso_manager()
-        user_info = await sso_manager.get_user_info(
+        return await sso_manager.get_user_info(
             provider_name,
             str(current_user.id),
             db,
         )
 
-        return user_info
 
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -544,7 +541,7 @@ async def get_sso_users(
         return [UserResponse.from_orm(user) for user in users]
 
     except Exception as e:
-        logger.error(f"Failed to get SSO users: {str(e)}")
+        logger.exception(f"Failed to get SSO users: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get SSO users",
@@ -664,7 +661,7 @@ async def reload_sso_config(
         }
 
     except Exception as e:
-        logger.error(f"Failed to reload SSO config: {str(e)}")
+        logger.exception(f"Failed to reload SSO config: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reload SSO configuration",

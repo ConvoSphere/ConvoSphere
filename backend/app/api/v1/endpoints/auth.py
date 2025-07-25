@@ -776,12 +776,11 @@ async def get_user_provisioning_status(
                 detail="Access denied",
             )
 
-        status_info = await advanced_user_provisioning.get_user_provisioning_status(
+        return await advanced_user_provisioning.get_user_provisioning_status(
             user_id,
             db,
         )
 
-        return status_info
 
     except HTTPException:
         raise

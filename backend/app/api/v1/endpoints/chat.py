@@ -5,11 +5,11 @@ This module provides chat endpoints with integration to the hybrid mode
 management system for structured responses and mode switching.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
-from app.schemas.hybrid_mode import ConversationMode, StructuredResponse
+from app.schemas.hybrid_mode import ConversationMode
 from app.services.assistant_engine import assistant_engine
 from app.services.conversation_service import conversation_service
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -26,7 +26,7 @@ class ChatMessageRequest(BaseModel):
     message: str = Field(
         ..., min_length=1, max_length=10000, description="User message"
     )
-    assistant_id: Optional[str] = Field(None, description="Assistant ID")
+    assistant_id: str | None = Field(None, description="Assistant ID")
     use_knowledge_base: bool = Field(
         default=True, description="Use knowledge base context"
     )
@@ -37,14 +37,14 @@ class ChatMessageRequest(BaseModel):
     temperature: float = Field(
         default=0.7, ge=0.0, le=2.0, description="AI temperature"
     )
-    max_tokens: Optional[int] = Field(
+    max_tokens: int | None = Field(
         None, ge=1, le=100000, description="Maximum tokens"
     )
-    model: Optional[str] = Field(None, description="AI model to use")
-    force_mode: Optional[ConversationMode] = Field(
+    model: str | None = Field(None, description="AI model to use")
+    force_mode: ConversationMode | None = Field(
         None, description="Force specific conversation mode"
     )
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+    metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
 
 
 class ChatMessageResponse(BaseModel):
@@ -57,22 +57,32 @@ class ChatMessageResponse(BaseModel):
     model_used: str = Field(..., description="Model used for response")
     tokens_used: int = Field(..., description="Tokens used")
     processing_time: float = Field(..., description="Processing time in seconds")
-    tool_calls: List[Dict[str, Any]] = Field(
+    tool_calls: list[dict[str, Any]] = Field(
         default_factory=list, description="Tool calls made"
     )
-    mode_decision: Optional[Dict[str, Any]] = Field(
+    mode_decision: dict[str, Any] | None = Field(
         None, description="Mode decision information"
     )
-    reasoning_process: Optional[List[Dict[str, Any]]] = Field(
+    reasoning_process: list[dict[str, Any]] | None = Field(
         None, description="Reasoning process"
     )
-    error_message: Optional[str] = Field(None, description="Error message if failed")
+    error_message: str | None = Field(None, description="Error message if failed")
+
+
+class ConversationCreateRequest(BaseModel):
+    """Request model for creating conversations."""
+
+    title: str = Field(
+        ..., min_length=1, max_length=500, description="Conversation title"
+    )
+    assistant_id: str | None = Field(None, description="Assistant ID")
+    description: str | None = Field(None, description="Conversation description")
 
 
 class ConversationListResponse(BaseModel):
     """Response model for conversation list."""
 
-    conversations: List[Dict[str, Any]] = Field(
+    conversations: list[dict[str, Any]] = Field(
         ..., description="List of conversations"
     )
     total: int = Field(..., description="Total number of conversations")
@@ -80,13 +90,9 @@ class ConversationListResponse(BaseModel):
     per_page: int = Field(..., description="Items per page")
 
 
-@router.post("/conversations", response_model=Dict[str, Any])
+@router.post("/conversations", response_model=dict[str, Any])
 async def create_conversation(
-    title: str = Field(
-        ..., min_length=1, max_length=500, description="Conversation title"
-    ),
-    assistant_id: Optional[str] = Field(None, description="Assistant ID"),
-    description: Optional[str] = Field(None, description="Conversation description"),
+    request: ConversationCreateRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -106,9 +112,9 @@ async def create_conversation(
     try:
         conversation = await conversation_service.create_conversation(
             user_id=current_user_id,
-            title=title,
-            assistant_id=assistant_id,
-            description=description,
+            title=request.title,
+            assistant_id=request.assistant_id,
+            description=request.description,
         )
 
         # Initialize hybrid mode for the new conversation

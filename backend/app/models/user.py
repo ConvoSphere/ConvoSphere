@@ -8,9 +8,8 @@ and authentication functionality with enterprise features support.
 import uuid
 from enum import Enum
 
-from sqlalchemy import JSON, Boolean, Column, DateTime
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, String, Table, Text
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import ForeignKey, String, Table, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -178,12 +177,13 @@ class User(Base):
         secondary=user_group_association,
         back_populates="users",
     )
-    # Temporarily commented out to fix registration
-    # domain_groups = relationship(
-    #     "DomainGroup",
-    #     secondary="domain_group_members",
-    #     back_populates="members",
-    # )
+    domain_groups = relationship(
+        "DomainGroup",
+        secondary="domain_group_members",
+        primaryjoin="User.id == domain_group_members.c.user_id",
+        secondaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
+        back_populates="members",
+    )
     # managed_domains = relationship(
     #     "DomainGroup",
     #     secondary="domain_group_managers",
@@ -193,6 +193,7 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user")
     created_tools = relationship("Tool", back_populates="creator")
     audit_logs = relationship("AuditLog", back_populates="user")
+    extended_audit_logs = relationship("ExtendedAuditLog", back_populates="user")
     documents = relationship("Document", back_populates="user")
     search_queries = relationship("SearchQuery", back_populates="user")
 

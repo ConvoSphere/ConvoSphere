@@ -6,8 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 import pytest
 from fastapi.testclient import TestClient
-
-from backend.main import app
+from main import app
 
 client = TestClient(app)
 

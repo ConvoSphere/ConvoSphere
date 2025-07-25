@@ -214,7 +214,7 @@ class SessionManager:
             return session_data
 
         except Exception as e:
-            logger.error(f"Failed to create session: {str(e)}")
+            logger.exception(f"Failed to create session: {str(e)}")
             raise SessionError(f"Failed to create session: {str(e)}")
 
     def validate_session(
@@ -252,7 +252,7 @@ class SessionManager:
             return session_data
 
         except Exception as e:
-            logger.error(f"Failed to validate session {session_id}: {str(e)}")
+            logger.exception(f"Failed to validate session {session_id}: {str(e)}")
             return None
 
     def get_user_sessions(self, user_id: str) -> list[SessionData]:
@@ -273,7 +273,7 @@ class SessionManager:
             return sessions
 
         except Exception as e:
-            logger.error(f"Failed to get user sessions: {str(e)}")
+            logger.exception(f"Failed to get user sessions: {str(e)}")
             return []
 
     def deactivate_session(self, session_id: str) -> bool:
@@ -281,7 +281,7 @@ class SessionManager:
         try:
             return self._deactivate_session(session_id)
         except Exception as e:
-            logger.error(f"Failed to deactivate session {session_id}: {str(e)}")
+            logger.exception(f"Failed to deactivate session {session_id}: {str(e)}")
             return False
 
     def deactivate_user_sessions(
@@ -303,7 +303,7 @@ class SessionManager:
             return deactivated_count
 
         except Exception as e:
-            logger.error(f"Failed to deactivate user sessions: {str(e)}")
+            logger.exception(f"Failed to deactivate user sessions: {str(e)}")
             return 0
 
     def refresh_session(self, session_id: str) -> SessionData | None:
@@ -326,7 +326,7 @@ class SessionManager:
             return session_data
 
         except Exception as e:
-            logger.error(f"Failed to refresh session {session_id}: {str(e)}")
+            logger.exception(f"Failed to refresh session {session_id}: {str(e)}")
             return None
 
     def cleanup_expired_sessions(self) -> int:
@@ -348,7 +348,7 @@ class SessionManager:
             return cleaned_count
 
         except Exception as e:
-            logger.error(f"Failed to cleanup expired sessions: {str(e)}")
+            logger.exception(f"Failed to cleanup expired sessions: {str(e)}")
             return 0
 
     def get_session_statistics(self) -> dict[str, Any]:
@@ -381,7 +381,7 @@ class SessionManager:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get session statistics: {str(e)}")
+            logger.exception(f"Failed to get session statistics: {str(e)}")
             return {}
 
     # Private methods
@@ -396,7 +396,7 @@ class SessionManager:
 
             return True
         except Exception as e:
-            logger.error(f"Failed to store session: {str(e)}")
+            logger.exception(f"Failed to store session: {str(e)}")
             return False
 
     def _get_session(self, session_id: str) -> SessionData | None:
@@ -411,7 +411,7 @@ class SessionManager:
             return SessionData.from_dict(json.loads(data))
 
         except Exception as e:
-            logger.error(f"Failed to get session {session_id}: {str(e)}")
+            logger.exception(f"Failed to get session {session_id}: {str(e)}")
             return None
 
     def _remove_session(self, session_id: str) -> bool:
@@ -426,7 +426,7 @@ class SessionManager:
             return result > 0
 
         except Exception as e:
-            logger.error(f"Failed to remove session {session_id}: {str(e)}")
+            logger.exception(f"Failed to remove session {session_id}: {str(e)}")
             return False
 
     def _deactivate_session(self, session_id: str) -> bool:
@@ -442,7 +442,7 @@ class SessionManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to deactivate session {session_id}: {str(e)}")
+            logger.exception(f"Failed to deactivate session {session_id}: {str(e)}")
             return False
 
     def _add_user_session(self, user_id: str, session_id: str) -> bool:
@@ -453,7 +453,7 @@ class SessionManager:
             self.redis_client.expire(key, self.session_timeout)
             return True
         except Exception as e:
-            logger.error(f"Failed to add user session: {str(e)}")
+            logger.exception(f"Failed to add user session: {str(e)}")
             return False
 
     def _remove_user_session(self, session_id: str) -> bool:
@@ -469,17 +469,16 @@ class SessionManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to remove user session: {str(e)}")
+            logger.exception(f"Failed to remove user session: {str(e)}")
             return False
 
     def _get_user_session_ids(self, user_id: str) -> set[str]:
         """Get all session IDs for a user."""
         try:
             key = f"{self.user_sessions_prefix}{user_id}"
-            session_ids = self.redis_client.smembers(key)
-            return session_ids
+            return self.redis_client.smembers(key)
         except Exception as e:
-            logger.error(f"Failed to get user session IDs: {str(e)}")
+            logger.exception(f"Failed to get user session IDs: {str(e)}")
             return set()
 
     def _enforce_session_limit(self, user_id: str) -> None:
@@ -507,7 +506,7 @@ class SessionManager:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to enforce session limit: {str(e)}")
+            logger.exception(f"Failed to enforce session limit: {str(e)}")
 
     def _update_session_activity(
         self,
@@ -525,7 +524,7 @@ class SessionManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to update session activity: {str(e)}")
+            logger.exception(f"Failed to update session activity: {str(e)}")
             return False
 
     def _detect_session_hijacking(
@@ -556,7 +555,7 @@ class SessionManager:
             return False
 
         except Exception as e:
-            logger.error(f"Failed to detect session hijacking: {str(e)}")
+            logger.exception(f"Failed to detect session hijacking: {str(e)}")
             return False
 
     def _is_safe_ip_change(self, original_ip: str, current_ip: str) -> bool:

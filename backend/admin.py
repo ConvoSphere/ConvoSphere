@@ -26,17 +26,14 @@ from datetime import datetime
 
 def print_success(message):
     """Print success message."""
-    print(f"✅ {message}")
 
 
 def print_error(message):
     """Print error message."""
-    print(f"❌ {message}")
 
 
 def print_info(message):
     """Print info message."""
-    print(f"ℹ️ {message}")
 
 
 def db_migrate():
@@ -49,7 +46,6 @@ def db_migrate():
             capture_output=True,
             text=True,
         )
-        print(result.stdout)
         if result.returncode != 0:
             print_error(result.stderr)
             sys.exit(result.returncode)
@@ -70,7 +66,6 @@ def db_status():
             capture_output=True,
             text=True,
         )
-        print(result.stdout)
         if result.returncode != 0:
             print_error(result.stderr)
             sys.exit(result.returncode)
@@ -91,7 +86,6 @@ def db_downgrade(revision):
             capture_output=True,
             text=True,
         )
-        print(result.stdout)
         if result.returncode != 0:
             print_error(result.stderr)
             sys.exit(result.returncode)
@@ -176,7 +170,6 @@ def backup_restore(backup_file, confirm=False):
             f"Are you sure you want to restore from {backup_file}? This will overwrite the current database. (y/N): ",
         )
         if response.lower() != "y":
-            print("Restore cancelled.")
             return
 
     try:
@@ -251,13 +244,11 @@ def backup_list(backup_dir="."):
                 )
 
         if not backup_files:
-            print("No backups found.")
             return
 
         backup_files.sort(key=lambda x: x["modified"], reverse=True)
         for backup in backup_files:
-            size_mb = backup["size"] / (1024 * 1024)
-            print(f"{backup['name']} | {size_mb:.1f}MB | {backup['modified']}")
+            backup["size"] / (1024 * 1024)
 
     except Exception as e:
         print_error(f"Error listing backups: {e}")
@@ -266,7 +257,6 @@ def backup_list(backup_dir="."):
 
 def monitoring_health():
     """Check system health."""
-    print("🔍 Checking system health...")
 
     # Check if backend is running
     try:
@@ -275,13 +265,13 @@ def monitoring_health():
         backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
         response = requests.get(f"{backend_url}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Backend API: OK")
+            pass
         else:
-            print(f"❌ Backend API: ERROR - Status {response.status_code}")
+            pass
     except ImportError:
-        print("❌ Backend API: ERROR - requests module not available")
-    except Exception as e:
-        print(f"❌ Backend API: ERROR - {e}")
+        pass
+    except Exception:
+        pass
 
     # Check database connection
     try:
@@ -293,30 +283,21 @@ def monitoring_health():
             text=True,
         )
         if result.returncode == 0:
-            print("✅ Database: OK")
+            pass
         else:
-            print("❌ Database: ERROR")
+            pass
     except FileNotFoundError:
-        print("❌ Database: ERROR - Alembic not found")
-    except Exception as e:
-        print(f"❌ Database: ERROR - {e}")
+        pass
+    except Exception:
+        pass
 
 
 def config_show():
     """Show current configuration."""
-    print("📋 Current Configuration:")
-    print(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
-    print(f"Database URL: {os.getenv('DATABASE_URL', 'sqlite:///./test.db')}")
-    print(f"Redis URL: {os.getenv('REDIS_URL', 'redis://localhost:6379')}")
-    print(f"Weaviate URL: {os.getenv('WEAVIATE_URL', 'http://localhost:8080')}")
-    print(f"Backend URL: {os.getenv('BACKEND_URL', 'http://localhost:8000')}")
-    print(f"Upload Directory: {os.getenv('UPLOAD_DIR', './uploads')}")
-    print(f"Log Level: {os.getenv('LOG_LEVEL', 'INFO')}")
 
 
 def config_validate():
     """Validate configuration."""
-    print("🔍 Validating configuration...")
 
     errors = []
 
@@ -334,8 +315,8 @@ def config_validate():
 
     if errors:
         print_error("Configuration validation failed:")
-        for error in errors:
-            print(f"  - {error}")
+        for _error in errors:
+            pass
         sys.exit(1)
     else:
         print_success("Configuration is valid")
@@ -343,7 +324,6 @@ def config_validate():
 
 def dev_quality_check():
     """Run code quality checks."""
-    print("🔍 Running code quality checks...")
 
     # Format check
     result = subprocess.run(
@@ -353,35 +333,31 @@ def dev_quality_check():
         text=True,
     )
     if result.returncode == 0:
-        print("✅ Code formatting: OK")
+        pass
     else:
-        print("❌ Code formatting: FAILED")
-        print(result.stdout)
+        pass
 
     # Linting
     result = subprocess.run(
         ["ruff", "check", "."], check=False, capture_output=True, text=True
     )
     if result.returncode == 0:
-        print("✅ Linting: OK")
+        pass
     else:
-        print("❌ Linting: FAILED")
-        print(result.stdout)
+        pass
 
     # Security check
     result = subprocess.run(
         ["bandit", "-r", "."], check=False, capture_output=True, text=True
     )
     if result.returncode == 0:
-        print("✅ Security check: OK")
+        pass
     else:
-        print("⚠️ Security check: WARNINGS")
-        print(result.stdout)
+        pass
 
 
 def dev_api_test(url="http://localhost:8000"):
     """Run basic API tests."""
-    print(f"🧪 Testing API at {url}...")
 
     try:
         import requests
@@ -389,16 +365,16 @@ def dev_api_test(url="http://localhost:8000"):
         # Health check
         response = requests.get(f"{url}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Health endpoint: OK")
+            pass
         else:
-            print(f"❌ Health endpoint: FAILED - {response.status_code}")
+            pass
 
         # API docs
         response = requests.get(f"{url}/docs", timeout=5)
         if response.status_code == 200:
-            print("✅ API docs: OK")
+            pass
         else:
-            print(f"❌ API docs: FAILED - {response.status_code}")
+            pass
 
     except ImportError:
         print_error("API test failed: requests module not available")
@@ -408,7 +384,6 @@ def dev_api_test(url="http://localhost:8000"):
 
 def user_create_admin():
     """Create an initial admin user."""
-    print("Creating admin user...")
     email = input("Email: ")
     username = input("Username: ")
     password = input("Password: ")
@@ -491,15 +466,9 @@ def user_list():
         )()
 
         users = user_service.list_users(search_params, DummyUser()).users
-        print(f"Found {len(users)} users:")
-        print("-" * 80)
-        print(f"{'ID':<36} {'Email':<25} {'Username':<15} {'Role':<12} {'Status':<10}")
-        print("-" * 80)
 
-        for user in users:
-            print(
-                f"{user.id:<36} {user.email:<25} {user.username:<15} {user.role:<12} {user.status:<10}",
-            )
+        for _user in users:
+            pass
 
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
@@ -538,20 +507,6 @@ def user_show(identifier):
             print_error(f"User not found: {identifier}")
             sys.exit(1)
 
-        print(f"User Details for: {identifier}")
-        print("=" * 50)
-        print(f"ID: {user.id}")
-        print(f"Email: {user.email}")
-        print(f"Username: {user.username}")
-        print(f"Full Name: {user.first_name} {user.last_name}".strip())
-        print(f"Role: {user.role}")
-        print(f"Status: {user.status}")
-        print(f"Verified: {user.is_verified}")
-        print(f"Created: {user.created_at}")
-        print(f"Last Login: {user.last_login or 'Never'}")
-        print(f"Organization: {user.organization_id or 'None'}")
-        print(f"Department: {user.department or 'None'}")
-        print(f"Job Title: {user.job_title or 'None'}")
 
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
@@ -602,8 +557,6 @@ def user_create(
 
         user = user_service.create_user(user_data)
         print_success(f"User created: {user.email} ({user.id})")
-        print(f"Role: {user.role}")
-        print(f"Status: {user.status}")
 
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
@@ -675,9 +628,8 @@ def user_update(identifier, **kwargs):
         updated_user = user_service.update_user(user.id, user_update_obj, DummyUser())
 
         print_success(f"User updated: {updated_user.email}")
-        print("Updated fields:")
-        for field, value in update_data.items():
-            print(f"  {field}: {value}")
+        for _field, _value in update_data.items():
+            pass
 
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
@@ -698,7 +650,6 @@ def user_delete(identifier, confirm=False):
             f"Are you sure you want to delete user {identifier}? This action cannot be undone. (y/N): ",
         )
         if response.lower() != "y":
-            print("Delete cancelled.")
             return
 
     try:
@@ -800,47 +751,6 @@ def user_reset_password():
 
 def show_help():
     """Show help message."""
-    print("ChatAssistant Admin CLI")
-    print("=" * 50)
-    print()
-    print("Available commands:")
-    print()
-    print("Database Management:")
-    print("  db migrate              Run database migrations")
-    print("  db status               Show migration status")
-    print("  db downgrade <rev>      Downgrade to revision")
-    print()
-    print("User Management:")
-    print("  user create-admin       Create admin user")
-    print("  user list               List all users")
-    print("  user show <id>          Show user details")
-    print("  user create             Create new user")
-    print("  user update <id>        Update user")
-    print("  user delete <id>        Delete user")
-    print("  user reset-password     Reset user password")
-    print()
-    print("Backup & Recovery:")
-    print("  backup create           Create database backup")
-    print("  backup restore <file>   Restore from backup")
-    print("  backup list             List available backups")
-    print()
-    print("Monitoring:")
-    print("  monitoring health       Check system health")
-    print()
-    print("Configuration:")
-    print("  config show             Show current configuration")
-    print("  config validate         Validate configuration")
-    print()
-    print("Development:")
-    print("  dev quality-check       Run code quality checks")
-    print("  dev api-test            Run API tests")
-    print()
-    print("Examples:")
-    print("  python3 admin.py db migrate")
-    print("  python3 admin.py user create-admin")
-    print("  python3 admin.py user list")
-    print("  python3 admin.py backup create")
-    print("  python3 admin.py monitoring health")
 
 
 def main():

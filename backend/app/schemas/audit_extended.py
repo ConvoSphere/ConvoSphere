@@ -149,7 +149,7 @@ class RetentionRuleBase(BaseModel):
     retention_days: int = Field(..., ge=1, le=3650)
     archive_days: int | None = Field(None, ge=1, le=365)
     legal_hold: bool = False
-    action_on_expiry: str = Field("delete", regex="^(delete|archive|anonymize)$")
+    action_on_expiry: str = Field("delete", pattern="^(delete|archive|anonymize)$")
     notify_before_expiry: int | None = Field(None, ge=1, le=30)
     enabled: bool = True
 
@@ -171,7 +171,7 @@ class RetentionRuleUpdate(BaseModel):
     retention_days: int | None = Field(None, ge=1, le=3650)
     archive_days: int | None = Field(None, ge=1, le=365)
     legal_hold: bool | None = None
-    action_on_expiry: str | None = Field(None, regex="^(delete|archive|anonymize)$")
+    action_on_expiry: str | None = Field(None, pattern="^(delete|archive|anonymize)$")
     notify_before_expiry: int | None = Field(None, ge=1, le=30)
     enabled: bool | None = None
 
@@ -209,7 +209,7 @@ class ComplianceReportUpdate(BaseModel):
     description: str | None = None
     report_type: str | None = Field(None, min_length=1, max_length=100)
     report_period: str | None = None
-    status: str | None = Field(None, regex="^(draft|review|approved|archived)$")
+    status: str | None = Field(None, pattern="^(draft|review|approved|archived)$")
     findings: list[dict[str, Any]] | None = None
     recommendations: list[dict[str, Any]] | None = None
     metrics: dict[str, Any] | None = None
@@ -310,7 +310,7 @@ class AuditArchiveUpdate(BaseModel):
     file_path: str | None = None
     file_size: int | None = None
     compression_ratio: float | None = None
-    status: str | None = Field(None, regex="^(archiving|completed|failed)$")
+    status: str | None = Field(None, pattern="^(archiving|completed|failed)$")
     archived_at: datetime | None = None
     retention_expiry: datetime | None = None
 
@@ -431,7 +431,7 @@ class AuditArchiveListResponse(BaseModel):
 class AuditLogExportParams(BaseModel):
     """Schema for audit log export parameters."""
 
-    format: str = Field("json", regex="^(json|csv|xml)$")
+    format: str = Field("json", pattern="^(json|csv|xml)$")
     start_date: datetime | None = None
     end_date: datetime | None = None
     event_types: list[AuditEventType] | None = None

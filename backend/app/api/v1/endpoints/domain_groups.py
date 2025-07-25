@@ -573,7 +573,7 @@ async def get_domain_hierarchy(
 ):
     """Get domain group hierarchy."""
     try:
-        domain_service = DomainService(db)
+        DomainService(db)
         # This would implement hierarchy building logic
         # For now, return a placeholder
         return []

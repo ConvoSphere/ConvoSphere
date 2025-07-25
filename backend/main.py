@@ -8,6 +8,18 @@ configuring middleware, routes, and application lifecycle events.
 from contextlib import asynccontextmanager
 from datetime import datetime
 
+from app.api.v1.api import api_router
+from app.core.config import get_settings
+from app.core.database import check_db_connection, init_db
+from app.core.i18n import I18nMiddleware, i18n_manager, t
+from app.core.redis_client import close_redis, init_redis
+from app.core.weaviate_client import (
+    check_weaviate_connection,
+    close_weaviate,
+    create_schema_if_not_exists,
+    init_weaviate,
+)
+from app.services.performance_monitor import performance_monitor
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,19 +41,6 @@ from loguru import logger
 # from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
-
-from .app.api.v1.api import api_router
-from .app.core.config import get_settings
-from .app.core.database import check_db_connection, init_db
-from .app.core.i18n import I18nMiddleware, i18n_manager, t
-from .app.core.redis_client import close_redis, init_redis
-from .app.core.weaviate_client import (
-    check_weaviate_connection,
-    close_weaviate,
-    create_schema_if_not_exists,
-    init_weaviate,
-)
-from .app.services.performance_monitor import performance_monitor
 
 
 @asynccontextmanager

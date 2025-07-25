@@ -195,7 +195,7 @@ class DomainService:
             # Users can only see domains they're members of or public domains
             query = query.filter(
                 or_(
-                    DomainGroup.is_public == True,
+                    DomainGroup.is_public,
                     DomainGroup.members.any(id=current_user.id),
                 ),
             )
@@ -460,7 +460,7 @@ class DomainService:
                 and_(
                     DomainResource.domain_group_id == domain_id,
                     DomainResource.resource_id == resource_id,
-                    DomainResource.is_active == True,
+                    DomainResource.is_active,
                 ),
             )
             .first()
@@ -512,7 +512,7 @@ class DomainService:
                 and_(
                     DomainResource.domain_group_id == domain_id,
                     DomainResource.resource_id == resource_id,
-                    DomainResource.is_active == True,
+                    DomainResource.is_active,
                 ),
             )
             .first()
@@ -657,13 +657,13 @@ class DomainService:
         ]:
             query = query.filter(
                 or_(
-                    DomainGroup.is_public == True,
+                    DomainGroup.is_public,
                     DomainGroup.members.any(id=current_user.id),
                 ),
             )
 
         total_domains = query.count()
-        active_domains = query.filter(DomainGroup.is_active == True).count()
+        active_domains = query.filter(DomainGroup.is_active).count()
 
         # Get member and resource counts
         total_members = self.db.query(func.count(DomainGroup.members)).scalar()
@@ -746,13 +746,7 @@ class DomainService:
             return True
 
         # Organization admins can access domains in their organization
-        if (
-            user.role == UserRole.ADMIN
-            and domain_group.organization_id == user.organization_id
-        ):
-            return True
-
-        return False
+        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
 
     def _can_manage_domain_group(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain group."""
@@ -766,13 +760,7 @@ class DomainService:
             return True
 
         # Organization admins can manage domains in their organization
-        if (
-            user.role == UserRole.ADMIN
-            and domain_group.organization_id == user.organization_id
-        ):
-            return True
-
-        return False
+        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
 
     def _can_manage_domain_members(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain members."""

@@ -73,7 +73,7 @@ class AssistantService:
         # If user_id is provided, check permissions
         if user_id:
             query = query.filter(
-                or_(Assistant.creator_id == user_id, Assistant.is_public == True)
+                or_(Assistant.creator_id == user_id, Assistant.is_public)
             )
 
         return query.first()
@@ -161,7 +161,7 @@ class AssistantService:
             .filter(
                 and_(
                     Assistant.status == AssistantStatus.ACTIVE,
-                    Assistant.is_public == True,
+                    Assistant.is_public,
                 ),
             )
             .first()

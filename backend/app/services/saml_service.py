@@ -397,7 +397,7 @@ class SAMLService:
             )
 
         try:
-            metadata = create_metadata_string(
+            return create_metadata_string(
                 None,
                 config=self.saml_client.config,
                 valid=None,
@@ -406,7 +406,6 @@ class SAMLService:
                 mid=None,
                 name=None,
             )
-            return metadata
 
         except Exception as e:
             logger.error(f"Failed to generate SAML metadata: {e}")
@@ -488,3 +487,16 @@ class SAMLService:
 
 # Global SAML service instance
 saml_service = SAMLService()
+
+
+class MockSamlSettings:
+    """Mock SAML settings for testing."""
+
+    def __init__(self):
+        self.sso_saml_enabled = False
+        self.sso_saml_metadata_url = None
+        self.sso_saml_entity_id = None
+        self.sso_saml_acs_url = None
+        self.sso_saml_cert_file = None
+        self.sso_saml_key_file = None
+        self.jwt_access_token_expire_minutes = 30

@@ -220,23 +220,21 @@ class TestOAuthService:
             oauth_service,
             "_get_auth_provider",
             return_value=AuthProvider.OAUTH_GOOGLE,
-        ):
-            with patch.object(
-                UserService,
-                "get_user_by_external_id",
-                return_value=None,
-            ):
-                with patch.object(UserService, "create_sso_user") as mock_create:
-                    mock_user = MagicMock()
-                    mock_user.id = "test-user-id"
-                    mock_create.return_value = mock_user
+        ), patch.object(
+            UserService,
+            "get_user_by_external_id",
+            return_value=None,
+        ), patch.object(UserService, "create_sso_user") as mock_create:
+            mock_user = MagicMock()
+            mock_user.id = "test-user-id"
+            mock_create.return_value = mock_user
 
-                    result = await oauth_service.process_sso_user(
-                        mock_user_info,
-                        "google",
-                        db_session,
-                    )
-                    assert result == mock_user
+            result = await oauth_service.process_sso_user(
+                mock_user_info,
+                "google",
+                db_session,
+            )
+            assert result == mock_user
 
     @pytest.mark.asyncio
     async def test_process_sso_user_existing_user(
@@ -253,18 +251,17 @@ class TestOAuthService:
             oauth_service,
             "_get_auth_provider",
             return_value=AuthProvider.OAUTH_GOOGLE,
+        ), patch.object(
+            UserService,
+            "get_user_by_external_id",
+            return_value=mock_user,
         ):
-            with patch.object(
-                UserService,
-                "get_user_by_external_id",
-                return_value=mock_user,
-            ):
-                result = await oauth_service.process_sso_user(
-                    mock_user_info,
-                    "google",
-                    db_session,
-                )
-                assert result == mock_user
+            result = await oauth_service.process_sso_user(
+                mock_user_info,
+                "google",
+                db_session,
+            )
+            assert result == mock_user
 
     @pytest.mark.asyncio
     async def test_create_sso_tokens(self, oauth_service):
@@ -346,26 +343,24 @@ class TestSSOEndpoints:
 
         with patch(
             "app.services.oauth_service.oauth_service.handle_callback",
-        ) as mock_callback:
-            with patch(
-                "app.services.oauth_service.oauth_service.process_sso_user",
-            ) as mock_process:
-                with patch(
-                    "app.services.oauth_service.oauth_service.create_sso_tokens",
-                ) as mock_tokens_func:
-                    mock_callback.return_value = {
-                        "user_info": mock_user_info,
-                        "token": {},
-                        "provider": "google",
-                    }
-                    mock_process.return_value = mock_user
-                    mock_tokens_func.return_value = mock_tokens
+        ) as mock_callback, patch(
+            "app.services.oauth_service.oauth_service.process_sso_user",
+        ) as mock_process, patch(
+            "app.services.oauth_service.oauth_service.create_sso_tokens",
+        ) as mock_tokens_func:
+            mock_callback.return_value = {
+                "user_info": mock_user_info,
+                "token": {},
+                "provider": "google",
+            }
+            mock_process.return_value = mock_user
+            mock_tokens_func.return_value = mock_tokens
 
-                    response = client.get("/api/v1/auth/sso/callback/google")
-                    assert response.status_code == 200
-                    data = response.json()
-                    assert "access_token" in data
-                    assert "refresh_token" in data
+            response = client.get("/api/v1/auth/sso/callback/google")
+            assert response.status_code == 200
+            data = response.json()
+            assert "access_token" in data
+            assert "refresh_token" in data
 
     def test_sso_callback_error(self, client):
         """Test SSO callback with error."""

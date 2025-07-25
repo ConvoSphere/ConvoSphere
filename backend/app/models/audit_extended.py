@@ -13,15 +13,14 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-)
-from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import (
+    Float,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
 )
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -223,7 +222,7 @@ class ExtendedAuditLog(Base):
 
     # Context and metadata
     context = Column(JSON, nullable=True)  # Additional context information
-    metadata = Column(JSON, nullable=True)  # Extended metadata
+    audit_metadata = Column(JSON, nullable=True)  # Extended metadata
     tags = Column(JSON, nullable=True)  # Custom tags for categorization
 
     # Compliance information
@@ -257,6 +256,7 @@ class ExtendedAuditLog(Base):
             "timestamp",
         ),
         Index("idx_audit_compliance_timestamp", "compliance_frameworks", "timestamp"),
+        {"extend_existing": True},
     )
 
     def __repr__(self) -> str:

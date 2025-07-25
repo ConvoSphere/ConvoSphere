@@ -15,14 +15,12 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-)
-from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import (
     ForeignKey,
     String,
     Table,
     Text,
 )
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -87,6 +85,7 @@ domain_group_members = Table(
     Column("joined_at", DateTime(timezone=True), server_default=func.now()),
     Column("invited_by", UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
     Column("is_active", Boolean, default=True, nullable=False),
+    extend_existing=True,
 )
 
 
@@ -111,6 +110,7 @@ domain_group_resources = Table(
     Column("added_at", DateTime(timezone=True), server_default=func.now()),
     Column("added_by", UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
     Column("is_active", Boolean, default=True, nullable=False),
+    extend_existing=True,
 )
 
 
@@ -137,6 +137,7 @@ domain_group_hierarchy = Table(
         nullable=False,
     ),  # contains, collaborates, reports_to
     Column("created_at", DateTime(timezone=True), server_default=func.now()),
+    extend_existing=True,
 )
 
 
@@ -194,6 +195,8 @@ class DomainGroup(Base):
     members = relationship(
         "User",
         secondary=domain_group_members,
+        primaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
+        secondaryjoin="User.id == domain_group_members.c.user_id",
         back_populates="domain_groups",
         lazy="dynamic",
     )
@@ -336,7 +339,7 @@ class DomainResource(Base):
     # Metadata
     description = Column(Text, nullable=True)
     tags = Column(JSON, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Additional resource metadata
+    resource_metadata = Column(JSON, nullable=True)  # Additional resource metadata
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)

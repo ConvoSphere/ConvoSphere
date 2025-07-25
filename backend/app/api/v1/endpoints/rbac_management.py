@@ -493,6 +493,6 @@ async def get_permission_matrix(
         }
 
         permissions.update(role_permissions.get(role, []))
-        matrix[role] = sorted(list(permissions))
+        matrix[role] = sorted(permissions)
 
     return {"permission_matrix": matrix, "generated_at": datetime.now().isoformat()}

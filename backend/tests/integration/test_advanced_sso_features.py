@@ -241,7 +241,8 @@ class TestAdvancedUserProvisioning:
         """Create mock user service."""
         return MagicMock()
 
-    def test_provision_user_approved(self, provisioning, mock_db, mock_user_service):
+    @pytest.mark.asyncio
+    async def test_provision_user_approved(self, provisioning, mock_db, mock_user_service):
         """Test successful user provisioning."""
         user_info = {
             "email": "user@example.com",
@@ -356,7 +357,8 @@ class TestAdvancedUserProvisioning:
             assert results["skipped"] == 1
             assert results["errors"] == 0
 
-    def test_get_user_provisioning_status(self, provisioning, mock_db):
+    @pytest.mark.asyncio
+    async def test_get_user_provisioning_status(self, provisioning, mock_db):
         """Test getting user provisioning status."""
         user_id = "user123"
 
@@ -391,7 +393,8 @@ class TestAdvancedUserProvisioning:
             assert "admin" in status_info["roles"]
             assert "user" in status_info["roles"]
 
-    def test_get_user_provisioning_status_not_found(self, provisioning, mock_db):
+    @pytest.mark.asyncio
+    async def test_get_user_provisioning_status_not_found(self, provisioning, mock_db):
         """Test getting provisioning status for non-existent user."""
         user_id = "nonexistent"
 
