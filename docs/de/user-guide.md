@@ -1,243 +1,362 @@
-# User Guide - ConvoSphere nutzen
+# Benutzer-Guide - ConvoSphere verwenden
 
-## 🎯 Übersicht
+## 🎯 Überblick
 
-ConvoSphere ist eine AI-Chat-Plattform mit Knowledge Base, Echtzeit-Messaging und erweiterten Funktionen. Diese Anleitung zeigt Ihnen, wie Sie alle Features optimal nutzen.
+ConvoSphere ist eine umfassende AI-Chat-Plattform mit einer erweiterten Knowledge Base, Echtzeit-Messaging, leistungsstarken AI-Assistenten und Enterprise-Features. Dieser Guide zeigt Ihnen, wie Sie alle Funktionen effektiv nutzen.
 
-## 💬 Chat Interface
+## 🏠 Dashboard
 
-### Neue Konversation starten
-1. **Dashboard** → "New Chat" oder "Neue Konversation"
+Das Dashboard ist Ihre zentrale Anlaufstelle mit:
+
+- **System-Überblick**: Wichtige Statistiken und Metriken
+- **Schnellaktionen**: Schneller Zugriff zum Erstellen neuer Chats, Dokumente hochladen oder Assistenten verwalten
+- **Aktuelle Aktivitäten**: Neueste Konversationen, Uploads und Systemaktivitäten
+- **Performance-Metriken**: Echtzeit-Systemgesundheit und Nutzungsstatistiken
+- **Benutzer-Analytics**: Ihre Aktivitätszusammenfassung und Nutzungsmuster
+
+**Navigation**: Zugang über das Home-Symbol in der Seitenleiste oder gehen Sie zu `/dashboard`
+
+## 💬 Chat-Interface
+
+### Konversationen starten
+
+**Mehrere Wege zum Chat:**
+1. **Dashboard** → "Neuer Chat" oder "Neue Konversation" Button
 2. **Chat-Seite** → "+" Button in der Seitenleiste
-3. **Direktlink** → `/chat` in der URL
+3. **Direkte Navigation** → Gehen Sie zu `/` (Standard-Route)
+4. **Seitenleiste** → Klicken Sie auf "Chat" in der Navigation
 
 ### Nachrichten senden
-- **Text eingeben** im unteren Eingabefeld
-- **Enter** drücken zum Senden
-- **Shift+Enter** für neue Zeile
-- **Dateien anhängen** mit dem Clip-Icon
 
-### Chat-Features
-- **Echtzeit-Updates** - Nachrichten erscheinen sofort
-- **Typing-Indikatoren** - Sie sehen, wenn die AI schreibt
-- **Nachrichtenverlauf** - Alle Konversationen werden gespeichert
-- **Suche** - Durchsuchen Sie Ihre Chat-Historie
+- **Text-Eingabe**: Tippen Sie in das Nachrichteneingabefeld unten
+- **Senden**: Drücken Sie `Enter` zum sofortigen Senden
+- **Neue Zeile**: Verwenden Sie `Shift+Enter` für Zeilenumbrüche
+- **Datei-Anhänge**: Klicken Sie auf das Büroklammer-Symbol zum Anhängen von Dateien
+- **Spracheingabe**: Verwenden Sie das Mikrofon-Symbol für Speech-to-Text
 
-### Datei-Anhänge
+### Chat-Funktionen
+
+#### **Echtzeit-Features**
+- **Sofortige Zustellung**: Nachrichten erscheinen sofort via WebSocket
+- **Schreibindikatoren**: Sehen Sie, wann AI-Assistenten antworten
+- **Status-Updates**: Echtzeit-Verbindungs- und Verarbeitungsstatus
+- **Live-Benachrichtigungen**: Sofortige Alerts für neue Nachrichten
+
+#### **Datei-Anhänge**
 **Unterstützte Formate:**
-- PDF (.pdf)
-- Word (.docx)
-- Text (.txt)
-- Markdown (.md)
+- **PDF** (.pdf) - Vollständige Textextraktion und -verarbeitung
+- **Word-Dokumente** (.docx) - Komplette Dokumentenanalyse
+- **Textdateien** (.txt) - Direkte Textverarbeitung
+- **Markdown** (.md) - Formatierter Text mit Strukturerhaltung
 
-**Größenlimit:** 50MB pro Datei
+**Features:**
+- **Größenlimit**: Bis zu 50MB pro Datei
+- **Drag & Drop**: Ziehen Sie Dateien einfach in den Chat
+- **Bulk-Upload**: Wählen Sie mehrere Dateien gleichzeitig
+- **Verarbeitungsstatus**: Echtzeit-Upload und Verarbeitungsfeedback
+
+#### **Nachrichtenformatierung**
+- **Markdown-Unterstützung**: Verwenden Sie *kursiv*, **fett**, `code`, und mehr
+- **Code-Blöcke**: Syntax-Highlighting für Programmiersprachen
+- **Listen**: Nummerierte und Aufzählungslisten
+- **Tabellen**: Formatierte Datendarstellung
+- **Links**: Automatische Link-Erkennung und -formatierung
+
+#### **Chat-Management**
+- **Nachrichtenverlauf**: Alle Konversationen automatisch gespeichert
+- **Suche**: Finden Sie spezifische Nachrichten oder Themen
+- **Export**: Konversationsverlauf herunterladen
+- **Konversations-Threading**: Organisierte Nachrichtenabläufe
 
 ## 📚 Knowledge Base
 
-### Dokumente hochladen
-1. **Knowledge Base** → "Upload" oder "Hochladen"
-2. **Datei auswählen** (Drag & Drop oder Datei-Browser)
-3. **Metadaten eingeben** (optional):
-   - Titel
-   - Beschreibung
-   - Tags
-   - Kategorie
-4. **Upload starten**
+### Dokumenten-Management
 
-### Dokumente verwalten
-- **Liste anzeigen** - Alle Ihre Dokumente
-- **Suchen** - Volltext-Suche in Dokumenten
-- **Tags verwalten** - Dokumente kategorisieren
-- **Löschen** - Nicht mehr benötigte Dokumente entfernen
+#### **Dokumente hochladen**
+1. **Navigation**: Gehen Sie zur Knowledge Base Seite (`/knowledge-base`)
+2. **Upload-Methoden**:
+   - **Drag & Drop**: Dateien direkt auf den Upload-Bereich ziehen
+   - **Datei-Browser**: Klicken Sie "Upload" zum Auswählen von Dateien
+   - **Bulk-Import**: Mehrere Dateien gleichzeitig auswählen
+3. **Dokumenten-Metadaten**:
+   - **Titel**: Benutzerdefinierter Dokumententitel
+   - **Beschreibung**: Dokumentenzusammenfassung oder Notizen
+   - **Tags**: Kategorisierungs-Labels
+   - **Kategorie**: Dokumenten-Klassifizierung
+4. **Verarbeitung**: Automatische Textextraktion und Chunking
 
-### AI mit Knowledge Base nutzen
-1. **Chat starten**
-2. **Dokumente referenzieren**:
-   - "Verwende das Dokument 'Projektplan.pdf'"
-   - "Suche in meinen Dokumenten nach 'Machine Learning'"
-3. **AI antwortet** basierend auf Ihren Dokumenten
+#### **Erweiterte Upload-Features**
+- **Bulk-Operationen**: Dutzende von Dateien auf einmal hochladen
+- **Fortschritts-Tracking**: Echtzeit-Upload und Verarbeitungsstatus
+- **Fehlerbehandlung**: Klares Feedback bei fehlgeschlagenen Uploads
+- **Duplikat-Erkennung**: Automatische Erkennung von doppeltem Inhalt
+- **Metadaten-Auto-Extraktion**: Automatische Titel- und Beschreibungsgenerierung
 
-### Erweiterte Suche
-- **Semantische Suche** - Findet ähnliche Inhalte
-- **Tag-Filter** - Nach Kategorien filtern
-- **Metadaten-Filter** - Nach Autor, Datum, etc.
-- **Volltext-Suche** - Exakte Begriffe finden
+### Dokumenten-Organisation
 
-## ⚙️ Einstellungen & Profile
+#### **Tag-Management**
+- **Tag-Erstellung**: Erstellen Sie benutzerdefinierte Tags zur Organisation
+- **Tag-Clouds**: Visuelle Darstellung der Tag-Popularität
+- **Tag-Statistiken**: Nutzungsanalysen und Einblicke
+- **Bulk-Tagging**: Tags auf mehrere Dokumente anwenden
+- **System-Tags**: Vordefinierte Organisationskategorien
 
-### Profil bearbeiten
-1. **Profil** → "Edit Profile" oder "Profil bearbeiten"
-2. **Änderungen vornehmen**:
-   - Name
-   - E-Mail
-   - Avatar
-   - Sprache
-3. **Speichern**
+#### **Erweiterte Suche**
+- **Semantische Suche**: AI-gestützte Content-Entdeckung
+- **Volltext-Suche**: Finden Sie exakte Phrasen und Begriffe
+- **Tag-Filterung**: Filtern nach einzelnen oder mehreren Tags
+- **Metadaten-Filter**: Suche nach Autor, Datum, Dateityp
+- **Erweiterte Operatoren**: Komplexe Suchanfragen
+- **Such-Verlauf**: Vorherige Suchergebnisse und Anfragen
 
-### Benachrichtigungen
-- **E-Mail-Benachrichtigungen** ein/ausschalten
-- **Push-Benachrichtigungen** konfigurieren
-- **Benachrichtigungsfrequenz** anpassen
+#### **Dokumenten-Aktionen**
+- **Ansicht**: Vorschau von Dokumenteninhalt und Metadaten
+- **Bearbeiten**: Dokumenteninformationen und Tags ändern
+- **Download**: Original-Dateien abrufen
+- **Löschen**: Dokumente entfernen (mit Bestätigung)
+- **Neu verarbeiten**: Inhalt neu extrahieren und chunken
+- **Teilen**: Dokumentenzugriff und Berechtigungen kontrollieren
 
-### Datenschutz
-- **Sichtbarkeit** - Wer kann Ihre Profile sehen
-- **Datenexport** - Ihre Daten herunterladen
-- **Account löschen** - Account permanent entfernen
+### Rollenbasierter Zugriff
+
+ConvoSphere implementiert ein umfassendes rollenbasiertes Zugriffssystem:
+
+| Funktion | User | Premium | Moderator | Admin |
+|---------|------|---------|-----------|-------|
+| Dokumente hochladen | ✓ | ✓ | ✓ | ✓ |
+| Eigene Dokumente verwalten | ✓ | ✓ | ✓ | ✓ |
+| Bulk-Import | ✗ | ✓ | ✓ | ✓ |
+| Tag-Management | ✗ | ✓ | ✓ | ✓ |
+| System-Tags erstellen | ✗ | ✗ | ✗ | ✓ |
+| Alle Dokumente einsehen | ✗ | ✗ | ✓ | ✓ |
+| Benutzerverwaltung | ✗ | ✗ | ✗ | ✓ |
+| System-Statistiken | ✗ | ✗ | ✗ | ✓ |
+
+### AI-Integration mit Knowledge Base
+
+#### **Kontextbewusste Antworten**
+- **Automatischer Kontext**: AI verwendet automatisch relevante Dokumente
+- **Manuelle Auswahl**: Wählen Sie spezifische Dokumente für Kontext
+- **Quellen-Zitate**: AI-Antworten enthalten Dokumentenreferenzen
+- **Inhaltszusammenfassung**: AI erstellt Zusammenfassungen großer Dokumente
+
+#### **Intelligente Dokumenten-Entdeckung**
+- **Semantisches Matching**: AI findet relevanten Inhalt basierend auf Bedeutung
+- **Themen-Assoziation**: Verwandte Dokumente werden automatisch vorgeschlagen
+- **Inhalts-Ranking**: Relevanteste Dokumente werden priorisiert
+- **Kontext-Fenster**: Optimale Inhalts-Chunks für AI-Verarbeitung
 
 ## 🤖 AI-Assistenten
 
-### Assistenten erstellen
-1. **Assistants** → "Create Assistant" oder "Assistent erstellen"
-2. **Konfiguration**:
-   - Name und Beschreibung
-   - AI-Modell wählen (GPT-4, Claude, etc.)
-   - Persönlichkeit definieren
-   - Knowledge Base verknüpfen
-3. **Speichern**
+### Benutzerdefinierte Assistenten erstellen
 
-### Assistenten verwenden
-- **In Chat auswählen** - Dropdown-Menü
-- **Direkt ansprechen** - "@AssistentName"
-- **Kontext wechseln** - Zwischen Assistenten wechseln
+1. **Navigation**: Gehen Sie zur Assistenten-Seite (`/assistants`)
+2. **Assistent erstellen**: Klicken Sie "Neuen Assistenten erstellen"
+3. **Konfigurations-Optionen**:
+   - **Name & Beschreibung**: Assistenten-Identität
+   - **AI-Modell-Auswahl**: Wählen Sie aus verfügbaren Anbietern
+   - **Persönlichkeits-Einstellungen**: Definieren Sie Antwort-Stil und Verhalten
+   - **Knowledge Base-Verknüpfung**: Mit spezifischen Dokumenten verbinden
+   - **Tool-Zugriff**: Spezifische Tools und Fähigkeiten aktivieren
+   - **Antwort-Parameter**: Temperatur, max. Tokens, etc.
 
-### Assistenten verwalten
-- **Bearbeiten** - Konfiguration ändern
-- **Aktivieren/Deaktivieren** - Temporär ausschalten
-- **Löschen** - Nicht mehr benötigte Assistenten entfernen
+### Assistenten-Management
 
-## 🛠️ Tools & MCP
+#### **Verfügbare Features**
+- **Template-Bibliothek**: Vorgefertigte Assistenten-Templates
+- **Benutzerdefinierte Persönlichkeiten**: Definieren Sie einzigartige Antwort-Stile
+- **Multi-Modell-Unterstützung**: OpenAI, Anthropic und andere Anbieter
+- **Performance-Tuning**: Antwort-Qualität und -geschwindigkeit anpassen
+- **Nutzungs-Analytics**: Assistenten-Performance und -nutzung verfolgen
+- **Sharing-Optionen**: Assistenten mit anderen Benutzern teilen
 
-### Verfügbare Tools
-- **Web-Suche** - Aktuelle Informationen finden
-- **Rechner** - Mathematische Berechnungen
-- **Code-Interpreter** - Code ausführen
-- **Datei-Operationen** - Dateien bearbeiten
+#### **Assistenten verwenden**
+- **Chat-Auswahl**: Assistent aus Dropdown im Chat wählen
+- **Direkte Erwähnung**: Verwenden Sie `@AssistentenName` um spezifische Assistenten aufzurufen
+- **Standard-Assistent**: Setzen Sie Ihren bevorzugten Standard-Assistenten
+- **Kontext-Wechsel**: Assistenten mitten in der Konversation wechseln
+- **Assistenten-Vergleich**: Mehrere Assistenten gleichzeitig testen
 
-### Tools verwenden
-1. **Tool auswählen** in der Tool-Palette
-2. **Parameter eingeben** (falls erforderlich)
-3. **Ausführen** - Tool wird automatisch ausgeführt
-4. **Ergebnis anzeigen** - Tool-Output wird im Chat angezeigt
+## 🔧 Tools & Integrationen
 
-### Custom Tools
-- **Eigene Tools erstellen** (für Entwickler)
-- **Tool-Parameter konfigurieren**
-- **Sicherheitseinstellungen** anpassen
+### Model Context Protocol (MCP) Tools
 
-## 👥 Benutzerrollen
+Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzugreifen:
 
-### Standard User
-- Chat und Konversationen
-- Eigene Knowledge Base
-- Grundlegende Einstellungen
+#### **Verfügbare Tool-Kategorien**
+- **Such-Tools**: Web-Suche, Dokumentensuche, semantische Suche
+- **Rechner**: Mathematische Berechnungen und Analysen
+- **Dateiverarbeitung**: Dokumentenanalyse, Format-Konvertierung
+- **API-Integrationen**: Externe Service-Verbindungen
+- **Datenanalyse**: Statistische Analyse und Visualisierung
+- **Benutzerdefinierte Tools**: Benutzerdefinierte Tool-Implementierungen
 
-### Premium User
-- Erweiterte Knowledge Base Features
-- Bulk-Import von Dokumenten
-- Erweiterte AI-Modelle
-- Prioritäts-Support
+#### **Tool-Management**
+- **Tool-Entdeckung**: Verfügbare Tools durchsuchen
+- **Installation**: Neue Tools zu Ihrem Arbeitsbereich hinzufügen
+- **Konfiguration**: Tool-Parameter und Anmeldedaten einrichten
+- **Ausführungs-Tracking**: Tool-Nutzung und -performance überwachen
+- **Benutzerdefinierte Entwicklung**: Erstellen Sie Ihre eigenen Tools
+- **Performance-Metriken**: Tool-Ausführungsstatistiken
 
-### Moderator
-- Alle Benutzer-Dokumente moderieren
-- System-Tags verwalten
-- Community-Management
+#### **Tools im Chat verwenden**
+- **Tool-Aufruf**: AI wählt automatisch passende Tools
+- **Manuelle Auswahl**: Explizit spezifische Tools anfordern
+- **Tool-Verkettung**: Mehrere Tools für komplexe Aufgaben kombinieren
+- **Ergebnis-Integration**: Tool-Ausgaben in Konversationen integriert
+- **Fehlerbehandlung**: Klares Feedback bei Tool-Ausführungsproblemen
 
-### Admin
-- Vollzugriff auf alle Funktionen
-- Benutzer-Management
-- System-Statistiken
-- Konfiguration
+## 👤 Profil & Einstellungen
 
-## 🔍 Suche & Navigation
+### Profil-Management (`/profile`)
 
-### Globale Suche
-- **Suchfeld** in der oberen Leiste
-- **Chat-Historie** durchsuchen
-- **Knowledge Base** durchsuchen
-- **Benutzer** finden (Admin)
+**Persönliche Informationen**:
+- **Name & E-Mail**: Ihre Kontaktinformationen aktualisieren
+- **Avatar**: Profilbild hochladen und verwalten
+- **Sprach-Präferenz**: Interface-Sprache wählen (EN/DE)
+- **Zeitzone**: Ihre lokale Zeitzone einstellen
+- **Benachrichtigungs-Präferenzen**: Alert-Einstellungen konfigurieren
 
-### Navigation
-- **Dashboard** - Übersicht und Schnellzugriff
-- **Chat** - Konversationen
-- **Knowledge Base** - Dokumente
-- **Assistants** - AI-Assistenten
-- **Tools** - Tool-Palette
-- **Settings** - Einstellungen
+### Anwendungs-Einstellungen (`/settings`)
 
-### Keyboard Shortcuts
-- **Ctrl/Cmd + K** - Globale Suche
-- **Ctrl/Cmd + N** - Neue Konversation
-- **Ctrl/Cmd + S** - Einstellungen
-- **Esc** - Dialog schließen
+**Interface-Anpassung**:
+- **Theme-Auswahl**: Zwischen dunklen und hellen Themes wechseln
+- **Sprache**: Interface-Sprache ändern
+- **Standard-Assistent**: Ihren bevorzugten AI-Assistenten einstellen
+- **Chat-Präferenzen**: Standard-Chat-Verhalten konfigurieren
+- **Performance-Einstellungen**: UI-Performance-Optionen anpassen
 
-## 🐛 Häufige Probleme
+### Benachrichtigungen
 
-### Chat funktioniert nicht
-- **Browser aktualisieren** (F5)
-- **WebSocket-Verbindung** prüfen
-- **Internet-Verbindung** testen
+**Benachrichtigungs-Typen**:
+- **E-Mail-Benachrichtigungen**: E-Mail-Alerts konfigurieren
+- **Browser-Benachrichtigungen**: In-App-Benachrichtigungseinstellungen
+- **Mobile Push**: Push-Benachrichtigungs-Präferenzen (falls anwendbar)
+- **Häufigkeits-Kontrolle**: Benachrichtigungshäufigkeits-Limits setzen
+- **Typ-Filterung**: Wählen Sie, welche Ereignisse Benachrichtigungen auslösen
 
-### Upload fehlgeschlagen
-- **Dateigröße** prüfen (max. 50MB)
-- **Dateiformat** überprüfen
-- **Browser-Cache** leeren
+## 🔐 Authentifizierung & Sicherheit
 
-### AI antwortet nicht
-- **AI-Provider** Status prüfen
-- **API-Keys** konfiguriert?
-- **Rate Limits** erreicht?
+### Account-Management
 
-### Performance-Probleme
-- **Browser schließen** und neu öffnen
-- **Cache leeren**
-- **Anderen Browser** versuchen
+**Registrierung** (`/register`):
+- **Account-Erstellung**: Neues Benutzerkonto erstellen
+- **E-Mail-Verifizierung**: E-Mail-Adresse verifizieren
+- **Profil-Setup**: Initiale Profilkonfiguration
+- **Rollen-Zuweisung**: Automatische Rollenzuweisung
 
-## 📱 Mobile Nutzung
+**Login** (`/login`):
+- **Standard-Login**: E-Mail/Passwort-Authentifizierung
+- **Angemeldet bleiben**: Persistente Login-Sessions
+- **Passwort-Wiederherstellung**: Vergessene Passwörter zurücksetzen
+- **Sicherheits-Features**: Schutz vor fehlgeschlagenen Login-Versuchen
 
-### Responsive Design
-- **Mobile-optimiert** - Funktioniert auf allen Geräten
-- **Touch-freundlich** - Große Buttons und Gesten
-- **Offline-Modus** - Grundfunktionen ohne Internet
+### Sicherheits-Features
 
-### Mobile Features
-- **Push-Benachrichtigungen**
-- **Touch-Gesten** für Navigation
-- **Optimierte Eingabe** für mobile Geräte
+- **JWT-Authentifizierung**: Sichere token-basierte Authentifizierung
+- **Session-Management**: Automatisches Session-Timeout und -erneuerung
+- **Passwort-Sicherheit**: Starke Passwort-Anforderungen
+- **Zwei-Faktor-Authentifizierung**: Erweiterte Sicherheitsoptionen (falls aktiviert)
+- **Audit-Logging**: Account-Sicherheitsereignisse verfolgen
 
-## 🔒 Sicherheit & Datenschutz
+## 👨‍💼 Admin-Features (Nur für Admins)
 
-### Ihre Daten
-- **Ende-zu-Ende-Verschlüsselung** für Nachrichten
-- **Sichere Speicherung** in der Cloud
-- **Regelmäßige Backups** automatisch
+### Admin-Dashboard (`/admin`)
 
-### Privatsphäre
-- **Nur Sie** können Ihre Konversationen sehen
-- **Dokumente** sind privat (außer geteilt)
-- **Löschung** auf Anfrage möglich
+**System-Überblick**:
+- **Benutzerverwaltung**: Benutzerkonten erstellen, bearbeiten und verwalten
+- **Rollen-Zuweisung**: Benutzerrollen zuweisen und ändern
+- **System-Statistiken**: Umfassende Nutzungsanalysen
+- **Performance-Monitoring**: Echtzeit-Systemgesundheits-Metriken
+- **Audit-Logs**: Sicherheits- und Nutzungs-Audit-Pfade
 
-### Compliance
-- **DSGVO-konform** - Europäische Datenschutzrichtlinien
-- **Audit-Logs** für Admins
-- **Datenexport** auf Anfrage
+### System-Monitoring (`/admin/system-status`)
 
-## 🆘 Hilfe & Support
+**Echtzeit-Metriken**:
+- **System-Gesundheit**: Server-Status und -performance
+- **Datenbank-Performance**: Verbindungs- und Abfrage-Metriken
+- **Speicher-Nutzung**: RAM- und Storage-Auslastung
+- **Benutzer-Aktivität**: Aktive Benutzer und Session-Statistiken
+- **Fehler-Tracking**: System-Fehler und Lösungsstatus
 
-### Dokumentation
-- **Diese User Guide** - Vollständige Anleitung
-- **FAQ** - Häufige Fragen
-- **Video-Tutorials** - Schritt-für-Schritt Anleitungen
+### Administrative Tools
 
-### Community
-- **Discord Server** - Community-Support
-- **GitHub Discussions** - Technische Fragen
-- **Feedback** - Verbesserungsvorschläge
+- **Benutzer-Analytics**: Detaillierte Benutzerverhalten-Analyse
+- **Content-Moderation**: Benutzercontent überprüfen und verwalten
+- **System-Konfiguration**: Globale System-Einstellungen anpassen
+- **Backup-Management**: Daten-Backup und -wiederherstellungsoptionen
+- **Integrations-Management**: Externe Service-Konfigurationen
 
-### Support
-- **E-Mail Support** - Für Premium-User
-- **Live-Chat** - Während der Geschäftszeiten
-- **Bug Reports** - GitHub Issues
+## 💬 Konversations-Management (`/conversations`)
+
+### Konversations-Verlauf
+
+**Features**:
+- **Vollständiger Verlauf**: Zugriff auf alle vergangenen Konversationen
+- **Suchen & Filtern**: Spezifische Konversationen finden
+- **Organisation**: Nach Datum, Assistent oder Thema sortieren
+- **Favoriten**: Wichtige Konversationen markieren
+- **Archive**: Langzeit-Konversations-Speicherung
+
+### Konversations-Aktionen
+
+- **Fortsetzen**: Vorherige Konversationen wieder aufnehmen
+- **Export**: Konversations-Transkripte herunterladen
+- **Teilen**: Konversationen mit anderen Benutzern teilen
+- **Duplizieren**: Kopien von Konversationen erstellen
+- **Löschen**: Unerwünschte Konversationen entfernen
+
+## 🎨 Benutzererfahrungs-Features
+
+### Theme & Anpassung
+
+- **Dark/Light Mode**: Zwischen Themes umschalten
+- **System-Präferenz**: Automatisches Theme basierend auf OS-Einstellungen
+- **Benutzerdefinierte Farben**: Interface-Farben personalisieren
+- **Layout-Optionen**: Seitenleiste und Layout-Präferenzen anpassen
+- **Barrierefreiheit**: Hoher Kontrast und Screen-Reader-Unterstützung
+
+### Performance-Features
+
+- **Lazy Loading**: Schnelles Seitenladen mit Code-Splitting
+- **Echtzeit-Updates**: Sofortige UI-Updates via WebSocket
+- **Offline-Unterstützung**: Eingeschränkte Funktionalität offline
+- **Mobile-Optimierung**: Responsive Design für alle Geräte
+- **Progressives Laden**: Schrittweises Content-Laden für bessere UX
+
+### Internationalisierung
+
+- **Sprach-Unterstützung**: Vollständige englische und deutsche Übersetzungen
+- **Locale-Anpassung**: Datum-, Zeit- und Zahlenformatierung
+- **Kulturelle Anpassung**: UI-Muster für verschiedene Kulturen angepasst
+- **Einfaches Wechseln**: Sofortiges Sprach-Switching ohne Neuladen
+
+## 🆘 Fehlerbehebung
+
+### Häufige Probleme
+
+**Verbindungsprobleme**:
+- Internet-Konnektivität überprüfen
+- WebSocket-Verbindungsstatus verifizieren
+- Browser aktualisieren oder Anwendung neu starten
+
+**Upload-Probleme**:
+- Dateigröße unter 50MB-Limit verifizieren
+- Dateiformat wird unterstützt überprüfen
+- Ausreichenden Speicherplatz sicherstellen
+
+**Performance-Probleme**:
+- Browser-Cache und Cookies löschen
+- Unnötige Browser-Tabs schließen
+- Systemressourcen überprüfen (RAM, CPU)
+
+### Hilfe bekommen
+
+- **Dokumentation**: Umfassende Guides und FAQ
+- **Support-Tickets**: Probleme über das System melden
+- **Community**: Discord-Server und GitHub-Diskussionen
+- **Fehlermeldungen**: Klare, umsetzbare Fehlerbeschreibungen
 
 ---
 
-**Weitere Hilfe?** [FAQ](faq.md) | [Developer Guide](developer-guide.md) | [Support](../index.md#-support)
+**Bereit zum Starten?** Beginnen Sie mit dem [Quick Start Guide](quick-start.md) oder erkunden Sie das [Dashboard](/) um alle Features in Aktion zu sehen!
