@@ -402,7 +402,7 @@ jobs:
 ## 📚 Resources
 
 ### Documentation
-- **[API Reference](api-reference.md)** - Complete API documentation
+- **[API Reference](api.md)** - Complete API documentation
 - **[User Guide](user-guide.md)** - User-facing features
 - **[FAQ](faq.md)** - Common questions
 
@@ -440,4 +440,4 @@ jobs:
 
 ---
 
-**Ready to contribute?** [API Reference](api-reference.md) | [Deployment](deployment.md) | [Community](../index.md#-support)
+**Ready to contribute?** [API Reference](api.md) | [Architecture](architecture.md) | [Community](index.md)

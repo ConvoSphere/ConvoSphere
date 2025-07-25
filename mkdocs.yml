@@ -196,12 +196,25 @@ nav:
   - User Guide: user-guide.md
   - FAQ: faq.md
   - Developer Guide: developer-guide.md
-  - API Reference: api-reference.md
-  - Deployment: deployment.md
+  - API: api.md
+  - Architecture: architecture.md
   - Project:
     - Status: project/status.md
     - Changelog: project/changelog.md
     - Contributing: project/contributing.md
+  - Features:
+    - AI Integration: features/ai-integration.md
+    - Chat Integration: features/chat-integration-phase3.md
+    - File Upload: features/file-upload.md
+    - Hybrid Mode: features/hybrid-mode.md
+    - Internationalization: features/internationalization.md
+    - Knowledge Base: features/knowledge-base.md
+    - Performance: features/performance.md
+    - Real-time Chat: features/real-time-chat.md
+    - Security: features/security.md
+    - Tools: features/tools.md
+    - User Management: features/user-management.md
+    - WebSocket: features/websocket.md
   - Deutsch:
     - Startseite: de/index.md
     - Quick Start: de/quick-start.md

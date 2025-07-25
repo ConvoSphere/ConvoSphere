@@ -53,7 +53,7 @@ make dev
 
 - **[Developer Guide](developer-guide.md)** - Setup, Architektur, Entwicklung
 - **[API Reference](../api.md)** - Vollständige API-Dokumentation
-- **[Features Documentation](../features/)** - Detaillierte Feature-Spezifikationen
+- **[Features Documentation](../features/ai-integration.md)** - Detaillierte Feature-Spezifikationen
 - **[Architecture Guide](../architecture.md)** - Systemdesign und Komponenten
 
 ## ✨ Aktuelles Feature-Set
@@ -361,7 +361,7 @@ Siehe [Contributing Guide](../project/contributing.md) für detaillierte Informa
 
 ## 📄 License
 
-MIT License - siehe [LICENSE](../../../LICENSE) für Details.
+MIT License - siehe [LICENSE](https://github.com/your-org/convosphere/blob/main/LICENSE) für Details.
 
 ## 🆘 Support & Community
 

@@ -19,7 +19,7 @@ We welcome various types of contributions:
 
 1. **Fork the Repository**: Start by forking the main repository
 2. **Clone Your Fork**: Clone your fork to your local machine
-3. **Set Up Development Environment**: Follow the [Development Setup Guide](../development/setup.md)
+3. **Set Up Development Environment**: Follow the [Developer Guide](../developer-guide.md)
 4. **Create a Branch**: Create a feature branch for your changes
 5. **Make Changes**: Implement your changes following our coding standards
 6. **Test Your Changes**: Ensure all tests pass
@@ -33,13 +33,13 @@ We welcome various types of contributions:
 - Use meaningful variable and function names
 - Add comments for complex logic
 - Keep functions small and focused
-- Follow the [Code Style Guide](../development/code-style.md)
+- Follow the [Developer Guide](../developer-guide.md) for coding standards
 
 ### Testing
 
 - Write tests for new features
 - Ensure existing tests continue to pass
-- Follow the [Testing Guide](../development/testing.md)
+- Follow the [Testing Guide](../tests/README.md)
 - Aim for high test coverage
 
 ### Documentation
@@ -170,11 +170,11 @@ We use labels to categorize issues:
 
 ### Resources
 
-- [Development Setup](../development/setup.md)
-- [Code Style Guide](../development/code-style.md)
-- [Testing Guide](../development/testing.md)
-- [API Documentation](../api/overview.md)
-- [Architecture Overview](../architecture/overview.md)
+- [Development Setup](../developer-guide.md)
+- [Code Style Guide](../developer-guide.md)
+- [Testing Guide](../tests/README.md)
+- [API Documentation](../api.md)
+- [Architecture Overview](../architecture.md)
 
 ## 🎉 Recognition
 

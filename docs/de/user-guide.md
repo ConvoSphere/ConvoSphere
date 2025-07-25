@@ -412,6 +412,6 @@ ConvoSphere enthält erweiterte Performance-Überwachung für Entwickler:
 
 ---
 
-**Bereit zum Starten?** Beginnen Sie mit dem [Quick Start Guide](quick-start.md) oder erkunden Sie das [Dashboard](/) um alle Features in Aktion zu sehen!
+**Bereit zum Starten?** Beginnen Sie mit dem [Quick Start Guide](quick-start.md) oder erkunden Sie das [Dashboard](../index.md) um alle Features in Aktion zu sehen!
 
 **Möchten Sie beitragen?** Features mit 🚧 sind geplant und begrüßen Community-Beiträge.

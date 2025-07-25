@@ -412,6 +412,6 @@ ConvoSphere includes advanced performance monitoring accessible to developers:
 
 ---
 
-**Ready to get started?** Begin with the [Quick Start Guide](quick-start.md) or explore the [Dashboard](/) to see all features in action!
+**Ready to get started?** Begin with the [Quick Start Guide](quick-start.md) or explore the [Dashboard](index.md) to see all features in action!
 
 **Want to contribute?** Features marked with 🚧 are planned and welcome community contributions.

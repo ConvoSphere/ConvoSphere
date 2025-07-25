@@ -238,4 +238,4 @@ Neue Features werden **regelmäßig** veröffentlicht. Folgen Sie uns auf **GitH
 
 ---
 
-**Weitere Hilfe?** [User Guide](user-guide.md) | [Developer Guide](developer-guide.md) | [Support](../index.md#-support)
+**Weitere Hilfe?** [User Guide](user-guide.md) | [Developer Guide](developer-guide.md) | [Support](../index.md)

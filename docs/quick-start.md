@@ -111,4 +111,4 @@ docker-compose up --build
 
 - **GitHub Issues**: [Report Bug](https://github.com/your-org/convosphere/issues)
 - **Discord**: [Community Support](https://discord.gg/your-server)
-- **Documentation**: [Complete Guides](../index.md)
+- **Documentation**: [Complete Guides](index.md)

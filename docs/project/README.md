@@ -14,12 +14,12 @@ This directory contains comprehensive documentation for the AI Assistant Platfor
 - **[MCP Integration](../mcp_integration.md)** - Model Context Protocol implementation
 
 ### User Guides
-- **[User Manual](../user-manual.md)** - Complete user documentation and guides
-- **[Getting Started](../getting-started/)** - Quick start guides and tutorials
+- **[User Manual](../user-guide.md)** - Complete user documentation and guides
+- **[Getting Started](../quick-start.md)** - Quick start guides and tutorials
 
 ### Development
-- **[Testing Guide](../testing.md)** - Testing strategies and procedures
-- **[Deployment Guide](../deployment/)** - Production deployment instructions
+- **[Testing Guide](../tests/README.md)** - Testing strategies and procedures
+- **[Deployment Guide](../developer-guide.md)** - Production deployment instructions
 
 ## 🎯 Project Overview
 
@@ -186,7 +186,7 @@ We welcome contributions! Please see our contributing guidelines for details.
 ## 📞 Support
 
 ### Getting Help
-- **Documentation**: [docs/](../) - Comprehensive guides
+- **Documentation**: [docs/](../index.md) - Comprehensive guides
 - **Issues**: [GitHub Issues](https://github.com/your-org/chatassistant/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/your-org/chatassistant/discussions)
 
@@ -196,7 +196,7 @@ We welcome contributions! Please see our contributing guidelines for details.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](../../LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/your-org/convosphere/blob/main/LICENSE) file for details.
 
 ---
 

@@ -393,7 +393,7 @@ We welcome contributions! The project is actively developed and there are many o
 - **Documentation**: Help improve documentation and examples
 - **Testing**: Contribute to test coverage and quality assurance
 
-See our [Contributing Guide](../development/contributing.md) for more details.
+See our [Contributing Guide](contributing.md) for more details.
 
 ---
 

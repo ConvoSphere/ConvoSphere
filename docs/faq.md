@@ -282,4 +282,4 @@ Absolutely! We welcome feature suggestions through:
 
 ---
 
-**Still have questions?** [Contact Support](../index.md#-support) | [User Guide](user-guide.md) | [Developer Guide](developer-guide.md)
+**Still have questions?** [Contact Support](index.md) | [User Guide](user-guide.md) | [Developer Guide](developer-guide.md)

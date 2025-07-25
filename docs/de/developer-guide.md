@@ -437,7 +437,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ### Dokumentation
 - **[API Docs](http://localhost:8000/docs)** - Interaktive API-Dokumentation
 - **[ReDoc](http://localhost:8000/redoc)** - Alternative API-Docs
-- **[Architecture](architecture.md)** - Detaillierte Architektur
+- **[Architecture](../architecture.md)** - Detaillierte Architektur
 
 ### Community
 - **[GitHub Issues](https://github.com/your-org/convosphere/issues)** - Bug Reports
@@ -450,4 +450,4 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-**Weitere Hilfe?** [API Reference](api-reference.md) | [Deployment](deployment.md) | [FAQ](faq.md)
+**Weitere Hilfe?** [API Reference](../api.md) | [Architecture](../architecture.md) | [FAQ](faq.md)

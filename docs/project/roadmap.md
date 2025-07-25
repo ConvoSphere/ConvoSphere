@@ -323,6 +323,6 @@ ConvoSphere entwickelt sich von einer soliden Kernplattform zu einer umfassenden
 
 **Für detaillierte Informationen siehe:**
 - [Project Status](status.md)
-- [Architecture Documentation](../architecture/overview.md)
-- [API Reference](../api/overview.md)
-- [Development Guide](../development/setup.md) 
+- [Architecture Documentation](../architecture.md)
+- [API Reference](../api.md)
+- [Development Guide](../developer-guide.md) 
