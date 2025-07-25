@@ -10,6 +10,7 @@ from typing import Any
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
+from app.schemas.conversation import MessageCreate
 from app.services.ai_service import AIResponse, ai_service
 from app.services.conversation_service import ConversationService
 from fastapi import (
@@ -74,11 +75,7 @@ manager = ConnectionManager()
 
 
 # Pydantic models
-class MessageCreate(BaseModel):
-    """Create message request model."""
 
-    content: str
-    message_type: str = "text"
 
 
 class MessageResponse(BaseModel):
@@ -188,8 +185,21 @@ async def process_websocket_message(
     try:
         message_type = message_data.get("type")
         if message_type == "message":
-            content = message_data.get("content", "")
+            content = message_data.get("content", "").strip()
             sender_id = message_data.get("user_id") or user_id or ""
+            
+            # Validate content
+            if not content:
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": "Message content cannot be empty",
+                        },
+                    ),
+                )
+                return
+                
             if not sender_id:
                 await websocket.send_text(
                     json.dumps(
@@ -201,25 +211,27 @@ async def process_websocket_message(
                 )
                 return
             conversation_service = ConversationService(db)
-            user_message = await conversation_service.add_message(
+            
+            # Create MessageCreate object for user message
+            user_message_data = MessageCreate(
                 conversation_id=conversation_id,
-                user_id=sender_id,
                 content=content,
                 role="user",
+                message_type="text"
             )
+            user_message = conversation_service.add_message(user_message_data)
+            
             await manager.send_message(
                 conversation_id,
                 {
                     "type": "message",
                     "message": {
-                        "id": str(user_message.id),
-                        "content": user_message.content,
-                        "role": user_message.role,
-                        "message_type": getattr(user_message, "message_type", "text"),
-                        "timestamp": user_message.created_at.isoformat()
-                        if hasattr(user_message, "created_at")
-                        else "",
-                        "metadata": getattr(user_message, "metadata", None),
+                        "id": str(user_message["id"]),
+                        "content": user_message["content"],
+                        "role": user_message["role"],
+                        "message_type": user_message.get("message_type", "text"),
+                        "timestamp": user_message["created_at"],
+                        "metadata": user_message.get("message_metadata"),
                     },
                 },
             )
@@ -232,33 +244,30 @@ async def process_websocket_message(
                 use_tools=True,
                 max_context_chunks=5,
             )
-            assistant_message = await conversation_service.add_message(
+            
+            # Create MessageCreate object for assistant message
+            assistant_message_data = MessageCreate(
                 conversation_id=conversation_id,
-                user_id=sender_id,
                 content=ai_response.content,
                 role="assistant",
-                message_type=ai_response.message_type,
-                metadata=ai_response.metadata,
+                message_type=ai_response.message_type or "text",
+                message_metadata=ai_response.metadata
             )
+            assistant_message = conversation_service.add_message(assistant_message_data)
+            
             await manager.send_message(
                 conversation_id,
                 {
                     "type": "message",
                     "message": {
-                        "id": str(assistant_message.id),
-                        "content": assistant_message.content,
-                        "role": assistant_message.role,
-                        "message_type": getattr(
-                            assistant_message,
-                            "message_type",
-                            "text",
-                        ),
-                        "timestamp": assistant_message.created_at.isoformat()
-                        if hasattr(assistant_message, "created_at")
-                        else "",
-                        "metadata": getattr(assistant_message, "metadata", None),
-                        "tool_calls": ai_response.tool_calls,
-                        "context_used": ai_response.context_used,
+                        "id": str(assistant_message["id"]),
+                        "content": assistant_message["content"],
+                        "role": assistant_message["role"],
+                        "message_type": assistant_message.get("message_type", "text"),
+                        "timestamp": assistant_message["created_at"],
+                        "metadata": assistant_message.get("message_metadata"),
+                        "tool_calls": getattr(ai_response, 'tool_calls', None) if not hasattr(getattr(ai_response, 'tool_calls', None), '__await__') else None,
+                        "context_used": getattr(ai_response, 'context_used', None) if not hasattr(getattr(ai_response, 'context_used', None), '__await__') else None,
                     },
                 },
             )
@@ -465,14 +474,14 @@ async def send_message(
     try:
         conversation_service = ConversationService(db)
 
-        # Save user message
-        user_message = await conversation_service.add_message(
+        # Create MessageCreate object for user message
+        user_message_data = MessageCreate(
             conversation_id=conversation_id,
-            user_id=current_user_id,
             content=message_data.content,
             role="user",
             message_type=message_data.message_type,
         )
+        user_message = conversation_service.add_message(user_message_data)
 
         # Get AI response with RAG and tools
         ai_response: AIResponse = await ai_service.get_response(
@@ -485,15 +494,15 @@ async def send_message(
             max_context_chunks=max_context_chunks,
         )
 
-        # Save AI response
-        assistant_message = await conversation_service.add_message(
+        # Create MessageCreate object for assistant message
+        assistant_message_data = MessageCreate(
             conversation_id=conversation_id,
-            user_id=current_user_id,
             content=ai_response.content,
             role="assistant",
-            message_type=ai_response.message_type,
-            metadata=ai_response.metadata,
+            message_type=ai_response.message_type or "text",
+            message_metadata=ai_response.metadata
         )
+        assistant_message = conversation_service.add_message(assistant_message_data)
 
         # Index messages in Weaviate for future RAG
         try:
@@ -501,14 +510,14 @@ async def send_message(
 
             weaviate_service.index_message(
                 conversation_id=conversation_id,
-                message_id=str(user_message.id),
+                message_id=str(user_message["id"]),
                 content=message_data.content,
                 role="user",
                 metadata={"user_id": current_user_id},
             )
             weaviate_service.index_message(
                 conversation_id=conversation_id,
-                message_id=str(assistant_message.id),
+                message_id=str(assistant_message["id"]),
                 content=ai_response.content,
                 role="assistant",
                 metadata={
@@ -520,15 +529,15 @@ async def send_message(
             logger.warning(f"Failed to index messages in Weaviate: {e}")
 
         return MessageResponse(
-            id=str(assistant_message.id),
-            content=assistant_message.content,
-            role=assistant_message.role,
-            message_type=assistant_message.message_type,
-            timestamp=assistant_message.created_at.isoformat(),
+            id=str(assistant_message["id"]),
+            content=assistant_message["content"],
+            role=assistant_message["role"],
+            message_type=assistant_message.get("message_type", "text"),
+            timestamp=assistant_message["created_at"],
             metadata={
-                **(assistant_message.metadata or {}),
-                "tool_calls": ai_response.tool_calls,
-                "context_used": ai_response.context_used,
+                **(assistant_message.get("message_metadata") or {}),
+                "tool_calls": getattr(ai_response, 'tool_calls', None) if not hasattr(getattr(ai_response, 'tool_calls', None), '__await__') else None,
+                "context_used": getattr(ai_response, 'context_used', None) if not hasattr(getattr(ai_response, 'context_used', None), '__await__') else None,
             },
         )
 

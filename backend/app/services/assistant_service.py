@@ -300,11 +300,16 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Activated assistant
         """
-        return self.update_assistant(
-            assistant_id,
-            user_id,
-            status=AssistantStatus.ACTIVE,
-        )
+        assistant = self.get_assistant(assistant_id, user_id)
+        if not assistant:
+            return None
+        
+        assistant.status = AssistantStatus.ACTIVE
+        self.db.commit()
+        self.db.refresh(assistant)
+        
+        logger.info(f"Assistant activated: {assistant.name} by user {user_id}")
+        return assistant
 
     def deactivate_assistant(self, assistant_id: str, user_id: str) -> Assistant | None:
         """
@@ -317,11 +322,16 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Deactivated assistant
         """
-        return self.update_assistant(
-            assistant_id,
-            user_id,
-            status=AssistantStatus.INACTIVE,
-        )
+        assistant = self.get_assistant(assistant_id, user_id)
+        if not assistant:
+            return None
+        
+        assistant.status = AssistantStatus.INACTIVE
+        self.db.commit()
+        self.db.refresh(assistant)
+        
+        logger.info(f"Assistant deactivated: {assistant.name} by user {user_id}")
+        return assistant
 
     def add_tool_to_assistant(
         self,

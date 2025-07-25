@@ -572,6 +572,105 @@ def dev_api_test(url="http://localhost:8000"):
         print_error(f"API test failed: {e}")
 
 
+def db_reset(confirm=False):
+    """Completely reset the database - drop all tables and recreate them."""
+    if not confirm:
+        response = input(
+            "⚠️  WARNING: This will completely delete all data in the database. "
+            "This action cannot be undone. Are you sure? (yes/no): ",
+        )
+        if response.lower() != "yes":
+            print("Database reset cancelled.")
+            return
+
+    print("🗑️  Resetting database...")
+    
+    try:
+        # Step 1: Drop all tables
+        print("  📋 Dropping all tables...")
+        with engine.connect() as conn:
+            # Disable foreign key checks temporarily
+            conn.execute(text("SET session_replication_role = replica;"))
+            
+            # Get all table names
+            result = conn.execute(text("""
+                SELECT tablename FROM pg_tables 
+                WHERE schemaname = 'public' 
+                AND tablename != 'alembic_version'
+            """))
+            tables = [row[0] for row in result]
+            
+            # Drop all tables
+            for table in tables:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+            
+            # Re-enable foreign key checks
+            conn.execute(text("SET session_replication_role = DEFAULT;"))
+            conn.commit()
+        
+        print("  ✅ All tables dropped successfully")
+        
+        # Step 2: Reset Alembic version table
+        print("  📋 Resetting Alembic version table...")
+        with engine.connect() as conn:
+            conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
+            conn.commit()
+        
+        print("  ✅ Alembic version table reset")
+        
+        # Step 3: Run migrations to recreate all tables
+        print("  📋 Running migrations to recreate tables...")
+        db_migrate()
+        
+        print("  ✅ Database reset completed successfully")
+        print_success("Database has been completely reset and reinitialized")
+        
+    except Exception as e:
+        print_error(f"Database reset failed: {e}")
+        sys.exit(1)
+
+
+def db_clear_data(confirm=False):
+    """Clear all data from tables but keep the structure."""
+    if not confirm:
+        response = input(
+            "⚠️  WARNING: This will delete all data from all tables but keep the structure. "
+            "This action cannot be undone. Are you sure? (yes/no): ",
+        )
+        if response.lower() != "yes":
+            print("Data clearing cancelled.")
+            return
+
+    print("🗑️  Clearing all data from database...")
+    
+    try:
+        with engine.connect() as conn:
+            # Disable foreign key checks temporarily
+            conn.execute(text("SET session_replication_role = replica;"))
+            
+            # Get all table names
+            result = conn.execute(text("""
+                SELECT tablename FROM pg_tables 
+                WHERE schemaname = 'public' 
+                AND tablename != 'alembic_version'
+            """))
+            tables = [row[0] for row in result]
+            
+            # Truncate all tables
+            for table in tables:
+                conn.execute(text(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE"))
+            
+            # Re-enable foreign key checks
+            conn.execute(text("SET session_replication_role = DEFAULT;"))
+            conn.commit()
+        
+        print_success("All data has been cleared from the database")
+        
+    except Exception as e:
+        print_error(f"Data clearing failed: {e}")
+        sys.exit(1)
+
+
 def show_help():
     """Show help message."""
     print("ChatAssistant Admin CLI")
@@ -585,6 +684,8 @@ def show_help():
     print("  db downgrade <rev>      Downgrade to revision")
     print("  db test-connection      Test database connection")
     print("  db info                 Show database information")
+    print("  db reset                Completely reset database (drop all tables and recreate)")
+    print("  db clear-data           Clear all data but keep table structure")
     print()
     print("User Management:")
     print("  user create-admin       Create admin user")
@@ -628,6 +729,8 @@ def main():
     db_subparsers.add_parser("status", help="Show migration status")
     db_subparsers.add_parser("test-connection", help="Test database connection")
     db_subparsers.add_parser("info", help="Show database information")
+    db_subparsers.add_parser("reset", help="Completely reset database (drop all tables and recreate)")
+    db_subparsers.add_parser("clear-data", help="Clear all data but keep table structure")
 
     downgrade_parser = db_subparsers.add_parser(
         "downgrade", help="Downgrade to revision",
@@ -706,6 +809,10 @@ def main():
             db_test_connection()
         elif args.db_command == "info":
             db_info()
+        elif args.db_command == "reset":
+            db_reset()
+        elif args.db_command == "clear-data":
+            db_clear_data()
 
     elif args.command == "user":
         if args.user_command == "create-admin":

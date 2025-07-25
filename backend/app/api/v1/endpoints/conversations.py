@@ -159,11 +159,13 @@ async def add_message(
     # Check access rights
     if not service.has_conversation_access(conversation_id, str(current_user.id)):
         raise HTTPException(status_code=403, detail="Access denied")
-    return service.add_message(
+    # Create MessageCreate object with conversation_id
+    from app.schemas.conversation import MessageCreate as SchemaMessageCreate
+    message_create = SchemaMessageCreate(
         conversation_id=conversation_id,
-        user_id=str(current_user.id),
         content=message_data.content,
         role=message_data.role,
         message_type=message_data.message_type,
-        metadata=message_data.message_metadata,
+        message_metadata=message_data.message_metadata,
     )
+    return service.add_message(message_create)

@@ -6,8 +6,8 @@ from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
-from fastapi import APIRouter, Depends, Query, HTTPException
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from fastapi import APIRouter, Depends, Query, HTTPException, Path
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -165,6 +165,16 @@ async def get_default_assistant_id(
 class DefaultAssistantRequest(BaseModel):
     """Request model for setting default assistant."""
     assistant_id: str = Field(..., description="Assistant ID to set as default")
+    
+    @field_validator("assistant_id")
+    @classmethod
+    def validate_assistant_id(cls, v: str) -> str:
+        """Validate that assistant_id is a valid UUID."""
+        try:
+            UUID(v)
+            return v
+        except ValueError:
+            raise ValueError("assistant_id must be a valid UUID")
 
 @router.post("/default/set")
 async def set_default_assistant(
@@ -185,14 +195,14 @@ async def set_default_assistant(
 
 # Get assistant by ID
 @router.get("/{assistant_id}", response_model=AssistantResponse)
-async def get_assistant(
-    assistant_id: str,
+def get_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
+    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
 ):
     """Get assistant by ID."""
     service = AssistantService(db)
-    return await service.get_assistant(assistant_id, current_user_id)
+    return service.get_assistant(assistant_id, current_user_id)
 
 
 # Create assistant
@@ -210,10 +220,10 @@ def create_assistant(
 # Update assistant
 @router.put("/{assistant_id}", response_model=AssistantResponse)
 def update_assistant(
-    assistant_id: str,
     assistant_data: AssistantUpdate,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
+    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
 ):
     """Update an assistant."""
     service = AssistantService(db)
@@ -222,36 +232,36 @@ def update_assistant(
 
 # Delete assistant
 @router.delete("/{assistant_id}")
-async def delete_assistant(
-    assistant_id: str,
+def delete_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
+    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
 ):
     """Delete an assistant."""
     service = AssistantService(db)
-    await service.delete_assistant(assistant_id, current_user_id)
+    service.delete_assistant(assistant_id, current_user_id)
     return {"message": "Assistant deleted successfully"}
 
 
 # Activate assistant
 @router.post("/{assistant_id}/activate", response_model=AssistantResponse)
-async def activate_assistant(
-    assistant_id: str,
+def activate_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
+    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
 ):
     """Activate an assistant."""
     service = AssistantService(db)
-    return await service.activate_assistant(assistant_id, current_user_id)
+    return service.activate_assistant(assistant_id, current_user_id)
 
 
 # Deactivate assistant
 @router.post("/{assistant_id}/deactivate", response_model=AssistantResponse)
-async def deactivate_assistant(
-    assistant_id: str,
+def deactivate_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
+    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
 ):
     """Deactivate an assistant."""
     service = AssistantService(db)
-    return await service.deactivate_assistant(assistant_id, current_user_id)
+    return service.deactivate_assistant(assistant_id, current_user_id)

@@ -417,7 +417,7 @@ async def websocket_endpoint(
                                         "user_id": str(conversation.assistant_id),
                                         "content": response_content,
                                         "role": "assistant",
-                                        "timestamp": ai_message.timestamp.isoformat(),
+                                        "timestamp": ai_message_dict["created_at"],
                                         "messageType": "knowledge"
                                         if knowledge_documents
                                         else "text",
