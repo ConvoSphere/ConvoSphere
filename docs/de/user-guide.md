@@ -2,7 +2,7 @@
 
 ## 🎯 Überblick
 
-ConvoSphere ist eine umfassende AI-Chat-Plattform mit einer erweiterten Knowledge Base, Echtzeit-Messaging, leistungsstarken AI-Assistenten und Enterprise-Features. Dieser Guide zeigt Ihnen, wie Sie alle Funktionen effektiv nutzen.
+ConvoSphere ist eine umfassende AI-Chat-Plattform mit einer erweiterten Knowledge Base, Echtzeit-Messaging, leistungsstarken AI-Assistenten und Enterprise-Features. Dieser Guide zeigt Ihnen, wie Sie alle aktuell implementierten Funktionen effektiv nutzen.
 
 ## 🏠 Dashboard
 
@@ -32,22 +32,22 @@ Das Dashboard ist Ihre zentrale Anlaufstelle mit:
 - **Senden**: Drücken Sie `Enter` zum sofortigen Senden
 - **Neue Zeile**: Verwenden Sie `Shift+Enter` für Zeilenumbrüche
 - **Datei-Anhänge**: Klicken Sie auf das Büroklammer-Symbol zum Anhängen von Dateien
-- **Spracheingabe**: Verwenden Sie das Mikrofon-Symbol für Speech-to-Text
 
 ### Chat-Funktionen
 
-#### **Echtzeit-Features**
+#### **Echtzeit-Features** ✅
 - **Sofortige Zustellung**: Nachrichten erscheinen sofort via WebSocket
 - **Schreibindikatoren**: Sehen Sie, wann AI-Assistenten antworten
 - **Status-Updates**: Echtzeit-Verbindungs- und Verarbeitungsstatus
 - **Live-Benachrichtigungen**: Sofortige Alerts für neue Nachrichten
 
-#### **Datei-Anhänge**
+#### **Datei-Anhänge** ✅
 **Unterstützte Formate:**
 - **PDF** (.pdf) - Vollständige Textextraktion und -verarbeitung
 - **Word-Dokumente** (.docx) - Komplette Dokumentenanalyse
 - **Textdateien** (.txt) - Direkte Textverarbeitung
 - **Markdown** (.md) - Formatierter Text mit Strukturerhaltung
+- **Audio-Dateien** (.mp3, .wav) - Automatische Spracherkennung und Transkription
 
 **Features:**
 - **Größenlimit**: Bis zu 50MB pro Datei
@@ -55,22 +55,25 @@ Das Dashboard ist Ihre zentrale Anlaufstelle mit:
 - **Bulk-Upload**: Wählen Sie mehrere Dateien gleichzeitig
 - **Verarbeitungsstatus**: Echtzeit-Upload und Verarbeitungsfeedback
 
-#### **Nachrichtenformatierung**
-- **Markdown-Unterstützung**: Verwenden Sie *kursiv*, **fett**, `code`, und mehr
-- **Code-Blöcke**: Syntax-Highlighting für Programmiersprachen
-- **Listen**: Nummerierte und Aufzählungslisten
-- **Tabellen**: Formatierte Datendarstellung
-- **Links**: Automatische Link-Erkennung und -formatierung
+#### **Nachrichten-Anzeige** ✅
+- **Rich-Text-Anzeige**: Ordnungsgemäße Formatierung und Strukturerhaltung
+- **Code-Anzeige**: Formatierte Code-Blöcke
+- **Links**: Automatische Link-Erkennung und klickbare URLs
+- **Datei-Referenzen**: Klare Anzeige von angehängten oder referenzierten Dateien
 
-#### **Chat-Management**
+#### **Chat-Management** ✅
 - **Nachrichtenverlauf**: Alle Konversationen automatisch gespeichert
 - **Suche**: Finden Sie spezifische Nachrichten oder Themen
-- **Export**: Konversationsverlauf herunterladen
 - **Konversations-Threading**: Organisierte Nachrichtenabläufe
+
+### 🚧 **Geplante Chat-Features**
+- **Spracheingabe**: Speech-to-Text-Funktionalität *(UI bereit, Implementierung ausstehend)*
+- **Nachrichten-Export**: Konversationsverlauf herunterladen *(UI bereit, Backend ausstehend)*
+- **Markdown-Formatierung**: Live-Markdown-Rendering in Nachrichten *(geplant)*
 
 ## 📚 Knowledge Base
 
-### Dokumenten-Management
+### Dokumenten-Management ✅
 
 #### **Dokumente hochladen**
 1. **Navigation**: Gehen Sie zur Knowledge Base Seite (`/knowledge-base`)
@@ -85,14 +88,15 @@ Das Dashboard ist Ihre zentrale Anlaufstelle mit:
    - **Kategorie**: Dokumenten-Klassifizierung
 4. **Verarbeitung**: Automatische Textextraktion und Chunking
 
-#### **Erweiterte Upload-Features**
+#### **Erweiterte Upload-Features** ✅
 - **Bulk-Operationen**: Dutzende von Dateien auf einmal hochladen
 - **Fortschritts-Tracking**: Echtzeit-Upload und Verarbeitungsstatus
 - **Fehlerbehandlung**: Klares Feedback bei fehlgeschlagenen Uploads
 - **Duplikat-Erkennung**: Automatische Erkennung von doppeltem Inhalt
 - **Metadaten-Auto-Extraktion**: Automatische Titel- und Beschreibungsgenerierung
+- **Audio-Verarbeitung**: MP3- und WAV-Dateien mit Speech-to-Text-Transkription
 
-### Dokumenten-Organisation
+### Dokumenten-Organisation ✅
 
 #### **Tag-Management**
 - **Tag-Erstellung**: Erstellen Sie benutzerdefinierte Tags zur Organisation
@@ -117,22 +121,22 @@ Das Dashboard ist Ihre zentrale Anlaufstelle mit:
 - **Neu verarbeiten**: Inhalt neu extrahieren und chunken
 - **Teilen**: Dokumentenzugriff und Berechtigungen kontrollieren
 
-### Rollenbasierter Zugriff
+### Rollenbasierter Zugriff ✅
 
 ConvoSphere implementiert ein umfassendes rollenbasiertes Zugriffssystem:
 
 | Funktion | User | Premium | Moderator | Admin |
 |---------|------|---------|-----------|-------|
-| Dokumente hochladen | ✓ | ✓ | ✓ | ✓ |
-| Eigene Dokumente verwalten | ✓ | ✓ | ✓ | ✓ |
-| Bulk-Import | ✗ | ✓ | ✓ | ✓ |
-| Tag-Management | ✗ | ✓ | ✓ | ✓ |
-| System-Tags erstellen | ✗ | ✗ | ✗ | ✓ |
-| Alle Dokumente einsehen | ✗ | ✗ | ✓ | ✓ |
-| Benutzerverwaltung | ✗ | ✗ | ✗ | ✓ |
-| System-Statistiken | ✗ | ✗ | ✗ | ✓ |
+| Dokumente hochladen | ✅ | ✅ | ✅ | ✅ |
+| Eigene Dokumente verwalten | ✅ | ✅ | ✅ | ✅ |
+| Bulk-Import | ❌ | ✅ | ✅ | ✅ |
+| Tag-Management | ❌ | ✅ | ✅ | ✅ |
+| System-Tags erstellen | ❌ | ❌ | ❌ | ✅ |
+| Alle Dokumente einsehen | ❌ | ❌ | ✅ | ✅ |
+| Benutzerverwaltung | ❌ | ❌ | ❌ | ✅ |
+| System-Statistiken | ❌ | ❌ | ❌ | ✅ |
 
-### AI-Integration mit Knowledge Base
+### AI-Integration mit Knowledge Base ✅
 
 #### **Kontextbewusste Antworten**
 - **Automatischer Kontext**: AI verwendet automatisch relevante Dokumente
@@ -146,7 +150,7 @@ ConvoSphere implementiert ein umfassendes rollenbasiertes Zugriffssystem:
 - **Inhalts-Ranking**: Relevanteste Dokumente werden priorisiert
 - **Kontext-Fenster**: Optimale Inhalts-Chunks für AI-Verarbeitung
 
-## 🤖 AI-Assistenten
+## 🤖 AI-Assistenten ✅
 
 ### Benutzerdefinierte Assistenten erstellen
 
@@ -179,9 +183,11 @@ ConvoSphere implementiert ein umfassendes rollenbasiertes Zugriffssystem:
 
 ## 🔧 Tools & Integrationen
 
-### Model Context Protocol (MCP) Tools
+### Model Context Protocol (MCP) Tools ✅
 
 Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzugreifen:
+
+**Hinweis**: Tools-Seiten zeigen derzeit Demo-/Entwicklungsdaten zur UI-Demonstration.
 
 #### **Verfügbare Tool-Kategorien**
 - **Such-Tools**: Web-Suche, Dokumentensuche, semantische Suche
@@ -206,7 +212,7 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Ergebnis-Integration**: Tool-Ausgaben in Konversationen integriert
 - **Fehlerbehandlung**: Klares Feedback bei Tool-Ausführungsproblemen
 
-## 👤 Profil & Einstellungen
+## 👤 Profil & Einstellungen ✅
 
 ### Profil-Management (`/profile`)
 
@@ -226,7 +232,7 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Chat-Präferenzen**: Standard-Chat-Verhalten konfigurieren
 - **Performance-Einstellungen**: UI-Performance-Optionen anpassen
 
-### Benachrichtigungen
+### Benachrichtigungen ✅
 
 **Benachrichtigungs-Typen**:
 - **E-Mail-Benachrichtigungen**: E-Mail-Alerts konfigurieren
@@ -235,7 +241,7 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Häufigkeits-Kontrolle**: Benachrichtigungshäufigkeits-Limits setzen
 - **Typ-Filterung**: Wählen Sie, welche Ereignisse Benachrichtigungen auslösen
 
-## 🔐 Authentifizierung & Sicherheit
+## 🔐 Authentifizierung & Sicherheit ✅
 
 ### Account-Management
 
@@ -247,21 +253,47 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 
 **Login** (`/login`):
 - **Standard-Login**: E-Mail/Passwort-Authentifizierung
+- **SSO-Login**: Single Sign-On mit mehreren Anbietern
 - **Angemeldet bleiben**: Persistente Login-Sessions
 - **Passwort-Wiederherstellung**: Vergessene Passwörter zurücksetzen
 - **Sicherheits-Features**: Schutz vor fehlgeschlagenen Login-Versuchen
 
-### Sicherheits-Features
+### SSO-Integration ✅ ⭐
+
+**Hinweis**: ConvoSphere hat umfassende SSO-Unterstützung über typische Implementierungen hinaus
+
+**Unterstützte Anbieter**:
+- **Google**: OAuth2-Integration für Gmail und Google Workspace
+- **Microsoft**: Azure AD und Office 365 Integration
+- **GitHub**: OAuth für Entwickler und Organisationen
+- **LDAP**: Enterprise-Verzeichnis-Integration
+- **SAML 2.0**: Enterprise-SSO-Standard
+- **Custom OAuth2**: Konfiguration zusätzlicher Anbieter
+
+**SSO-Features**:
+- **Account-Verknüpfung**: Lokale Accounts mit SSO-Anbietern verknüpfen
+- **Benutzer-Bereitstellung**: Automatische Benutzererstellung aus SSO
+- **Bulk-Synchronisation**: Benutzer aus Enterprise-Verzeichnissen importieren
+- **Gruppen-Mapping**: SSO-Gruppen auf ConvoSphere-Rollen mappen
+
+### Sicherheits-Features ✅
 
 - **JWT-Authentifizierung**: Sichere token-basierte Authentifizierung
 - **Session-Management**: Automatisches Session-Timeout und -erneuerung
 - **Passwort-Sicherheit**: Starke Passwort-Anforderungen
-- **Zwei-Faktor-Authentifizierung**: Erweiterte Sicherheitsoptionen (falls aktiviert)
 - **Audit-Logging**: Account-Sicherheitsereignisse verfolgen
+- **Rate-Limiting**: Schutz vor Brute-Force-Angriffen
 
-## 👨‍💼 Admin-Features (Nur für Admins)
+### 🚧 **Geplante Sicherheits-Features**
+- **Zwei-Faktor-Authentifizierung (2FA)**: Erweiterte Sicherheitsoptionen *(geplant)*
+- **Multi-Faktor-Authentifizierung (MFA)**: Erweiterte Authentifizierungsmethoden *(geplant)*
+- **Geräte-Management**: Angemeldete Geräte verfolgen und verwalten *(geplant)*
+
+## 👨‍💼 Admin-Features (Nur für Admins) ✅
 
 ### Admin-Dashboard (`/admin`)
+
+**Hinweis**: Admin-Dashboard verwendet derzeit Demo-/Entwicklungsdaten zur UI-Demonstration.
 
 **System-Überblick**:
 - **Benutzerverwaltung**: Benutzerkonten erstellen, bearbeiten und verwalten
@@ -270,7 +302,7 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Performance-Monitoring**: Echtzeit-Systemgesundheits-Metriken
 - **Audit-Logs**: Sicherheits- und Nutzungs-Audit-Pfade
 
-### System-Monitoring (`/admin/system-status`)
+### System-Monitoring (`/admin/system-status`) ✅
 
 **Echtzeit-Metriken**:
 - **System-Gesundheit**: Server-Status und -performance
@@ -287,7 +319,7 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Backup-Management**: Daten-Backup und -wiederherstellungsoptionen
 - **Integrations-Management**: Externe Service-Konfigurationen
 
-## 💬 Konversations-Management (`/conversations`)
+## 💬 Konversations-Management (`/conversations`) ✅
 
 ### Konversations-Verlauf
 
@@ -301,12 +333,14 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 ### Konversations-Aktionen
 
 - **Fortsetzen**: Vorherige Konversationen wieder aufnehmen
-- **Export**: Konversations-Transkripte herunterladen
-- **Teilen**: Konversationen mit anderen Benutzern teilen
 - **Duplizieren**: Kopien von Konversationen erstellen
 - **Löschen**: Unerwünschte Konversationen entfernen
 
-## 🎨 Benutzererfahrungs-Features
+### 🚧 **Geplante Konversations-Features**
+- **Export**: Konversations-Transkripte herunterladen *(UI bereit, Backend ausstehend)*
+- **Teilen**: Konversationen mit anderen Benutzern teilen *(UI bereit, Implementierung ausstehend)*
+
+## 🎨 Benutzererfahrungs-Features ✅
 
 ### Theme & Anpassung
 
@@ -316,20 +350,29 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Layout-Optionen**: Seitenleiste und Layout-Präferenzen anpassen
 - **Barrierefreiheit**: Hoher Kontrast und Screen-Reader-Unterstützung
 
-### Performance-Features
+### Performance-Features ✅ ⭐
+
+**Hinweis**: ConvoSphere hat erweiterte Performance-Überwachung über typische Implementierungen hinaus
 
 - **Lazy Loading**: Schnelles Seitenladen mit Code-Splitting
 - **Echtzeit-Updates**: Sofortige UI-Updates via WebSocket
-- **Offline-Unterstützung**: Eingeschränkte Funktionalität offline
 - **Mobile-Optimierung**: Responsive Design für alle Geräte
 - **Progressives Laden**: Schrittweises Content-Laden für bessere UX
+- **Performance-Monitoring**: Echtzeit-Performance-Tracking mit Web Vitals
+- **Intelligentes Caching**: Erweiterte Cache-Verwaltung mit LRU-Eviction
+- **Memory-Management**: Automatische Speicher-Optimierung und Leak-Detection
 
-### Internationalisierung
+### Internationalisierung ✅
 
 - **Sprach-Unterstützung**: Vollständige englische und deutsche Übersetzungen
 - **Locale-Anpassung**: Datum-, Zeit- und Zahlenformatierung
 - **Kulturelle Anpassung**: UI-Muster für verschiedene Kulturen angepasst
 - **Einfaches Wechseln**: Sofortiges Sprach-Switching ohne Neuladen
+
+### 🚧 **Geplante UX-Features**
+- **Offline-Unterstützung**: Echte Offline-Funktionalität mit Service Workern *(aktuell: nur intelligentes Caching)*
+- **PWA-Features**: Progressive Web App Funktionalitäten *(geplant)*
+- **Mobile Apps**: Native iOS und Android Anwendungen *(geplant)*
 
 ## 🆘 Fehlerbehebung
 
@@ -357,6 +400,18 @@ Navigieren Sie zu **Tools** (`/tools`) oder **MCP Tools** (`/mcp-tools`) um zuzu
 - **Community**: Discord-Server und GitHub-Diskussionen
 - **Fehlermeldungen**: Klare, umsetzbare Fehlerbeschreibungen
 
+### Performance-Monitoring ✅ ⭐
+
+ConvoSphere enthält erweiterte Performance-Überwachung für Entwickler:
+
+- **Echtzeit-Metriken**: Web Vitals (FCP, LCP, FID, CLS)
+- **Memory-Tracking**: JavaScript-Heap-Nutzung und -optimierung
+- **Cache-Analytics**: Hit-Raten und Performance-Optimierung
+- **Netzwerk-Monitoring**: Verbindungsstatus und Offline-Erkennung
+- **Error-Tracking**: Automatische Fehlersammlung und -berichterstattung
+
 ---
 
 **Bereit zum Starten?** Beginnen Sie mit dem [Quick Start Guide](quick-start.md) oder erkunden Sie das [Dashboard](/) um alle Features in Aktion zu sehen!
+
+**Möchten Sie beitragen?** Features mit 🚧 sind geplant und begrüßen Community-Beiträge.

@@ -56,18 +56,17 @@ make dev
 - **[Features Documentation](../features/)** - Detaillierte Feature-Spezifikationen
 - **[Architecture Guide](../architecture.md)** - Systemdesign und Komponenten
 
-## ✨ Vollständiges Feature-Set
+## ✨ Aktuelles Feature-Set
 
-### 💬 **Echtzeit-Chat & Messaging**
+### 💬 **Echtzeit-Chat & Messaging** ✅
 - **WebSocket-basierte Konversationen** mit sofortiger Zustellung
 - **Datei-Anhänge** (PDF, DOCX, TXT, MD) bis zu 50MB
-- **Spracheingabe** mit Speech-to-Text-Funktionalität
-- **Nachrichtenformatierung** mit Markdown-Unterstützung
+- **Audio-Datei-Verarbeitung** mit automatischer Spracherkennung (ASR)
 - **Schreibindikatoren** und Echtzeit-Status
 - **Konversations-Management** mit Verlauf und Suche
-- **Nachrichten-Export** und Konversations-Backup
+- **Rich-Text-Anzeige** mit ordnungsgemäßer Formatierung
 
-### 📚 **Erweiterte Knowledge Base**
+### 📚 **Erweiterte Knowledge Base** ✅
 - **Dokumenten-Upload** mit Drag & Drop und Bulk-Import
 - **Semantische Suche** mit AI-gestützter Content-Erkennung
 - **Tag-Management** mit Tag-Clouds und Statistiken
@@ -76,8 +75,9 @@ make dev
 - **Erweiterte Filterung** nach Metadaten, Tags und Inhalten
 - **Performance-Optimierungen** mit Virtualisierung und Caching
 - **Chat-Integration** für kontextbezogene AI-Antworten
+- **Audio-Datei-Transkription** (MP3, WAV) mit durchsuchbarem Inhalt
 
-### 🤖 **AI-Integration & Assistenten**
+### 🤖 **AI-Integration & Assistenten** ✅
 - **Multiple AI-Provider** (OpenAI, Anthropic, etc.) über LiteLLM
 - **Benutzerdefinierte AI-Assistenten** mit konfigurierbaren Persönlichkeiten
 - **Kontextbezogene Antworten** unter Verwendung der Knowledge Base
@@ -85,7 +85,7 @@ make dev
 - **Assistenten-Management** mit Templates und Sharing
 - **AI-Modell-Auswahl** und Parameter-Tuning
 
-### 🔧 **Tools & Integrationen**
+### 🔧 **Tools & Integrationen** ✅
 - **MCP (Model Context Protocol)** Tool-Integration
 - **Benutzerdefinierte Tool-Entwicklung** und Management
 - **Tool-Ausführungs-Tracking** mit Performance-Metriken
@@ -93,31 +93,81 @@ make dev
 - **Such-Tools** und Rechner-Funktionen
 - **Dateiverarbeitungs-Tools** und Utilities
 
-### 👥 **Benutzerverwaltung & Administration**
+### 👥 **Benutzerverwaltung & Administration** ✅
 - **JWT-basierte Authentifizierung** mit Refresh-Tokens
+- **Umfassende SSO-Integration** (LDAP, SAML, OAuth2, Google, Microsoft, GitHub)
 - **Rollenbasierte Zugriffskontrolle** mit 4 Benutzerebenen
 - **Benutzerregistrierung** und Profilverwaltung
-- **Admin-Dashboard** mit umfassendem Systemüberblick
+- **Erweiterte Admin-Dashboard** mit Systemüberblick
 - **Benutzer-Analytics** und Aktivitäts-Tracking
-- **Audit-Logging** und Sicherheits-Monitoring
-- **SSO-Integration** und Account-Verknüpfung
+- **Umfassendes Audit-Logging** und Sicherheits-Monitoring
+- **SSO-Account-Verknüpfung** und Benutzer-Bereitstellung
+- **Bulk-Benutzer-Synchronisation** von SSO-Providern
 
-### 🎨 **Benutzererfahrung & Interface**
+### 🎨 **Benutzererfahrung & Interface** ✅
 - **Modernes React 18** Frontend mit TypeScript
 - **Responsive Design** optimiert für Mobile, Tablet und Desktop
 - **Dark/Light Theme** Switching mit System-Präferenz-Erkennung
 - **Internationalisierung** (Englisch/Deutsch) mit i18next
-- **Performance-Monitoring** mit Echtzeit-Metriken
 - **Error Boundaries** und umfassendes Error Handling
 - **Lazy Loading** und Code Splitting für optimale Performance
 
-### 📊 **Performance & Monitoring**
-- **Echtzeit-Performance-Tracking** mit detaillierten Metriken
-- **System-Health-Monitoring** und Status-Dashboard
-- **Speicher-Optimierung** und Leak-Detection
-- **Response-Time-Monitoring** und API-Performance
-- **Benutzeraktivitäts-Analytics** und Nutzungsstatistiken
+### 📊 **Erweiterte Performance & Monitoring** ✅ ⭐
+**Hinweis: Dieses Feature ist umfassender als typische Implementierungen**
+- **Echtzeit-Performance-Tracking** mit Web Vitals (FCP, LCP, FID, CLS)
+- **Speicher-Monitoring** mit JavaScript Heap-Analyse
+- **Navigation-Timing-Analyse** mit detaillierten Metriken
 - **Error-Tracking** und automatisierte Berichterstattung
+- **Cache-Performance-Monitoring** mit Hit-Raten und Optimierung
+- **Netzwerk-Status-Monitoring** und Offline-Erkennung
+- **Performance-Visualisierung** mit Charts und Echtzeit-Dashboards
+- **System-Health-Monitoring** mit Server-Metriken
+- **Datenbank-Performance** Tracking
+
+### 🔄 **Intelligentes Caching-System** ✅ ⭐
+**Hinweis: Erweiterte Caching-Implementierung mit intelligentem Management**
+- **Multi-Level-Caching** mit Größen- und TTL-Management
+- **LRU-Eviction** mit Zugriffshäufigkeits-Tracking
+- **Automatisches Cache-Warming** für häufig zugerufene Daten
+- **Cache-Hit-Rate-Optimierung** mit Performance-Analytics
+- **Memory-Management** mit konfigurierbaren Limits
+- **Cache-Statistiken** und Monitoring-Dashboard
+
+## 🚧 **Geplante Features** (In Entwicklung)
+
+### 🎤 **Voice & Speech Features** (Geplant)
+- **Spracheingabe** mit Speech-to-Text-Funktionalität *(UI bereit, Implementierung ausstehend)*
+- **Sprachnachrichten-Aufnahme** und Wiedergabe
+- **Mehrsprachige Spracherkennung**
+
+### 📤 **Erweiterte Export & Sharing** (Geplant)
+- **Konversations-Export** zu PDF, JSON und anderen Formaten *(UI bereit, Backend ausstehend)*
+- **Konversations-Sharing** mit anderen Benutzern *(UI bereit, Implementierung ausstehend)*
+- **Bulk-Konversations-Management** und Archivierung
+
+### ✨ **Rich Text & Formatierung** (Geplant)
+- **Markdown-Nachrichten-Formatierung** mit Live-Vorschau *(Placeholder-Tests vorhanden)*
+- **Rich-Text-Editor** mit Formatierungs-Toolbar
+- **Code-Syntax-Highlighting** in Nachrichten
+- **Tabellen- und Listen-Formatierung** Support
+
+### 🔐 **Erweiterte Sicherheit** (Geplant)
+- **Zwei-Faktor-Authentifizierung (2FA)** mit Authenticator-Apps
+- **Multi-Faktor-Authentifizierung (MFA)** Optionen
+- **Erweiterte Session-Management** mit Geräte-Tracking
+- **Sicherheits-Audit-Dashboard** mit Bedrohungs-Erkennung
+
+### 📱 **Offline & Mobile** (Geplant)
+- **Echte Offline-Funktionalität** mit Service Workern *(aktuell: nur intelligentes Caching)*
+- **Progressive Web App (PWA)** Features
+- **Mobile App** für iOS und Android
+- **Offline-Dokumenten-Verarbeitung** und Synchronisation
+
+### 🧠 **Erweiterte AI-Features** (Geplant)
+- **Conversation Intelligence** mit Sentiment-Analyse
+- **Intelligente Konversations-Zusammenfassung**
+- **AI-gestützte Content-Empfehlungen**
+- **Multi-modale AI** Integration (Text, Bild, Audio)
 
 ## 🏗️ Architektur
 
@@ -131,16 +181,20 @@ graph TB
         State[Zustand State Management]
         Router[React Router]
         Lazy[Lazy Loading]
+        Cache[Intelligenter Cache Manager]
+        Perf[Performance Monitor]
     end
     
     subgraph "Backend (FastAPI)"
         API[REST API]
         WS_Server[WebSocket Server]
         Auth[JWT Authentication]
+        SSO[Umfassendes SSO]
         AI[AI Services]
         KB[Knowledge Base]
         Tools[MCP Tools]
         Admin[Admin Services]
+        ASR[Audio-Spracherkennung]
     end
     
     subgraph "Daten-Layer"
@@ -152,6 +206,7 @@ graph TB
     
     subgraph "Externe Services"
         AI_Providers[AI Provider<br/>OpenAI, Anthropic, etc.]
+        SSO_Providers[SSO Provider<br/>LDAP, SAML, OAuth2]
         MCP_Tools[MCP Tools<br/>Externe Tools]
         Monitor[Monitoring<br/>Performance & Health]
     end
@@ -161,15 +216,20 @@ graph TB
     State --> UI
     Router --> UI
     Lazy --> UI
+    Cache --> UI
+    Perf --> UI
     
     API --> Auth
+    API --> SSO
     API --> AI
     API --> KB
     API --> Tools
     API --> Admin
+    API --> ASR
     WS_Server --> Auth
     
     Auth --> PG
+    SSO --> SSO_Providers
     AI --> AI_Providers
     AI --> Redis
     KB --> Weaviate
@@ -177,6 +237,7 @@ graph TB
     Tools --> MCP_Tools
     Admin --> PG
     Admin --> Monitor
+    ASR --> Storage
     
     API --> PG
     API --> Redis
@@ -192,6 +253,8 @@ graph TB
 - **WebSocket** Client für Echtzeit-Kommunikation
 - **i18next** für Internationalisierung (EN/DE)
 - **Vite** für schnelle Entwicklung und optimierte Builds
+- **Custom Performance Monitor** mit Web Vitals
+- **Intelligenter Cache Manager** mit LRU-Eviction
 
 ### **Backend Stack**
 - **FastAPI** modernes, schnelles Web-Framework mit Auto-Dokumentation
@@ -201,6 +264,8 @@ graph TB
 - **LiteLLM** AI-Provider-Abstraktions-Layer
 - **JWT** Authentifizierung mit Refresh-Tokens
 - **WebSocket** für Echtzeit-Messaging
+- **Umfassendes SSO** (LDAP, SAML, OAuth2)
+- **Docling** für Dokumentenverarbeitung mit ASR
 
 ### **Datenbank & Storage**
 - **PostgreSQL 13+** primäre Datenbank
@@ -224,6 +289,7 @@ graph TB
 - **Dateiverarbeitung**: Verarbeitet 50MB+ Dateien effizient
 - **Echtzeit-Messaging**: < 100ms Nachrichtenzustellung
 - **Such-Performance**: Sub-Sekunden semantische Suchergebnisse
+- **Cache-Hit-Rate**: 85%+ für häufig zugerufene Daten
 
 ### **Test-Coverage**
 - **Backend Tests**: 90%+ Coverage mit Unit-, Integration- und Performance-Tests
@@ -271,14 +337,16 @@ ConvoSphere bietet eine umfassende Web-Oberfläche mit folgenden Seiten:
 - **💬 Chat** - Haupt-Chat-Interface mit AI-Assistenten
 - **📚 Knowledge Base** - Dokumenten-Management und Suche
 - **🤖 Assistants** - AI-Assistenten-Erstellung und -Management
-- **🔧 Tools** - Tool-Integration und MCP-Management
+- **🔧 Tools** - Tool-Integration und MCP-Management *(Demo-/Entwicklungsdaten)*
 - **👤 Profile** - Benutzerprofil und Einstellungen
 - **⚙️ Settings** - Anwendungskonfiguration
-- **🔐 Authentication** - Login und Registrierung
-- **👨‍💼 Admin** - Administratives Dashboard (nur für Admins)
+- **🔐 Authentication** - Login und Registrierung mit SSO-Optionen
+- **👨‍💼 Admin** - Administratives Dashboard *(Demo-/Entwicklungsdaten)*
 - **💬 Conversations** - Konversationsverlauf und -management
 - **🔧 MCP Tools** - Model Context Protocol Tools
 - **📊 System Status** - Echtzeit-System-Monitoring
+
+**Hinweis**: Admin-Dashboard und Tools-Seiten verwenden derzeit Demo-/Entwicklungsdaten zur UI-Demonstration.
 
 ## 🤝 Contributing
 
