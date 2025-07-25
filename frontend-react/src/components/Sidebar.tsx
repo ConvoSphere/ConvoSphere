@@ -32,6 +32,7 @@ const Sidebar: React.FC = () => {
     borderRight: 0,
     backgroundColor: colors.colorBgContainer,
     color: colors.colorTextBase,
+    padding: '8px',
   };
 
   const logoStyle: React.CSSProperties = {

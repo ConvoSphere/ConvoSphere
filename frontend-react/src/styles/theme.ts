@@ -45,6 +45,16 @@ export const lightTheme = {
     boxShadowSecondary: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     boxShadowTertiary: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     
+    // Neue Farben für erweiterte UI
+    colorNeutral: '#6B7280',
+    colorNeutralHover: '#4B5563',
+    colorNeutralActive: '#374151',
+    
+    // Gradient Farben
+    colorGradientPrimary: 'linear-gradient(135deg, #23224A 0%, #5BC6E8 100%)',
+    colorGradientSecondary: 'linear-gradient(135deg, #5BC6E8 0%, #B6E74B 100%)',
+    colorGradientAccent: 'linear-gradient(135deg, #B6E74B 0%, #F59E0B 100%)',
+    
     // Chat-spezifische Farben
     colorChatUserBubble: '#5BC6E8', // Soft Azure für User Messages
     colorChatUserText: '#23224A', // Deep Indigo Text in User Bubbles
@@ -106,6 +116,16 @@ export const darkTheme = {
     boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)',
     boxShadowSecondary: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
     boxShadowTertiary: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)',
+    
+    // Neue Farben für erweiterte UI (Dunkel)
+    colorNeutral: '#9CA3AF',
+    colorNeutralHover: '#D1D5DB',
+    colorNeutralActive: '#F3F4F6',
+    
+    // Gradient Farben (Dunkel)
+    colorGradientPrimary: 'linear-gradient(135deg, #5BC6E8 0%, #23224A 100%)',
+    colorGradientSecondary: 'linear-gradient(135deg, #B6E74B 0%, #5BC6E8 100%)',
+    colorGradientAccent: 'linear-gradient(135deg, #F59E0B 0%, #B6E74B 100%)',
     
     // Chat-spezifische Farben
     colorChatUserBubble: '#4AB5D7', // Abgedunkelter Azure für User Messages
