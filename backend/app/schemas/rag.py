@@ -48,39 +48,64 @@ class RAGConfig(BaseModel):
 
     # Basic Configuration
     name: str = Field(
-        ..., min_length=1, max_length=100, description="RAG configuration name",
+        ...,
+        min_length=1,
+        max_length=100,
+        description="RAG configuration name",
     )
     description: str = Field(
-        ..., max_length=500, description="RAG configuration description",
+        ...,
+        max_length=500,
+        description="RAG configuration description",
     )
     enabled: bool = Field(default=True, description="Whether RAG is enabled")
 
     # Retrieval Configuration
     strategy: RAGStrategy = Field(
-        default=RAGStrategy.SEMANTIC, description="Retrieval strategy",
+        default=RAGStrategy.SEMANTIC,
+        description="Retrieval strategy",
     )
     max_context_length: int = Field(
-        default=4000, ge=1000, le=32000, description="Maximum context length in tokens",
+        default=4000,
+        ge=1000,
+        le=32000,
+        description="Maximum context length in tokens",
     )
     max_results: int = Field(
-        default=5, ge=1, le=20, description="Maximum number of results to retrieve",
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum number of results to retrieve",
     )
     similarity_threshold: float = Field(
-        default=0.7, ge=0.0, le=1.0, description="Minimum similarity threshold",
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Minimum similarity threshold",
     )
 
     # Context Ranking
     ranking_method: ContextRankingMethod = Field(
-        default=ContextRankingMethod.RELEVANCE, description="Context ranking method",
+        default=ContextRankingMethod.RELEVANCE,
+        description="Context ranking method",
     )
     diversity_penalty: float = Field(
-        default=0.1, ge=0.0, le=1.0, description="Diversity penalty for ranking",
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description="Diversity penalty for ranking",
     )
     freshness_weight: float = Field(
-        default=0.2, ge=0.0, le=1.0, description="Weight for content freshness",
+        default=0.2,
+        ge=0.0,
+        le=1.0,
+        description="Weight for content freshness",
     )
     authority_weight: float = Field(
-        default=0.3, ge=0.0, le=1.0, description="Weight for source authority",
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Weight for source authority",
     )
 
     # Embedding Configuration
@@ -89,56 +114,84 @@ class RAGConfig(BaseModel):
         description="Embedding model",
     )
     embedding_dimensions: int = Field(
-        default=1536, ge=384, le=3072, description="Embedding dimensions",
+        default=1536,
+        ge=384,
+        le=3072,
+        description="Embedding dimensions",
     )
     chunk_size: int = Field(
-        default=1000, ge=100, le=4000, description="Text chunk size for embedding",
+        default=1000,
+        ge=100,
+        le=4000,
+        description="Text chunk size for embedding",
     )
     chunk_overlap: int = Field(
-        default=200, ge=0, le=1000, description="Chunk overlap in characters",
+        default=200,
+        ge=0,
+        le=1000,
+        description="Chunk overlap in characters",
     )
 
     # Knowledge Base Integration
     knowledge_sources: list[str] = Field(
-        default_factory=list, description="Knowledge base sources to search",
+        default_factory=list,
+        description="Knowledge base sources to search",
     )
     include_conversation_history: bool = Field(
-        default=True, description="Include conversation history in search",
+        default=True,
+        description="Include conversation history in search",
     )
     conversation_history_limit: int = Field(
-        default=10, ge=0, le=50, description="Number of recent messages to include",
+        default=10,
+        ge=0,
+        le=50,
+        description="Number of recent messages to include",
     )
 
     # Advanced Features
     dynamic_context_selection: bool = Field(
-        default=True, description="Enable dynamic context selection",
+        default=True,
+        description="Enable dynamic context selection",
     )
     context_compression: bool = Field(
-        default=False, description="Enable context compression",
+        default=False,
+        description="Enable context compression",
     )
     reranking_enabled: bool = Field(default=True, description="Enable result reranking")
     cache_results: bool = Field(default=True, description="Cache retrieval results")
 
     # Performance Configuration
     timeout_seconds: float = Field(
-        default=30.0, ge=5.0, le=300.0, description="Retrieval timeout in seconds",
+        default=30.0,
+        ge=5.0,
+        le=300.0,
+        description="Retrieval timeout in seconds",
     )
     max_concurrent_searches: int = Field(
-        default=5, ge=1, le=20, description="Maximum concurrent searches",
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum concurrent searches",
     )
     batch_size: int = Field(
-        default=10, ge=1, le=100, description="Batch size for processing",
+        default=10,
+        ge=1,
+        le=100,
+        description="Batch size for processing",
     )
 
     # Metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional configuration metadata",
+        default_factory=dict,
+        description="Additional configuration metadata",
     )
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Configuration creation timestamp",
+        default_factory=datetime.now,
+        description="Configuration creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now, description="Configuration update timestamp",
+        default_factory=datetime.now,
+        description="Configuration update timestamp",
     )
 
     @field_validator("name")
@@ -210,26 +263,38 @@ class RAGRequest(BaseModel):
 
     # Override configuration
     max_results: int | None = Field(
-        None, ge=1, le=20, description="Override max results",
+        None,
+        ge=1,
+        le=20,
+        description="Override max results",
     )
     similarity_threshold: float | None = Field(
-        None, ge=0.0, le=1.0, description="Override similarity threshold",
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Override similarity threshold",
     )
     knowledge_sources: list[str] | None = Field(
-        None, description="Override knowledge sources",
+        None,
+        description="Override knowledge sources",
     )
 
     # Context options
     include_conversation_history: bool | None = Field(
-        None, description="Override conversation history inclusion",
+        None,
+        description="Override conversation history inclusion",
     )
     conversation_history_limit: int | None = Field(
-        None, ge=0, le=50, description="Override history limit",
+        None,
+        ge=0,
+        le=50,
+        description="Override history limit",
     )
 
     # Metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Request metadata",
+        default_factory=dict,
+        description="Request metadata",
     )
 
     @field_validator("query")
@@ -255,7 +320,8 @@ class RAGResult(BaseModel):
     content: str = Field(..., description="Retrieved content")
     source: str = Field(..., description="Content source")
     source_type: str = Field(
-        ..., description="Source type (document, conversation, etc.)",
+        ...,
+        description="Source type (document, conversation, etc.)",
     )
     source_id: str = Field(..., description="Source ID")
 
@@ -271,7 +337,8 @@ class RAGResult(BaseModel):
 
     # Additional metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Result metadata",
+        default_factory=dict,
+        description="Result metadata",
     )
 
     model_config = {
@@ -291,7 +358,9 @@ class RAGResponse(BaseModel):
     total_results: int = Field(..., ge=0, description="Total results found")
     retrieval_time: float = Field(..., ge=0.0, description="Retrieval time in seconds")
     processing_time: float = Field(
-        ..., ge=0.0, description="Processing time in seconds",
+        ...,
+        ge=0.0,
+        description="Processing time in seconds",
     )
 
     # Context information
@@ -304,7 +373,8 @@ class RAGResponse(BaseModel):
 
     # Metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Response metadata",
+        default_factory=dict,
+        description="Response metadata",
     )
 
     model_config = {
@@ -319,7 +389,8 @@ class RAGContext(BaseModel):
     query: str = Field(..., description="Original query")
     retrieved_results: list[RAGResult] = Field(..., description="Retrieved results")
     conversation_history: list[dict[str, Any]] = Field(
-        default_factory=list, description="Conversation history",
+        default_factory=list,
+        description="Conversation history",
     )
 
     # Context composition
@@ -330,12 +401,14 @@ class RAGContext(BaseModel):
     # Context metadata
     sources_used: list[str] = Field(..., description="Sources used in context")
     relevance_summary: dict[str, float] = Field(
-        default_factory=dict, description="Relevance summary by source",
+        default_factory=dict,
+        description="Relevance summary by source",
     )
 
     # Generation hints
     generation_hints: dict[str, Any] = Field(
-        default_factory=dict, description="Hints for AI generation",
+        default_factory=dict,
+        description="Hints for AI generation",
     )
 
     model_config = {
@@ -355,35 +428,47 @@ class RAGMetrics(BaseModel):
     # Timing metrics
     avg_retrieval_time: float = Field(..., ge=0.0, description="Average retrieval time")
     avg_processing_time: float = Field(
-        ..., ge=0.0, description="Average processing time",
+        ...,
+        ge=0.0,
+        description="Average processing time",
     )
     avg_total_time: float = Field(..., ge=0.0, description="Average total time")
 
     # Quality metrics
     avg_similarity_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Average similarity score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Average similarity score",
     )
     avg_relevance_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Average relevance score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Average relevance score",
     )
     cache_hit_rate: float = Field(..., ge=0.0, le=1.0, description="Cache hit rate")
 
     # Source metrics
     source_usage: dict[str, int] = Field(
-        default_factory=dict, description="Usage by source",
+        default_factory=dict,
+        description="Usage by source",
     )
     strategy_usage: dict[str, int] = Field(
-        default_factory=dict, description="Usage by strategy",
+        default_factory=dict,
+        description="Usage by strategy",
     )
 
     # Error metrics
     error_counts: dict[str, int] = Field(
-        default_factory=dict, description="Error counts by type",
+        default_factory=dict,
+        description="Error counts by type",
     )
 
     # Timestamp
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Metrics timestamp",
+        default_factory=datetime.now,
+        description="Metrics timestamp",
     )
 
     model_config = {
@@ -396,10 +481,15 @@ class RAGConfigCreate(BaseModel):
     """RAG configuration creation request."""
 
     name: str = Field(
-        ..., min_length=1, max_length=100, description="Configuration name",
+        ...,
+        min_length=1,
+        max_length=100,
+        description="Configuration name",
     )
     description: str = Field(
-        ..., max_length=500, description="Configuration description",
+        ...,
+        max_length=500,
+        description="Configuration description",
     )
     config: RAGConfig = Field(..., description="RAG configuration")
 
@@ -413,10 +503,15 @@ class RAGConfigUpdate(BaseModel):
     """RAG configuration update request."""
 
     name: str | None = Field(
-        None, min_length=1, max_length=100, description="Configuration name",
+        None,
+        min_length=1,
+        max_length=100,
+        description="Configuration name",
     )
     description: str | None = Field(
-        None, max_length=500, description="Configuration description",
+        None,
+        max_length=500,
+        description="Configuration description",
     )
     config: RAGConfig | None = Field(None, description="RAG configuration")
 
@@ -449,7 +544,9 @@ class RAGConfigList(BaseModel):
     total: int = Field(..., ge=0, description="Total number of configurations")
     skip: int = Field(..., ge=0, description="Number of configurations skipped")
     limit: int = Field(
-        ..., ge=1, description="Maximum number of configurations returned",
+        ...,
+        ge=1,
+        description="Maximum number of configurations returned",
     )
 
     model_config = {

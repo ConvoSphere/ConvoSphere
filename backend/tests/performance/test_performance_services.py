@@ -421,7 +421,8 @@ class TestPerformanceMonitorFunctionality:
 
         # Test invalid metric
         with pytest.raises(
-            ValueError, match=".*",
+            ValueError,
+            match=".*",
         ):  # match beliebig, da keine spezifische Fehlermeldung
             self.monitor.record_metric("invalid")
 

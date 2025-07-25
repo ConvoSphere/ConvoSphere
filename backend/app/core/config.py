@@ -82,7 +82,8 @@ class Settings(BaseSettings):
     litellm_max_tokens: int = Field(default=4096, description="LiteLLM max tokens")
     litellm_temperature: float = Field(default=0.7, description="LiteLLM temperature")
     litellm_proxy_host: str | None = Field(
-        default=None, description="LiteLLM proxy host",
+        default=None,
+        description="LiteLLM proxy host",
     )
 
     # Weaviate Configuration
@@ -153,10 +154,12 @@ class Settings(BaseSettings):
     # Google OAuth2
     sso_google_enabled: bool = Field(default=False, description="Enable Google SSO")
     sso_google_client_id: str | None = Field(
-        default=None, description="Google OAuth2 client ID",
+        default=None,
+        description="Google OAuth2 client ID",
     )
     sso_google_client_secret: str | None = Field(
-        default=None, description="Google OAuth2 client secret",
+        default=None,
+        description="Google OAuth2 client secret",
     )
     sso_google_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/google",
@@ -165,29 +168,35 @@ class Settings(BaseSettings):
 
     # Microsoft OAuth2
     sso_microsoft_enabled: bool = Field(
-        default=False, description="Enable Microsoft SSO",
+        default=False,
+        description="Enable Microsoft SSO",
     )
     sso_microsoft_client_id: str | None = Field(
-        default=None, description="Microsoft OAuth2 client ID",
+        default=None,
+        description="Microsoft OAuth2 client ID",
     )
     sso_microsoft_client_secret: str | None = Field(
-        default=None, description="Microsoft OAuth2 client secret",
+        default=None,
+        description="Microsoft OAuth2 client secret",
     )
     sso_microsoft_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/microsoft",
         description="Microsoft OAuth2 redirect URI",
     )
     sso_microsoft_tenant_id: str | None = Field(
-        default=None, description="Microsoft tenant ID",
+        default=None,
+        description="Microsoft tenant ID",
     )
 
     # GitHub OAuth2
     sso_github_enabled: bool = Field(default=False, description="Enable GitHub SSO")
     sso_github_client_id: str | None = Field(
-        default=None, description="GitHub OAuth2 client ID",
+        default=None,
+        description="GitHub OAuth2 client ID",
     )
     sso_github_client_secret: str | None = Field(
-        default=None, description="GitHub OAuth2 client secret",
+        default=None,
+        description="GitHub OAuth2 client secret",
     )
     sso_github_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/github",
@@ -197,7 +206,8 @@ class Settings(BaseSettings):
     # SAML Configuration
     sso_saml_enabled: bool = Field(default=False, description="Enable SAML SSO")
     sso_saml_metadata_url: str | None = Field(
-        default=None, description="SAML metadata URL",
+        default=None,
+        description="SAML metadata URL",
     )
     sso_saml_entity_id: str = Field(
         default="http://localhost:8000",
@@ -208,10 +218,12 @@ class Settings(BaseSettings):
         description="SAML assertion consumer service URL",
     )
     sso_saml_cert_file: str | None = Field(
-        default=None, description="SAML certificate file path",
+        default=None,
+        description="SAML certificate file path",
     )
     sso_saml_key_file: str | None = Field(
-        default=None, description="SAML private key file path",
+        default=None,
+        description="SAML private key file path",
     )
 
     # OIDC Configuration
@@ -219,7 +231,8 @@ class Settings(BaseSettings):
     sso_oidc_issuer_url: str | None = Field(default=None, description="OIDC issuer URL")
     sso_oidc_client_id: str | None = Field(default=None, description="OIDC client ID")
     sso_oidc_client_secret: str | None = Field(
-        default=None, description="OIDC client secret",
+        default=None,
+        description="OIDC client secret",
     )
     sso_oidc_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/oidc",
@@ -228,19 +241,23 @@ class Settings(BaseSettings):
 
     # Registration
     registration_enabled: bool = Field(
-        default=True, json_schema_extra={"env": "REGISTRATION_ENABLED"},
+        default=True,
+        json_schema_extra={"env": "REGISTRATION_ENABLED"},
     )
 
     performance_monitoring_enabled: bool = Field(
-        default=True, json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"},
+        default=True,
+        json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"},
     )
     performance_monitoring_interval: int = Field(
-        default=60, json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"},
+        default=60,
+        json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"},
     )
     performance_alert_thresholds: dict = Field(default_factory=dict)
 
     default_ai_model: str = Field(
-        default="gpt-4", json_schema_extra={"env": "DEFAULT_AI_MODEL"},
+        default="gpt-4",
+        json_schema_extra={"env": "DEFAULT_AI_MODEL"},
     )
 
     @field_validator("secret_key")

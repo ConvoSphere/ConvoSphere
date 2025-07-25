@@ -104,7 +104,10 @@ class TestRAGService:
 
     @pytest.mark.asyncio
     async def test_retrieve_with_cache_hit(
-        self, rag_service, sample_request, sample_config,
+        self,
+        rag_service,
+        sample_request,
+        sample_config,
     ):
         """Test RAG retrieval with cache hit."""
         cached_response = RAGResponse(
@@ -121,7 +124,9 @@ class TestRAGService:
         )
 
         with patch.object(
-            rag_service, "_get_cached_result", return_value=cached_response,
+            rag_service,
+            "_get_cached_result",
+            return_value=cached_response,
         ):
             response = await rag_service.retrieve(sample_request, sample_config)
 
@@ -169,7 +174,9 @@ class TestRAGService:
             ),
         ):
             results = await rag_service._semantic_retrieval(
-                sample_request, sample_config, [],
+                sample_request,
+                sample_config,
+                [],
             )
 
             assert len(results) == 1  # noqa: S101
@@ -186,11 +193,15 @@ class TestRAGService:
                 return_value=[{"content": "semantic"}],
             ),
             patch.object(
-                rag_service, "_keyword_retrieval", return_value=[{"content": "keyword"}],
+                rag_service,
+                "_keyword_retrieval",
+                return_value=[{"content": "keyword"}],
             ),
         ):
             results = await rag_service._hybrid_retrieval(
-                sample_request, sample_config, [],
+                sample_request,
+                sample_config,
+                [],
             )
 
             assert len(results) == 2  # noqa: S101
@@ -208,7 +219,9 @@ class TestRAGService:
             return_value=mock_results,
         ):
             results = await rag_service._keyword_retrieval(
-                sample_request, sample_config, [],
+                sample_request,
+                sample_config,
+                [],
             )
 
             assert len(results) > 0  # noqa: S101
@@ -216,7 +229,10 @@ class TestRAGService:
 
     @pytest.mark.asyncio
     async def test_contextual_retrieval(
-        self, rag_service, sample_request, sample_config,
+        self,
+        rag_service,
+        sample_request,
+        sample_config,
     ):
         """Test contextual retrieval strategy."""
         conversation_history = [{"content": "previous message"}]
@@ -228,7 +244,9 @@ class TestRAGService:
             return_value=mock_results,
         ):
             results = await rag_service._contextual_retrieval(
-                sample_request, sample_config, conversation_history,
+                sample_request,
+                sample_config,
+                conversation_history,
             )
 
             assert len(results) == 1  # noqa: S101
@@ -236,7 +254,10 @@ class TestRAGService:
 
     @pytest.mark.asyncio
     async def test_adaptive_retrieval_technical(
-        self, rag_service, sample_request, sample_config,
+        self,
+        rag_service,
+        sample_request,
+        sample_config,
     ):
         """Test adaptive retrieval for technical queries."""
         sample_request.query = "API function method class"
@@ -247,7 +268,9 @@ class TestRAGService:
             return_value=[{"content": "technical result"}],
         ):
             results = await rag_service._adaptive_retrieval(
-                sample_request, sample_config, [],
+                sample_request,
+                sample_config,
+                [],
             )
 
             assert len(results) == 1  # noqa: S101
@@ -255,7 +278,10 @@ class TestRAGService:
 
     @pytest.mark.asyncio
     async def test_adaptive_retrieval_conversational(
-        self, rag_service, sample_request, sample_config,
+        self,
+        rag_service,
+        sample_request,
+        sample_config,
     ):
         """Test adaptive retrieval for conversational queries."""
         sample_request.query = "how can you help me please"
@@ -266,7 +292,9 @@ class TestRAGService:
             return_value=[{"content": "conversational result"}],
         ):
             results = await rag_service._adaptive_retrieval(
-                sample_request, sample_config, [],
+                sample_request,
+                sample_config,
+                [],
             )
 
             assert len(results) == 1  # noqa: S101
@@ -299,7 +327,9 @@ class TestRAGService:
         ]
 
         results = await rag_service._process_results(
-            raw_results, sample_request, sample_config,
+            raw_results,
+            sample_request,
+            sample_config,
         )
 
         assert len(results) == 2  # noqa: S101

@@ -51,7 +51,10 @@ class AgentCollaborationRequest(BaseModel):
     """Request for agent collaboration."""
 
     agent_ids: list[str] = Field(
-        ..., min_length=2, max_length=5, description="Agent IDs to collaborate",
+        ...,
+        min_length=2,
+        max_length=5,
+        description="Agent IDs to collaborate",
     )
     conversation_id: str = Field(..., description="Conversation ID")
     user_id: str = Field(..., description="User ID")
@@ -66,7 +69,8 @@ class AgentCollaborationRequest(BaseModel):
         description="Coordination strategy",
     )
     shared_context: dict[str, Any] = Field(
-        default_factory=dict, description="Shared context",
+        default_factory=dict,
+        description="Shared context",
     )
 
     @field_validator("agent_ids")
@@ -90,16 +94,23 @@ class AgentPerformanceMetrics(BaseModel):
     conversation_id: str = Field(..., description="Conversation ID")
     response_time: float = Field(..., ge=0, description="Average response time")
     success_rate: float = Field(
-        ..., ge=0, le=100, description="Success rate percentage",
+        ...,
+        ge=0,
+        le=100,
+        description="Success rate percentage",
     )
     user_satisfaction: float = Field(
-        default=0.0, ge=0, le=5, description="User satisfaction score",
+        default=0.0,
+        ge=0,
+        le=5,
+        description="User satisfaction score",
     )
     tool_usage_count: int = Field(default=0, ge=0, description="Number of tools used")
     tokens_used: int = Field(default=0, ge=0, description="Total tokens used")
     error_count: int = Field(default=0, ge=0, description="Number of errors")
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Metrics timestamp",
+        default_factory=datetime.now,
+        description="Metrics timestamp",
     )
 
     model_config = {
@@ -116,22 +127,28 @@ class MultiAgentConversation(BaseModel):
     agents: list[str] = Field(..., min_length=1, description="Participating agent IDs")
     current_agent: str = Field(..., description="Currently active agent")
     conversation_flow: list[dict[str, Any]] = Field(
-        default_factory=list, description="Conversation flow",
+        default_factory=list,
+        description="Conversation flow",
     )
     collaboration_mode: bool = Field(
-        default=False, description="Whether in collaboration mode",
+        default=False,
+        description="Whether in collaboration mode",
     )
     shared_context: dict[str, Any] = Field(
-        default_factory=dict, description="Shared context",
+        default_factory=dict,
+        description="Shared context",
     )
     performance_metrics: list[AgentPerformanceMetrics] = Field(
-        default_factory=list, description="Performance metrics",
+        default_factory=list,
+        description="Performance metrics",
     )
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Creation timestamp",
+        default_factory=datetime.now,
+        description="Creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now, description="Last update timestamp",
+        default_factory=datetime.now,
+        description="Last update timestamp",
     )
 
     model_config = {
@@ -501,7 +518,8 @@ class MultiAgentManager:
             raise ConversationError(f"Failed to get agent response: {str(e)}")
 
     def get_conversation_state(
-        self, conversation_id: str,
+        self,
+        conversation_id: str,
     ) -> MultiAgentConversation | None:
         """Get conversation state."""
         return self.active_conversations.get(conversation_id)

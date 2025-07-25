@@ -31,7 +31,6 @@ class TestRedisIntegration:
         """Setup test environment."""
         # Reset global state before each test
 
-
     @pytest.mark.asyncio
     async def test_init_redis_success(self):
         """Test successful Redis initialization."""

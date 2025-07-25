@@ -22,17 +22,27 @@ class CacheConfig(BaseModel):
 
     redis_url: str = Field(..., description="Redis connection URL")
     default_ttl: int = Field(
-        default=3600, ge=60, le=86400, description="Default TTL in seconds",
+        default=3600,
+        ge=60,
+        le=86400,
+        description="Default TTL in seconds",
     )
     max_connections: int = Field(
-        default=10, ge=1, le=50, description="Maximum Redis connections",
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum Redis connections",
     )
     connection_timeout: float = Field(
-        default=5.0, ge=1.0, le=30.0, description="Connection timeout",
+        default=5.0,
+        ge=1.0,
+        le=30.0,
+        description="Connection timeout",
     )
     retry_attempts: int = Field(default=3, ge=1, le=10, description="Retry attempts")
     enable_compression: bool = Field(
-        default=True, description="Enable data compression",
+        default=True,
+        description="Enable data compression",
     )
     cache_prefix: str = Field(default="convosphere", description="Cache key prefix")
 
@@ -56,7 +66,10 @@ class CacheKey(BaseModel):
     """Cache key with namespace and validation."""
 
     namespace: str = Field(
-        ..., min_length=1, max_length=50, description="Cache namespace",
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Cache namespace",
     )
     key: str = Field(..., min_length=1, max_length=200, description="Cache key")
     version: str = Field(default="v1", description="Cache version")
@@ -84,15 +97,18 @@ class CacheEntry(BaseModel):
 
     data: Any = Field(..., description="Cached data")
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Creation timestamp",
+        default_factory=datetime.now,
+        description="Creation timestamp",
     )
     expires_at: datetime | None = Field(None, description="Expiration timestamp")
     access_count: int = Field(default=0, ge=0, description="Access count")
     last_accessed: datetime = Field(
-        default_factory=datetime.now, description="Last access timestamp",
+        default_factory=datetime.now,
+        description="Last access timestamp",
     )
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
     def is_expired(self) -> bool:
@@ -473,7 +489,9 @@ class ConversationCache:
         """Cache conversation messages."""
         cache_key = self._create_key(conversation_id, "messages")
         return await self.cache_service.set(
-            cache_key, messages, ttl or self.default_ttl,
+            cache_key,
+            messages,
+            ttl or self.default_ttl,
         )
 
     async def invalidate_conversation(self, conversation_id: str) -> bool:
@@ -537,7 +555,9 @@ class AIResponseCache:
         message_hash = self._hash_message(message, context)
         cache_key = self._create_key(user_id, message_hash)
         return await self.cache_service.set(
-            cache_key, response, ttl or self.default_ttl,
+            cache_key,
+            response,
+            ttl or self.default_ttl,
         )
 
 

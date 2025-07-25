@@ -90,7 +90,8 @@ class TestUserEndpoints:
             with patch("app.api.v1.endpoints.users.user_service.get_users") as mock_get:
                 mock_get.return_value = [{"id": "1", "email": "user1@test.com"}]
                 response = client.get(
-                    "/api/v1/users/", headers={"Authorization": "Bearer token"},
+                    "/api/v1/users/",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code == 200  # noqa: S101
 
@@ -99,7 +100,8 @@ class TestUserEndpoints:
         with patch("app.api.v1.endpoints.users.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123", "email": "test@example.com"}
             response = client.get(
-                "/api/v1/users/me", headers={"Authorization": "Bearer token"},
+                "/api/v1/users/me",
+                headers={"Authorization": "Bearer token"},
             )
             assert response.status_code == 200  # noqa: S101
 
@@ -128,7 +130,8 @@ class TestUserEndpoints:
             ) as mock_delete:
                 mock_delete.return_value = True
                 response = client.delete(
-                    "/api/v1/users/123", headers={"Authorization": "Bearer token"},
+                    "/api/v1/users/123",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code in [200, 204]  # noqa: S101
 
@@ -145,7 +148,8 @@ class TestAssistantEndpoints:
             ) as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Assistant"}]
                 response = client.get(
-                    "/api/v1/assistants/", headers={"Authorization": "Bearer token"},
+                    "/api/v1/assistants/",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code == 200  # noqa: S101
 
@@ -195,7 +199,8 @@ class TestAssistantEndpoints:
             ) as mock_delete:
                 mock_delete.return_value = True
                 response = client.delete(
-                    "/api/v1/assistants/1", headers={"Authorization": "Bearer token"},
+                    "/api/v1/assistants/1",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code in [200, 204]  # noqa: S101
 
@@ -212,7 +217,8 @@ class TestConversationEndpoints:
             ) as mock_get:
                 mock_get.return_value = [{"id": "1", "title": "Test Conversation"}]
                 response = client.get(
-                    "/api/v1/conversations/", headers={"Authorization": "Bearer token"},
+                    "/api/v1/conversations/",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code == 200  # noqa: S101
 
@@ -260,7 +266,8 @@ class TestToolEndpoints:
             with patch("app.api.v1.endpoints.tools.tool_service.get_tools") as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Tool"}]
                 response = client.get(
-                    "/api/v1/tools/", headers={"Authorization": "Bearer token"},
+                    "/api/v1/tools/",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code == 200  # noqa: S101
 
@@ -391,7 +398,8 @@ class TestHealthEndpoints:
                     "disk": {"percent": 70.0},
                 }
                 response = client.get(
-                    "/api/v1/health/system", headers={"Authorization": "Bearer token"},
+                    "/api/v1/health/system",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code in [200, 400, 404]  # noqa: S101
 
@@ -429,7 +437,8 @@ class TestMCPEndpoints:
             with patch("app.api.v1.endpoints.mcp.mcp_service.get_servers") as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Server"}]
                 response = client.get(
-                    "/api/v1/mcp/servers", headers={"Authorization": "Bearer token"},
+                    "/api/v1/mcp/servers",
+                    headers={"Authorization": "Bearer token"},
                 )
                 assert response.status_code == 200  # noqa: S101
 

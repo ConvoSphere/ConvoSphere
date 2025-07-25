@@ -32,7 +32,12 @@ async def upload_document(
     """Upload a new document."""
     service = KnowledgeService(db)
     return await service.upload_document(
-        file, title, description, tags, processing_options, current_user,
+        file,
+        title,
+        description,
+        tags,
+        processing_options,
+        current_user,
     )
 
 
@@ -138,7 +143,9 @@ async def reprocess_document(
     """Reprocess a document with new options."""
     service = KnowledgeService(db)
     return await service.reprocess_document(
-        document_id, processing_options, current_user,
+        document_id,
+        processing_options,
+        current_user,
     )
 
 
@@ -157,5 +164,11 @@ async def upload_document_advanced(
     """Upload a document with advanced options."""
     service = KnowledgeService(db)
     return await service.upload_document_advanced(
-        file, title, description, tags, engine, processing_options, current_user,
+        file,
+        title,
+        description,
+        tags,
+        engine,
+        processing_options,
+        current_user,
     )

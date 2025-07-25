@@ -2,10 +2,10 @@
 Authentication schemas for user login, registration, and SSO.
 """
 
-from pydantic import BaseModel, EmailStr, Field
-from typing import Any, Dict, Optional
+from typing import Any
 
-from app.models.user import UserRole, AuthProvider
+from app.models.user import UserRole
+from pydantic import BaseModel, EmailStr, Field
 
 
 class Token(BaseModel):
@@ -36,14 +36,14 @@ class TokenResponse(BaseModel):
     expires_in: int
     user_id: str
     username: str
-    provider: Optional[str] = None
-    additional_data: Optional[Dict[str, Any]] = None
+    provider: str | None = None
+    additional_data: dict[str, Any] | None = None
 
 
 class SSOLoginRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=1)
-    provider: Optional[str] = None
+    provider: str | None = None
 
 
 class SSOProviderInfo(BaseModel):
@@ -58,7 +58,7 @@ class SSOConfig(BaseModel):
     provider_type: str
     enabled: bool
     priority: int
-    config: Dict[str, Any]
+    config: dict[str, Any]
 
 
 class SSOUserSync(BaseModel):
@@ -72,7 +72,7 @@ class SSOHealthCheck(BaseModel):
     status: str
     providers: list
     timestamp: str
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class PasswordResetRequest(BaseModel):
@@ -94,5 +94,5 @@ class RefreshTokenRequest(BaseModel):
 
 
 class LogoutRequest(BaseModel):
-    refresh_token: Optional[str] = None
+    refresh_token: str | None = None
     all_sessions: bool = False

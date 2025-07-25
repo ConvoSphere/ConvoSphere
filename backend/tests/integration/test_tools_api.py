@@ -18,7 +18,6 @@ def test_tool_service():
         # Test imports
         from app.models.tool import Tool, ToolCategory
 
-
         # Test ToolCategory enum
         [cat.value for cat in ToolCategory]
 
@@ -47,7 +46,6 @@ def test_api_endpoints():
             ToolCreate,
             ToolUpdate,
         )
-
 
         # Test Pydantic models
         ToolCreate(
@@ -106,7 +104,6 @@ def main():
             passed += 1
         else:
             pass
-
 
     return passed == total
 

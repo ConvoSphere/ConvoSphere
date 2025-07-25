@@ -208,11 +208,17 @@ def test_tags(db_session: Session) -> list[Tag]:
     )
 
     tag2 = Tag(
-        name="project", description="Project documents", color="#00FF00", usage_count=3,
+        name="project",
+        description="Project documents",
+        color="#00FF00",
+        usage_count=3,
     )
 
     tag3 = Tag(
-        name="test", description="Test documents", color="#0000FF", usage_count=2,
+        name="test",
+        description="Test documents",
+        color="#0000FF",
+        usage_count=2,
     )
 
     tag4 = Tag(
@@ -235,7 +241,9 @@ def test_tags(db_session: Session) -> list[Tag]:
 
 @pytest.fixture
 def test_document_with_tags(
-    db_session: Session, test_user: User, test_tags: list[Tag],
+    db_session: Session,
+    test_user: User,
+    test_tags: list[Tag],
 ) -> Document:
     """Create a test document with tags."""
     document = Document(
@@ -266,7 +274,9 @@ def test_document_with_tags(
 
 @pytest.fixture
 def test_processing_job(
-    db_session: Session, test_user: User, test_document: Document,
+    db_session: Session,
+    test_user: User,
+    test_document: Document,
 ) -> DocumentProcessingJob:
     """Create a test processing job."""
     job = DocumentProcessingJob(
@@ -286,7 +296,9 @@ def test_processing_job(
 
 @pytest.fixture
 def test_processing_jobs(
-    db_session: Session, test_user: User, test_document: Document,
+    db_session: Session,
+    test_user: User,
+    test_document: Document,
 ) -> list[DocumentProcessingJob]:
     """Create multiple test processing jobs."""
     jobs = []
@@ -390,7 +402,8 @@ def mock_weaviate_service():
         mock_service.delete_document_chunks.return_value = True
 
         m.setattr(
-            "app.services.knowledge_service.WeaviateService", lambda: mock_service,
+            "app.services.knowledge_service.WeaviateService",
+            lambda: mock_service,
         )
         yield mock_service
 
@@ -475,7 +488,8 @@ def mock_background_job_service():
         mock_service.cancel_job.return_value = True
 
         m.setattr(
-            "app.services.background_job_service.background_job_service", mock_service,
+            "app.services.background_job_service.background_job_service",
+            mock_service,
         )
         yield mock_service
 

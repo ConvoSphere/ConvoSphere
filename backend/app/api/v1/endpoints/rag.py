@@ -74,7 +74,8 @@ async def create_rag_config(
     except Exception as e:
         logger.error(f"Failed to create RAG config: {e}")
         raise HTTPException(
-            status_code=500, detail="Failed to create RAG configuration",
+            status_code=500,
+            detail="Failed to create RAG configuration",
         )
 
 
@@ -82,7 +83,10 @@ async def create_rag_config(
 async def list_rag_configs(
     skip: int = Query(0, ge=0, description="Number of configurations to skip"),
     limit: int = Query(
-        10, ge=1, le=100, description="Maximum number of configurations to return",
+        10,
+        ge=1,
+        le=100,
+        description="Maximum number of configurations to return",
     ),
 ) -> RAGConfigList:
     """
@@ -207,7 +211,8 @@ async def update_rag_config(
         success = await rag_service.update_config(config_id, existing_config)
         if not success:
             raise HTTPException(
-                status_code=500, detail="Failed to update RAG configuration",
+                status_code=500,
+                detail="Failed to update RAG configuration",
             )
 
         return RAGConfigResponse(
@@ -223,7 +228,8 @@ async def update_rag_config(
     except Exception as e:
         logger.error(f"Failed to update RAG config: {e}")
         raise HTTPException(
-            status_code=500, detail="Failed to update RAG configuration",
+            status_code=500,
+            detail="Failed to update RAG configuration",
         )
 
 
@@ -251,7 +257,8 @@ async def delete_rag_config(
     except Exception as e:
         logger.error(f"Failed to delete RAG config: {e}")
         raise HTTPException(
-            status_code=500, detail="Failed to delete RAG configuration",
+            status_code=500,
+            detail="Failed to delete RAG configuration",
         )
 
 

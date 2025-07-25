@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
-from starlette.middleware.sessions import SessionMiddleware
 
 # OpenTelemetry-Setup (disabled for testing)
 # from opentelemetry import metrics, trace
@@ -29,6 +28,7 @@ from starlette.middleware.sessions import SessionMiddleware
 # from opentelemetry.sdk.trace import TracerProvider
 # from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
 from .app.api.v1.api import api_router
 from .app.core.config import get_settings
@@ -283,7 +283,6 @@ def create_application() -> FastAPI:
         return {"message": "Use /api/v1/ai/models instead"}
 
     # Initialize OAuth
-    from app.services.oauth_service import oauth_service
     # oauth_service.oauth.init_app(app)  # Commented out - Starlette OAuth doesn't need init_app
 
     # Add routes

@@ -202,7 +202,8 @@ class ConversationIntelligenceService:
             raise AIError(f"Topic detection failed: {str(e)}")
 
     async def analyze_sentiment(
-        self, request: SentimentAnalysisRequest,
+        self,
+        request: SentimentAnalysisRequest,
     ) -> SentimentAnalysis:
         """Analyze sentiment."""
         start_time = time.time()
@@ -240,7 +241,8 @@ class ConversationIntelligenceService:
                 max_length=request.max_summary_length,
             )
             results["summary"] = await self._generate_summary_content(
-                conversation, summary_request,
+                conversation,
+                summary_request,
             )
 
         # Detect topics if requested
@@ -251,7 +253,8 @@ class ConversationIntelligenceService:
                 min_confidence=request.min_topic_confidence,
             )
             results["topics"] = await self._detect_topics_content(
-                conversation, topic_request,
+                conversation,
+                topic_request,
             )
 
         # Analyze sentiment if requested
@@ -286,7 +289,9 @@ class ConversationIntelligenceService:
 
         # Generate summary using AI (simulated for now)
         summary_text = await self._call_ai_model(
-            "summarization", prompt, request.max_length,
+            "summarization",
+            prompt,
+            request.max_length,
         )
 
         # Extract key elements
@@ -451,7 +456,10 @@ class ConversationIntelligenceService:
         )
 
     async def _call_ai_model(
-        self, model_type: str, prompt: str, max_length: int | None = None,
+        self,
+        model_type: str,
+        prompt: str,
+        max_length: int | None = None,
     ) -> str:
         """Call AI model for analysis (simulated implementation)."""
         # This would integrate with existing AI service
@@ -476,7 +484,8 @@ class ConversationIntelligenceService:
         }
 
         instruction = summary_type_instructions.get(
-            request.summary_type, "Create a summary",
+            request.summary_type,
+            "Create a summary",
         )
 
         return f"""
@@ -490,7 +499,9 @@ class ConversationIntelligenceService:
         """
 
     def _create_topic_detection_prompt(
-        self, text: str, request: TopicDetectionRequest,
+        self,
+        text: str,
+        request: TopicDetectionRequest,
     ) -> str:
         """Create topic detection prompt."""
         categories = (
@@ -513,7 +524,9 @@ class ConversationIntelligenceService:
         """
 
     def _create_sentiment_prompt(
-        self, text: str, request: SentimentAnalysisRequest,
+        self,
+        text: str,
+        request: SentimentAnalysisRequest,
     ) -> str:
         """Create sentiment analysis prompt."""
         return f"""
@@ -601,7 +614,9 @@ class ConversationIntelligenceService:
         return ["Question 1", "Question 2"]
 
     def _parse_topics_from_response(
-        self, response: str, request: TopicDetectionRequest,
+        self,
+        response: str,
+        request: TopicDetectionRequest,
     ) -> list[TopicInfo]:
         """Parse topics from AI response."""
         # Simulated topic parsing
@@ -640,7 +655,9 @@ class ConversationIntelligenceService:
         }
 
     def _add_temporal_info(
-        self, topics: list[TopicInfo], conversation: dict[str, Any],
+        self,
+        topics: list[TopicInfo],
+        conversation: dict[str, Any],
     ) -> list[TopicInfo]:
         """Add temporal information to topics."""
         messages = conversation.get("messages", [])
@@ -658,11 +675,13 @@ class ConversationIntelligenceService:
 
                 if first_index < len(messages):
                     topic.first_mentioned = messages[first_index].get(
-                        "timestamp", start_time,
+                        "timestamp",
+                        start_time,
                     )
                 if last_index < len(messages):
                     topic.last_mentioned = messages[last_index].get(
-                        "timestamp", start_time,
+                        "timestamp",
+                        start_time,
                     )
 
         return topics
@@ -705,7 +724,8 @@ class ConversationIntelligenceService:
         return response_times
 
     def _analyze_participant_activity(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> dict[str, int]:
         """Analyze participant activity."""
         activity = {}
@@ -715,7 +735,8 @@ class ConversationIntelligenceService:
         return activity
 
     async def _analyze_participant_sentiment(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> dict[str, SentimentType]:
         """Analyze sentiment per participant."""
         # Simulated participant sentiment analysis
@@ -723,7 +744,8 @@ class ConversationIntelligenceService:
         return dict.fromkeys(participants, SentimentType.POSITIVE)
 
     def _calculate_participant_engagement(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> dict[str, float]:
         """Calculate engagement scores per participant."""
         # Simulated engagement calculation
@@ -780,7 +802,8 @@ class ConversationIntelligenceService:
         return max(0.0, 1.0 - (variance / 10000.0))
 
     def _identify_conversation_phases(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Identify conversation phases."""
         # Simulated phase identification
@@ -790,7 +813,8 @@ class ConversationIntelligenceService:
         ]
 
     def _find_peak_activity_time(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> datetime | None:
         """Find peak activity time."""
         if not messages:
@@ -806,7 +830,8 @@ class ConversationIntelligenceService:
         return peak_time
 
     def _identify_lull_periods(
-        self, messages: list[dict[str, Any]],
+        self,
+        messages: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Identify periods of low activity."""
         # Simulated lull period identification
@@ -815,7 +840,8 @@ class ConversationIntelligenceService:
         ]
 
     def _validate_intelligence_request(
-        self, request: ConversationIntelligenceRequest,
+        self,
+        request: ConversationIntelligenceRequest,
     ) -> None:
         """Validate intelligence request."""
         if not request.conversation_id:
@@ -849,7 +875,8 @@ class ConversationIntelligenceService:
         return hashlib.md5(json.dumps(key_data, sort_keys=True).encode()).hexdigest()
 
     async def _get_cached_result(
-        self, cache_key: str,
+        self,
+        cache_key: str,
     ) -> ConversationIntelligenceResponse | None:
         """Get cached intelligence result."""
         try:
@@ -864,7 +891,9 @@ class ConversationIntelligenceService:
         return None
 
     async def _cache_result(
-        self, cache_key: str, response: ConversationIntelligenceResponse,
+        self,
+        cache_key: str,
+        response: ConversationIntelligenceResponse,
     ) -> None:
         """Cache intelligence result."""
         try:

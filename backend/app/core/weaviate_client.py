@@ -149,10 +149,14 @@ def create_schema_if_not_exists() -> None:
 
         [
             Property(
-                name="content", data_type=DataType.TEXT, description="Document content",
+                name="content",
+                data_type=DataType.TEXT,
+                description="Document content",
             ),
             Property(
-                name="title", data_type=DataType.TEXT, description="Document title",
+                name="title",
+                data_type=DataType.TEXT,
+                description="Document title",
             ),
             Property(
                 name="file_type",
@@ -165,10 +169,14 @@ def create_schema_if_not_exists() -> None:
                 description="User who uploaded the document",
             ),
             Property(
-                name="upload_date", data_type=DataType.DATE, description="Upload date",
+                name="upload_date",
+                data_type=DataType.DATE,
+                description="Upload date",
             ),
             Property(
-                name="tags", data_type=DataType.TEXT_ARRAY, description="Document tags",
+                name="tags",
+                data_type=DataType.TEXT_ARRAY,
+                description="Document tags",
             ),
         ]
 

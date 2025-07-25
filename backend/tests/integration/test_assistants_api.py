@@ -18,7 +18,6 @@ def test_assistant_service():
         # Test imports
         from app.models.assistant import Assistant, AssistantStatus
 
-
         # Test AssistantStatus enum
         [status.value for status in AssistantStatus]
 
@@ -47,7 +46,6 @@ def test_api_endpoints():
             AssistantUpdate,
             ToolAssignmentRequest,
         )
-
 
         # Test Pydantic models
         AssistantCreate(
@@ -155,7 +153,6 @@ def main():
             passed += 1
         else:
             pass
-
 
     return passed == total
 

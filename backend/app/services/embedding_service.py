@@ -614,7 +614,7 @@ class EmbeddingService:
     ) -> list[list[float]]:
         """
         Reduce embedding dimensions for visualization or analysis.
-        
+
         NOTE: ML libraries (UMAP, scikit-learn) have been removed for performance.
         This method now returns the original embeddings truncated to target dimension.
 
@@ -652,7 +652,7 @@ class EmbeddingService:
     ) -> dict[str, Any]:
         """
         Cluster embeddings to find similar groups.
-        
+
         NOTE: ML libraries (scikit-learn) have been removed for performance.
         This method now returns a simple grouping based on first dimension.
 
@@ -681,12 +681,19 @@ class EmbeddingService:
             # Calculate simple centroids (average of each cluster)
             centroids = []
             for cluster_id in range(n_clusters):
-                cluster_embeddings = [emb for i, emb in enumerate(embeddings) if labels[i] == cluster_id]
+                cluster_embeddings = [
+                    emb for i, emb in enumerate(embeddings) if labels[i] == cluster_id
+                ]
                 if cluster_embeddings:
-                    centroid = [sum(dim) / len(cluster_embeddings) for dim in zip(*cluster_embeddings)]
+                    centroid = [
+                        sum(dim) / len(cluster_embeddings)
+                        for dim in zip(*cluster_embeddings, strict=False)
+                    ]
                     centroids.append(centroid)
                 else:
-                    centroids.append([0.0] * len(embeddings[0]) if embeddings else [0.0])
+                    centroids.append(
+                        [0.0] * len(embeddings[0]) if embeddings else [0.0],
+                    )
 
             return {
                 "labels": labels,
@@ -729,7 +736,7 @@ class EmbeddingService:
                 for j in range(i + 1, len(emb_array)):
                     distance = np.linalg.norm(emb_array[i] - emb_array[j])
                     distances.append(distance)
-            
+
             distances_no_diag = np.array(distances) if distances else np.array([])
 
             return {
@@ -868,7 +875,9 @@ class EmbeddingService:
             return ""
 
     async def create_embedding(
-        self, text: str, model: str | None = None,
+        self,
+        text: str,
+        model: str | None = None,
     ) -> EmbeddingResult:
         """Create embedding for a single text."""
         try:
@@ -887,7 +896,9 @@ class EmbeddingService:
         """Search for similar embeddings."""
         try:
             similarities = self.find_most_similar(
-                query_embedding, candidate_embeddings, top_k,
+                query_embedding,
+                candidate_embeddings,
+                top_k,
             )
             return [
                 SimilarityResult(

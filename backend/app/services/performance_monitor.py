@@ -17,22 +17,30 @@ class PerformanceMetric(BaseModel):
     """Performance metric with validation."""
 
     metric_id: str = Field(
-        default_factory=lambda: str(uuid4()), description="Unique metric ID",
+        default_factory=lambda: str(uuid4()),
+        description="Unique metric ID",
     )
     metric_name: str = Field(
-        ..., min_length=1, max_length=100, description="Metric name",
+        ...,
+        min_length=1,
+        max_length=100,
+        description="Metric name",
     )
     metric_type: str = Field(
-        ..., pattern="^(counter|gauge|histogram|timer)$", description="Metric type",
+        ...,
+        pattern="^(counter|gauge|histogram|timer)$",
+        description="Metric type",
     )
     value: int | float = Field(..., description="Metric value")
     unit: str = Field(default="", max_length=20, description="Metric unit")
     tags: dict[str, str] = Field(default_factory=dict, description="Metric tags")
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Metric timestamp",
+        default_factory=datetime.now,
+        description="Metric timestamp",
     )
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
     @field_validator("metric_name")
@@ -73,10 +81,13 @@ class DatabaseQueryMetric(BaseModel):
     rows_affected: int = Field(default=0, ge=0, description="Rows affected")
     query_size: int = Field(default=0, ge=0, description="Query size in bytes")
     connection_pool_size: int = Field(
-        default=0, ge=0, description="Connection pool size",
+        default=0,
+        ge=0,
+        description="Connection pool size",
     )
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Query timestamp",
+        default_factory=datetime.now,
+        description="Query timestamp",
     )
     error: str | None = Field(None, description="Query error")
 
@@ -90,11 +101,14 @@ class APIMetric(BaseModel):
     """API performance metric."""
 
     request_id: str = Field(
-        default_factory=lambda: str(uuid4()), description="Request ID",
+        default_factory=lambda: str(uuid4()),
+        description="Request ID",
     )
     endpoint: str = Field(..., min_length=1, max_length=200, description="API endpoint")
     method: str = Field(
-        ..., pattern="^(GET|POST|PUT|DELETE|PATCH)$", description="HTTP method",
+        ...,
+        pattern="^(GET|POST|PUT|DELETE|PATCH)$",
+        description="HTTP method",
     )
     status_code: int = Field(..., ge=100, le=599, description="HTTP status code")
     response_time: float = Field(..., ge=0, description="Response time in seconds")
@@ -102,7 +116,8 @@ class APIMetric(BaseModel):
     response_size: int = Field(default=0, ge=0, description="Response size in bytes")
     user_id: str | None = Field(None, description="User ID")
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Request timestamp",
+        default_factory=datetime.now,
+        description="Request timestamp",
     )
     error: str | None = Field(None, description="Request error")
 
@@ -116,22 +131,30 @@ class CacheMetric(BaseModel):
     """Cache performance metric."""
 
     cache_id: str = Field(
-        default_factory=lambda: str(uuid4()), description="Cache operation ID",
+        default_factory=lambda: str(uuid4()),
+        description="Cache operation ID",
     )
     operation: str = Field(
-        ..., pattern="^(get|set|delete|clear)$", description="Cache operation",
+        ...,
+        pattern="^(get|set|delete|clear)$",
+        description="Cache operation",
     )
     namespace: str = Field(
-        ..., min_length=1, max_length=50, description="Cache namespace",
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Cache namespace",
     )
     key: str = Field(..., min_length=1, max_length=200, description="Cache key")
     operation_time: float = Field(..., ge=0, description="Operation time in seconds")
     cache_hit: bool = Field(
-        default=False, description="Whether operation was a cache hit",
+        default=False,
+        description="Whether operation was a cache hit",
     )
     data_size: int = Field(default=0, ge=0, description="Data size in bytes")
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Operation timestamp",
+        default_factory=datetime.now,
+        description="Operation timestamp",
     )
     error: str | None = Field(None, description="Operation error")
 
@@ -146,19 +169,27 @@ class PerformanceAlert(BaseModel):
 
     alert_id: str = Field(default_factory=lambda: str(uuid4()), description="Alert ID")
     alert_type: str = Field(
-        ..., pattern="^(threshold|anomaly|trend)$", description="Alert type",
+        ...,
+        pattern="^(threshold|anomaly|trend)$",
+        description="Alert type",
     )
     metric_name: str = Field(
-        ..., min_length=1, max_length=100, description="Metric name",
+        ...,
+        min_length=1,
+        max_length=100,
+        description="Metric name",
     )
     threshold: int | float = Field(..., description="Alert threshold")
     current_value: int | float = Field(..., description="Current metric value")
     severity: str = Field(
-        ..., pattern="^(low|medium|high|critical)$", description="Alert severity",
+        ...,
+        pattern="^(low|medium|high|critical)$",
+        description="Alert severity",
     )
     message: str = Field(..., min_length=1, max_length=500, description="Alert message")
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Alert timestamp",
+        default_factory=datetime.now,
+        description="Alert timestamp",
     )
     resolved: bool = Field(default=False, description="Whether alert is resolved")
 
@@ -379,7 +410,8 @@ class PerformanceMonitor:
         self.stats["last_cleanup"] = datetime.now()
 
     def get_metrics_summary(
-        self, time_range: timedelta = timedelta(hours=1),
+        self,
+        time_range: timedelta = timedelta(hours=1),
     ) -> dict[str, Any]:
         """Get metrics summary for the specified time range."""
         cutoff_time = datetime.now() - time_range

@@ -58,7 +58,10 @@ document_tag_association = Table(
     "document_tag_association",
     Base.metadata,
     Column(
-        "document_id", UUID(as_uuid=True), ForeignKey("documents.id"), primary_key=True,
+        "document_id",
+        UUID(as_uuid=True),
+        ForeignKey("documents.id"),
+        primary_key=True,
     ),
     Column("tag_id", UUID(as_uuid=True), ForeignKey("tags.id"), primary_key=True),
 )
@@ -74,7 +77,9 @@ class Tag(Base):
     description = Column(Text, nullable=True)
     color = Column(String(7), nullable=True)  # Hex color code
     is_system = Column(
-        Boolean, default=False, nullable=False,
+        Boolean,
+        default=False,
+        nullable=False,
     )  # System tags cannot be deleted
 
     # Usage statistics
@@ -86,7 +91,9 @@ class Tag(Base):
 
     # Relationships
     documents = relationship(
-        "Document", secondary=document_tag_association, back_populates="tag_objects",
+        "Document",
+        secondary=document_tag_association,
+        back_populates="tag_objects",
     )
 
     def __repr__(self):
@@ -121,7 +128,9 @@ class Document(Base):
 
     # Document type categorization
     document_type = Column(
-        String(50), nullable=True, index=True,
+        String(50),
+        nullable=True,
+        index=True,
     )  # From DocumentType enum
 
     # Processing metadata
@@ -151,7 +160,9 @@ class Document(Base):
         cascade="all, delete-orphan",
     )
     tag_objects = relationship(
-        "Tag", secondary=document_tag_association, back_populates="documents",
+        "Tag",
+        secondary=document_tag_association,
+        back_populates="documents",
     )
 
     # Indexes for better query performance
@@ -313,10 +324,14 @@ class DocumentProcessingJob(Base):
     # Job information
     job_type = Column(String(50), nullable=False)  # process, reprocess, bulk_import
     status = Column(
-        String(50), default="pending", nullable=False,
+        String(50),
+        default="pending",
+        nullable=False,
     )  # pending, running, completed, failed
     priority = Column(
-        Integer, default=0, nullable=False,
+        Integer,
+        default=0,
+        nullable=False,
     )  # Higher number = higher priority
 
     # Processing details

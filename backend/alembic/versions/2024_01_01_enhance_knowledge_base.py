@@ -82,71 +82,97 @@ def upgrade() -> None:
 
     # Add new columns to documents table
     op.add_column(
-        "documents", sa.Column("author", sa.String(length=255), nullable=True),
+        "documents",
+        sa.Column("author", sa.String(length=255), nullable=True),
     )
     op.add_column(
-        "documents", sa.Column("source", sa.String(length=500), nullable=True),
+        "documents",
+        sa.Column("source", sa.String(length=500), nullable=True),
     )
     op.add_column(
-        "documents", sa.Column("language", sa.String(length=10), nullable=True),
+        "documents",
+        sa.Column("language", sa.String(length=10), nullable=True),
     )
     op.add_column("documents", sa.Column("year", sa.Integer(), nullable=True))
     op.add_column(
-        "documents", sa.Column("version", sa.String(length=50), nullable=True),
+        "documents",
+        sa.Column("version", sa.String(length=50), nullable=True),
     )
     op.add_column("documents", sa.Column("keywords", sa.JSON(), nullable=True))
     op.add_column(
-        "documents", sa.Column("document_type", sa.String(length=50), nullable=True),
+        "documents",
+        sa.Column("document_type", sa.String(length=50), nullable=True),
     )
     op.add_column(
         "documents",
         sa.Column("processing_engine", sa.String(length=100), nullable=True),
     )
     op.add_column(
-        "documents", sa.Column("processing_options", sa.JSON(), nullable=True),
+        "documents",
+        sa.Column("processing_options", sa.JSON(), nullable=True),
     )
     op.add_column("documents", sa.Column("page_count", sa.Integer(), nullable=True))
     op.add_column("documents", sa.Column("word_count", sa.Integer(), nullable=True))
     op.add_column(
-        "documents", sa.Column("character_count", sa.Integer(), nullable=True),
+        "documents",
+        sa.Column("character_count", sa.Integer(), nullable=True),
     )
 
     # Add new columns to document_chunks table
     op.add_column(
-        "document_chunks", sa.Column("chunk_type", sa.String(length=50), nullable=True),
+        "document_chunks",
+        sa.Column("chunk_type", sa.String(length=50), nullable=True),
     )
     op.add_column(
-        "document_chunks", sa.Column("page_number", sa.Integer(), nullable=True),
+        "document_chunks",
+        sa.Column("page_number", sa.Integer(), nullable=True),
     )
     op.add_column(
         "document_chunks",
         sa.Column("section_title", sa.String(length=255), nullable=True),
     )
     op.add_column(
-        "document_chunks", sa.Column("table_id", sa.String(length=100), nullable=True),
+        "document_chunks",
+        sa.Column("table_id", sa.String(length=100), nullable=True),
     )
     op.add_column(
-        "document_chunks", sa.Column("figure_id", sa.String(length=100), nullable=True),
+        "document_chunks",
+        sa.Column("figure_id", sa.String(length=100), nullable=True),
     )
 
     # Create indexes for better performance
     op.create_index(op.f("ix_documents_title"), "documents", ["title"], unique=False)
     op.create_index(op.f("ix_documents_author"), "documents", ["author"], unique=False)
     op.create_index(
-        op.f("ix_documents_language"), "documents", ["language"], unique=False,
+        op.f("ix_documents_language"),
+        "documents",
+        ["language"],
+        unique=False,
     )
     op.create_index(op.f("ix_documents_year"), "documents", ["year"], unique=False)
     op.create_index(
-        op.f("ix_documents_document_type"), "documents", ["document_type"], unique=False,
+        op.f("ix_documents_document_type"),
+        "documents",
+        ["document_type"],
+        unique=False,
     )
     op.create_index(
-        "idx_documents_user_status", "documents", ["user_id", "status"], unique=False,
+        "idx_documents_user_status",
+        "documents",
+        ["user_id", "status"],
+        unique=False,
     )
     op.create_index(
-        "idx_documents_type_year", "documents", ["document_type", "year"], unique=False,
+        "idx_documents_type_year",
+        "documents",
+        ["document_type", "year"],
+        unique=False,
     )
     op.create_index(
-        "idx_documents_author_year", "documents", ["author", "year"], unique=False,
+        "idx_documents_author_year",
+        "documents",
+        ["author", "year"],
+        unique=False,
     )
 
     op.create_index(

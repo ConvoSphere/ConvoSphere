@@ -340,14 +340,17 @@ class TestKnowledgeService:
         )
         assert (
             knowledge_service._determine_document_type(
-                "unknown", "application/octet-stream",
+                "unknown",
+                "application/octet-stream",
             )
             == DocumentType.OTHER
         )
 
     @patch("app.services.knowledge_service.MetadataExtractor")
     def test_extract_document_metadata(
-        self, mock_metadata_extractor, db_session: Session,
+        self,
+        mock_metadata_extractor,
+        db_session: Session,
     ):
         """Test document metadata extraction."""
         knowledge_service = KnowledgeService(db_session)
@@ -366,7 +369,8 @@ class TestKnowledgeService:
 
         try:
             metadata = knowledge_service._extract_document_metadata(
-                temp_file_path, "pdf",
+                temp_file_path,
+                "pdf",
             )
 
             assert metadata["author"] == "Test Author"
@@ -412,28 +416,32 @@ class TestKnowledgeService:
 
         # Test filtering by document type
         documents, total = knowledge_service.get_documents(
-            user_id=str(test_user.id), document_type="pdf",
+            user_id=str(test_user.id),
+            document_type="pdf",
         )
         assert len(documents) == 1
         assert documents[0].document_type == DocumentType.PDF
 
         # Test filtering by author
         documents, total = knowledge_service.get_documents(
-            user_id=str(test_user.id), author="Author 1",
+            user_id=str(test_user.id),
+            author="Author 1",
         )
         assert len(documents) == 1
         assert documents[0].author == "Author 1"
 
         # Test filtering by year
         documents, total = knowledge_service.get_documents(
-            user_id=str(test_user.id), year=2024,
+            user_id=str(test_user.id),
+            year=2024,
         )
         assert len(documents) == 1
         assert documents[0].year == 2024
 
         # Test filtering by language
         documents, total = knowledge_service.get_documents(
-            user_id=str(test_user.id), language="de",
+            user_id=str(test_user.id),
+            language="de",
         )
         assert len(documents) == 1
         assert documents[0].language == "de"
@@ -542,7 +550,8 @@ class TestKnowledgeService:
 
         # Get jobs by status
         pending_jobs = knowledge_service.get_processing_jobs(
-            str(test_user.id), status="pending",
+            str(test_user.id),
+            status="pending",
         )
         assert len(pending_jobs) == 1
         assert pending_jobs[0].status == "pending"
@@ -550,7 +559,11 @@ class TestKnowledgeService:
     @patch("app.services.knowledge_service.embedding_service")
     @patch("app.services.knowledge_service.WeaviateService")
     async def test_search_documents_with_filters(
-        self, mock_weaviate, mock_embedding, db_session: Session, test_user: User,
+        self,
+        mock_weaviate,
+        mock_embedding,
+        db_session: Session,
+        test_user: User,
     ):
         """Test searching documents with enhanced filtering."""
         knowledge_service = KnowledgeService(db_session)
@@ -712,7 +725,9 @@ class TestBackgroundJobService:
 def test_user(db_session: Session) -> User:
     """Create a test user."""
     user = User(
-        email="test@example.com", username="testuser", hashed_password="hashed_password",
+        email="test@example.com",
+        username="testuser",
+        hashed_password="hashed_password",
     )
     db_session.add(user)
     db_session.commit()

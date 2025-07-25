@@ -108,7 +108,8 @@ class TestKnowledgeAPI:
 
         # Test filtering by document type
         response = client.get(
-            "/api/v1/knowledge/documents?document_type=pdf", headers=headers,
+            "/api/v1/knowledge/documents?document_type=pdf",
+            headers=headers,
         )
 
         assert response.status_code == 200
@@ -118,7 +119,8 @@ class TestKnowledgeAPI:
 
         # Test filtering by author
         response = client.get(
-            "/api/v1/knowledge/documents?author=Author%201", headers=headers,
+            "/api/v1/knowledge/documents?author=Author%201",
+            headers=headers,
         )
 
         assert response.status_code == 200
@@ -248,7 +250,8 @@ class TestKnowledgeAPI:
 
         # Search for project tags
         response = client.get(
-            "/api/v1/knowledge/tags/search?query=project", headers=headers,
+            "/api/v1/knowledge/tags/search?query=project",
+            headers=headers,
         )
 
         assert response.status_code == 200
@@ -261,7 +264,11 @@ class TestKnowledgeAPI:
     @patch("app.services.knowledge_service.embedding_service")
     @patch("app.services.knowledge_service.WeaviateService")
     def test_advanced_search(
-        self, mock_weaviate, mock_embedding, db_session: Session, test_user: User,
+        self,
+        mock_weaviate,
+        mock_embedding,
+        db_session: Session,
+        test_user: User,
     ):
         """Test advanced search with filters."""
         # Create access token
@@ -301,7 +308,9 @@ class TestKnowledgeAPI:
         }
 
         response = client.post(
-            "/api/v1/knowledge/search/advanced", headers=headers, json=search_data,
+            "/api/v1/knowledge/search/advanced",
+            headers=headers,
+            json=search_data,
         )
 
         assert response.status_code == 200
@@ -339,7 +348,9 @@ class TestKnowledgeAPI:
         }
 
         response = client.post(
-            "/api/v1/knowledge/processing/jobs", headers=headers, data=job_data,
+            "/api/v1/knowledge/processing/jobs",
+            headers=headers,
+            data=job_data,
         )
 
         assert response.status_code == 200
@@ -396,7 +407,8 @@ class TestKnowledgeAPI:
 
         # Get jobs by status
         response = client.get(
-            "/api/v1/knowledge/processing/jobs?status=pending", headers=headers,
+            "/api/v1/knowledge/processing/jobs?status=pending",
+            headers=headers,
         )
 
         assert response.status_code == 200
@@ -435,7 +447,9 @@ class TestKnowledgeAPI:
         }
 
         response = client.post(
-            "/api/v1/knowledge/bulk-import", headers=headers, json=bulk_import_data,
+            "/api/v1/knowledge/bulk-import",
+            headers=headers,
+            json=bulk_import_data,
         )
 
         assert response.status_code == 200
@@ -631,7 +645,9 @@ class TestKnowledgeAPI:
 def test_user(db_session: Session) -> User:
     """Create a test user."""
     user = User(
-        email="test@example.com", username="testuser", hashed_password="hashed_password",
+        email="test@example.com",
+        username="testuser",
+        hashed_password="hashed_password",
     )
     db_session.add(user)
     db_session.commit()

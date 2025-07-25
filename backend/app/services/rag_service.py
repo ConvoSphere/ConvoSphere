@@ -188,23 +188,33 @@ class RAGService:
         # Perform retrieval based on strategy
         if config.strategy == RAGStrategy.SEMANTIC:
             results = await self._semantic_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
         elif config.strategy == RAGStrategy.HYBRID:
             results = await self._hybrid_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
         elif config.strategy == RAGStrategy.KEYWORD:
             results = await self._keyword_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
         elif config.strategy == RAGStrategy.CONTEXTUAL:
             results = await self._contextual_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
         elif config.strategy == RAGStrategy.ADAPTIVE:
             results = await self._adaptive_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
 
         return results
@@ -248,10 +258,14 @@ class RAGService:
 
         # Perform both semantic and keyword searches
         semantic_results = await self._semantic_retrieval(
-            request, config, conversation_history,
+            request,
+            config,
+            conversation_history,
         )
         keyword_results = await self._keyword_retrieval(
-            request, config, conversation_history,
+            request,
+            config,
+            conversation_history,
         )
 
         # Combine and deduplicate results
@@ -293,7 +307,8 @@ class RAGService:
 
         # Build contextual query
         context_query = self._build_contextual_query(
-            request.query, conversation_history,
+            request.query,
+            conversation_history,
         )
 
         # Perform semantic search with contextual query
@@ -322,7 +337,9 @@ class RAGService:
         if query_analysis["is_conversational"]:
             # Use contextual retrieval for conversational queries
             return await self._contextual_retrieval(
-                request, config, conversation_history,
+                request,
+                config,
+                conversation_history,
             )
         if query_analysis["has_specific_terms"]:
             # Use hybrid retrieval for specific term queries
@@ -411,7 +428,9 @@ class RAGService:
         return results
 
     def _calculate_relevance_score(
-        self, result: dict[str, Any], request: RAGRequest,
+        self,
+        result: dict[str, Any],
+        request: RAGRequest,
     ) -> float:
         """Calculate relevance score for a result."""
         # Simple relevance calculation based on query overlap
@@ -452,7 +471,9 @@ class RAGService:
         return authority_sources.get(source.lower(), 0.5)
 
     def _calculate_diversity_penalty(
-        self, result: RAGResult, all_results: list[RAGResult],
+        self,
+        result: RAGResult,
+        all_results: list[RAGResult],
     ) -> float:
         """Calculate diversity penalty for result."""
         # Simplified diversity penalty
@@ -484,7 +505,8 @@ class RAGService:
         return intersection / union if union > 0 else 0.0
 
     def _format_knowledge_results(
-        self, results: list[dict[str, Any]],
+        self,
+        results: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Format knowledge base results."""
         formatted_results = []
@@ -503,7 +525,8 @@ class RAGService:
         return formatted_results
 
     def _format_conversation_results(
-        self, results: list[dict[str, Any]],
+        self,
+        results: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Format conversation results."""
         formatted_results = []

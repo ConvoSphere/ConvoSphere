@@ -70,7 +70,9 @@ class BackgroundJobService:
 
                 # Start job processing
                 job_thread = threading.Thread(
-                    target=self._execute_job, args=(job_id,), daemon=True,
+                    target=self._execute_job,
+                    args=(job_id,),
+                    daemon=True,
                 )
                 job_thread.start()
                 self.running_jobs[job_id] = job_thread
@@ -274,7 +276,9 @@ class BackgroundJobService:
                         )
 
                 except Exception as e:
-                    logger.exception(f"Error processing file {file_info.get('name')}: {e}")
+                    logger.exception(
+                        f"Error processing file {file_info.get('name')}: {e}",
+                    )
                     # Continue with next file
 
             job.progress = 1.0
