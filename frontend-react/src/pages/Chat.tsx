@@ -60,6 +60,20 @@ const Chat: React.FC = () => {
           }
         }
         
+        // Get default assistant first
+        const assistantResponse = await fetch(`${config.apiUrl}/v1/assistants/default`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!assistantResponse.ok) {
+          throw new Error('Failed to get default assistant');
+        }
+        
+        const defaultAssistant = await assistantResponse.json();
+        
         // Create new conversation if none exists
         const createResponse = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
           method: 'POST',
@@ -69,7 +83,7 @@ const Chat: React.FC = () => {
           },
           body: JSON.stringify({
             title: 'New Chat',
-            assistant_id: 'default' // You might want to get this from user preferences
+            assistant_id: defaultAssistant.id
           })
         });
         

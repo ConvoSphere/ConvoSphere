@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -207,3 +207,18 @@ async def deactivate_assistant(
 async def get_assistant_statuses():
     """Get all available assistant statuses."""
     return [status.value for status in AssistantStatus]
+
+
+@router.get("/default", response_model=AssistantResponse)
+async def get_default_assistant(
+    db: Session = Depends(get_db),
+):
+    """Get the default assistant."""
+    service = AssistantService(db)
+    assistant = service.get_default_assistant()
+    if not assistant:
+        raise HTTPException(
+            status_code=404,
+            detail="No default assistant found"
+        )
+    return assistant

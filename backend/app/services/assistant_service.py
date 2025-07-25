@@ -21,37 +21,15 @@ class AssistantService:
 
     def create_assistant(
         self,
+        assistant_data: dict,
         user_id: str,
-        name: str,
-        system_prompt: str,
-        description: str | None = None,
-        personality: str | None = None,
-        instructions: str | None = None,
-        model: str = "gpt-4",
-        temperature: str = "0.7",
-        max_tokens: str = "4096",
-        category: str | None = None,
-        tags: list[str] | None = None,
-        is_public: bool = False,
-        is_template: bool = False,
     ) -> Assistant:
         """
         Create a new assistant.
 
         Args:
+            assistant_data: Assistant creation data
             user_id: ID of the user creating the assistant
-            name: Assistant name
-            system_prompt: System prompt for the assistant
-            description: Assistant description
-            personality: Personality profile
-            instructions: Additional instructions
-            model: AI model to use
-            temperature: Model temperature
-            max_tokens: Maximum tokens
-            category: Assistant category
-            tags: List of tags
-            is_public: Whether assistant is public
-            is_template: Whether assistant is a template
 
         Returns:
             Assistant: Created assistant
@@ -59,23 +37,23 @@ class AssistantService:
         Raises:
             ValueError: If required fields are missing
         """
-        if not name or not system_prompt:
+        if not assistant_data.get("name") or not assistant_data.get("system_prompt"):
             raise ValueError("Name and system_prompt are required")
 
         assistant = Assistant(
             creator_id=user_id,
-            name=name,
-            description=description,
-            personality=personality,
-            system_prompt=system_prompt,
-            instructions=instructions,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            category=category,
-            tags=tags or [],
-            is_public=is_public,
-            is_template=is_template,
+            name=assistant_data["name"],
+            description=assistant_data.get("description"),
+            personality=assistant_data.get("personality"),
+            system_prompt=assistant_data["system_prompt"],
+            instructions=assistant_data.get("instructions"),
+            model=assistant_data.get("model", "gpt-4"),
+            temperature=str(assistant_data.get("temperature", 0.7)),
+            max_tokens=str(assistant_data.get("max_tokens", 4096)),
+            category=assistant_data.get("category"),
+            tags=assistant_data.get("tags", []),
+            is_public=assistant_data.get("is_public", False),
+            is_template=assistant_data.get("is_template", False),
             status=AssistantStatus.DRAFT,
         )
 
@@ -86,17 +64,29 @@ class AssistantService:
         logger.info(f"Assistant created: {assistant.name} by user {user_id}")
         return assistant
 
-    def get_assistant(self, assistant_id: str) -> Assistant | None:
+    def get_assistant(self, assistant_id: str, user_id: str | None = None) -> Assistant | None:
         """
         Get assistant by ID.
 
         Args:
             assistant_id: Assistant ID
+            user_id: User ID for permission check (optional)
 
         Returns:
             Optional[Assistant]: Assistant if found, None otherwise
         """
-        return self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        query = self.db.query(Assistant).filter(Assistant.id == assistant_id)
+        
+        # If user_id is provided, check permissions
+        if user_id:
+            query = query.filter(
+                or_(
+                    Assistant.creator_id == user_id,
+                    Assistant.is_public == True
+                )
+            )
+        
+        return query.first()
 
     def get_user_assistants(
         self,
@@ -169,37 +159,49 @@ class AssistantService:
 
         return query.order_by(Assistant.created_at.desc()).limit(limit).all()
 
+    def get_default_assistant(self) -> Assistant | None:
+        """
+        Get the default assistant (first active public assistant).
+
+        Returns:
+            Optional[Assistant]: Default assistant if found, None otherwise
+        """
+        return (
+            self.db.query(Assistant)
+            .filter(
+                and_(
+                    Assistant.status == AssistantStatus.ACTIVE,
+                    Assistant.is_public == True,
+                ),
+            )
+            .first()
+        )
+
     def update_assistant(
         self,
         assistant_id: str,
+        assistant_data: dict,
         user_id: str,
-        **kwargs,
     ) -> Assistant | None:
         """
         Update an assistant.
 
         Args:
             assistant_id: Assistant ID
+            assistant_data: Assistant update data
             user_id: User ID (for authorization)
-            **kwargs: Fields to update
 
         Returns:
             Optional[Assistant]: Updated assistant if found and authorized
         """
-        assistant = self.get_assistant(assistant_id)
+        assistant = self.get_assistant(assistant_id, user_id)
 
         if not assistant:
             return None
 
-        if assistant.creator_id != user_id:
-            logger.warning(
-                f"Unauthorized update attempt: user {user_id} tried to update assistant {assistant_id}",
-            )
-            return None
-
         # Update fields
-        for field, value in kwargs.items():
-            if hasattr(assistant, field):
+        for field, value in assistant_data.items():
+            if hasattr(assistant, field) and value is not None:
                 setattr(assistant, field, value)
 
         self.db.commit()
@@ -219,15 +221,9 @@ class AssistantService:
         Returns:
             bool: True if deleted, False otherwise
         """
-        assistant = self.get_assistant(assistant_id)
+        assistant = self.get_assistant(assistant_id, user_id)
 
         if not assistant:
-            return False
-
-        if assistant.creator_id != user_id:
-            logger.warning(
-                f"Unauthorized delete attempt: user {user_id} tried to delete assistant {assistant_id}",
-            )
             return False
 
         self.db.delete(assistant)
@@ -289,9 +285,9 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Updated assistant
         """
-        assistant = self.get_assistant(assistant_id)
+        assistant = self.get_assistant(assistant_id, user_id)
 
-        if not assistant or assistant.creator_id != user_id:
+        if not assistant:
             return None
 
         assistant.add_tool(tool_id, config)
@@ -318,9 +314,9 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Updated assistant
         """
-        assistant = self.get_assistant(assistant_id)
+        assistant = self.get_assistant(assistant_id, user_id)
 
-        if not assistant or assistant.creator_id != user_id:
+        if not assistant:
             return None
 
         if assistant.remove_tool(tool_id):

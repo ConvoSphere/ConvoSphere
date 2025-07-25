@@ -303,6 +303,46 @@ async def process_websocket_message(
         )
 
 
+@router.get("/conversations", response_model=list[ConversationResponse])
+async def get_conversations(
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """
+    Get all conversations for the current user.
+
+    Args:
+        current_user_id: Current user ID
+        db: Database session
+
+    Returns:
+        List[ConversationResponse]: List of conversations
+    """
+    try:
+        conversation_service = ConversationService(db)
+        conversations = conversation_service.get_user_conversations(current_user_id)
+
+        return [
+            ConversationResponse(
+                id=str(conv["id"]),
+                title=conv["title"],
+                assistant_id=str(conv["assistant_id"]),
+                assistant_name=conv.get("assistant_name", "Unknown Assistant"),
+                created_at=conv["created_at"].isoformat() if hasattr(conv["created_at"], "isoformat") else str(conv["created_at"]),
+                updated_at=conv["updated_at"].isoformat() if hasattr(conv["updated_at"], "isoformat") else str(conv["updated_at"]),
+                message_count=conv.get("message_count", 0),
+            )
+            for conv in conversations
+        ]
+
+    except Exception as e:
+        logger.error(f"Error getting conversations: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get conversations",
+        )
+
+
 # REST endpoints (existing code)
 @router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation(
@@ -323,11 +363,14 @@ async def create_conversation(
     """
     try:
         conversation_service = ConversationService(db)
-        conversation = await conversation_service.create_conversation(
+        # Create ConversationCreate object with user_id
+        from app.schemas.conversation import ConversationCreate as SchemaConversationCreate
+        conversation_create = SchemaConversationCreate(
             user_id=current_user_id,
             assistant_id=conversation_data.assistant_id,
-            title=conversation_data.title,
+            title=conversation_data.title or "New Conversation",
         )
+        conversation = conversation_service.create_conversation(conversation_create)
 
         return ConversationResponse(
             id=str(conversation.id),

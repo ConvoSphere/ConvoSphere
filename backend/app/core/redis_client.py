@@ -128,7 +128,7 @@ async def check_redis_connection() -> bool:
         )
 
         await asyncio.wait_for(test_client.ping(), timeout=2.0)
-        await test_client.close()
+        await test_client.aclose()
         return True
     except Exception as e:
         logger.debug(f"Redis connection check failed: {e}")
@@ -155,7 +155,7 @@ async def get_redis_info() -> dict[str, Any]:
         )
 
         info = await asyncio.wait_for(test_client.info(), timeout=5.0)
-        await test_client.close()
+        await test_client.aclose()
 
         return {
             "status": "connected",
