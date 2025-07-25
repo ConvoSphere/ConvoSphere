@@ -41,7 +41,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '../store/themeStore';
-import { getAssistants, addAssistant, deleteAssistant } from '../services/assistants';
+import { getAssistants, addAssistant, deleteAssistant, getDefaultAssistantId, setDefaultAssistant } from '../services/assistants';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -89,6 +89,8 @@ const Assistants: React.FC = () => {
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [defaultAssistantId, setDefaultAssistantId] = useState<string | null>(null);
+  const [settingDefault, setSettingDefault] = useState<string | null>(null);
 
   // Mock data for demonstration
   const mockAssistants: Assistant[] = [
@@ -166,12 +168,32 @@ const Assistants: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setAssistants(mockAssistants);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load assistants
+        setTimeout(() => {
+          setAssistants(mockAssistants);
+        }, 1000);
+        
+        // Load default assistant ID
+        try {
+          const defaultData = await getDefaultAssistantId();
+          setDefaultAssistantId(defaultData.assistant_id);
+        } catch (error) {
+          // No default assistant configured yet
+          console.log('No default assistant configured');
+        }
+      } catch (error) {
+        message.error(t('assistants.load_failed'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [t]);
 
   const handleAdd = async () => {
     try {
@@ -255,6 +277,19 @@ const Assistants: React.FC = () => {
     }
   };
 
+  const handleSetDefault = async (assistantId: string) => {
+    try {
+      setSettingDefault(assistantId);
+      await setDefaultAssistant(assistantId);
+      setDefaultAssistantId(assistantId);
+      message.success(t('assistants.default_set_success'));
+    } catch (error) {
+      message.error(t('assistants.default_set_failed'));
+    } finally {
+      setSettingDefault(null);
+    }
+  };
+
   const openEditModal = (assistant: Assistant) => {
     setEditingAssistant(assistant);
     form.setFieldsValue(assistant);
@@ -328,6 +363,17 @@ const Assistants: React.FC = () => {
                         onClick={() => openEditModal(assistant)}
                       />
                     </Tooltip>,
+                    <Tooltip title={defaultAssistantId === assistant.id.toString() ? t('assistants.actions.default_set') : t('assistants.actions.set_default')}>
+                      <Button 
+                        type="text" 
+                        icon={<SettingOutlined />}
+                        onClick={() => handleSetDefault(assistant.id.toString())}
+                        loading={settingDefault === assistant.id.toString()}
+                        style={{ 
+                          color: defaultAssistantId === assistant.id.toString() ? colors.colorPrimary : undefined 
+                        }}
+                      />
+                    </Tooltip>,
                     <Tooltip title={assistant.isActive ? t('assistants.actions.deactivate') : t('assistants.actions.activate')}>
                       <Button 
                         type="text" 
@@ -368,6 +414,11 @@ const Assistants: React.FC = () => {
                         <Tag color={assistant.isActive ? 'green' : 'default'}>
                           {assistant.isActive ? t('assistants.status.active') : t('assistants.status.inactive')}
                         </Tag>
+                        {defaultAssistantId === assistant.id.toString() && (
+                          <Tag color="gold" icon={<SettingOutlined />}>
+                            {t('assistants.status.default')}
+                          </Tag>
+                        )}
                       </Space>
                     }
                     description={

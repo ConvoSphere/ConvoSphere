@@ -119,5 +119,63 @@
     "conversations": "Unterhaltungen",
     "mcp_tools": "MCP-Tools",
     "user": "Benutzer"
+  },
+  "assistants": {
+    "title": "Assistenten",
+    "subtitle": "Verwalten Sie Ihre KI-Assistenten und deren Konfigurationen",
+    "tabs": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "add_new": "Neuer Assistent",
+    "add_title": "Assistent hinzufügen",
+    "edit_title": "Assistent bearbeiten",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "default": "Standard"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "set_default": "Als Standard setzen",
+      "default_set": "Ist Standard"
+    },
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Assistenten-Name eingeben",
+      "name_required": "Name ist erforderlich",
+      "description": "Beschreibung",
+      "description_placeholder": "Beschreibung eingeben",
+      "personality": "Persönlichkeit",
+      "personality_placeholder": "Persönlichkeit beschreiben",
+      "model": "Modell",
+      "model_placeholder": "Modell auswählen",
+      "temperature": "Temperatur",
+      "temperature_placeholder": "Kreativität (0.0 - 2.0)",
+      "is_active": "Aktiv",
+      "knowledge_bases": "Knowledge Bases",
+      "tools": "Tools",
+      "tags": "Tags"
+    },
+    "knowledge_bases": "Knowledge Bases",
+    "tools": "Tools",
+    "usage_count": "Verwendungen",
+    "added_success": "Assistent erfolgreich hinzugefügt",
+    "add_failed": "Assistent konnte nicht hinzugefügt werden",
+    "updated_success": "Assistent erfolgreich aktualisiert",
+    "update_failed": "Assistent konnte nicht aktualisiert werden",
+    "deleted_success": "Assistent erfolgreich gelöscht",
+    "delete_failed": "Assistent konnte nicht gelöscht werden",
+    "delete_confirm": "Sind Sie sicher, dass Sie diesen Assistenten löschen möchten?",
+    "activated": "Assistent aktiviert",
+    "deactivated": "Assistent deaktiviert",
+    "toggle_failed": "Status konnte nicht geändert werden",
+    "load_failed": "Assistenten konnten nicht geladen werden",
+    "default_set_success": "Standard-Assistent erfolgreich gesetzt",
+    "default_set_failed": "Standard-Assistent konnte nicht gesetzt werden"
   }
 } 
