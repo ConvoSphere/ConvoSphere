@@ -29,6 +29,8 @@ services:
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
       - WS_URL=${WS_URL:-ws://backend:8000}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend:8080}
+      - DEBUG=true
+      - ENVIRONMENT=development
 
     volumes:
       - ./uploads:/app/uploads
