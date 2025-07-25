@@ -1,114 +1,114 @@
-# Quick Start - In 5 Minuten einsatzbereit
+# Quick Start - Get Started in 5 Minutes
 
-## 🚀 Schneller Start mit Docker
+## 🚀 Quick Start with Docker
 
-### 1. Repository klonen
+### 1. Clone Repository
 ```bash
 git clone https://github.com/your-org/convosphere.git
 cd convosphere
 ```
 
-### 2. Mit Docker starten
+### 2. Start with Docker
 ```bash
 docker-compose up --build
 ```
 
-### 3. Browser öffnen
+### 3. Open Browser
 → [http://localhost:5173](http://localhost:5173)
 
-**Das war's!** 🎉
+**That's it!** 🎉
 
-## 📝 Erste Schritte
+## 📝 First Steps
 
-### 1. Registrierung
-- Klicken Sie auf "Register" in der oberen rechten Ecke
-- Füllen Sie das Formular aus
-- Bestätigen Sie Ihre E-Mail
+### 1. Registration
+- Click "Register" in the top right corner
+- Fill out the form
+- Confirm your email
 
-### 2. Erste Konversation
-- Klicken Sie auf "New Chat" oder "Neue Konversation"
-- Schreiben Sie eine Nachricht
-- Die AI antwortet automatisch
+### 2. First Conversation
+- Click "New Chat" or "New Conversation"
+- Type a message
+- The AI will respond automatically
 
-### 3. Knowledge Base nutzen
-- Gehen Sie zu "Knowledge Base"
-- Laden Sie ein PDF oder DOCX hoch
-- Fragen Sie die AI über den Inhalt
+### 3. Use Knowledge Base
+- Go to "Knowledge Base"
+- Upload a PDF or DOCX file
+- Ask the AI about the content
 
-## 🔧 Alternative: Manueller Setup
+## 🔧 Alternative: Manual Setup
 
-### Voraussetzungen
+### Prerequisites
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL
 - Redis
 
-### Backend starten
+### Start Backend
 ```bash
-# Backend-Verzeichnis
+# Backend directory
 cd backend
 
-# Dependencies installieren
+# Install dependencies
 pip install -r requirements.txt
 
-# Environment konfigurieren
+# Configure environment
 cp env.example .env
-# .env bearbeiten mit Ihren Einstellungen
+# Edit .env with your settings
 
-# Datenbank-Migrationen
+# Database migrations
 alembic upgrade head
 
-# Backend starten
+# Start backend
 uvicorn app.main:app --reload
 ```
 
-### Frontend starten
+### Start Frontend
 ```bash
-# Frontend-Verzeichnis
+# Frontend directory
 cd frontend-react
 
-# Dependencies installieren
+# Install dependencies
 npm install
 
-# Frontend starten
+# Start frontend
 npm run dev
 ```
 
-## 🐛 Häufige Probleme
+## 🐛 Common Issues
 
-### Port bereits belegt
+### Port Already in Use
 ```bash
-# Ports prüfen
+# Check ports
 lsof -i :8000  # Backend
 lsof -i :5173  # Frontend
 
-# Andere Ports verwenden
+# Use different ports
 docker-compose -f docker-compose.yml -p convosphere up
 ```
 
-### Docker-Probleme
+### Docker Issues
 ```bash
-# Docker neu starten
+# Restart Docker
 docker system prune -a
 docker-compose down
 docker-compose up --build
 ```
 
-### Datenbank-Probleme
+### Database Issues
 ```bash
-# Datenbank zurücksetzen
+# Reset database
 docker-compose down -v
 docker-compose up --build
 ```
 
-## 📚 Nächste Schritte
+## 📚 Next Steps
 
-- **[User Guide](user-guide.md)** - Alle Features kennenlernen
-- **[FAQ](faq.md)** - Häufige Fragen und Lösungen
-- **[Developer Guide](developer-guide.md)** - Für Entwickler
+- **[User Guide](user-guide.md)** - Learn all features
+- **[FAQ](faq.md)** - Common questions and solutions
+- **[Developer Guide](developer-guide.md)** - For developers
 
-## 🆘 Hilfe benötigt?
+## 🆘 Need Help?
 
-- **GitHub Issues**: [Bug melden](https://github.com/your-org/convosphere/issues)
+- **GitHub Issues**: [Report Bug](https://github.com/your-org/convosphere/issues)
 - **Discord**: [Community Support](https://discord.gg/your-server)
-- **Dokumentation**: [Vollständige Guides](../index.md)
+- **Documentation**: [Complete Guides](../index.md)

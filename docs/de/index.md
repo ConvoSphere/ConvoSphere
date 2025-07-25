@@ -1,6 +1,6 @@
 # ConvoSphere - AI Chat Platform
 
-A modern AI chat platform with real-time messaging, knowledge base, and advanced AI capabilities.
+Eine moderne AI-Chat-Plattform mit Echtzeit-Messaging, Knowledge Base und erweiterten AI-Funktionen.
 
 <div align="center">
 
@@ -14,64 +14,64 @@ A modern AI chat platform with real-time messaging, knowledge base, and advanced
 
 </div>
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start (5 Minuten)
 
-**Get up and running in 5 minutes:**
+**In 5 Minuten einsatzbereit:**
 
 ```bash
-# Clone repository
+# Repository klonen
 git clone https://github.com/your-org/convosphere.git
 cd convosphere
 
-# Start with Docker
+# Mit Docker starten
 docker-compose up --build
 ```
 
-→ Open [http://localhost:5173](http://localhost:5173)
+→ [http://localhost:5173](http://localhost:5173) öffnen
 
-**First steps:**
-1. Register an account
-2. Start a conversation
-3. Upload documents to the knowledge base
+**Erste Schritte:**
+1. Registrieren Sie sich
+2. Starten Sie eine Konversation
+3. Laden Sie Dokumente in die Knowledge Base hoch
 
-## 📖 For Users
+## 📖 Für Benutzer
 
-- **[User Guide](user-guide.md)** - Chat, Knowledge Base, Settings
-- **[FAQ](faq.md)** - Frequently Asked Questions
+- **[User Guide](user-guide.md)** - Chat, Knowledge Base, Einstellungen
+- **[FAQ](faq.md)** - Häufige Fragen und Lösungen
 
-## 🔧 For Developers
+## 🔧 Für Entwickler
 
-- **[Developer Guide](developer-guide.md)** - Setup, Architecture, API
-- **[API Reference](api-reference.md)** - API Endpoints and Examples
+- **[Developer Guide](developer-guide.md)** - Setup, Architektur, API
+- **[API Reference](api-reference.md)** - API-Endpunkte und Beispiele
 - **[Deployment](deployment.md)** - Production Setup
 
-## 🎯 Core Features
+## 🎯 Hauptfunktionen
 
-### 💬 **Real-time Chat**
-- WebSocket-based conversations
-- File attachments (PDF, DOCX, TXT)
-- Tool integration (MCP)
-- Message history and search
+### 💬 **Echtzeit-Chat**
+- WebSocket-basierte Konversationen
+- Datei-Anhänge (PDF, DOCX, TXT)
+- Tool-Integration (MCP)
+- Nachrichtenverlauf und Suche
 
 ### 📚 **Knowledge Base**
-- Upload and manage documents
-- Semantic search with AI
-- Tag system and metadata
-- Bulk import and export
+- Dokumente hochladen und verwalten
+- Semantische Suche mit AI
+- Tag-System und Metadaten
+- Bulk-Import und Export
 
-### 🤖 **AI Integration**
-- Multiple AI providers (OpenAI, Anthropic, etc.)
-- Configurable AI assistants
-- Context-aware responses
-- Tool execution
+### 🤖 **AI-Integration**
+- Multiple AI-Provider (OpenAI, Anthropic, etc.)
+- Konfigurierbare AI-Assistenten
+- Kontextbewusste Antworten
+- Tool-Ausführung
 
 ### 👥 **Multi-User System**
-- JWT-based authentication
-- Role-based access control
-- Admin dashboard
-- Audit logging
+- JWT-basierte Authentifizierung
+- Rollenbasierte Zugriffskontrolle
+- Admin-Dashboard
+- Audit-Logging
 
-## 🏗️ Architecture
+## 🏗️ Architektur
 
 ```mermaid
 graph TB
@@ -87,7 +87,7 @@ graph TB
         KB[Knowledge Base]
     end
     
-    subgraph "Data"
+    subgraph "Daten"
         PG[(PostgreSQL)]
         Redis[(Redis)]
         Weaviate[(Weaviate)]
@@ -101,7 +101,7 @@ graph TB
     KB --> Weaviate
 ```
 
-## 🛠️ Technology Stack
+## 🛠️ Technologie-Stack
 
 - **Backend**: FastAPI, PostgreSQL, Redis, Weaviate
 - **Frontend**: React 18, TypeScript, Ant Design
@@ -110,30 +110,30 @@ graph TB
 
 ## 🚀 Deployment
 
-### Docker (Recommended)
+### Docker (Empfohlen)
 ```bash
 docker-compose up -d
 ```
 
 ### Production
 ```bash
-# Configure environment
+# Environment konfigurieren
 cp env.example .env
-# Start production
+# Production starten
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions! See [Contributing Guide](project/contributing.md) for details.
+Wir freuen uns über Beiträge! Siehe [Contributing Guide](project/contributing.md) für Details.
 
 ## 📄 License
 
-MIT License - see [LICENSE](../../LICENSE) for details.
+MIT License - siehe [LICENSE](../../LICENSE) für Details.
 
 ## 🆘 Support
 
-- **Documentation**: This page and linked guides
+- **Dokumentation**: Diese Seite und verlinkte Guides
 - **Issues**: [GitHub Issues](https://github.com/your-org/convosphere/issues)
 - **Discussions**: [Discord Server](https://discord.gg/your-server)
 
@@ -141,8 +141,8 @@ MIT License - see [LICENSE](../../LICENSE) for details.
 
 <div align="center">
 
-**Ready to get started?** [Quick Start →](quick-start.md)
+**Bereit zum Starten?** [Quick Start →](quick-start.md)
 
-**Need more details?** [User Guide →](user-guide.md) | [Developer Guide →](developer-guide.md)
+**Mehr Details?** [User Guide →](user-guide.md) | [Developer Guide →](developer-guide.md)
 
-</div> 
+</div>

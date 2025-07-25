@@ -1,243 +1,243 @@
-# User Guide - ConvoSphere nutzen
+# User Guide - Using ConvoSphere
 
-## 🎯 Übersicht
+## 🎯 Overview
 
-ConvoSphere ist eine AI-Chat-Plattform mit Knowledge Base, Echtzeit-Messaging und erweiterten Funktionen. Diese Anleitung zeigt Ihnen, wie Sie alle Features optimal nutzen.
+ConvoSphere is an AI chat platform with knowledge base, real-time messaging, and advanced features. This guide shows you how to use all features optimally.
 
 ## 💬 Chat Interface
 
-### Neue Konversation starten
-1. **Dashboard** → "New Chat" oder "Neue Konversation"
-2. **Chat-Seite** → "+" Button in der Seitenleiste
-3. **Direktlink** → `/chat` in der URL
+### Start New Conversation
+1. **Dashboard** → "New Chat" or "New Conversation"
+2. **Chat Page** → "+" button in sidebar
+3. **Direct Link** → `/chat` in URL
 
-### Nachrichten senden
-- **Text eingeben** im unteren Eingabefeld
-- **Enter** drücken zum Senden
-- **Shift+Enter** für neue Zeile
-- **Dateien anhängen** mit dem Clip-Icon
+### Send Messages
+- **Type text** in the bottom input field
+- **Press Enter** to send
+- **Shift+Enter** for new line
+- **Attach files** with the clip icon
 
-### Chat-Features
-- **Echtzeit-Updates** - Nachrichten erscheinen sofort
-- **Typing-Indikatoren** - Sie sehen, wenn die AI schreibt
-- **Nachrichtenverlauf** - Alle Konversationen werden gespeichert
-- **Suche** - Durchsuchen Sie Ihre Chat-Historie
+### Chat Features
+- **Real-time updates** - Messages appear instantly
+- **Typing indicators** - See when AI is typing
+- **Message history** - All conversations are saved
+- **Search** - Search your chat history
 
-### Datei-Anhänge
-**Unterstützte Formate:**
+### File Attachments
+**Supported formats:**
 - PDF (.pdf)
 - Word (.docx)
 - Text (.txt)
 - Markdown (.md)
 
-**Größenlimit:** 50MB pro Datei
+**Size limit:** 50MB per file
 
 ## 📚 Knowledge Base
 
-### Dokumente hochladen
-1. **Knowledge Base** → "Upload" oder "Hochladen"
-2. **Datei auswählen** (Drag & Drop oder Datei-Browser)
-3. **Metadaten eingeben** (optional):
-   - Titel
-   - Beschreibung
+### Upload Documents
+1. **Knowledge Base** → "Upload"
+2. **Select file** (Drag & Drop or file browser)
+3. **Enter metadata** (optional):
+   - Title
+   - Description
    - Tags
-   - Kategorie
-4. **Upload starten**
+   - Category
+4. **Start upload**
 
-### Dokumente verwalten
-- **Liste anzeigen** - Alle Ihre Dokumente
-- **Suchen** - Volltext-Suche in Dokumenten
-- **Tags verwalten** - Dokumente kategorisieren
-- **Löschen** - Nicht mehr benötigte Dokumente entfernen
+### Manage Documents
+- **View list** - All your documents
+- **Search** - Full-text search in documents
+- **Manage tags** - Categorize documents
+- **Delete** - Remove unwanted documents
 
-### AI mit Knowledge Base nutzen
-1. **Chat starten**
-2. **Dokumente referenzieren**:
-   - "Verwende das Dokument 'Projektplan.pdf'"
-   - "Suche in meinen Dokumenten nach 'Machine Learning'"
-3. **AI antwortet** basierend auf Ihren Dokumenten
+### Use AI with Knowledge Base
+1. **Start chat**
+2. **Reference documents**:
+   - "Use the document 'Project Plan.pdf'"
+   - "Search my documents for 'Machine Learning'"
+3. **AI responds** based on your documents
 
-### Erweiterte Suche
-- **Semantische Suche** - Findet ähnliche Inhalte
-- **Tag-Filter** - Nach Kategorien filtern
-- **Metadaten-Filter** - Nach Autor, Datum, etc.
-- **Volltext-Suche** - Exakte Begriffe finden
+### Advanced Search
+- **Semantic search** - Find similar content
+- **Tag filters** - Filter by categories
+- **Metadata filters** - Filter by author, date, etc.
+- **Full-text search** - Find exact terms
 
-## ⚙️ Einstellungen & Profile
+## ⚙️ Settings & Profile
 
-### Profil bearbeiten
-1. **Profil** → "Edit Profile" oder "Profil bearbeiten"
-2. **Änderungen vornehmen**:
+### Edit Profile
+1. **Profile** → "Edit Profile"
+2. **Make changes**:
    - Name
-   - E-Mail
+   - Email
    - Avatar
-   - Sprache
-3. **Speichern**
+   - Language
+3. **Save**
 
-### Benachrichtigungen
-- **E-Mail-Benachrichtigungen** ein/ausschalten
-- **Push-Benachrichtigungen** konfigurieren
-- **Benachrichtigungsfrequenz** anpassen
+### Notifications
+- **Email notifications** on/off
+- **Push notifications** configuration
+- **Notification frequency** adjustment
 
-### Datenschutz
-- **Sichtbarkeit** - Wer kann Ihre Profile sehen
-- **Datenexport** - Ihre Daten herunterladen
-- **Account löschen** - Account permanent entfernen
+### Privacy
+- **Visibility** - Who can see your profile
+- **Data export** - Download your data
+- **Account deletion** - Permanently remove account
 
-## 🤖 AI-Assistenten
+## 🤖 AI Assistants
 
-### Assistenten erstellen
-1. **Assistants** → "Create Assistant" oder "Assistent erstellen"
-2. **Konfiguration**:
-   - Name und Beschreibung
-   - AI-Modell wählen (GPT-4, Claude, etc.)
-   - Persönlichkeit definieren
-   - Knowledge Base verknüpfen
-3. **Speichern**
+### Create Assistants
+1. **Assistants** → "Create Assistant"
+2. **Configuration**:
+   - Name and description
+   - Choose AI model (GPT-4, Claude, etc.)
+   - Define personality
+   - Link knowledge base
+3. **Save**
 
-### Assistenten verwenden
-- **In Chat auswählen** - Dropdown-Menü
-- **Direkt ansprechen** - "@AssistentName"
-- **Kontext wechseln** - Zwischen Assistenten wechseln
+### Use Assistants
+- **Select in chat** - Dropdown menu
+- **Direct mention** - "@AssistantName"
+- **Switch context** - Switch between assistants
 
-### Assistenten verwalten
-- **Bearbeiten** - Konfiguration ändern
-- **Aktivieren/Deaktivieren** - Temporär ausschalten
-- **Löschen** - Nicht mehr benötigte Assistenten entfernen
+### Manage Assistants
+- **Edit** - Change configuration
+- **Enable/Disable** - Temporarily turn off
+- **Delete** - Remove unwanted assistants
 
 ## 🛠️ Tools & MCP
 
-### Verfügbare Tools
-- **Web-Suche** - Aktuelle Informationen finden
-- **Rechner** - Mathematische Berechnungen
-- **Code-Interpreter** - Code ausführen
-- **Datei-Operationen** - Dateien bearbeiten
+### Available Tools
+- **Web Search** - Find current information
+- **Calculator** - Mathematical calculations
+- **Code Interpreter** - Execute code
+- **File Operations** - Edit files
 
-### Tools verwenden
-1. **Tool auswählen** in der Tool-Palette
-2. **Parameter eingeben** (falls erforderlich)
-3. **Ausführen** - Tool wird automatisch ausgeführt
-4. **Ergebnis anzeigen** - Tool-Output wird im Chat angezeigt
+### Use Tools
+1. **Select tool** in tool palette
+2. **Enter parameters** (if required)
+3. **Execute** - Tool runs automatically
+4. **Show result** - Tool output appears in chat
 
 ### Custom Tools
-- **Eigene Tools erstellen** (für Entwickler)
-- **Tool-Parameter konfigurieren**
-- **Sicherheitseinstellungen** anpassen
+- **Create own tools** (for developers)
+- **Configure tool parameters**
+- **Adjust security settings**
 
-## 👥 Benutzerrollen
+## 👥 User Roles
 
 ### Standard User
-- Chat und Konversationen
-- Eigene Knowledge Base
-- Grundlegende Einstellungen
+- Chat and conversations
+- Own knowledge base
+- Basic settings
 
 ### Premium User
-- Erweiterte Knowledge Base Features
-- Bulk-Import von Dokumenten
-- Erweiterte AI-Modelle
-- Prioritäts-Support
+- Extended knowledge base features
+- Bulk document import
+- Advanced AI models
+- Priority support
 
 ### Moderator
-- Alle Benutzer-Dokumente moderieren
-- System-Tags verwalten
-- Community-Management
+- Moderate all user documents
+- Manage system tags
+- Community management
 
 ### Admin
-- Vollzugriff auf alle Funktionen
-- Benutzer-Management
-- System-Statistiken
-- Konfiguration
+- Full access to all features
+- User management
+- System statistics
+- Configuration
 
-## 🔍 Suche & Navigation
+## 🔍 Search & Navigation
 
-### Globale Suche
-- **Suchfeld** in der oberen Leiste
-- **Chat-Historie** durchsuchen
-- **Knowledge Base** durchsuchen
-- **Benutzer** finden (Admin)
+### Global Search
+- **Search field** in top bar
+- **Search chat history**
+- **Search knowledge base**
+- **Find users** (Admin)
 
 ### Navigation
-- **Dashboard** - Übersicht und Schnellzugriff
-- **Chat** - Konversationen
-- **Knowledge Base** - Dokumente
-- **Assistants** - AI-Assistenten
-- **Tools** - Tool-Palette
-- **Settings** - Einstellungen
+- **Dashboard** - Overview and quick access
+- **Chat** - Conversations
+- **Knowledge Base** - Documents
+- **Assistants** - AI assistants
+- **Tools** - Tool palette
+- **Settings** - Settings
 
 ### Keyboard Shortcuts
-- **Ctrl/Cmd + K** - Globale Suche
-- **Ctrl/Cmd + N** - Neue Konversation
-- **Ctrl/Cmd + S** - Einstellungen
-- **Esc** - Dialog schließen
+- **Ctrl/Cmd + K** - Global search
+- **Ctrl/Cmd + N** - New conversation
+- **Ctrl/Cmd + S** - Settings
+- **Esc** - Close dialog
 
-## 🐛 Häufige Probleme
+## 🐛 Common Issues
 
-### Chat funktioniert nicht
-- **Browser aktualisieren** (F5)
-- **WebSocket-Verbindung** prüfen
-- **Internet-Verbindung** testen
+### Chat Not Working
+- **Refresh browser** (F5)
+- **Check WebSocket connection**
+- **Test internet connection**
 
-### Upload fehlgeschlagen
-- **Dateigröße** prüfen (max. 50MB)
-- **Dateiformat** überprüfen
-- **Browser-Cache** leeren
+### Upload Failed
+- **Check file size** (max 50MB)
+- **Verify file format**
+- **Clear browser cache**
 
-### AI antwortet nicht
-- **AI-Provider** Status prüfen
-- **API-Keys** konfiguriert?
-- **Rate Limits** erreicht?
+### AI Not Responding
+- **Check AI provider status**
+- **API keys configured?**
+- **Rate limits reached?**
 
-### Performance-Probleme
-- **Browser schließen** und neu öffnen
-- **Cache leeren**
-- **Anderen Browser** versuchen
+### Performance Issues
+- **Close and reopen browser**
+- **Clear cache**
+- **Try different browser**
 
-## 📱 Mobile Nutzung
+## 📱 Mobile Usage
 
 ### Responsive Design
-- **Mobile-optimiert** - Funktioniert auf allen Geräten
-- **Touch-freundlich** - Große Buttons und Gesten
-- **Offline-Modus** - Grundfunktionen ohne Internet
+- **Mobile optimized** - Works on all devices
+- **Touch friendly** - Large buttons and gestures
+- **Offline mode** - Basic functions without internet
 
 ### Mobile Features
-- **Push-Benachrichtigungen**
-- **Touch-Gesten** für Navigation
-- **Optimierte Eingabe** für mobile Geräte
+- **Push notifications**
+- **Touch gestures** for navigation
+- **Optimized input** for mobile devices
 
-## 🔒 Sicherheit & Datenschutz
+## 🔒 Security & Privacy
 
-### Ihre Daten
-- **Ende-zu-Ende-Verschlüsselung** für Nachrichten
-- **Sichere Speicherung** in der Cloud
-- **Regelmäßige Backups** automatisch
+### Your Data
+- **End-to-end encryption** for messages
+- **Secure storage** in the cloud
+- **Regular backups** automatically
 
-### Privatsphäre
-- **Nur Sie** können Ihre Konversationen sehen
-- **Dokumente** sind privat (außer geteilt)
-- **Löschung** auf Anfrage möglich
+### Privacy
+- **Only you** can see your conversations
+- **Documents** are private (unless shared)
+- **Deletion** available on request
 
 ### Compliance
-- **DSGVO-konform** - Europäische Datenschutzrichtlinien
-- **Audit-Logs** für Admins
-- **Datenexport** auf Anfrage
+- **GDPR compliant** - European data protection
+- **Audit logs** for admins
+- **Data export** on request
 
-## 🆘 Hilfe & Support
+## 🆘 Help & Support
 
-### Dokumentation
-- **Diese User Guide** - Vollständige Anleitung
-- **FAQ** - Häufige Fragen
-- **Video-Tutorials** - Schritt-für-Schritt Anleitungen
+### Documentation
+- **This User Guide** - Complete guide
+- **FAQ** - Frequently asked questions
+- **Video tutorials** - Step-by-step guides
 
 ### Community
-- **Discord Server** - Community-Support
-- **GitHub Discussions** - Technische Fragen
-- **Feedback** - Verbesserungsvorschläge
+- **Discord Server** - Community support
+- **GitHub Discussions** - Technical questions
+- **Feedback** - Improvement suggestions
 
 ### Support
-- **E-Mail Support** - Für Premium-User
-- **Live-Chat** - Während der Geschäftszeiten
+- **Email Support** - For premium users
+- **Live Chat** - During business hours
 - **Bug Reports** - GitHub Issues
 
 ---
 
-**Weitere Hilfe?** [FAQ](faq.md) | [Developer Guide](developer-guide.md) | [Support](../index.md#-support)
+**Need more help?** [FAQ](faq.md) | [Developer Guide](developer-guide.md) | [Support](../index.md#-support)

@@ -1,12 +1,12 @@
-# Developer Guide - ConvoSphere entwickeln
+# Developer Guide - Developing ConvoSphere
 
-## 🎯 Übersicht
+## 🎯 Overview
 
-ConvoSphere ist eine moderne AI-Chat-Plattform mit FastAPI Backend und React Frontend. Dieser Guide hilft Entwicklern, das System zu verstehen, zu erweitern und zu deployen.
+ConvoSphere is a modern AI chat platform with FastAPI backend and React frontend. This guide helps developers understand, extend, and deploy the system.
 
-## 🏗️ Architektur
+## 🏗️ Architecture
 
-### System-Übersicht
+### System Overview
 ```mermaid
 graph TB
     subgraph "Frontend (React/TypeScript)"
@@ -18,358 +18,322 @@ graph TB
     subgraph "Backend (FastAPI)"
         API[REST API]
         WS_Server[WebSocket Server]
-        Auth[JWT Auth]
         AI[AI Services]
         KB[Knowledge Base]
-        MCP[MCP Tools]
+        Auth[Authentication]
     end
     
-    subgraph "Daten"
+    subgraph "Data Layer"
         PG[(PostgreSQL)]
         Redis[(Redis)]
         Weaviate[(Weaviate)]
     end
     
+    subgraph "External Services"
+        OpenAI[OpenAI API]
+        Anthropic[Anthropic API]
+        MCP[MCP Tools]
+    end
+    
     UI --> API
     UI --> WS_Server
-    API --> Auth
     API --> AI
     API --> KB
-    API --> MCP
-    AI --> Weaviate
+    API --> Auth
+    AI --> OpenAI
+    AI --> Anthropic
+    AI --> MCP
     KB --> Weaviate
+    Auth --> PG
+    API --> PG
+    API --> Redis
 ```
 
-### Technologie-Stack
-- **Backend**: FastAPI, SQLAlchemy, PostgreSQL, Redis, Weaviate
-- **Frontend**: React 18, TypeScript, Ant Design, Zustand
+### Technology Stack
+- **Backend**: FastAPI, SQLAlchemy, Alembic
+- **Frontend**: React 18, TypeScript, Ant Design
+- **Database**: PostgreSQL, Redis, Weaviate
 - **AI**: LiteLLM, OpenAI, Anthropic
 - **Deployment**: Docker, Docker Compose
 
 ## 🚀 Development Setup
 
-### Voraussetzungen
-- **Python 3.11+**
-- **Node.js 18+**
-- **PostgreSQL 14+**
-- **Redis 6+**
-- **Docker & Docker Compose**
-
-### Schneller Start (Docker)
+### Prerequisites
 ```bash
-# Repository klonen
+# Required software
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL 14+
+- Redis 6+
+- Git
+```
+
+### Quick Setup
+```bash
+# Clone repository
 git clone https://github.com/your-org/convosphere.git
 cd convosphere
 
-# Mit Docker starten
+# Start with Docker (recommended)
 docker-compose up --build
 
-# Services verfügbar:
-# Frontend: http://localhost:5173
-# Backend: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+# Or manual setup
+make setup-dev
 ```
 
-### Manueller Setup
-
-#### Backend Setup
+### Manual Setup
 ```bash
-# Backend-Verzeichnis
+# Backend setup
 cd backend
-
-# Virtual Environment
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# oder: venv\Scripts\activate  # Windows
-
-# Dependencies
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Environment
 cp env.example .env
-# .env bearbeiten mit lokalen Einstellungen
-
-# Datenbank
+# Edit .env with your settings
 alembic upgrade head
+uvicorn app.main:app --reload
 
-# Starten
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-#### Frontend Setup
-```bash
-# Frontend-Verzeichnis
+# Frontend setup
 cd frontend-react
-
-# Dependencies
 npm install
-
-# Environment
-cp .env.example .env.local
-# .env.local bearbeiten
-
-# Starten
 npm run dev
 ```
 
-## 📁 Projekt-Struktur
+## 📁 Project Structure
 
 ```
 convosphere/
-├── backend/
+├── backend/                 # FastAPI backend
 │   ├── app/
-│   │   ├── api/           # API-Endpunkte
-│   │   ├── core/          # Konfiguration, Sicherheit
-│   │   ├── models/        # Datenbank-Modelle
-│   │   ├── schemas/       # Pydantic-Schemas
-│   │   ├── services/      # Business Logic
-│   │   └── utils/         # Utilities
-│   ├── alembic/           # Datenbank-Migrationen
-│   └── tests/             # Tests
-├── frontend-react/
+│   │   ├── api/            # API routes
+│   │   ├── core/           # Core configuration
+│   │   ├── models/         # Database models
+│   │   ├── services/       # Business logic
+│   │   └── utils/          # Utilities
+│   ├── alembic/            # Database migrations
+│   └── tests/              # Backend tests
+├── frontend-react/         # React frontend
 │   ├── src/
-│   │   ├── components/    # React-Komponenten
-│   │   ├── pages/         # Seiten-Komponenten
-│   │   ├── services/      # API-Services
-│   │   ├── store/         # Zustand State
-│   │   └── utils/         # Utilities
-│   └── public/            # Statische Assets
-├── docs/                  # Dokumentation
-└── docker/                # Docker-Konfiguration
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API services
+│   │   └── utils/          # Utilities
+│   └── tests/              # Frontend tests
+├── docs/                   # Documentation
+├── docker-compose.yml      # Docker setup
+└── Makefile               # Development commands
 ```
 
-## 🔧 Entwicklung
+## 💻 Development
 
-### Code-Stil
-- **Python**: Black, isort, flake8
-- **TypeScript**: ESLint, Prettier
-- **Pre-commit Hooks**: Automatische Formatierung
-
-### Tests
+### Code Style
 ```bash
-# Backend Tests
+# Backend (Python)
+black app/ tests/
+isort app/ tests/
+flake8 app/ tests/
+
+# Frontend (TypeScript)
+npm run lint
+npm run format
+```
+
+### Testing
+```bash
+# Backend tests
 cd backend
 pytest
 
-# Frontend Tests
+# Frontend tests
 cd frontend-react
 npm test
 
-# E2E Tests
+# E2E tests
 npm run test:e2e
 ```
 
-### Datenbank-Migrationen
+### Database Migrations
 ```bash
-# Neue Migration erstellen
+# Create migration
 alembic revision --autogenerate -m "Description"
 
-# Migration ausführen
+# Apply migrations
 alembic upgrade head
 
-# Migration rückgängig
+# Rollback migration
 alembic downgrade -1
 ```
 
-### API-Entwicklung
+### API Development
 ```python
-# Neuer Endpunkt
-@router.post("/custom-endpoint")
-async def custom_endpoint(
-    request: CustomRequest,
+# Example API endpoint
+from fastapi import APIRouter, Depends
+from app.models.user import User
+from app.services.auth import get_current_user
+
+router = APIRouter()
+
+@router.get("/users/me")
+async def get_current_user_info(
     current_user: User = Depends(get_current_user)
-) -> CustomResponse:
-    """Custom endpoint description"""
-    # Implementation
-    return CustomResponse(data=result)
+):
+    return current_user
 ```
 
-## 🔌 API Reference
+## 🔧 Custom Tools (MCP)
 
-### Authentifizierung
+### Creating MCP Tools
 ```python
-# JWT Token erhalten
-POST /api/v1/auth/login
-{
-    "email": "user@example.com",
-    "password": "password"
-}
+# Example MCP tool
+from mcp import Server, StdioServerParameters
+from mcp.types import TextContent
 
-# Token verwenden
-Authorization: Bearer <token>
+server = Server("my-tool")
+
+@server.list_tools()
+async def list_tools():
+    return [
+        {
+            "name": "my_tool",
+            "description": "My custom tool",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "input": {"type": "string"}
+                }
+            }
+        }
+    ]
+
+@server.call_tool()
+async def call_tool(name: str, arguments: dict):
+    if name == "my_tool":
+        result = process_arguments(arguments)
+        return [TextContent(type="text", text=result)]
 ```
 
-### Haupt-Endpunkte
-
-#### Chat
-- `POST /api/v1/chat/messages` - Nachricht senden
-- `GET /api/v1/chat/conversations` - Konversationen abrufen
-- `DELETE /api/v1/chat/conversations/{id}` - Konversation löschen
-
-#### Knowledge Base
-- `POST /api/v1/knowledge/documents` - Dokument hochladen
-- `GET /api/v1/knowledge/documents` - Dokumente abrufen
-- `POST /api/v1/knowledge/search` - Dokumente durchsuchen
-
-#### Users
-- `GET /api/v1/users/me` - Eigenes Profil
-- `PUT /api/v1/users/me` - Profil aktualisieren
-- `POST /api/v1/users` - Benutzer erstellen (Admin)
-
-### WebSocket
-```javascript
-// Verbindung
-const ws = new WebSocket('ws://localhost:8000/ws');
-
-// Nachricht senden
-ws.send(JSON.stringify({
-    type: 'message',
-    content: 'Hello',
-    conversation_id: 1
-}));
-
-// Nachrichten empfangen
-ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log(data);
-};
+### Tool Configuration
+```yaml
+# mcp-config.yaml
+tools:
+  - name: my-tool
+    command: python -m my_tool
+    env:
+      API_KEY: ${API_KEY}
 ```
 
-## 🛠️ Custom Tools (MCP)
+## 🔒 Security
 
-### Tool erstellen
+### Authentication
 ```python
-# backend/app/tools/custom_tool.py
-from mcp import Tool
+# JWT token validation
+from app.core.security import verify_token
 
-class CustomTool(Tool):
-    name = "custom_tool"
-    description = "Custom tool description"
-    
-    async def execute(self, params: dict) -> dict:
-        # Tool-Logik
-        result = self.process(params)
-        return {"result": result}
-    
-    def process(self, params: dict) -> str:
-        # Implementation
-        return "Tool result"
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = verify_token(token)
+    user_id = payload.get("sub")
+    return get_user(user_id)
 ```
 
-### Tool registrieren
+### Authorization
 ```python
-# backend/app/main.py
-from app.tools.custom_tool import CustomTool
+# Role-based access control
+from app.core.auth import require_role
 
-# Tool zur Registry hinzufügen
-tool_registry.register(CustomTool())
-```
-
-## 🔒 Sicherheit
-
-### JWT Authentication
-```python
-# Token erstellen
-token = create_access_token(data={"sub": user.email})
-
-# Token validieren
-user = get_current_user(token)
+@router.get("/admin/users")
+@require_role("admin")
+async def get_all_users():
+    return get_users()
 ```
 
 ### Rate Limiting
 ```python
-# Endpunkt mit Rate Limiting
-@limiter.limit("100/minute")
-@router.post("/api/v1/endpoint")
-async def rate_limited_endpoint():
-    pass
-```
+# Rate limiting middleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 
-### Input Validation
-```python
-# Pydantic Schema
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8)
-    name: str = Field(max_length=100)
+limiter = Limiter(key_func=get_remote_address)
+
+@app.middleware("http")
+async def rate_limit_middleware(request, call_next):
+    # Apply rate limiting
+    return await call_next(request)
 ```
 
 ## 📊 Monitoring & Logging
 
-### Logging
+### Logging Configuration
 ```python
+# Logging setup
 import logging
+from app.core.config import settings
 
-logger = logging.getLogger(__name__)
-
-# Log-Level
-logger.debug("Debug message")
-logger.info("Info message")
-logger.warning("Warning message")
-logger.error("Error message")
-```
-
-### Metrics
-```python
-# Prometheus Metrics
-from prometheus_client import Counter, Histogram
-
-request_counter = Counter('http_requests_total', 'Total HTTP requests')
-request_duration = Histogram('http_request_duration_seconds', 'HTTP request duration')
+logging.basicConfig(
+    level=settings.LOG_LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 ```
 
 ### Health Checks
 ```python
+# Health check endpoint
 @router.get("/health")
 async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow(),
-        "version": "1.0.0"
+        "version": settings.VERSION
     }
+```
+
+### Metrics
+```python
+# Prometheus metrics
+from prometheus_client import Counter, Histogram
+
+request_count = Counter('http_requests_total', 'Total HTTP requests')
+request_duration = Histogram('http_request_duration_seconds', 'HTTP request duration')
 ```
 
 ## 🚀 Deployment
 
 ### Docker Production
 ```bash
-# Production Build
+# Build production images
+docker-compose -f docker-compose.prod.yml build
+
+# Deploy
 docker-compose -f docker-compose.prod.yml up -d
-
-# Environment
-cp env.example .env.prod
-# Production-Einstellungen konfigurieren
 ```
 
-### Environment Variables
+### Environment Configuration
 ```bash
-# Backend
-DATABASE_URL=postgresql://user:pass@host:port/db
-REDIS_URL=redis://host:port
-SECRET_KEY=your-secret-key
-AI_PROVIDER_API_KEY=your-api-key
-
-# Frontend
-VITE_API_URL=https://api.yourdomain.com
-VITE_WS_URL=wss://api.yourdomain.com
+# Production environment
+cp env.example .env.prod
+# Edit with production values
+export $(cat .env.prod | xargs)
 ```
 
-### Production Checklist
-- [ ] **Environment** konfiguriert
-- [ ] **SSL/TLS** eingerichtet
-- [ ] **Backup-Strategie** implementiert
-- [ ] **Monitoring** aktiviert
-- [ ] **Logs** zentralisiert
-- [ ] **Security Headers** gesetzt
-- [ ] **Rate Limiting** aktiviert
+### Database Setup
+```bash
+# Production database
+docker run -d \
+  --name postgres \
+  -e POSTGRES_PASSWORD=secure_password \
+  -e POSTGRES_DB=convosphere \
+  postgres:14
+
+# Run migrations
+alembic upgrade head
+```
 
 ## 🧪 Testing
 
 ### Unit Tests
 ```python
-# backend/tests/test_service.py
+# Example unit test
 import pytest
-from app.services.user_service import UserService
+from app.services.user import UserService
 
 def test_create_user():
     service = UserService()
@@ -379,11 +343,14 @@ def test_create_user():
 
 ### Integration Tests
 ```python
-# backend/tests/test_api.py
+# Example integration test
 from fastapi.testclient import TestClient
+from app.main import app
 
-def test_login(client: TestClient):
-    response = client.post("/api/v1/auth/login", json={
+client = TestClient(app)
+
+def test_login():
+    response = client.post("/auth/login", json={
         "email": "test@example.com",
         "password": "password"
     })
@@ -392,13 +359,13 @@ def test_login(client: TestClient):
 
 ### E2E Tests
 ```javascript
-// frontend-react/cypress/e2e/chat.cy.js
-describe('Chat', () => {
-  it('should send a message', () => {
+// Example E2E test
+describe('Chat Interface', () => {
+  it('should send and receive messages', () => {
     cy.visit('/chat')
-    cy.get('[data-testid="message-input"]').type('Hello')
+    cy.get('[data-testid="message-input"]').type('Hello AI')
     cy.get('[data-testid="send-button"]').click()
-    cy.get('[data-testid="message"]').should('contain', 'Hello')
+    cy.get('[data-testid="message-list"]').should('contain', 'Hello AI')
   })
 })
 ```
@@ -408,7 +375,8 @@ describe('Chat', () => {
 ### GitHub Actions
 ```yaml
 # .github/workflows/ci.yml
-name: CI/CD
+name: CI/CD Pipeline
+
 on: [push, pull_request]
 
 jobs:
@@ -423,32 +391,53 @@ jobs:
 ```
 
 ### Docker Build
-```dockerfile
-# Dockerfile.prod
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```yaml
+# Build and push Docker images
+- name: Build and push
+  run: |
+    docker build -t convosphere:latest .
+    docker push convosphere:latest
 ```
 
-## 📚 Ressourcen
+## 📚 Resources
 
-### Dokumentation
-- **[API Docs](http://localhost:8000/docs)** - Interaktive API-Dokumentation
-- **[ReDoc](http://localhost:8000/redoc)** - Alternative API-Docs
-- **[Architecture](architecture.md)** - Detaillierte Architektur
+### Documentation
+- **[API Reference](api-reference.md)** - Complete API documentation
+- **[User Guide](user-guide.md)** - User-facing features
+- **[FAQ](faq.md)** - Common questions
+
+### External Resources
+- **[FastAPI Documentation](https://fastapi.tiangolo.com/)**
+- **[React Documentation](https://react.dev/)**
+- **[PostgreSQL Documentation](https://www.postgresql.org/docs/)**
+- **[Docker Documentation](https://docs.docker.com/)**
 
 ### Community
-- **[GitHub Issues](https://github.com/your-org/convosphere/issues)** - Bug Reports
-- **[Discussions](https://github.com/your-org/convosphere/discussions)** - Fragen & Feedback
-- **[Discord](https://discord.gg/your-server)** - Community Support
+- **[GitHub Issues](https://github.com/your-org/convosphere/issues)** - Bug reports
+- **[Discord Server](https://discord.gg/your-server)** - Community chat
+- **[GitHub Discussions](https://github.com/your-org/convosphere/discussions)** - Questions
 
-### Tools
-- **[Postman Collection](https://github.com/your-org/convosphere/tree/main/docs/postman)** - API Testing
-- **[Docker Images](https://hub.docker.com/r/your-org/convosphere)** - Container Images
+## 🤝 Contributing
+
+### Development Workflow
+1. **Fork** the repository
+2. **Create** a feature branch
+3. **Make** your changes
+4. **Test** thoroughly
+5. **Submit** a pull request
+
+### Code Review Process
+- All changes require review
+- Tests must pass
+- Code style must be followed
+- Documentation must be updated
+
+### Release Process
+1. **Version bump** in `pyproject.toml`
+2. **Update changelog**
+3. **Create release** on GitHub
+4. **Deploy** to production
 
 ---
 
-**Weitere Hilfe?** [API Reference](api-reference.md) | [Deployment](deployment.md) | [FAQ](faq.md)
+**Ready to contribute?** [API Reference](api-reference.md) | [Deployment](deployment.md) | [Community](../index.md#-support)
