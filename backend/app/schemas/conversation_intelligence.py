@@ -50,53 +50,73 @@ class ConversationSummary(BaseModel):
     conversation_id: str = Field(..., description="Conversation ID")
     summary_type: SummaryType = Field(..., description="Type of summary")
     summary_text: str = Field(
-        ..., min_length=10, max_length=10000, description="Summary text",
+        ...,
+        min_length=10,
+        max_length=10000,
+        description="Summary text",
     )
 
     # Summary metadata
     word_count: int = Field(..., ge=0, description="Number of words in summary")
     token_count: int = Field(..., ge=0, description="Number of tokens in summary")
     compression_ratio: float = Field(
-        ..., ge=0.0, le=1.0, description="Compression ratio vs original",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Compression ratio vs original",
     )
 
     # Key elements
     key_points: list[str] = Field(
-        default_factory=list, description="Key points extracted",
+        default_factory=list,
+        description="Key points extracted",
     )
     action_items: list[str] = Field(
-        default_factory=list, description="Action items identified",
+        default_factory=list,
+        description="Action items identified",
     )
     decisions_made: list[str] = Field(
-        default_factory=list, description="Decisions made",
+        default_factory=list,
+        description="Decisions made",
     )
     questions_asked: list[str] = Field(
-        default_factory=list, description="Questions asked",
+        default_factory=list,
+        description="Questions asked",
     )
 
     # Context information
     participants: list[str] = Field(
-        default_factory=list, description="Conversation participants",
+        default_factory=list,
+        description="Conversation participants",
     )
     duration_minutes: float | None = Field(
-        None, ge=0.0, description="Conversation duration",
+        None,
+        ge=0.0,
+        description="Conversation duration",
     )
     message_count: int = Field(
-        ..., ge=0, description="Number of messages in conversation",
+        ...,
+        ge=0,
+        description="Number of messages in conversation",
     )
 
     # Metadata
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Summary creation timestamp",
+        default_factory=datetime.now,
+        description="Summary creation timestamp",
     )
     model_used: str = Field(..., description="AI model used for summarization")
     confidence_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Confidence in summary quality",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in summary quality",
     )
 
     # Additional metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional summary metadata",
+        default_factory=dict,
+        description="Additional summary metadata",
     )
 
     @field_validator("summary_text")
@@ -129,30 +149,38 @@ class TopicInfo(BaseModel):
     topic: str = Field(..., min_length=1, max_length=200, description="Topic name")
     category: TopicCategory = Field(..., description="Topic category")
     confidence: float = Field(
-        ..., ge=0.0, le=1.0, description="Confidence in topic detection",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in topic detection",
     )
 
     # Topic metadata
     keywords: list[str] = Field(
-        default_factory=list, description="Keywords associated with topic",
+        default_factory=list,
+        description="Keywords associated with topic",
     )
     related_topics: list[str] = Field(
-        default_factory=list, description="Related topics",
+        default_factory=list,
+        description="Related topics",
     )
     frequency: int = Field(..., ge=0, description="Topic frequency in conversation")
 
     # Temporal information
     first_mentioned: datetime | None = Field(
-        None, description="First mention timestamp",
+        None,
+        description="First mention timestamp",
     )
     last_mentioned: datetime | None = Field(None, description="Last mention timestamp")
 
     # Context
     message_indices: list[int] = Field(
-        default_factory=list, description="Message indices where topic appears",
+        default_factory=list,
+        description="Message indices where topic appears",
     )
     context_snippets: list[str] = Field(
-        default_factory=list, description="Context snippets for topic",
+        default_factory=list,
+        description="Context snippets for topic",
     )
 
     model_config = {
@@ -167,50 +195,71 @@ class SentimentAnalysis(BaseModel):
     # Sentiment classification
     overall_sentiment: SentimentType = Field(..., description="Overall sentiment")
     sentiment_score: float = Field(
-        ..., ge=-1.0, le=1.0, description="Sentiment score (-1 to 1)",
+        ...,
+        ge=-1.0,
+        le=1.0,
+        description="Sentiment score (-1 to 1)",
     )
     confidence: float = Field(
-        ..., ge=0.0, le=1.0, description="Confidence in sentiment analysis",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in sentiment analysis",
     )
 
     # Detailed sentiment breakdown
     positive_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Positive sentiment score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Positive sentiment score",
     )
     negative_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Negative sentiment score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Negative sentiment score",
     )
     neutral_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Neutral sentiment score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Neutral sentiment score",
     )
 
     # Emotion analysis
     emotions: dict[str, float] = Field(
-        default_factory=dict, description="Emotion scores",
+        default_factory=dict,
+        description="Emotion scores",
     )
     dominant_emotion: str | None = Field(None, description="Dominant emotion")
 
     # Sentiment trends
     sentiment_trend: str = Field(
-        default="stable", description="Sentiment trend (improving, declining, stable)",
+        default="stable",
+        description="Sentiment trend (improving, declining, stable)",
     )
     sentiment_changes: list[dict[str, Any]] = Field(
-        default_factory=list, description="Sentiment change points",
+        default_factory=list,
+        description="Sentiment change points",
     )
 
     # Context
     analyzed_text: str = Field(..., description="Text that was analyzed")
     message_id: str | None = Field(
-        None, description="Message ID if analyzing single message",
+        None,
+        description="Message ID if analyzing single message",
     )
     conversation_id: str | None = Field(
-        None, description="Conversation ID if analyzing conversation",
+        None,
+        description="Conversation ID if analyzing conversation",
     )
 
     # Metadata
     model_used: str = Field(..., description="AI model used for sentiment analysis")
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Analysis timestamp",
+        default_factory=datetime.now,
+        description="Analysis timestamp",
     )
 
     model_config = {
@@ -227,68 +276,89 @@ class ConversationAnalytics(BaseModel):
     total_messages: int = Field(..., ge=0, description="Total number of messages")
     total_participants: int = Field(..., ge=1, description="Number of participants")
     duration_minutes: float = Field(
-        ..., ge=0.0, description="Conversation duration in minutes",
+        ...,
+        ge=0.0,
+        description="Conversation duration in minutes",
     )
 
     # Message analysis
     avg_message_length: float = Field(..., ge=0.0, description="Average message length")
     message_frequency: float = Field(..., ge=0.0, description="Messages per minute")
     response_times: list[float] = Field(
-        default_factory=list, description="Response times in seconds",
+        default_factory=list,
+        description="Response times in seconds",
     )
     avg_response_time: float = Field(..., ge=0.0, description="Average response time")
 
     # Participant analysis
     participant_activity: dict[str, int] = Field(
-        default_factory=dict, description="Messages per participant",
+        default_factory=dict,
+        description="Messages per participant",
     )
     participant_sentiment: dict[str, SentimentType] = Field(
-        default_factory=dict, description="Sentiment per participant",
+        default_factory=dict,
+        description="Sentiment per participant",
     )
     participant_engagement: dict[str, float] = Field(
-        default_factory=dict, description="Engagement scores",
+        default_factory=dict,
+        description="Engagement scores",
     )
 
     # Content analysis
     topics_detected: list[TopicInfo] = Field(
-        default_factory=list, description="Detected topics",
+        default_factory=list,
+        description="Detected topics",
     )
     sentiment_overview: SentimentAnalysis = Field(
-        ..., description="Overall sentiment analysis",
+        ...,
+        description="Overall sentiment analysis",
     )
     key_phrases: list[str] = Field(
-        default_factory=list, description="Key phrases extracted",
+        default_factory=list,
+        description="Key phrases extracted",
     )
 
     # Quality metrics
     conversation_quality_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Overall conversation quality",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Overall conversation quality",
     )
     engagement_score: float = Field(..., ge=0.0, le=1.0, description="Engagement level")
     clarity_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Conversation clarity",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Conversation clarity",
     )
 
     # Temporal analysis
     conversation_phases: list[dict[str, Any]] = Field(
-        default_factory=list, description="Conversation phases",
+        default_factory=list,
+        description="Conversation phases",
     )
     peak_activity_time: datetime | None = Field(
-        None, description="Peak activity timestamp",
+        None,
+        description="Peak activity timestamp",
     )
     lull_periods: list[dict[str, Any]] = Field(
-        default_factory=list, description="Periods of low activity",
+        default_factory=list,
+        description="Periods of low activity",
     )
 
     # Metadata
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Analytics creation timestamp",
+        default_factory=datetime.now,
+        description="Analytics creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now, description="Last update timestamp",
+        default_factory=datetime.now,
+        description="Last update timestamp",
     )
     analysis_version: str = Field(
-        default="1.0", description="Analysis algorithm version",
+        default="1.0",
+        description="Analysis algorithm version",
     )
 
     model_config = {
@@ -302,50 +372,65 @@ class ConversationIntelligenceRequest(BaseModel):
 
     conversation_id: str = Field(..., description="Conversation ID to analyze")
     analysis_types: list[str] = Field(
-        default_factory=list, description="Types of analysis to perform",
+        default_factory=list,
+        description="Types of analysis to perform",
     )
 
     # Summary options
     generate_summary: bool = Field(
-        default=True, description="Generate conversation summary",
+        default=True,
+        description="Generate conversation summary",
     )
     summary_type: SummaryType = Field(
-        default=SummaryType.EXECUTIVE, description="Type of summary to generate",
+        default=SummaryType.EXECUTIVE,
+        description="Type of summary to generate",
     )
 
     # Topic detection options
     detect_topics: bool = Field(default=True, description="Detect conversation topics")
     topic_categories: list[TopicCategory] = Field(
-        default_factory=list, description="Topic categories to focus on",
+        default_factory=list,
+        description="Topic categories to focus on",
     )
 
     # Sentiment analysis options
     analyze_sentiment: bool = Field(
-        default=True, description="Analyze conversation sentiment",
+        default=True,
+        description="Analyze conversation sentiment",
     )
     include_emotion_analysis: bool = Field(
-        default=True, description="Include emotion analysis",
+        default=True,
+        description="Include emotion analysis",
     )
 
     # Analytics options
     generate_analytics: bool = Field(
-        default=True, description="Generate comprehensive analytics",
+        default=True,
+        description="Generate comprehensive analytics",
     )
     include_temporal_analysis: bool = Field(
-        default=True, description="Include temporal analysis",
+        default=True,
+        description="Include temporal analysis",
     )
 
     # Configuration
     max_summary_length: int = Field(
-        default=500, ge=50, le=2000, description="Maximum summary length",
+        default=500,
+        ge=50,
+        le=2000,
+        description="Maximum summary length",
     )
     min_topic_confidence: float = Field(
-        default=0.5, ge=0.0, le=1.0, description="Minimum topic confidence",
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum topic confidence",
     )
 
     # Metadata
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Request metadata",
+        default_factory=dict,
+        description="Request metadata",
     )
 
     @field_validator("analysis_types")
@@ -382,31 +467,38 @@ class ConversationIntelligenceResponse(BaseModel):
     topics: list[TopicInfo] = Field(default_factory=list, description="Detected topics")
     sentiment: SentimentAnalysis | None = Field(None, description="Sentiment analysis")
     analytics: ConversationAnalytics | None = Field(
-        None, description="Comprehensive analytics",
+        None,
+        description="Comprehensive analytics",
     )
 
     # Processing information
     processing_time: float = Field(
-        ..., ge=0.0, description="Total processing time in seconds",
+        ...,
+        ge=0.0,
+        description="Total processing time in seconds",
     )
     models_used: list[str] = Field(default_factory=list, description="AI models used")
     analysis_completed: list[str] = Field(
-        default_factory=list, description="Completed analysis types",
+        default_factory=list,
+        description="Completed analysis types",
     )
 
     # Quality indicators
     confidence_scores: dict[str, float] = Field(
-        default_factory=dict, description="Confidence scores by analysis type",
+        default_factory=dict,
+        description="Confidence scores by analysis type",
     )
     warnings: list[str] = Field(default_factory=list, description="Analysis warnings")
     errors: list[str] = Field(default_factory=list, description="Analysis errors")
 
     # Metadata
     created_at: datetime = Field(
-        default_factory=datetime.now, description="Response creation timestamp",
+        default_factory=datetime.now,
+        description="Response creation timestamp",
     )
     expires_at: datetime | None = Field(
-        None, description="Response expiration timestamp",
+        None,
+        description="Response expiration timestamp",
     )
 
     model_config = {
@@ -425,36 +517,51 @@ class IntelligenceMetrics(BaseModel):
 
     # Performance metrics
     avg_processing_time: float = Field(
-        ..., ge=0.0, description="Average processing time",
+        ...,
+        ge=0.0,
+        description="Average processing time",
     )
     avg_summary_length: float = Field(..., ge=0.0, description="Average summary length")
     avg_topic_count: float = Field(..., ge=0.0, description="Average topics detected")
 
     # Quality metrics
     avg_confidence_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Average confidence score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Average confidence score",
     )
     avg_quality_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Average quality score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Average quality score",
     )
     user_satisfaction_score: float = Field(
-        ..., ge=0.0, le=1.0, description="User satisfaction score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="User satisfaction score",
     )
 
     # Usage metrics
     analysis_type_usage: dict[str, int] = Field(
-        default_factory=dict, description="Usage by analysis type",
+        default_factory=dict,
+        description="Usage by analysis type",
     )
     model_usage: dict[str, int] = Field(
-        default_factory=dict, description="Usage by AI model",
+        default_factory=dict,
+        description="Usage by AI model",
     )
     error_counts: dict[str, int] = Field(
-        default_factory=dict, description="Error counts by type",
+        default_factory=dict,
+        description="Error counts by type",
     )
 
     # Timestamp
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="Metrics timestamp",
+        default_factory=datetime.now,
+        description="Metrics timestamp",
     )
 
     model_config = {
@@ -468,20 +575,26 @@ class SummaryRequest(BaseModel):
 
     conversation_id: str = Field(..., description="Conversation ID")
     summary_type: SummaryType = Field(
-        default=SummaryType.EXECUTIVE, description="Type of summary",
+        default=SummaryType.EXECUTIVE,
+        description="Type of summary",
     )
     max_length: int = Field(
-        default=500, ge=50, le=2000, description="Maximum summary length",
+        default=500,
+        ge=50,
+        le=2000,
+        description="Maximum summary length",
     )
     include_action_items: bool = Field(default=True, description="Include action items")
     include_key_points: bool = Field(default=True, description="Include key points")
 
     # Customization
     focus_areas: list[str] = Field(
-        default_factory=list, description="Areas to focus on",
+        default_factory=list,
+        description="Areas to focus on",
     )
     exclude_topics: list[str] = Field(
-        default_factory=list, description="Topics to exclude",
+        default_factory=list,
+        description="Topics to exclude",
     )
 
     model_config = {
@@ -495,22 +608,31 @@ class TopicDetectionRequest(BaseModel):
 
     conversation_id: str = Field(..., description="Conversation ID")
     categories: list[TopicCategory] = Field(
-        default_factory=list, description="Topic categories to detect",
+        default_factory=list,
+        description="Topic categories to detect",
     )
     min_confidence: float = Field(
-        default=0.5, ge=0.0, le=1.0, description="Minimum confidence threshold",
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence threshold",
     )
     max_topics: int = Field(
-        default=10, ge=1, le=50, description="Maximum number of topics",
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum number of topics",
     )
 
     # Advanced options
     include_keywords: bool = Field(
-        default=True, description="Include keywords for each topic",
+        default=True,
+        description="Include keywords for each topic",
     )
     include_context: bool = Field(default=True, description="Include context snippets")
     temporal_analysis: bool = Field(
-        default=False, description="Include temporal analysis",
+        default=False,
+        description="Include temporal analysis",
     )
 
     model_config = {
@@ -523,10 +645,12 @@ class SentimentAnalysisRequest(BaseModel):
     """Request for sentiment analysis."""
 
     conversation_id: str | None = Field(
-        None, description="Conversation ID for conversation analysis",
+        None,
+        description="Conversation ID for conversation analysis",
     )
     message_id: str | None = Field(
-        None, description="Message ID for single message analysis",
+        None,
+        description="Message ID for single message analysis",
     )
     text: str | None = Field(None, description="Raw text for analysis")
 
@@ -534,12 +658,14 @@ class SentimentAnalysisRequest(BaseModel):
     include_emotions: bool = Field(default=True, description="Include emotion analysis")
     include_trends: bool = Field(default=True, description="Include sentiment trends")
     granular_analysis: bool = Field(
-        default=False, description="Perform granular analysis",
+        default=False,
+        description="Perform granular analysis",
     )
 
     # Customization
     custom_emotions: list[str] = Field(
-        default_factory=list, description="Custom emotions to detect",
+        default_factory=list,
+        description="Custom emotions to detect",
     )
 
     @field_validator("conversation_id", "message_id", "text")

@@ -23,13 +23,17 @@ class ToolExecutionRequest(BaseModel):
 
     tool_name: str = Field(..., min_length=1, max_length=200, description="Tool name")
     arguments: dict[str, Any] = Field(
-        default_factory=dict, description="Tool arguments",
+        default_factory=dict,
+        description="Tool arguments",
     )
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
     priority: int = Field(default=1, ge=1, le=10, description="Execution priority")
     timeout: float = Field(
-        default=30.0, ge=1.0, le=300.0, description="Timeout in seconds",
+        default=30.0,
+        ge=1.0,
+        le=300.0,
+        description="Timeout in seconds",
     )
     cache_result: bool = Field(default=True, description="Whether to cache the result")
     retry_count: int = Field(default=0, ge=0, le=3, description="Retry count")
@@ -53,7 +57,8 @@ class ToolExecutionResult(BaseModel):
     execution_id: str = Field(..., description="Unique execution ID")
     tool_name: str = Field(..., description="Tool name")
     arguments: dict[str, Any] = Field(
-        default_factory=dict, description="Input arguments",
+        default_factory=dict,
+        description="Input arguments",
     )
     result: Any = Field(None, description="Execution result")
     error: str | None = Field(None, description="Error message")
@@ -65,14 +70,17 @@ class ToolExecutionResult(BaseModel):
     start_time: datetime | None = Field(None, description="Start time")
     end_time: datetime | None = Field(None, description="End time")
     execution_time: float | None = Field(
-        None, ge=0, description="Execution time in seconds",
+        None,
+        ge=0,
+        description="Execution time in seconds",
     )
     tokens_used: int | None = Field(None, ge=0, description="Tokens used")
     cache_hit: bool = Field(default=False, description="Whether result was from cache")
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
     model_config = {
@@ -239,7 +247,8 @@ class EnhancedToolExecutor:
         self.dependency_manager.add_dependency("file_reader", [])
         self.dependency_manager.add_dependency("data_analyzer", ["file_reader"])
         self.dependency_manager.add_dependency(
-            "report_generator", ["data_analyzer", "web_search"],
+            "report_generator",
+            ["data_analyzer", "web_search"],
         )
 
     async def execute_tool(
@@ -299,7 +308,9 @@ class EnhancedToolExecutor:
 
             logger.error(f"Tool execution failed: {e}")
             raise ToolError(
-                f"Tool execution failed: {str(e)}", request.tool_name, request.arguments,
+                f"Tool execution failed: {str(e)}",
+                request.tool_name,
+                request.arguments,
             )
 
         finally:
@@ -376,7 +387,9 @@ class EnhancedToolExecutor:
         # Try regular tool first
         try:
             return await tool_service.execute_tool(
-                tool_name, request.user_id, **arguments,
+                tool_name,
+                request.user_id,
+                **arguments,
             )
         except Exception as e:
             logger.debug(f"Regular tool {tool_name} failed: {e}")
@@ -453,7 +466,8 @@ class EnhancedToolExecutor:
                     "category": tool.get("category", "general"),
                     "type": "regular",
                     "dependencies": self.dependency_manager.dependencies.get(
-                        tool.get("name"), [],
+                        tool.get("name"),
+                        [],
                     ),
                 },
             )
@@ -468,7 +482,8 @@ class EnhancedToolExecutor:
                     "category": tool.get("category", "mcp"),
                     "type": "mcp",
                     "dependencies": self.dependency_manager.dependencies.get(
-                        tool.get("name"), [],
+                        tool.get("name"),
+                        [],
                     ),
                 },
             )

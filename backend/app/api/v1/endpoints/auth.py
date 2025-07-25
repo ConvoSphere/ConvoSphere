@@ -4,6 +4,8 @@ Authentication endpoints for user login, registration, and token management.
 This module provides the authentication API endpoints for the AI Assistant Platform.
 """
 
+from typing import Any
+
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.dependencies import get_security_dep, get_settings_dep
@@ -16,15 +18,18 @@ from app.core.security import (
     verify_password,
     verify_token,
 )
+from app.core.security_hardening import (
+    get_client_ip,
+    sso_audit_logger,
+    sso_security_validator,
+    validate_sso_request,
+)
 from app.models.user import User, UserRole
-from app.schemas.user import SSOUserCreate
-from app.services.user_service import UserService
+from app.services.advanced_user_provisioning import advanced_user_provisioning
 from app.services.oauth_service import oauth_service
 from app.services.saml_service import saml_service
-from app.services.advanced_user_provisioning import advanced_user_provisioning
-from app.core.security_hardening import validate_sso_request, sso_security_validator, sso_audit_logger, get_client_ip
+from app.services.user_service import UserService
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from typing import Any, Dict, List
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
 from fastapi.security import HTTPAuthorizationCredentials
@@ -424,26 +429,26 @@ async def sso_login(provider: str, request: Request):
         if not validate_sso_request(request, provider):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded"
+                detail="Rate limit exceeded",
             )
-        
+
         # Log SSO login attempt
         client_ip = get_client_ip(request)
         sso_audit_logger.log_sso_event(
             event_type="sso_login_attempt",
             provider=provider,
             severity="info",
-            ip_address=client_ip
+            ip_address=client_ip,
         )
-        
+
         if provider == "saml":
             # Handle SAML login
             login_url = await saml_service.get_login_url(request)
             from fastapi.responses import RedirectResponse
+
             return RedirectResponse(url=login_url)
-        else:
-            # Use OAuth service to get authorization URL
-            return await oauth_service.get_authorization_url(provider, request)
+        # Use OAuth service to get authorization URL
+        return await oauth_service.get_authorization_url(provider, request)
     except HTTPException:
         raise
     except Exception as e:
@@ -451,13 +456,13 @@ async def sso_login(provider: str, request: Request):
         sso_audit_logger.log_sso_event(
             event_type="sso_login_failure",
             provider=provider,
-            details={'error': str(e)},
+            details={"error": str(e)},
             severity="error",
-            ip_address=get_client_ip(request)
+            ip_address=get_client_ip(request),
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initiate {provider} SSO login"
+            detail=f"Failed to initiate {provider} SSO login",
         )
 
 
@@ -469,83 +474,89 @@ async def sso_callback(provider: str, request: Request, db: Session = Depends(ge
         if not validate_sso_request(request, provider):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded"
+                detail="Rate limit exceeded",
             )
-        
+
         client_ip = get_client_ip(request)
-        
+
         if provider == "saml":
             # Validate SAML response
             form_data = await request.form()
-            saml_response = form_data.get('SAMLResponse')
-            if saml_response and not sso_security_validator.validate_saml_response(saml_response):
+            saml_response = form_data.get("SAMLResponse")
+            if saml_response and not sso_security_validator.validate_saml_response(
+                saml_response,
+            ):
                 sso_audit_logger.log_sso_event(
                     event_type="suspicious_saml_response",
                     provider=provider,
                     severity="warning",
-                    ip_address=client_ip
+                    ip_address=client_ip,
                 )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid SAML response"
+                    detail="Invalid SAML response",
                 )
-            
+
             # Handle SAML callback
             callback_result = await saml_service.handle_saml_response(request)
-            user_info = callback_result['user_info']
-            
+            user_info = callback_result["user_info"]
+
             # Validate and sanitize user attributes
-            is_valid, error_msg = sso_security_validator.validate_user_attributes(user_info)
+            is_valid, error_msg = sso_security_validator.validate_user_attributes(
+                user_info,
+            )
             if not is_valid:
                 sso_audit_logger.log_sso_event(
                     event_type="invalid_user_attributes",
                     provider=provider,
-                    details={'error': error_msg},
+                    details={"error": error_msg},
                     severity="warning",
-                    ip_address=client_ip
+                    ip_address=client_ip,
                 )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid user attributes: {error_msg}"
+                    detail=f"Invalid user attributes: {error_msg}",
                 )
-            
+
             # Sanitize user data
             user_info = sso_security_validator.sanitize_user_data(user_info)
-            
+
             # Process SAML user (create or update)
             user = await saml_service.process_saml_user(user_info, db)
-            
+
             # Create JWT tokens
             tokens = await saml_service.create_saml_tokens(user)
         else:
             # Handle OAuth callback
             callback_result = await oauth_service.handle_callback(provider, request)
-            user_info = callback_result['user_info']
-            
+            user_info = callback_result["user_info"]
+
             # Validate and sanitize user attributes
-            is_valid, error_msg = sso_security_validator.validate_user_attributes(user_info)
+            is_valid, error_msg = sso_security_validator.validate_user_attributes(
+                user_info,
+            )
             if not is_valid:
                 sso_audit_logger.log_sso_event(
                     event_type="invalid_user_attributes",
                     provider=provider,
-                    details={'error': error_msg},
+                    details={"error": error_msg},
                     severity="warning",
-                    ip_address=client_ip
+                    ip_address=client_ip,
                 )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid user attributes: {error_msg}"
+                    detail=f"Invalid user attributes: {error_msg}",
                 )
-            
+
             # Sanitize user data
             user_info = sso_security_validator.sanitize_user_data(user_info)
-            
+
             # Process SSO user (create or update)
             user = await oauth_service.process_sso_user(user_info, provider, db)
-            
+
             # Create JWT tokens
             tokens = await oauth_service.create_sso_tokens(user)
-        
+
         # Log successful SSO event
         log_security_event(
             event_type="sso_login",
@@ -553,24 +564,24 @@ async def sso_callback(provider: str, request: Request, db: Session = Depends(ge
             description=f"User {user.email} logged in via SSO ({provider})",
             severity="info",
         )
-        
+
         sso_audit_logger.log_sso_event(
             event_type="sso_login_success",
             user_id=str(user.id),
             provider=provider,
             severity="info",
-            ip_address=client_ip
+            ip_address=client_ip,
         )
-        
+
         logger.info(f"SSO login successful for {user.email} via {provider}")
-        
+
         return TokenResponse(
-            access_token=tokens['access_token'],
-            refresh_token=tokens['refresh_token'],
-            token_type=tokens['token_type'],
-            expires_in=tokens['expires_in']
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+            token_type=tokens["token_type"],
+            expires_in=tokens["expires_in"],
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -578,13 +589,13 @@ async def sso_callback(provider: str, request: Request, db: Session = Depends(ge
         sso_audit_logger.log_sso_event(
             event_type="sso_callback_failure",
             provider=provider,
-            details={'error': str(e)},
+            details={"error": str(e)},
             severity="error",
-            ip_address=get_client_ip(request)
+            ip_address=get_client_ip(request),
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"SSO authentication failed: {str(e)}"
+            detail=f"SSO authentication failed: {str(e)}",
         )
 
 
@@ -616,6 +627,7 @@ async def get_saml_metadata():
     try:
         metadata = saml_service.get_metadata()
         from fastapi.responses import Response
+
         return Response(content=metadata, media_type="application/xml")
     except HTTPException:
         raise
@@ -623,15 +635,13 @@ async def get_saml_metadata():
         logger.error(f"Failed to get SAML metadata: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get SAML metadata"
+            detail="Failed to get SAML metadata",
         )
 
 
 @router.post("/sso/link/{provider}")
 async def link_sso_account(
-    provider: str,
-    request: Request,
-    db: Session = Depends(get_db)
+    provider: str, request: Request, db: Session = Depends(get_db),
 ):
     """Link current user account with SSO provider."""
     try:
@@ -639,7 +649,7 @@ async def link_sso_account(
         if not validate_sso_request(request, provider):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded"
+                detail="Rate limit exceeded",
             )
 
         # Get current user
@@ -647,7 +657,7 @@ async def link_sso_account(
         if not current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
+                detail="Authentication required",
             )
 
         # Log account linking attempt
@@ -657,7 +667,7 @@ async def link_sso_account(
             user_id=str(current_user_id),
             provider=provider,
             severity="info",
-            ip_address=client_ip
+            ip_address=client_ip,
         )
 
         # Redirect to SSO provider for linking
@@ -667,6 +677,7 @@ async def link_sso_account(
             login_url = await oauth_service.get_authorization_url(provider, request)
 
         from fastapi.responses import RedirectResponse
+
         return RedirectResponse(url=login_url)
 
     except HTTPException:
@@ -675,23 +686,21 @@ async def link_sso_account(
         logger.error(f"SSO account linking failed for {provider}: {e}")
         sso_audit_logger.log_sso_event(
             event_type="account_linking_failure",
-            user_id=str(current_user_id) if 'current_user_id' in locals() else None,
+            user_id=str(current_user_id) if "current_user_id" in locals() else None,
             provider=provider,
-            details={'error': str(e)},
+            details={"error": str(e)},
             severity="error",
-            ip_address=get_client_ip(request)
+            ip_address=get_client_ip(request),
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to link account with {provider}"
+            detail=f"Failed to link account with {provider}",
         )
 
 
 @router.get("/sso/unlink/{provider}")
 async def unlink_sso_account(
-    provider: str,
-    request: Request,
-    db: Session = Depends(get_db)
+    provider: str, request: Request, db: Session = Depends(get_db),
 ):
     """Unlink current user account from SSO provider."""
     try:
@@ -700,16 +709,15 @@ async def unlink_sso_account(
         if not current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
+                detail="Authentication required",
             )
 
         user_service = UserService(db)
         user = user_service.get_user_by_id(current_user_id)
-        
+
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
             )
 
         # Remove SSO attributes for the specific provider
@@ -724,7 +732,7 @@ async def unlink_sso_account(
             user_id=str(current_user_id),
             provider=provider,
             severity="info",
-            ip_address=client_ip
+            ip_address=client_ip,
         )
 
         return {"message": f"Successfully unlinked account from {provider}"}
@@ -735,15 +743,13 @@ async def unlink_sso_account(
         logger.error(f"SSO account unlinking failed for {provider}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to unlink account from {provider}"
+            detail=f"Failed to unlink account from {provider}",
         )
 
 
 @router.get("/sso/provisioning/status/{user_id}")
 async def get_user_provisioning_status(
-    user_id: str,
-    request: Request,
-    db: Session = Depends(get_db)
+    user_id: str, request: Request, db: Session = Depends(get_db),
 ):
     """Get advanced provisioning status for a user."""
     try:
@@ -752,19 +758,18 @@ async def get_user_provisioning_status(
         if not current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
+                detail="Authentication required",
             )
 
         # For now, allow any authenticated user to view their own status
         # In production, add proper authorization checks
         if current_user_id != user_id:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied"
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied",
             )
 
         status_info = await advanced_user_provisioning.get_user_provisioning_status(
-            user_id, db
+            user_id, db,
         )
 
         return status_info
@@ -775,16 +780,16 @@ async def get_user_provisioning_status(
         logger.error(f"Failed to get provisioning status for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get provisioning status"
+            detail="Failed to get provisioning status",
         )
 
 
 @router.post("/sso/bulk-sync/{provider}")
 async def bulk_sync_users(
     provider: str,
-    user_list: List[Dict[str, Any]],
+    user_list: list[dict[str, Any]],
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Bulk sync users from SSO provider (Admin only)."""
     try:
@@ -793,7 +798,7 @@ async def bulk_sync_users(
         if not current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
+                detail="Authentication required",
             )
 
         # TODO: Add proper admin authorization check
@@ -803,12 +808,12 @@ async def bulk_sync_users(
         if not validate_sso_request(request, provider):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded"
+                detail="Rate limit exceeded",
             )
 
         # Perform bulk sync
         results = await advanced_user_provisioning.bulk_sync_users(
-            provider, user_list, db
+            provider, user_list, db,
         )
 
         # Log bulk sync event
@@ -819,7 +824,7 @@ async def bulk_sync_users(
             provider=provider,
             details=results,
             severity="info",
-            ip_address=client_ip
+            ip_address=client_ip,
         )
 
         return results
@@ -830,7 +835,7 @@ async def bulk_sync_users(
         logger.error(f"Bulk sync failed for {provider}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Bulk sync failed: {str(e)}"
+            detail=f"Bulk sync failed: {str(e)}",
         )
 
 

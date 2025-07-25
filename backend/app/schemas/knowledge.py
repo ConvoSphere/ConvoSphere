@@ -49,7 +49,6 @@ class TagCreate(TagBase):
     """Tag creation model."""
 
 
-
 class TagResponse(TagBase):
     """Tag response model."""
 
@@ -147,7 +146,8 @@ class DocumentChunkResponse(BaseModel):
     chunk_size: int = Field(..., description="Chunk size in characters")
     token_count: int = Field(..., description="Number of tokens in chunk")
     chunk_type: str | None = Field(
-        None, description="Type of chunk (text, table, figure, etc.)",
+        None,
+        description="Type of chunk (text, table, figure, etc.)",
     )
     page_number: int | None = Field(None, description="Page number")
     section_title: str | None = Field(None, description="Section title")
@@ -159,7 +159,8 @@ class DocumentChunkResponse(BaseModel):
         description="Embedding creation timestamp",
     )
     chunk_metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Chunk metadata",
+        default_factory=dict,
+        description="Chunk metadata",
     )
     created_at: str = Field(..., description="Creation timestamp")
 
@@ -171,7 +172,8 @@ class SearchRequest(BaseModel):
 
     query: str = Field(..., min_length=1)
     search_type: str = Field(
-        "knowledge", description="Type of search: knowledge, conversation, hybrid",
+        "knowledge",
+        description="Type of search: knowledge, conversation, hybrid",
     )
     limit: int = Field(10, ge=1, le=100)
     filters: dict[str, Any] | None = None
@@ -356,18 +358,19 @@ class DocumentProcessingJobBase(BaseModel):
     """Base document processing job model."""
 
     job_type: str = Field(
-        ..., description="Type of job: process, reprocess, bulk_import",
+        ...,
+        description="Type of job: process, reprocess, bulk_import",
     )
     priority: int = Field(0, ge=0, le=10, description="Job priority (0-10)")
     processing_engine: str | None = Field(None, description="Processing engine to use")
     processing_options: dict[str, Any] = Field(
-        default_factory=dict, description="Processing options",
+        default_factory=dict,
+        description="Processing options",
     )
 
 
 class DocumentProcessingJobCreate(DocumentProcessingJobBase):
     """Document processing job creation model."""
-
 
 
 class DocumentProcessingJobResponse(DocumentProcessingJobBase):
@@ -405,7 +408,8 @@ class BulkImportRequest(BaseModel):
     files: list[dict[str, Any]] = Field(..., description="List of file information")
     processing_options: ProcessingOptions | None = None
     tags: list[str] = Field(
-        default_factory=list, description="Default tags for all documents",
+        default_factory=list,
+        description="Default tags for all documents",
     )
 
 
@@ -440,7 +444,8 @@ class AdvancedSearchRequest(BaseModel):
     limit: int = Field(10, ge=1, le=100)
     offset: int = Field(0, ge=0)
     sort_by: str = Field(
-        "relevance", description="Sort by: relevance, date, title, author",
+        "relevance",
+        description="Sort by: relevance, date, title, author",
     )
     sort_order: str = Field("desc", description="Sort order: asc, desc")
 

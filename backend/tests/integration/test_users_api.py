@@ -356,7 +356,6 @@ class UsersAPITester:
         self.test_authenticate_user(user["email"], "SecurePass123!")
 
 
-
 def main():
     """Main function to run the tests."""
     # Initialize tester

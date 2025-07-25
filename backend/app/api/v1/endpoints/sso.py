@@ -6,25 +6,23 @@ LDAP, SAML, and OAuth providers with user management and group synchronization.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
 from app.core.sso_manager import get_sso_manager
-from app.models.user import User, AuthProvider
-from app.schemas.auth import TokenResponse, SSOLoginRequest, SSOProviderInfo
+from app.models.user import AuthProvider, User
+from app.schemas.auth import SSOLoginRequest, SSOProviderInfo, TokenResponse
 from app.schemas.user import UserResponse
 from app.utils.exceptions import (
     AuthenticationError,
+    GroupSyncError,
     SSOConfigurationError,
     UserNotFoundError,
-    GroupSyncError,
 )
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -32,25 +30,29 @@ router = APIRouter()
 
 
 # SSO Provider Information
-@router.get("/providers", response_model=List[SSOProviderInfo])
+@router.get("/providers", response_model=list[SSOProviderInfo])
 async def get_sso_providers():
     """Get list of available SSO providers."""
     try:
         sso_manager = get_sso_manager()
         providers = sso_manager.get_available_providers()
-        
+
         provider_info = []
         for provider in providers:
-            provider_info.append(SSOProviderInfo(
-                name=provider["name"],
-                type=provider["type"],
-                enabled=provider["enabled"],
-                priority=provider["priority"]
-            ))
-        
+            provider_info.append(
+                SSOProviderInfo(
+                    name=provider["name"],
+                    type=provider["type"],
+                    enabled=provider["enabled"],
+                    priority=provider["priority"],
+                ),
+            )
+
         return provider_info
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.get("/providers/{provider_name}/config")
@@ -62,14 +64,18 @@ async def get_sso_provider_config(
     try:
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-        
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+            )
+
         sso_manager = get_sso_manager()
         config = sso_manager.get_provider_config(provider_name)
-        
+
         if not config:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found",
+            )
+
         # Remove sensitive information
         safe_config = config.copy()
         if "config" in safe_config:
@@ -77,10 +83,12 @@ async def get_sso_provider_config(
             for key in sensitive_keys:
                 if key in safe_config["config"]:
                     safe_config["config"][key] = "***HIDDEN***"
-        
+
         return safe_config
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # LDAP Authentication
@@ -92,22 +100,19 @@ async def ldap_login(
     """Authenticate user via LDAP."""
     try:
         sso_manager = get_sso_manager()
-        
-        credentials = {
-            "username": login_data.username,
-            "password": login_data.password
-        }
-        
+
+        credentials = {"username": login_data.username, "password": login_data.password}
+
         user, additional_data = await sso_manager.authenticate("ldap", credentials, db)
-        
+
         # Create access token
         access_token = create_access_token(
-            data={"sub": str(user.id), "username": user.username}
+            data={"sub": str(user.id), "username": user.username},
         )
-        
+
         # Log successful login
         logger.info(f"LDAP login successful for user: {user.username}")
-        
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -115,14 +120,16 @@ async def ldap_login(
             user_id=str(user.id),
             username=user.username,
             provider="ldap",
-            additional_data=additional_data
+            additional_data=additional_data,
         )
-        
+
     except AuthenticationError as e:
         logger.warning(f"LDAP login failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.get("/ldap/user-info")
@@ -133,17 +140,22 @@ async def get_ldap_user_info(
     """Get user information from LDAP."""
     try:
         if current_user.auth_provider != AuthProvider.LDAP:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not authenticated via LDAP")
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not authenticated via LDAP",
+            )
+
         sso_manager = get_sso_manager()
         user_info = await sso_manager.get_user_info("ldap", str(current_user.id), db)
-        
+
         return user_info
-        
+
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.post("/ldap/sync-groups")
@@ -154,21 +166,28 @@ async def sync_ldap_groups(
     """Synchronize user groups from LDAP."""
     try:
         if current_user.auth_provider != AuthProvider.LDAP:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not authenticated via LDAP")
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not authenticated via LDAP",
+            )
+
         sso_manager = get_sso_manager()
         groups = await sso_manager.sync_user_groups("ldap", current_user, db)
-        
+
         return {
             "message": "Groups synchronized successfully",
             "groups": groups,
-            "synced_at": datetime.now().isoformat()
+            "synced_at": datetime.now().isoformat(),
         }
-        
+
     except GroupSyncError as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e),
+        )
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # SAML Authentication
@@ -181,21 +200,26 @@ async def saml_login(
     try:
         sso_manager = get_sso_manager()
         provider = sso_manager.providers.get(provider_name)
-        
-        if not provider or not isinstance(provider, sso_manager.providers["saml"].__class__):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found")
-        
+
+        if not provider or not isinstance(
+            provider, sso_manager.providers["saml"].__class__,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found",
+            )
+
         # Generate SAML request
         authn_request = provider.saml_client.create_authn_request(
-            provider.config.get("idp_entity_id"),
-            relay_state=relay_state
+            provider.config.get("idp_entity_id"), relay_state=relay_state,
         )
-        
+
         # Redirect to IdP
         return RedirectResponse(url=authn_request)
-        
+
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.post("/saml/acs", response_model=TokenResponse)
@@ -208,27 +232,26 @@ async def saml_acs(
         form_data = await request.form()
         saml_response = form_data.get("SAMLResponse")
         relay_state = form_data.get("RelayState")
-        
+
         if not saml_response:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="SAML response required")
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="SAML response required",
+            )
+
         sso_manager = get_sso_manager()
-        
-        credentials = {
-            "saml_response": saml_response,
-            "relay_state": relay_state
-        }
-        
+
+        credentials = {"saml_response": saml_response, "relay_state": relay_state}
+
         user, additional_data = await sso_manager.authenticate("saml", credentials, db)
-        
+
         # Create access token
         access_token = create_access_token(
-            data={"sub": str(user.id), "username": user.username}
+            data={"sub": str(user.id), "username": user.username},
         )
-        
+
         # Log successful login
         logger.info(f"SAML login successful for user: {user.username}")
-        
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -236,14 +259,16 @@ async def saml_acs(
             user_id=str(user.id),
             username=user.username,
             provider="saml",
-            additional_data=additional_data
+            additional_data=additional_data,
         )
-        
+
     except AuthenticationError as e:
         logger.warning(f"SAML login failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.get("/saml/metadata")
@@ -252,17 +277,21 @@ async def saml_metadata():
     try:
         sso_manager = get_sso_manager()
         provider = sso_manager.providers.get("saml")
-        
+
         if not provider:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found",
+            )
+
         # Generate SP metadata
         metadata = entity_descriptor(provider.saml_config)
-        
+
         return metadata
-        
+
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # OAuth Authentication
@@ -276,27 +305,33 @@ async def oauth_login(
     try:
         sso_manager = get_sso_manager()
         provider = sso_manager.providers.get(provider_name)
-        
-        if not provider or not isinstance(provider, sso_manager.providers["oauth"].__class__):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider not found")
-        
+
+        if not provider or not isinstance(
+            provider, sso_manager.providers["oauth"].__class__,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider not found",
+            )
+
         # Build OAuth authorization URL
         params = {
             "client_id": provider.client_id,
             "redirect_uri": redirect_uri,
             "response_type": "code",
-            "scope": provider.scope
+            "scope": provider.scope,
         }
-        
+
         if state:
             params["state"] = state
-        
+
         auth_url = f"{provider.authorization_url}?{urlencode(params)}"
-        
+
         return RedirectResponse(url=auth_url)
-        
+
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.post("/oauth/{provider_name}/callback", response_model=TokenResponse)
@@ -310,23 +345,23 @@ async def oauth_callback(
     """Handle OAuth callback."""
     try:
         sso_manager = get_sso_manager()
-        
-        credentials = {
-            "code": code,
-            "redirect_uri": redirect_uri,
-            "state": state
-        }
-        
-        user, additional_data = await sso_manager.authenticate(provider_name, credentials, db)
-        
+
+        credentials = {"code": code, "redirect_uri": redirect_uri, "state": state}
+
+        user, additional_data = await sso_manager.authenticate(
+            provider_name, credentials, db,
+        )
+
         # Create access token
         access_token = create_access_token(
-            data={"sub": str(user.id), "username": user.username}
+            data={"sub": str(user.id), "username": user.username},
         )
-        
+
         # Log successful login
-        logger.info(f"OAuth login successful for user: {user.username} via {provider_name}")
-        
+        logger.info(
+            f"OAuth login successful for user: {user.username} via {provider_name}",
+        )
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -334,14 +369,16 @@ async def oauth_callback(
             user_id=str(user.id),
             username=user.username,
             provider=provider_name,
-            additional_data=additional_data
+            additional_data=additional_data,
         )
-        
+
     except AuthenticationError as e:
         logger.warning(f"OAuth login failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.get("/oauth/{provider_name}/user-info")
@@ -353,17 +390,24 @@ async def get_oauth_user_info(
     """Get user information from OAuth provider."""
     try:
         if current_user.auth_provider != AuthProvider.OAUTH:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not authenticated via OAuth")
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not authenticated via OAuth",
+            )
+
         sso_manager = get_sso_manager()
-        user_info = await sso_manager.get_user_info(provider_name, str(current_user.id), db)
-        
+        user_info = await sso_manager.get_user_info(
+            provider_name, str(current_user.id), db,
+        )
+
         return user_info
-        
+
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # Generic SSO Endpoints
@@ -376,22 +420,23 @@ async def generic_sso_login(
     """Generic SSO login endpoint."""
     try:
         sso_manager = get_sso_manager()
-        
-        credentials = {
-            "username": login_data.username,
-            "password": login_data.password
-        }
-        
-        user, additional_data = await sso_manager.authenticate(provider_name, credentials, db)
-        
+
+        credentials = {"username": login_data.username, "password": login_data.password}
+
+        user, additional_data = await sso_manager.authenticate(
+            provider_name, credentials, db,
+        )
+
         # Create access token
         access_token = create_access_token(
-            data={"sub": str(user.id), "username": user.username}
+            data={"sub": str(user.id), "username": user.username},
         )
-        
+
         # Log successful login
-        logger.info(f"SSO login successful for user: {user.username} via {provider_name}")
-        
+        logger.info(
+            f"SSO login successful for user: {user.username} via {provider_name}",
+        )
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -399,14 +444,16 @@ async def generic_sso_login(
             user_id=str(user.id),
             username=user.username,
             provider=provider_name,
-            additional_data=additional_data
+            additional_data=additional_data,
         )
-        
+
     except AuthenticationError as e:
         logger.warning(f"SSO login failed via {provider_name}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 @router.post("/{provider_name}/sync-groups")
@@ -419,22 +466,26 @@ async def generic_sync_groups(
     try:
         sso_manager = get_sso_manager()
         groups = await sso_manager.sync_user_groups(provider_name, current_user, db)
-        
+
         return {
             "message": "Groups synchronized successfully",
             "provider": provider_name,
             "groups": groups,
-            "synced_at": datetime.now().isoformat()
+            "synced_at": datetime.now().isoformat(),
         }
-        
+
     except GroupSyncError as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e),
+        )
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # SSO User Management
-@router.get("/users/sso", response_model=List[UserResponse])
+@router.get("/users/sso", response_model=list[UserResponse])
 async def get_sso_users(
     provider: AuthProvider = Query(None, description="Filter by SSO provider"),
     page: int = Query(1, ge=1, description="Page number"),
@@ -446,22 +497,27 @@ async def get_sso_users(
     try:
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-        
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+            )
+
         query = db.query(User).filter(User.auth_provider != AuthProvider.LOCAL)
-        
+
         if provider:
             query = query.filter(User.auth_provider == provider)
-        
+
         # Apply pagination
         offset = (page - 1) * size
         users = query.offset(offset).limit(size).all()
-        
+
         return [UserResponse.from_orm(user) for user in users]
-        
+
     except Exception as e:
         logger.error(f"Failed to get SSO users: {str(e)}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get SSO users")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get SSO users",
+        )
 
 
 @router.post("/users/{user_id}/sync")
@@ -473,38 +529,50 @@ async def sync_sso_user(
     """Synchronize user data from SSO provider."""
     try:
         # Check if user is admin or the user themselves
-        if current_user.role not in ["super_admin", "admin"] and str(current_user.id) != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-        
+        if (
+            current_user.role not in ["super_admin", "admin"]
+            and str(current_user.id) != user_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied",
+            )
+
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+            )
+
         if user.auth_provider == AuthProvider.LOCAL:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not authenticated via SSO")
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not authenticated via SSO",
+            )
+
         sso_manager = get_sso_manager()
-        
+
         # Get user info from SSO provider
         provider_name = user.auth_provider.value
         user_info = await sso_manager.get_user_info(provider_name, user_id, db)
-        
+
         # Sync groups
         groups = await sso_manager.sync_user_groups(provider_name, user, db)
-        
+
         return {
             "message": "User synchronized successfully",
             "user_id": user_id,
             "provider": provider_name,
             "user_info": user_info,
             "groups": groups,
-            "synced_at": datetime.now().isoformat()
+            "synced_at": datetime.now().isoformat(),
         }
-        
+
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+        )
 
 
 # SSO Health Check
@@ -514,29 +582,29 @@ async def sso_health_check():
     try:
         sso_manager = get_sso_manager()
         providers = sso_manager.get_available_providers()
-        
+
         health_status = {
             "status": "healthy",
             "providers": [],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
         for provider in providers:
             provider_health = {
                 "name": provider["name"],
                 "type": provider["type"],
                 "enabled": provider["enabled"],
-                "status": "available" if provider["enabled"] else "disabled"
+                "status": "available" if provider["enabled"] else "disabled",
             }
             health_status["providers"].append(provider_health)
-        
+
         return health_status
-        
+
     except SSOConfigurationError as e:
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
 
@@ -549,15 +617,20 @@ async def reload_sso_config(
     try:
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-        
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+            )
+
         # This would reload configuration from database or config file
         # For now, return success message
         return {
             "message": "SSO configuration reloaded successfully",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to reload SSO config: {str(e)}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to reload SSO configuration")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reload SSO configuration",
+        )

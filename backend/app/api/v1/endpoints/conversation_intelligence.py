@@ -133,7 +133,8 @@ async def analyze_sentiment(
 async def get_conversation_analytics(
     conversation_id: str,
     include_temporal_analysis: bool = Query(
-        True, description="Include temporal analysis",
+        True,
+        description="Include temporal analysis",
     ),
 ) -> ConversationAnalytics:
     """
@@ -157,7 +158,8 @@ async def get_conversation_analytics(
 
         if not response.analytics:
             raise HTTPException(
-                status_code=404, detail="Analytics not available for this conversation",
+                status_code=404,
+                detail="Analytics not available for this conversation",
             )
 
         logger.info(f"Analytics retrieved for conversation: {conversation_id}")
@@ -197,7 +199,8 @@ async def get_conversation_summary(
             summary_type_enum = SummaryType(summary_type.lower())
         except ValueError:
             raise HTTPException(
-                status_code=400, detail=f"Invalid summary type: {summary_type}",
+                status_code=400,
+                detail=f"Invalid summary type: {summary_type}",
             )
 
         request = SummaryRequest(
@@ -223,7 +226,10 @@ async def get_conversation_summary(
 async def get_conversation_topics(
     conversation_id: str,
     min_confidence: float = Query(
-        0.5, ge=0.0, le=1.0, description="Minimum confidence threshold",
+        0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence threshold",
     ),
     max_topics: int = Query(10, ge=1, le=50, description="Maximum number of topics"),
 ) -> list[TopicInfo]:
@@ -342,7 +348,8 @@ async def get_intelligence_metrics() -> IntelligenceMetrics:
     except Exception as e:
         logger.error(f"Failed to get intelligence metrics: {e}")
         raise HTTPException(
-            status_code=500, detail="Failed to get intelligence metrics",
+            status_code=500,
+            detail="Failed to get intelligence metrics",
         )
 
 

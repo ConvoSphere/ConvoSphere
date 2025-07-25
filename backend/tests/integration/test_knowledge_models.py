@@ -27,7 +27,10 @@ class TestTag:
     def test_tag_creation(self, db_session: Session):
         """Test creating a new tag."""
         tag = Tag(
-            name="test-tag", description="A test tag", color="#FF0000", is_system=False,
+            name="test-tag",
+            description="A test tag",
+            color="#FF0000",
+            is_system=False,
         )
         db_session.add(tag)
         db_session.commit()
@@ -419,7 +422,9 @@ class TestDocumentProcessingJob:
         db_session.commit()
 
         job = DocumentProcessingJob(
-            document_id=document.id, user_id=test_user.id, job_type="process",
+            document_id=document.id,
+            user_id=test_user.id,
+            job_type="process",
         )
         db_session.add(job)
         db_session.commit()
@@ -502,7 +507,9 @@ class TestDocumentProcessingJob:
         db_session.commit()
 
         job = DocumentProcessingJob(
-            document_id=document.id, user_id=test_user.id, job_type="process",
+            document_id=document.id,
+            user_id=test_user.id,
+            job_type="process",
         )
         db_session.add(job)
         db_session.commit()
@@ -537,10 +544,12 @@ class TestDocumentTagAssociation:
 
         # Create associations
         association1 = document_tag_association.insert().values(
-            document_id=document.id, tag_id=tag1.id,
+            document_id=document.id,
+            tag_id=tag1.id,
         )
         association2 = document_tag_association.insert().values(
-            document_id=document.id, tag_id=tag2.id,
+            document_id=document.id,
+            tag_id=tag2.id,
         )
         db_session.execute(association1)
         db_session.execute(association2)
@@ -574,14 +583,16 @@ class TestDocumentTagAssociation:
 
         # Create first association
         association1 = document_tag_association.insert().values(
-            document_id=document.id, tag_id=tag.id,
+            document_id=document.id,
+            tag_id=tag.id,
         )
         db_session.execute(association1)
         db_session.commit()
 
         # Try to create duplicate association
         association2 = document_tag_association.insert().values(
-            document_id=document.id, tag_id=tag.id,
+            document_id=document.id,
+            tag_id=tag.id,
         )
         with pytest.raises(Exception):  # Should raise integrity error
             db_session.execute(association2)
@@ -593,7 +604,9 @@ class TestDocumentTagAssociation:
 def test_user(db_session: Session) -> User:
     """Create a test user."""
     user = User(
-        email="test@example.com", username="testuser", hashed_password="hashed_password",
+        email="test@example.com",
+        username="testuser",
+        hashed_password="hashed_password",
     )
     db_session.add(user)
     db_session.commit()

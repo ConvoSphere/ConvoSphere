@@ -44,7 +44,11 @@ async def create_processing_job(
     """Create a new processing job."""
     service = KnowledgeService(db)
     return await service.create_processing_job(
-        document_id, job_type, priority, processing_options, current_user,
+        document_id,
+        job_type,
+        priority,
+        processing_options,
+        current_user,
     )
 
 

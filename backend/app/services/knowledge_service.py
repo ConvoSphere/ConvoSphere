@@ -292,7 +292,9 @@ class KnowledgeService:
         return type_mapping.get(file_type, DocumentType.OTHER)
 
     def _extract_document_metadata(
-        self, file_path: str, file_type: str,
+        self,
+        file_path: str,
+        file_type: str,
     ) -> dict[str, Any]:
         """Extract metadata from document file."""
         metadata = {}
@@ -423,10 +425,12 @@ class KnowledgeService:
 
             # Update document metadata
             document.processing_engine = result["metadata"].get(
-                "processing_engine", "traditional",
+                "processing_engine",
+                "traditional",
             )
             document.processing_options = result["metadata"].get(
-                "processing_options", {},
+                "processing_options",
+                {},
             )
 
             # Update content statistics
@@ -755,7 +759,6 @@ class KnowledgeService:
             elif file_type == "pdf":
                 # Implement PDF text extraction
                 try:
-
                     if not PYPDF_AVAILABLE:
                         logger.error(
                             "pypdf not installed. Install with: pip install pypdf",

@@ -144,7 +144,11 @@ class ConnectionManager:
         )
 
     async def send_knowledge_update(
-        self, user_id: str, conversation_id: str, documents: list, search_query: str,
+        self,
+        user_id: str,
+        conversation_id: str,
+        documents: list,
+        search_query: str,
     ):
         """Send knowledge base search results to user."""
         message = json.dumps(
@@ -384,7 +388,8 @@ async def websocket_endpoint(
                             metadata = {}
                             if "usage" in ai_response:
                                 metadata["tokens_used"] = ai_response["usage"].get(
-                                    "total_tokens", 0,
+                                    "total_tokens",
+                                    0,
                                 )
 
                             # Add knowledge base metadata
@@ -449,7 +454,8 @@ async def websocket_endpoint(
                     # Handle knowledge base search request
                     try:
                         search_query = message_data.get("data", {}).get(
-                            "searchQuery", "",
+                            "searchQuery",
+                            "",
                         )
                         filters = (
                             message_data.get("data", {})
@@ -470,7 +476,10 @@ async def websocket_endpoint(
 
                             # Send search results to client
                             await manager.send_knowledge_update(
-                                str(user.id), conversation_id, documents, search_query,
+                                str(user.id),
+                                conversation_id,
+                                documents,
+                                search_query,
                             )
 
                     except Exception as e:

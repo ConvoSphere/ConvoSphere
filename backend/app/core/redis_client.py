@@ -23,7 +23,6 @@ class RedisConnectionError(Exception):
     """Custom exception for Redis connection errors."""
 
 
-
 async def init_redis() -> redis.Redis | None:
     """
     Initialize Redis connection with connection pooling and graceful degradation.
@@ -292,7 +291,8 @@ async def add_to_blacklist(token: str, expires_at: int) -> bool:
             return False
 
         await asyncio.wait_for(
-            client.setex(f"blacklist:{token}", expires_at, "1"), timeout=5.0,
+            client.setex(f"blacklist:{token}", expires_at, "1"),
+            timeout=5.0,
         )
         return True
     except Exception as e:
@@ -316,7 +316,8 @@ async def is_token_blacklisted(token: str) -> bool:
             return False
 
         result = await asyncio.wait_for(
-            client.exists(f"blacklist:{token}"), timeout=2.0,
+            client.exists(f"blacklist:{token}"),
+            timeout=2.0,
         )
         return bool(result)
     except Exception as e:

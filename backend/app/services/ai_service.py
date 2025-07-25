@@ -712,7 +712,9 @@ class AIService:
             raise
 
     async def generate_response(
-        self, messages: list[dict[str, str]], model: str | None = None,
+        self,
+        messages: list[dict[str, str]],
+        model: str | None = None,
     ) -> AIResponse:
         """Generate AI response from messages."""
         try:
@@ -750,7 +752,9 @@ class AIService:
             return AIResponse(content="Sorry, I encountered an error.")
 
     async def embed_text(
-        self, text: str, model: str = "text-embedding-ada-002",
+        self,
+        text: str,
+        model: str = "text-embedding-ada-002",
     ) -> list[float]:
         """Generate embeddings for text."""
         try:

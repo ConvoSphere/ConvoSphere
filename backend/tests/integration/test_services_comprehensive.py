@@ -244,7 +244,8 @@ class TestAssistantServiceComprehensive:
             mock_db.commit.return_value = None
 
             result = assistant_service.update_assistant(
-                sample_assistant_data["id"], update_data,
+                sample_assistant_data["id"],
+                update_data,
             )
 
             assert result is not None
@@ -303,7 +304,9 @@ class TestConversationServiceComprehensive:
             assert result["title"] == sample_conversation_data["title"]
 
     def test_get_conversation_by_id(
-        self, conversation_service, sample_conversation_data,
+        self,
+        conversation_service,
+        sample_conversation_data,
     ):
         """Test getting conversation by ID."""
         with patch.object(conversation_service, "db") as mock_db:
@@ -585,7 +588,9 @@ class TestAIServiceComprehensive:
             }
 
             result = ai_service.generate_response_with_tools(
-                messages, tools, model="gpt-4",
+                messages,
+                tools,
+                model="gpt-4",
             )
 
             assert result is not None
@@ -759,7 +764,9 @@ class TestPerformanceMonitorComprehensive:
         from app.services.performance_monitor import PerformanceMetric
 
         metric = PerformanceMetric(
-            metric_name="test_metric", metric_type="counter", value=42,
+            metric_name="test_metric",
+            metric_type="counter",
+            value=42,
         )
 
         performance_monitor.record_metric(metric)
@@ -773,7 +780,10 @@ class TestPerformanceMonitorComprehensive:
         from app.services.performance_monitor import APIMetric
 
         api_metric = APIMetric(
-            endpoint="/api/test", method="GET", status_code=200, response_time=0.1,
+            endpoint="/api/test",
+            method="GET",
+            status_code=200,
+            response_time=0.1,
         )
 
         performance_monitor.record_api_request(api_metric)

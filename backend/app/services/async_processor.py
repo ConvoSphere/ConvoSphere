@@ -55,22 +55,28 @@ class TaskRequest(BaseModel):
     """Task request with validation."""
 
     task_id: str = Field(
-        default_factory=lambda: str(uuid4()), description="Unique task ID",
+        default_factory=lambda: str(uuid4()),
+        description="Unique task ID",
     )
     task_type: TaskType = Field(..., description="Task type")
     priority: TaskPriority = Field(
-        default=TaskPriority.NORMAL, description="Task priority",
+        default=TaskPriority.NORMAL,
+        description="Task priority",
     )
     payload: dict[str, Any] = Field(default_factory=dict, description="Task payload")
     user_id: str | None = Field(None, description="User ID")
     conversation_id: str | None = Field(None, description="Conversation ID")
     timeout: float = Field(
-        default=300.0, ge=1.0, le=3600.0, description="Timeout in seconds",
+        default=300.0,
+        ge=1.0,
+        le=3600.0,
+        description="Timeout in seconds",
     )
     retry_count: int = Field(default=0, ge=0, le=5, description="Retry count")
     scheduled_at: datetime | None = Field(None, description="Scheduled execution time")
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
     @field_validator("task_id")
@@ -105,11 +111,14 @@ class TaskResult(BaseModel):
     start_time: datetime | None = Field(None, description="Start time")
     end_time: datetime | None = Field(None, description="End time")
     execution_time: float | None = Field(
-        None, ge=0, description="Execution time in seconds",
+        None,
+        ge=0,
+        description="Execution time in seconds",
     )
     retry_count: int = Field(default=0, ge=0, description="Actual retry count")
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
     model_config = {

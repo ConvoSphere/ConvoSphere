@@ -39,19 +39,30 @@ class PerformanceConfig(BaseModel):
 
     enable_caching: bool = Field(default=True, description="Enable caching")
     enable_async_processing: bool = Field(
-        default=True, description="Enable async processing",
+        default=True,
+        description="Enable async processing",
     )
     enable_monitoring: bool = Field(
-        default=True, description="Enable performance monitoring",
+        default=True,
+        description="Enable performance monitoring",
     )
     cache_ttl: int = Field(
-        default=3600, ge=60, le=86400, description="Default cache TTL",
+        default=3600,
+        ge=60,
+        le=86400,
+        description="Default cache TTL",
     )
     max_async_workers: int = Field(
-        default=10, ge=1, le=50, description="Maximum async workers",
+        default=10,
+        ge=1,
+        le=50,
+        description="Maximum async workers",
     )
     monitoring_interval: int = Field(
-        default=60, ge=10, le=300, description="Monitoring interval in seconds",
+        default=60,
+        ge=10,
+        le=300,
+        description="Monitoring interval in seconds",
     )
 
     model_config = {
@@ -138,7 +149,8 @@ class PerformanceIntegration:
     # Cache Integration Methods
 
     async def get_cached_conversation(
-        self, conversation_id: str,
+        self,
+        conversation_id: str,
     ) -> dict[str, Any] | None:
         """Get cached conversation data."""
         if not self.config.enable_caching:
@@ -493,7 +505,8 @@ class PerformanceIntegration:
     # Analytics and Reporting Methods
 
     def get_performance_summary(
-        self, time_range: timedelta = timedelta(hours=1),
+        self,
+        time_range: timedelta = timedelta(hours=1),
     ) -> dict[str, Any]:
         """Get comprehensive performance summary."""
         if not self.config.enable_monitoring:

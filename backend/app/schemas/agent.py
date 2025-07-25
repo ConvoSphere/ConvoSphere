@@ -31,7 +31,9 @@ class ToolCall(BaseModel):
     start_time: datetime | None = Field(None, description="Execution start time")
     end_time: datetime | None = Field(None, description="Execution end time")
     execution_time: float | None = Field(
-        None, ge=0, description="Execution time in seconds",
+        None,
+        ge=0,
+        description="Execution time in seconds",
     )
 
     @field_validator("name")
@@ -70,10 +72,16 @@ class AgentConfig(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=200, description="Agent name")
     description: str = Field(
-        ..., min_length=1, max_length=2000, description="Agent description",
+        ...,
+        min_length=1,
+        max_length=2000,
+        description="Agent description",
     )
     system_prompt: str = Field(
-        ..., min_length=1, max_length=10000, description="System prompt",
+        ...,
+        min_length=1,
+        max_length=10000,
+        description="System prompt",
     )
     tools: list[str] = Field(
         default_factory=list,
@@ -324,34 +332,61 @@ class AgentUpdate(BaseModel):
     """Agent update schema."""
 
     name: str | None = Field(
-        None, min_length=1, max_length=200, description="Agent name",
+        None,
+        min_length=1,
+        max_length=200,
+        description="Agent name",
     )
     description: str | None = Field(
-        None, min_length=1, max_length=2000, description="Agent description",
+        None,
+        min_length=1,
+        max_length=2000,
+        description="Agent description",
     )
     system_prompt: str | None = Field(
-        None, min_length=1, max_length=10000, description="System prompt",
+        None,
+        min_length=1,
+        max_length=10000,
+        description="System prompt",
     )
     tools: list[str] | None = Field(
-        None, max_length=50, description="List of tool names",
+        None,
+        max_length=50,
+        description="List of tool names",
     )
     model: str | None = Field(
-        None, min_length=1, max_length=100, description="AI model to use",
+        None,
+        min_length=1,
+        max_length=100,
+        description="AI model to use",
     )
     temperature: float | None = Field(
-        None, ge=0.0, le=2.0, description="Model temperature",
+        None,
+        ge=0.0,
+        le=2.0,
+        description="Model temperature",
     )
     max_tokens: int | None = Field(
-        None, ge=1, le=100000, description="Maximum tokens for response",
+        None,
+        ge=1,
+        le=100000,
+        description="Maximum tokens for response",
     )
     max_context_length: int | None = Field(
-        None, ge=1000, le=200000, description="Maximum context length",
+        None,
+        ge=1000,
+        le=200000,
+        description="Maximum context length",
     )
     personality: str | None = Field(
-        None, max_length=5000, description="Agent personality description",
+        None,
+        max_length=5000,
+        description="Agent personality description",
     )
     instructions: str | None = Field(
-        None, max_length=10000, description="Additional instructions",
+        None,
+        max_length=10000,
+        description="Additional instructions",
     )
     is_public: bool | None = Field(None, description="Public visibility")
     is_template: bool | None = Field(None, description="Template flag")

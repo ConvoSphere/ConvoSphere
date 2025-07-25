@@ -22,14 +22,18 @@ class AssistantCreate(BaseModel):
     instructions: str | None = Field(None, description="Additional instructions")
     model: str = Field(default="gpt-4", description="AI model to use")
     temperature: float = Field(
-        default=0.7, ge=0.0, le=2.0, description="Temperature setting",
+        default=0.7,
+        ge=0.0,
+        le=2.0,
+        description="Temperature setting",
     )
     max_tokens: int = Field(default=4096, ge=1, description="Maximum tokens")
     is_public: bool = Field(default=False, description="Whether assistant is public")
     category: str | None = Field(None, description="Assistant category")
     tags: list[str] = Field(default_factory=list, description="Assistant tags")
     tools_config: list[dict] = Field(
-        default_factory=list, description="Tool configurations",
+        default_factory=list,
+        description="Tool configurations",
     )
 
 
@@ -37,7 +41,10 @@ class AssistantUpdate(BaseModel):
     """Model for updating an assistant."""
 
     name: str | None = Field(
-        None, min_length=1, max_length=200, description="Assistant name",
+        None,
+        min_length=1,
+        max_length=200,
+        description="Assistant name",
     )
     description: str | None = Field(None, description="Assistant description")
     personality: str | None = Field(None, description="Assistant personality")
@@ -45,7 +52,10 @@ class AssistantUpdate(BaseModel):
     instructions: str | None = Field(None, description="Additional instructions")
     model: str | None = Field(None, description="AI model to use")
     temperature: float | None = Field(
-        None, ge=0.0, le=2.0, description="Temperature setting",
+        None,
+        ge=0.0,
+        le=2.0,
+        description="Temperature setting",
     )
     max_tokens: int | None = Field(None, ge=1, description="Maximum tokens")
     is_public: bool | None = Field(None, description="Whether assistant is public")
@@ -112,7 +122,9 @@ async def get_public_assistants(
     """Get public assistants."""
     service = AssistantService(db)
     return await service.get_public_assistants(
-        category=category, tags=tags, limit=limit,
+        category=category,
+        tags=tags,
+        limit=limit,
     )
 
 

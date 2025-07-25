@@ -34,7 +34,10 @@ async def add_tool_to_assistant(
     """Add a tool to an assistant."""
     service = AssistantService(db)
     return await service.add_tool_to_assistant(
-        assistant_id, tool_data.tool_id, tool_data.config, current_user_id,
+        assistant_id,
+        tool_data.tool_id,
+        tool_data.config,
+        current_user_id,
     )
 
 
@@ -49,5 +52,7 @@ async def remove_tool_from_assistant(
     """Remove a tool from an assistant."""
     service = AssistantService(db)
     return await service.remove_tool_from_assistant(
-        assistant_id, tool_id, current_user_id,
+        assistant_id,
+        tool_id,
+        current_user_id,
     )
