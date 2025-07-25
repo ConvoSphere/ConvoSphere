@@ -22,7 +22,7 @@ async def get_config():
         "isProduction": not settings.debug,
         "enableDebug": settings.debug,
         "wsEndpoints": {
-            "chat": "/api/v1/ws/",
+            "chat": "/api/v1/chat/ws/",
             "notifications": "/api/v1/ws/notifications",
         },
         "apiEndpoints": {

@@ -251,7 +251,7 @@ def create_application() -> FastAPI:
             "isProduction": not get_settings().debug,
             "enableDebug": get_settings().debug,
             "wsEndpoints": {
-                "chat": "/api/v1/ws/",
+                "chat": "/api/v1/chat/ws/",
                 "notifications": "/api/v1/ws/notifications",
             },
             "apiEndpoints": {

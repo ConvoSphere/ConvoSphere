@@ -9,7 +9,7 @@ export const config = {
   isProduction: process.env.NODE_ENV === 'production' || import.meta?.env?.PROD,
   enableDebug: process.env.VITE_ENABLE_DEBUG === 'true' || import.meta?.env?.VITE_ENABLE_DEBUG === 'true',
   wsEndpoints: {
-    chat: "/api/v1/ws/",
+    chat: "/api/v1/chat/ws/",
     notifications: "/api/v1/ws/notifications"
   },
   apiEndpoints: {

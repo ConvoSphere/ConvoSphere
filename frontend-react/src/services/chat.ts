@@ -32,7 +32,7 @@ export interface KnowledgeContext {
 }
 
 export interface ChatWebSocketMessage {
-  type: 'message' | 'knowledge_search' | 'typing' | 'ping' | 'knowledge_update';
+  type: 'message' | 'knowledge_search' | 'typing' | 'ping' | 'knowledge_update' | 'processing_job_update' | 'pong' | 'error';
   data: {
     content?: string;
     knowledgeContext?: KnowledgeContext;
@@ -40,6 +40,14 @@ export interface ChatWebSocketMessage {
     documents?: Document[];
     searchQuery?: string;
     processingJobId?: string;
+    id?: string;
+    role?: string;
+    timestamp?: string;
+    messageType?: string;
+    metadata?: any;
+    status?: string;
+    progress?: number;
+    message?: string;
   };
 }
 
@@ -86,7 +94,7 @@ class ChatWebSocket {
     return typeof data === 'object' && data !== null && 'type' in data && 'data' in data;
   }
 
-  connect(token: string, onMessage: MessageHandler, onKnowledgeUpdate?: KnowledgeUpdateHandler, onProcessingJob?: ProcessingJobHandler) {
+  connect(token: string, conversationId: string, onMessage: MessageHandler, onKnowledgeUpdate?: KnowledgeUpdateHandler, onProcessingJob?: ProcessingJobHandler) {
     if (this.isConnecting) return;
     
     this.isConnecting = true;
@@ -94,7 +102,7 @@ class ChatWebSocket {
     this.knowledgeUpdateHandler = onKnowledgeUpdate || null;
     this.processingJobHandler = onProcessingJob || null;
     
-    const wsUrl = `${config.wsUrl}${config.wsEndpoints.chat}?token=${token}`;
+    const wsUrl = `${config.wsUrl}${config.wsEndpoints.chat}${conversationId}?token=${token}`;
     this.ws = new WebSocket(wsUrl);
     
     this.ws.onopen = () => {
@@ -120,7 +128,7 @@ class ChatWebSocket {
       
       // Attempt reconnection if not a normal closure
       if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.attemptReconnect(token);
+        this.attemptReconnect(token, conversationId);
       }
     };
     
@@ -139,14 +147,14 @@ class ChatWebSocket {
     
     switch (type) {
       case 'message':
-        if (this.messageHandler) {
+        if (this.messageHandler && messageData.content) {
           const chatMessage: ChatMessage = {
-            id: messageData.id,
+            id: messageData.id || undefined,
             sender: messageData.role === 'user' ? 'You' : 'Assistant',
             text: messageData.content,
-            timestamp: new Date(messageData.timestamp),
+            timestamp: messageData.timestamp ? new Date(messageData.timestamp) : new Date(),
             documents: messageData.documents || [],
-            messageType: messageData.messageType || 'text',
+            messageType: (messageData.messageType as 'text' | 'knowledge' | 'error' | 'system') || 'text',
             metadata: messageData.metadata
           };
           this.messageHandler(chatMessage);
@@ -160,7 +168,7 @@ class ChatWebSocket {
         break;
         
       case 'processing_job_update':
-        if (this.processingJobHandler && messageData.processingJobId) {
+        if (this.processingJobHandler && messageData.processingJobId && messageData.status) {
           this.processingJobHandler(
             messageData.processingJobId,
             messageData.status,
@@ -177,7 +185,7 @@ class ChatWebSocket {
         if (this.messageHandler) {
           const errorMessage: ChatMessage = {
             sender: 'System',
-            text: messageData.message || 'An error occurred',
+            text: (messageData as any).message || 'An error occurred',
             messageType: 'error',
             timestamp: new Date()
           };
@@ -190,17 +198,17 @@ class ChatWebSocket {
     }
   }
 
-  private attemptReconnect(token: string) {
+  private attemptReconnect(token: string, conversationId: string) {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
     
     console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
     
-    setTimeout(() => {
-      if (this.messageHandler) {
-        this.connect(token, this.messageHandler, this.knowledgeUpdateHandler, this.processingJobHandler);
-      }
-    }, delay);
+            setTimeout(() => {
+          if (this.messageHandler) {
+            this.connect(token, conversationId, this.messageHandler, this.knowledgeUpdateHandler || undefined, this.processingJobHandler || undefined);
+          }
+        }, delay);
   }
 
   private startPingInterval() {

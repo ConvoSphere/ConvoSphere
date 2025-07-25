@@ -10,6 +10,7 @@ import { useKnowledgeStore } from '../store/knowledgeStore';
 import KnowledgeContextComponent from '../components/chat/KnowledgeContext';
 import type { Document } from '../services/knowledge';
 import type { InputRef } from 'antd';
+import { config } from '../config';
 
 const { Title, Text } = Typography;
 
@@ -26,6 +27,7 @@ const Chat: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Document[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
@@ -35,13 +37,63 @@ const Chat: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);
 
+  // Create or get conversation ID
   useEffect(() => {
     if (!token) return;
+    
+    const createOrGetConversation = async () => {
+      try {
+        // Try to get existing conversations first
+        const response = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const conversations = await response.json();
+          if (conversations.length > 0) {
+            // Use the most recent conversation
+            setConversationId(conversations[0].id);
+            return;
+          }
+        }
+        
+        // Create new conversation if none exists
+        const createResponse = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: 'New Chat',
+            assistant_id: 'default' // You might want to get this from user preferences
+          })
+        });
+        
+        if (createResponse.ok) {
+          const conversation = await createResponse.json();
+          setConversationId(conversation.id);
+        }
+      } catch (error) {
+        console.error('Error creating/getting conversation:', error);
+        setError(t('chat.error'));
+      }
+    };
+    
+    createOrGetConversation();
+  }, [token]);
+
+  useEffect(() => {
+    if (!token || !conversationId) return;
     setLoading(true);
     setError(null);
     try {
       chatWebSocket.connect(
         token,
+        conversationId,
         handleMessage,
         handleKnowledgeUpdate,
         handleProcessingJobUpdate
@@ -51,7 +103,7 @@ const Chat: React.FC = () => {
       setLoading(false);
     }
     return () => chatWebSocket.disconnect();
-  }, [token]);
+  }, [token, conversationId]);
 
   useEffect(() => {
     if (listRef.current) {
@@ -96,7 +148,7 @@ const Chat: React.FC = () => {
           maxChunks: 5,
           filters: {
             tags: selectedDocuments.flatMap(doc => doc.tags?.map(tag => tag.name) || []),
-            documentTypes: [...new Set(selectedDocuments.map(doc => doc.document_type))]
+            documentTypes: [...new Set(selectedDocuments.map(doc => doc.document_type).filter(Boolean) as string[])]
           }
         } : undefined;
         
