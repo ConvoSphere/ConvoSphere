@@ -259,16 +259,16 @@ setup:
 
 # Documentation
 docs-install:
-	cd docs && pip install -r requirements-docs.txt
+	pip install -r docs/requirements-docs.txt
 
 docs-serve:
-	cd docs && mkdocs serve
+	mkdocs serve
 
 docs-build:
-	cd docs && mkdocs build
+	mkdocs build
 
 docs-deploy:
-	cd docs && mkdocs gh-deploy
+	mkdocs gh-deploy
 
 docs-clean:
 	rm -rf docs/site/
