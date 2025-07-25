@@ -17,11 +17,11 @@ from app.services.user_service import UserService
 class TestUserServiceComprehensive:
     """Comprehensive tests for UserService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def user_service(self):
         return UserService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_user_data(self):
         return {
             "id": str(uuid.uuid4()),
@@ -40,16 +40,17 @@ class TestUserServiceComprehensive:
             mock_db.add.return_value = None
             mock_db.commit.return_value = None
             mock_db.refresh.return_value = None
-            
+
             # Mock query methods to return None (no existing users)
             mock_query = MagicMock()
             mock_query.filter.return_value.first.return_value = None
             mock_db.query.return_value = mock_query
 
             # Mock the get_user_by_email and get_user_by_username methods
-            with patch.object(user_service, "get_user_by_email", return_value=None), \
-                 patch.object(user_service, "get_user_by_username", return_value=None):
-                
+            with (
+                patch.object(user_service, "get_user_by_email", return_value=None),
+                patch.object(user_service, "get_user_by_username", return_value=None),
+            ):
                 result = user_service.create_user(
                     email=sample_user_data["email"],
                     username=sample_user_data["username"],
@@ -76,7 +77,9 @@ class TestUserServiceComprehensive:
     def test_get_user_by_id(self, user_service, sample_user_data):
         """Test getting user by ID."""
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_user_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_user_data
+            )
 
             result = user_service.get_user_by_id(sample_user_data["id"])
 
@@ -85,7 +88,9 @@ class TestUserServiceComprehensive:
     def test_get_user_by_email(self, user_service, sample_user_data):
         """Test getting user by email."""
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_user_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_user_data
+            )
 
             result = user_service.get_user_by_email(sample_user_data["email"])
 
@@ -96,7 +101,9 @@ class TestUserServiceComprehensive:
         update_data = {"full_name": "Updated Name"}
 
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_user_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_user_data
+            )
             mock_db.commit.return_value = None
 
             result = user_service.update_user(sample_user_data["id"], update_data)
@@ -106,7 +113,9 @@ class TestUserServiceComprehensive:
     def test_delete_user(self, user_service, sample_user_data):
         """Test deleting user."""
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_user_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_user_data
+            )
             mock_db.delete.return_value = None
             mock_db.commit.return_value = None
 
@@ -163,11 +172,11 @@ class TestUserServiceComprehensive:
 class TestAssistantServiceComprehensive:
     """Comprehensive tests for AssistantService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def assistant_service(self):
         return AssistantService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_assistant_data(self):
         return {
             "id": str(uuid.uuid4()),
@@ -202,7 +211,9 @@ class TestAssistantServiceComprehensive:
     def test_get_assistant_by_id(self, assistant_service, sample_assistant_data):
         """Test getting assistant by ID."""
         with patch.object(assistant_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_assistant_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_assistant_data
+            )
 
             result = assistant_service.get_assistant_by_id(sample_assistant_data["id"])
 
@@ -227,17 +238,23 @@ class TestAssistantServiceComprehensive:
         update_data = {"name": "Updated Assistant"}
 
         with patch.object(assistant_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_assistant_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_assistant_data
+            )
             mock_db.commit.return_value = None
 
-            result = assistant_service.update_assistant(sample_assistant_data["id"], update_data)
+            result = assistant_service.update_assistant(
+                sample_assistant_data["id"], update_data,
+            )
 
             assert result is not None
 
     def test_delete_assistant(self, assistant_service, sample_assistant_data):
         """Test deleting assistant."""
         with patch.object(assistant_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_assistant_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_assistant_data
+            )
             mock_db.delete.return_value = None
             mock_db.commit.return_value = None
 
@@ -249,11 +266,11 @@ class TestAssistantServiceComprehensive:
 class TestConversationServiceComprehensive:
     """Comprehensive tests for ConversationService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def conversation_service(self):
         return ConversationService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_conversation_data(self):
         return {
             "id": str(uuid.uuid4()),
@@ -270,26 +287,33 @@ class TestConversationServiceComprehensive:
             mock_db.add.return_value = None
             mock_db.commit.return_value = None
             mock_db.refresh.return_value = None
-    
+
             # Create ConversationCreate object
             from app.schemas.conversation import ConversationCreate
+
             conversation_data = ConversationCreate(
                 title=sample_conversation_data["title"],
                 user_id=sample_conversation_data["user_id"],
                 assistant_id=sample_conversation_data["assistant_id"],
             )
-            
+
             result = conversation_service.create_conversation(conversation_data)
 
             assert result is not None
             assert result["title"] == sample_conversation_data["title"]
 
-    def test_get_conversation_by_id(self, conversation_service, sample_conversation_data):
+    def test_get_conversation_by_id(
+        self, conversation_service, sample_conversation_data,
+    ):
         """Test getting conversation by ID."""
         with patch.object(conversation_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_conversation_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_conversation_data
+            )
 
-            result = conversation_service.get_conversation_by_id(sample_conversation_data["id"])
+            result = conversation_service.get_conversation_by_id(
+                sample_conversation_data["id"],
+            )
 
             assert result == sample_conversation_data
 
@@ -301,7 +325,9 @@ class TestConversationServiceComprehensive:
         ]
 
         with patch.object(conversation_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.all.return_value = conversations
+            mock_db.query.return_value.filter.return_value.all.return_value = (
+                conversations
+            )
 
             result = conversation_service.get_conversations_by_user("user123")
 
@@ -347,11 +373,11 @@ class TestConversationServiceComprehensive:
 class TestToolServiceComprehensive:
     """Comprehensive tests for ToolService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def tool_service(self):
         return ToolService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_tool_data(self):
         return {
             "id": str(uuid.uuid4()),
@@ -386,7 +412,9 @@ class TestToolServiceComprehensive:
     def test_get_tool_by_id(self, tool_service, sample_tool_data):
         """Test getting tool by ID."""
         with patch.object(tool_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_tool_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_tool_data
+            )
 
             result = tool_service.get_tool_by_id(sample_tool_data["id"])
 
@@ -413,7 +441,9 @@ class TestToolServiceComprehensive:
         with patch.object(tool_service, "get_tool_by_id") as mock_get:
             mock_get.return_value = sample_tool_data
 
-            with patch("app.services.tool_service.tool_executor.execute") as mock_execute:
+            with patch(
+                "app.services.tool_service.tool_executor.execute",
+            ) as mock_execute:
                 mock_execute.return_value = {"result": "success"}
 
                 result = tool_service.execute_tool(sample_tool_data["id"], parameters)
@@ -424,11 +454,11 @@ class TestToolServiceComprehensive:
 class TestKnowledgeServiceComprehensive:
     """Comprehensive tests for KnowledgeService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def knowledge_service(self):
         return KnowledgeService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_document_data(self):
         return {
             "id": str(uuid.uuid4()),
@@ -449,7 +479,9 @@ class TestKnowledgeServiceComprehensive:
             mock_db.commit.return_value = None
             mock_db.refresh.return_value = None
 
-            with patch("app.services.knowledge_service.document_processor.process") as mock_process:
+            with patch(
+                "app.services.knowledge_service.document_processor.process",
+            ) as mock_process:
                 mock_process.return_value = {"chunks": ["chunk1", "chunk2"]}
 
                 result = knowledge_service.process_document(
@@ -470,7 +502,9 @@ class TestKnowledgeServiceComprehensive:
             {"id": "2", "content": "test result 2", "score": 0.8},
         ]
 
-        with patch("app.services.knowledge_service.embedding_service.search") as mock_search:
+        with patch(
+            "app.services.knowledge_service.embedding_service.search",
+        ) as mock_search:
             mock_search.return_value = search_results
 
             result = knowledge_service.search("test query", user_id="user123")
@@ -495,7 +529,9 @@ class TestKnowledgeServiceComprehensive:
     def test_delete_document(self, knowledge_service, sample_document_data):
         """Test deleting a document."""
         with patch.object(knowledge_service, "db") as mock_db:
-            mock_db.query.return_value.filter.return_value.first.return_value = sample_document_data
+            mock_db.query.return_value.filter.return_value.first.return_value = (
+                sample_document_data
+            )
             mock_db.delete.return_value = None
             mock_db.commit.return_value = None
 
@@ -507,7 +543,7 @@ class TestKnowledgeServiceComprehensive:
 class TestAIServiceComprehensive:
     """Comprehensive tests for AIService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ai_service(self):
         return AIService()
 
@@ -538,15 +574,19 @@ class TestAIServiceComprehensive:
 
         with patch("app.services.ai_service.litellm.completion") as mock_completion:
             mock_completion.return_value = {
-                "choices": [{
-                    "message": {
-                        "content": "Let me check the weather for you.",
-                        "tool_calls": [{"name": "get_weather"}],
+                "choices": [
+                    {
+                        "message": {
+                            "content": "Let me check the weather for you.",
+                            "tool_calls": [{"name": "get_weather"}],
+                        },
                     },
-                }],
+                ],
             }
 
-            result = ai_service.generate_response_with_tools(messages, tools, model="gpt-4")
+            result = ai_service.generate_response_with_tools(
+                messages, tools, model="gpt-4",
+            )
 
             assert result is not None
             assert "tool_calls" in str(result)
@@ -587,7 +627,7 @@ class TestAIServiceComprehensive:
 class TestEmbeddingServiceComprehensive:
     """Comprehensive tests for EmbeddingService."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def embedding_service(self):
         return EmbeddingService()
 
@@ -644,7 +684,7 @@ class TestEmbeddingServiceComprehensive:
 class TestDocumentProcessorComprehensive:
     """Comprehensive tests for DocumentProcessor."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def document_processor(self):
         return DocumentProcessor()
 
@@ -653,7 +693,9 @@ class TestDocumentProcessorComprehensive:
         file_path = "/path/to/test.pdf"
 
         with patch("app.services.document_processor.PyPDF2.PdfReader") as mock_pdf:
-            mock_pdf.return_value.pages = [MagicMock(extract_text=lambda: "PDF content")]
+            mock_pdf.return_value.pages = [
+                MagicMock(extract_text=lambda: "PDF content"),
+            ]
 
             result = document_processor.process_pdf(file_path)
 
@@ -677,7 +719,9 @@ class TestDocumentProcessorComprehensive:
         file_path = "/path/to/test.txt"
 
         with patch("builtins.open", create=True) as mock_open:
-            mock_open.return_value.__enter__.return_value.read.return_value = "TXT content"
+            mock_open.return_value.__enter__.return_value.read.return_value = (
+                "TXT content"
+            )
 
             result = document_processor.process_txt(file_path)
 
@@ -697,7 +741,7 @@ class TestDocumentProcessorComprehensive:
 class TestPerformanceMonitorComprehensive:
     """Comprehensive tests for PerformanceMonitor."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def performance_monitor(self):
         return PerformanceMonitor()
 
@@ -713,15 +757,13 @@ class TestPerformanceMonitorComprehensive:
     def test_record_metric(self, performance_monitor):
         """Test recording a performance metric."""
         from app.services.performance_monitor import PerformanceMetric
-        
+
         metric = PerformanceMetric(
-            metric_name="test_metric",
-            metric_type="counter",
-            value=42
+            metric_name="test_metric", metric_type="counter", value=42,
         )
-        
+
         performance_monitor.record_metric(metric)
-        
+
         # Check that metric was recorded
         stats = performance_monitor.get_stats()
         assert stats["current_metrics"] > 0
@@ -729,33 +771,30 @@ class TestPerformanceMonitorComprehensive:
     def test_record_api_request(self, performance_monitor):
         """Test recording an API request metric."""
         from app.services.performance_monitor import APIMetric
-        
+
         api_metric = APIMetric(
-            endpoint="/api/test",
-            method="GET",
-            status_code=200,
-            response_time=0.1
+            endpoint="/api/test", method="GET", status_code=200, response_time=0.1,
         )
-        
+
         performance_monitor.record_api_request(api_metric)
-        
+
         # Check that metric was recorded (API metrics are stored separately)
         assert len(performance_monitor.api_metrics) > 0
 
     def test_record_cache_operation(self, performance_monitor):
         """Test recording a cache operation metric."""
         from app.services.performance_monitor import CacheMetric
-        
+
         cache_metric = CacheMetric(
             operation="get",
             namespace="test",
             key="test_key",
             operation_time=0.01,
-            cache_hit=True
+            cache_hit=True,
         )
-        
+
         performance_monitor.record_cache_operation(cache_metric)
-        
+
         # Check that metric was recorded (cache metrics are stored separately)
         assert len(performance_monitor.cache_metrics) > 0
 

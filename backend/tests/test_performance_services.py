@@ -420,7 +420,9 @@ class TestPerformanceMonitorFunctionality:
         assert self.monitor.stats["total_metrics"] == 1  # noqa: S101
 
         # Test invalid metric
-        with pytest.raises(ValueError, match=".*"):  # match beliebig, da keine spezifische Fehlermeldung
+        with pytest.raises(
+            ValueError, match=".*",
+        ):  # match beliebig, da keine spezifische Fehlermeldung
             self.monitor.record_metric("invalid")
 
     def test_record_database_query(self):
@@ -494,18 +496,22 @@ class TestPerformanceMonitorFunctionality:
     def test_get_metrics_summary(self):
         """Test getting metrics summary."""
         # Add some test metrics
-        self.monitor.record_api_request(APIMetric(
-            endpoint="/api/chat",
-            method="POST",
-            status_code=200,
-            response_time=0.5,
-        ))
+        self.monitor.record_api_request(
+            APIMetric(
+                endpoint="/api/chat",
+                method="POST",
+                status_code=200,
+                response_time=0.5,
+            ),
+        )
 
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="conversations",
-            execution_time=0.3,
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="conversations",
+                execution_time=0.3,
+            ),
+        )
 
         summary = self.monitor.get_metrics_summary()
         assert "api_requests" in summary  # noqa: S101
@@ -516,17 +522,21 @@ class TestPerformanceMonitorFunctionality:
     def test_get_slow_queries(self):
         """Test getting slow queries."""
         # Add slow queries
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="conversations",
-            execution_time=1.0,
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="conversations",
+                execution_time=1.0,
+            ),
+        )
 
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="messages",
-            execution_time=2.0,
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="messages",
+                execution_time=2.0,
+            ),
+        )
 
         slow_queries = self.monitor.get_slow_queries(limit=5)
         assert len(slow_queries) == 2  # noqa: S101
@@ -535,19 +545,23 @@ class TestPerformanceMonitorFunctionality:
     def test_get_slow_endpoints(self):
         """Test getting slow endpoints."""
         # Add slow endpoints
-        self.monitor.record_api_request(APIMetric(
-            endpoint="/api/chat",
-            method="POST",
-            status_code=200,
-            response_time=1.0,
-        ))
+        self.monitor.record_api_request(
+            APIMetric(
+                endpoint="/api/chat",
+                method="POST",
+                status_code=200,
+                response_time=1.0,
+            ),
+        )
 
-        self.monitor.record_api_request(APIMetric(
-            endpoint="/api/users",
-            method="GET",
-            status_code=200,
-            response_time=2.0,
-        ))
+        self.monitor.record_api_request(
+            APIMetric(
+                endpoint="/api/users",
+                method="GET",
+                status_code=200,
+                response_time=2.0,
+            ),
+        )
 
         slow_endpoints = self.monitor.get_slow_endpoints(limit=5)
         assert len(slow_endpoints) == 2  # noqa: S101
@@ -591,17 +605,21 @@ class TestDatabaseOptimizer:
     def test_analyze_query_performance(self):
         """Test query performance analysis."""
         # Add some test queries
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="conversations",
-            execution_time=0.8,  # Slow query
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="conversations",
+                execution_time=0.8,  # Slow query
+            ),
+        )
 
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="conversations",
-            execution_time=0.3,
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="conversations",
+                execution_time=0.3,
+            ),
+        )
 
         analysis = self.optimizer.analyze_query_performance()
         assert "total_queries" in analysis  # noqa: S101
@@ -613,12 +631,14 @@ class TestDatabaseOptimizer:
     def test_get_connection_pool_stats(self):
         """Test connection pool statistics."""
         # Add queries with pool size info
-        self.monitor.record_database_query(DatabaseQueryMetric(
-            query_type="select",
-            table_name="conversations",
-            execution_time=0.3,
-            connection_pool_size=10,
-        ))
+        self.monitor.record_database_query(
+            DatabaseQueryMetric(
+                query_type="select",
+                table_name="conversations",
+                execution_time=0.3,
+                connection_pool_size=10,
+            ),
+        )
 
         stats = self.optimizer.get_connection_pool_stats()
         assert "average_pool_size" in stats  # noqa: S101
@@ -636,6 +656,7 @@ class TestAsyncProcessorFunctionality:
 
     async def test_register_handler(self):
         """Test handler registration."""
+
         async def test_handler() -> dict[str, Any]:
             return {"result": "success"}
 
@@ -649,6 +670,7 @@ class TestAsyncProcessorFunctionality:
 
     async def test_submit_task(self):
         """Test task submission."""
+
         async def test_handler() -> dict[str, Any]:
             return {"result": "success"}
 
@@ -677,6 +699,7 @@ class TestAsyncProcessorFunctionality:
 
     async def test_task_priority(self):
         """Test task priority handling."""
+
         async def test_handler() -> dict[str, Any]:
             return {"result": "success"}
 
@@ -713,6 +736,7 @@ class TestAsyncProcessorFunctionality:
 
     async def test_queue_full(self):
         """Test queue full handling."""
+
         async def slow_handler() -> dict[str, Any]:
             await asyncio.sleep(0.1)  # Slow handler
             return {"result": "success"}

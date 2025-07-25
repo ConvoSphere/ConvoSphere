@@ -1,28 +1,28 @@
 import pytest
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_users_endpoint(async_client):
     """Test users endpoint."""
     response = async_client.get("/api/v1/users/")
     assert response.status_code in [200, 400, 401, 403, 404]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_assistants_endpoint(async_client):
     """Test assistants endpoint."""
     response = async_client.get("/api/v1/assistants/")
     assert response.status_code in [200, 400, 401, 403, 404]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_tools_endpoint(async_client):
     """Test tools endpoint."""
     response = async_client.get("/api/v1/tools/")
     assert response.status_code in [200, 400, 401, 403, 404]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_health_endpoints(async_client):
     """Test all health check endpoints."""
     # Basic health check
@@ -44,14 +44,14 @@ async def test_health_endpoints(async_client):
         assert "version" in data  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_register_endpoint(async_client, test_user_data):
     """Test user registration endpoint."""
     response = async_client.post("/api/v1/auth/register", json=test_user_data)
     assert response.status_code in [200, 201, 400, 422]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_login_endpoint(async_client, test_user_data):
     """Test user login endpoint."""
     response = async_client.post(
@@ -64,7 +64,7 @@ async def test_login_endpoint(async_client, test_user_data):
     assert response.status_code in [200, 400, 401, 422]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_protected_endpoints_unauthorized(async_client):
     """Test that protected endpoints return 403 without authentication."""
     endpoints = [
@@ -79,7 +79,7 @@ async def test_protected_endpoints_unauthorized(async_client):
         assert response.status_code in [400, 401, 403, 404]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_rate_limiting(async_client):
     """Test rate limiting by making many requests quickly."""
     # Make multiple requests to trigger rate limiting

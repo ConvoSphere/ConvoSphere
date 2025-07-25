@@ -15,12 +15,10 @@ from typing import Any
 
 import numpy as np
 import umap
+from app.core.config import get_settings
 from litellm import completion
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
-
-from app.core.config import get_settings
-from app.services.performance_monitor import performance_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +203,8 @@ class EmbeddingService:
                     for i, embedding in enumerate(new_embeddings):
                         if embedding:
                             cache_key = self._get_cache_key(
-                                uncached_texts[i], model_name,
+                                uncached_texts[i],
+                                model_name,
                             )
                             self._cache_embedding(cache_key, embedding)
 
@@ -248,14 +247,12 @@ class EmbeddingService:
 
             # Record performance metrics
             # Performance monitoring disabled for now
-            pass
 
             return all_results
 
         except Exception as e:
-            logger.error(f"Error generating embeddings: {e}")
+            logger.exception(f"Error generating embeddings: {e}")
             # Error recording disabled for now
-            pass
             return []
 
     async def _generate_embeddings_with_retry(
@@ -275,7 +272,8 @@ class EmbeddingService:
 
                     # Generate embeddings for batch
                     batch_embeddings = await self._generate_batch_embeddings(
-                        batch, model,
+                        batch,
+                        model,
                     )
                     embeddings.extend(batch_embeddings)
 
@@ -295,7 +293,9 @@ class EmbeddingService:
         return None
 
     async def _generate_batch_embeddings(
-        self, texts: list[str], model: str = None,
+        self,
+        texts: list[str],
+        model: str = None,
     ) -> list[list[float]]:
         """
         Generate embeddings for a batch of texts.
@@ -325,7 +325,7 @@ class EmbeddingService:
             return []
 
         except Exception as e:
-            logger.error(f"Error generating batch embeddings: {e}")
+            logger.exception(f"Error generating batch embeddings: {e}")
             return []
 
     def _get_cache_key(self, text: str, model: str) -> str:
@@ -366,7 +366,7 @@ class EmbeddingService:
             return min(quality_score, 1.0)
 
         except Exception as e:
-            logger.error(f"Error calculating quality score: {e}")
+            logger.exception(f"Error calculating quality score: {e}")
             return 0.5  # Default score
 
     async def generate_single_embedding(self, text: str) -> list[float] | None:
@@ -384,7 +384,7 @@ class EmbeddingService:
             return embeddings[0] if embeddings else None
 
         except Exception as e:
-            logger.error(f"Error generating single embedding: {e}")
+            logger.exception(f"Error generating single embedding: {e}")
             return None
 
     def calculate_similarity(
@@ -424,7 +424,7 @@ class EmbeddingService:
             return self._cosine_similarity(vec1, vec2)
 
         except Exception as e:
-            logger.error(f"Error calculating similarity: {e}")
+            logger.exception(f"Error calculating similarity: {e}")
             return 0.0
 
     def _cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
@@ -490,7 +490,7 @@ class EmbeddingService:
             return similarities
 
         except Exception as e:
-            logger.error(f"Error calculating batch similarity: {e}")
+            logger.exception(f"Error calculating batch similarity: {e}")
             return []
 
     def find_most_similar(
@@ -529,7 +529,7 @@ class EmbeddingService:
             return similarities[:top_k]
 
         except Exception as e:
-            logger.error(f"Error finding most similar embeddings: {e}")
+            logger.exception(f"Error finding most similar embeddings: {e}")
             return []
 
     async def embed_chunks(self, chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -562,7 +562,7 @@ class EmbeddingService:
             return chunks
 
         except Exception as e:
-            logger.error(f"Error embedding chunks: {e}")
+            logger.exception(f"Error embedding chunks: {e}")
             return chunks
 
     def validate_embedding(self, embedding: list[float]) -> bool:
@@ -584,13 +584,10 @@ class EmbeddingService:
                 return False
 
             # Check if it's not all zeros
-            if all(x == 0 for x in embedding):
-                return False
-
-            return True
+            return not all(x == 0 for x in embedding)
 
         except Exception as e:
-            logger.error(f"Error validating embedding: {e}")
+            logger.exception(f"Error validating embedding: {e}")
             return False
 
     def get_embedding_dimension(self, embedding: list[float]) -> int:
@@ -606,7 +603,7 @@ class EmbeddingService:
         try:
             return len(embedding) if embedding else 0
         except Exception as e:
-            logger.error(f"Error getting embedding dimension: {e}")
+            logger.exception(f"Error getting embedding dimension: {e}")
             return 0
 
     def reduce_embeddings_dimension(
@@ -647,7 +644,7 @@ class EmbeddingService:
             return reduced_embeddings.tolist()
 
         except Exception as e:
-            logger.error(f"Error reducing embedding dimensions: {e}")
+            logger.exception(f"Error reducing embedding dimensions: {e}")
             return embeddings
 
     def cluster_embeddings(
@@ -701,7 +698,7 @@ class EmbeddingService:
             }
 
         except Exception as e:
-            logger.error(f"Error clustering embeddings: {e}")
+            logger.exception(f"Error clustering embeddings: {e}")
             return {"labels": [], "centroids": [], "silhouette_score": 0.0}
 
     def analyze_embedding_quality(
@@ -759,9 +756,8 @@ class EmbeddingService:
                 "quality_score": float(np.mean(magnitudes) * np.mean(variances)),
             }
 
-
         except Exception as e:
-            logger.error(f"Error analyzing embedding quality: {e}")
+            logger.exception(f"Error analyzing embedding quality: {e}")
             return {}
 
     def get_embedding_statistics(self) -> dict[str, Any]:
@@ -868,31 +864,42 @@ class EmbeddingService:
             raise ValueError(f"Unsupported export format: {format}")
 
         except Exception as e:
-            logger.error(f"Error exporting embeddings: {e}")
+            logger.exception(f"Error exporting embeddings: {e}")
             return ""
 
-
-    async def create_embedding(self, text: str, model: str | None = None) -> EmbeddingResult:
+    async def create_embedding(
+        self, text: str, model: str | None = None,
+    ) -> EmbeddingResult:
         """Create embedding for a single text."""
         try:
             embeddings = await self.generate_embeddings([text], model=model)
             return embeddings[0] if embeddings else None
         except Exception as e:
-            logger.error(f"Error creating embedding: {e}")
+            logger.exception(f"Error creating embedding: {e}")
             return None
 
-    async def search_similar(self, query_embedding: list[float], candidate_embeddings: list[list[float]], top_k: int = 5) -> list[SimilarityResult]:
+    async def search_similar(
+        self,
+        query_embedding: list[float],
+        candidate_embeddings: list[list[float]],
+        top_k: int = 5,
+    ) -> list[SimilarityResult]:
         """Search for similar embeddings."""
         try:
-            similarities = self.find_most_similar(query_embedding, candidate_embeddings, top_k)
-            return [SimilarityResult(
-                text=item.get('text', ''),
-                similarity_score=item.get('similarity', 0.0),
-                rank=item.get('rank', 0),
-                metadata=item.get('metadata', {})
-            ) for item in similarities]
+            similarities = self.find_most_similar(
+                query_embedding, candidate_embeddings, top_k,
+            )
+            return [
+                SimilarityResult(
+                    text=item.get("text", ""),
+                    similarity_score=item.get("similarity", 0.0),
+                    rank=item.get("rank", 0),
+                    metadata=item.get("metadata", {}),
+                )
+                for item in similarities
+            ]
         except Exception as e:
-            logger.error(f"Error searching similar embeddings: {e}")
+            logger.exception(f"Error searching similar embeddings: {e}")
             return []
 
     async def store_embedding(self, embedding_data: dict) -> bool:
@@ -900,16 +907,19 @@ class EmbeddingService:
         try:
             # This would typically store to a vector database
             # For now, just log the operation
-            logger.info(f"Storing embedding: {embedding_data.get('content', '')[:50]}...")
+            logger.info(
+                f"Storing embedding: {embedding_data.get('content', '')[:50]}...",
+            )
             return True
         except Exception as e:
-            logger.error(f"Error storing embedding: {e}")
+            logger.exception(f"Error storing embedding: {e}")
             return False
 
     @property
     def weaviate_client(self):
         """Get weaviate client for testing."""
         from app.core.weaviate_client import get_weaviate_client
+
         return get_weaviate_client()
 
 

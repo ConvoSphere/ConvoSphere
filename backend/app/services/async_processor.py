@@ -13,14 +13,14 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
+from app.core.exceptions import ConfigurationError
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
-
-from app.core.exceptions import ConfigurationError
 
 
 class TaskPriority(Enum):
     """Task priority levels."""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
@@ -30,6 +30,7 @@ class TaskPriority(Enum):
 
 class TaskStatus(Enum):
     """Task status values."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -40,6 +41,7 @@ class TaskStatus(Enum):
 
 class TaskType(Enum):
     """Task type definitions."""
+
     MESSAGE_PROCESSING = "message_processing"
     AI_RESPONSE_GENERATION = "ai_response_generation"
     TOOL_EXECUTION = "tool_execution"
@@ -52,16 +54,24 @@ class TaskType(Enum):
 class TaskRequest(BaseModel):
     """Task request with validation."""
 
-    task_id: str = Field(default_factory=lambda: str(uuid4()), description="Unique task ID")
+    task_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="Unique task ID",
+    )
     task_type: TaskType = Field(..., description="Task type")
-    priority: TaskPriority = Field(default=TaskPriority.NORMAL, description="Task priority")
+    priority: TaskPriority = Field(
+        default=TaskPriority.NORMAL, description="Task priority",
+    )
     payload: dict[str, Any] = Field(default_factory=dict, description="Task payload")
     user_id: str | None = Field(None, description="User ID")
     conversation_id: str | None = Field(None, description="Conversation ID")
-    timeout: float = Field(default=300.0, ge=1.0, le=3600.0, description="Timeout in seconds")
+    timeout: float = Field(
+        default=300.0, ge=1.0, le=3600.0, description="Timeout in seconds",
+    )
     retry_count: int = Field(default=0, ge=0, le=5, description="Retry count")
     scheduled_at: datetime | None = Field(None, description="Scheduled execution time")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata",
+    )
 
     @field_validator("task_id")
     @classmethod
@@ -94,9 +104,13 @@ class TaskResult(BaseModel):
     error: str | None = Field(None, description="Error message")
     start_time: datetime | None = Field(None, description="Start time")
     end_time: datetime | None = Field(None, description="End time")
-    execution_time: float | None = Field(None, ge=0, description="Execution time in seconds")
+    execution_time: float | None = Field(
+        None, ge=0, description="Execution time in seconds",
+    )
     retry_count: int = Field(default=0, ge=0, description="Actual retry count")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata",
+    )
 
     model_config = {
         "validate_assignment": True,
@@ -156,15 +170,21 @@ class TaskHandler:
             task_result.status = TaskStatus.COMPLETED
             task_result.result = result
             task_result.end_time = datetime.now()
-            task_result.execution_time = (task_result.end_time - task_result.start_time).total_seconds()
+            task_result.execution_time = (
+                task_result.end_time - task_result.start_time
+            ).total_seconds()
 
-            logger.info(f"Task {task_request.task_id} completed successfully in {task_result.execution_time:.2f}s")
+            logger.info(
+                f"Task {task_request.task_id} completed successfully in {task_result.execution_time:.2f}s",
+            )
 
         except Exception as e:
             task_result.status = TaskStatus.FAILED
             task_result.error = str(e)
             task_result.end_time = datetime.now()
-            task_result.execution_time = (task_result.end_time - task_result.start_time).total_seconds()
+            task_result.execution_time = (
+                task_result.end_time - task_result.start_time
+            ).total_seconds()
 
             logger.error(f"Task {task_request.task_id} failed: {e}")
 
@@ -199,7 +219,9 @@ class PriorityQueue:
         # Add to appropriate queue
         await self.queues[task_request.priority].put(task_request)
 
-        logger.debug(f"Task {task_request.task_id} added to queue with priority {task_request.priority.name}")
+        logger.debug(
+            f"Task {task_request.task_id} added to queue with priority {task_request.priority.name}",
+        )
 
     async def get(self) -> TaskRequest | None:
         """Get next task from highest priority queue."""
@@ -330,7 +352,9 @@ class AsyncProcessor:
         # Get handler
         handler = self.task_handlers.get(task_request.task_type)
         if not handler:
-            logger.error(f"No handler registered for task type: {task_request.task_type}")
+            logger.error(
+                f"No handler registered for task type: {task_request.task_type}",
+            )
             return
 
         # Execute task
@@ -350,8 +374,8 @@ class AsyncProcessor:
             current_avg = self.stats["average_processing_time"]
             total_tasks = self.stats["tasks_processed"]
             self.stats["average_processing_time"] = (
-                (current_avg * (total_tasks - 1) + execution_time) / total_tasks
-            )
+                current_avg * (total_tasks - 1) + execution_time
+            ) / total_tasks
 
             # Update task info
             if task_request.task_id in self.priority_queue.task_info:
@@ -378,7 +402,9 @@ class AsyncProcessor:
         # Add to queue
         await self.priority_queue.put(task_request)
 
-        logger.info(f"Task {task_request.task_id} submitted with priority {task_request.priority.name}")
+        logger.info(
+            f"Task {task_request.task_id} submitted with priority {task_request.priority.name}",
+        )
         return task_request.task_id
 
     async def submit_batch(self, task_requests: list[TaskRequest]) -> list[str]:
@@ -430,7 +456,9 @@ class AsyncProcessor:
                         cleared_count += 1
                         # Mark as cancelled
                         if task_request.task_id in self.priority_queue.task_info:
-                            self.priority_queue.task_info[task_request.task_id].status = TaskStatus.CANCELLED
+                            self.priority_queue.task_info[
+                                task_request.task_id
+                            ].status = TaskStatus.CANCELLED
                 except asyncio.QueueEmpty:
                     break
 

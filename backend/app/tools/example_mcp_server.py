@@ -155,7 +155,9 @@ class ExampleMCPServer:
             return self.create_error_response(1, -32603, "Internal error")
 
     async def handle_initialize(
-        self, data: dict[str, Any], request_id: int,
+        self,
+        data: dict[str, Any],
+        request_id: int,
     ) -> web.Response:
         """Handle initialize request."""
         response = {
@@ -178,7 +180,9 @@ class ExampleMCPServer:
         return web.json_response(response)
 
     async def handle_list_tools(
-        self, data: dict[str, Any], request_id: int,
+        self,
+        data: dict[str, Any],
+        request_id: int,
     ) -> web.Response:
         """Handle tools/list request."""
         tools_data = [
@@ -201,7 +205,9 @@ class ExampleMCPServer:
         return web.json_response(response)
 
     async def handle_call_tool(
-        self, data: dict[str, Any], request_id: int,
+        self,
+        data: dict[str, Any],
+        request_id: int,
     ) -> web.Response:
         """Handle tools/call request."""
         params = data.get("params", {})
@@ -217,7 +223,9 @@ class ExampleMCPServer:
 
         if not tool:
             return self.create_error_response(
-                request_id, -32602, f"Tool '{tool_name}' not found",
+                request_id,
+                -32602,
+                f"Tool '{tool_name}' not found",
             )
 
         # Execute the tool
@@ -237,11 +245,15 @@ class ExampleMCPServer:
         except Exception as e:
             logger.error(f"Error executing tool {tool_name}: {e}")
             return self.create_error_response(
-                request_id, -32603, f"Tool execution failed: {str(e)}",
+                request_id,
+                -32603,
+                f"Tool execution failed: {str(e)}",
             )
 
     async def handle_list_resources(
-        self, data: dict[str, Any], request_id: int,
+        self,
+        data: dict[str, Any],
+        request_id: int,
     ) -> web.Response:
         """Handle resources/list request."""
         response = {
@@ -255,7 +267,9 @@ class ExampleMCPServer:
         return web.json_response(response)
 
     async def handle_read_resource(
-        self, data: dict[str, Any], request_id: int,
+        self,
+        data: dict[str, Any],
+        request_id: int,
     ) -> web.Response:
         """Handle resources/read request."""
         params = data.get("params", {})
@@ -270,7 +284,9 @@ class ExampleMCPServer:
 
         if not resource:
             return self.create_error_response(
-                request_id, -32602, f"Resource '{uri}' not found",
+                request_id,
+                -32602,
+                f"Resource '{uri}' not found",
             )
 
         # Return resource content
@@ -331,6 +347,7 @@ class ExampleMCPServer:
             try:
                 # Safe evaluation (in production, use a proper math library)
                 import ast
+
                 result = ast.literal_eval(expression)
                 return f"Result: {result}"
             except Exception as e:
@@ -367,7 +384,10 @@ class ExampleMCPServer:
             raise ValueError(f"Unknown tool: {tool_name}")
 
     def create_error_response(
-        self, request_id: int, code: int, message: str,
+        self,
+        request_id: int,
+        code: int,
+        message: str,
     ) -> web.Response:
         """Create an error response."""
         response = {

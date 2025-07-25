@@ -5,22 +5,9 @@ This module serves as the entry point for the FastAPI application,
 configuring middleware, routes, and application lifecycle events.
 """
 
-import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from .app.api.v1.api import api_router
-from .app.core.config import get_settings
-from .app.core.database import check_db_connection, init_db
-from .app.core.i18n import I18nMiddleware, i18n_manager, t
-from .app.core.redis_client import check_redis_connection, close_redis, init_redis
-from .app.core.weaviate_client import (
-    check_weaviate_connection,
-    close_weaviate,
-    create_schema_if_not_exists,
-    init_weaviate,
-)
-from .app.services.performance_monitor import performance_monitor
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,6 +28,19 @@ from loguru import logger
 # from opentelemetry.sdk.trace import TracerProvider
 # from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from .app.api.v1.api import api_router
+from .app.core.config import get_settings
+from .app.core.database import check_db_connection, init_db
+from .app.core.i18n import I18nMiddleware, i18n_manager, t
+from .app.core.redis_client import close_redis, init_redis
+from .app.core.weaviate_client import (
+    check_weaviate_connection,
+    close_weaviate,
+    create_schema_if_not_exists,
+    init_weaviate,
+)
+from .app.services.performance_monitor import performance_monitor
 
 
 @asynccontextmanager
@@ -84,8 +84,10 @@ async def lifespan(_):
 
     except Exception as exc:  # noqa: BLE001
         logger.error(f"Failed to initialize services: {exc}")
+
         def raise_inner(exc=exc):
             raise RuntimeError("Failed to initialize services: " + str(exc))
+
         raise_inner()
 
     yield
@@ -214,8 +216,8 @@ def create_application() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint with service status."""
-        from app.core.redis_client import get_redis_info, check_redis_connection
-        
+        from app.core.redis_client import check_redis_connection, get_redis_info
+
         # Check Redis status
         try:
             redis_connected = await check_redis_connection()
@@ -224,19 +226,14 @@ def create_application() -> FastAPI:
         except Exception as e:
             redis_status = "error"
             redis_info = {"error": str(e)}
-        
+
         return {
             "status": "healthy",
             "app_name": get_settings().app_name,
             "version": get_settings().app_version,
             "environment": get_settings().environment,
             "timestamp": datetime.now().isoformat(),
-            "services": {
-                "redis": {
-                    "status": redis_status,
-                    "info": redis_info
-                }
-            }
+            "services": {"redis": {"status": redis_status, "info": redis_info}},
         }
 
     # Config endpoint for frontend (must be before API routers)
@@ -251,7 +248,7 @@ def create_application() -> FastAPI:
             "enableDebug": get_settings().debug,
             "wsEndpoints": {
                 "chat": "/api/v1/ws/",
-                "notifications": "/api/v1/ws/notifications"
+                "notifications": "/api/v1/ws/notifications",
             },
             "apiEndpoints": {
                 "auth": "/api/v1/auth",
@@ -261,8 +258,8 @@ def create_application() -> FastAPI:
                 "tools": "/api/v1/tools",
                 "assistants": "/api/v1/assistants",
                 "knowledge": "/api/v1/knowledge",
-                "health": "/api/v1/health"
-            }
+                "health": "/api/v1/health",
+            },
         }
 
     # Add missing endpoints for frontend compatibility (must be before API routers)
@@ -270,12 +267,12 @@ def create_application() -> FastAPI:
     async def get_assistants_legacy():
         """Legacy assistants endpoint."""
         return {"message": "Use /api/v1/assistants instead"}
-    
+
     @app.get("/api/knowledge/documents")
     async def get_knowledge_documents_legacy():
         """Legacy knowledge documents endpoint."""
         return {"message": "Use /api/v1/knowledge/documents instead"}
-    
+
     @app.get("/api/ai/models")
     async def get_ai_models_legacy():
         """Legacy AI models endpoint."""
@@ -283,7 +280,7 @@ def create_application() -> FastAPI:
 
     # Add routes
     app.include_router(api_router, prefix="/api/v1")
-    
+
     # Add legacy routes for frontend compatibility
     app.include_router(api_router, prefix="/api")
 

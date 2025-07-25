@@ -5,8 +5,8 @@ This module provides configuration endpoints that the frontend needs
 to initialize properly.
 """
 
-from fastapi import APIRouter
 from app.core.config import get_settings
+from fastapi import APIRouter
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def get_config():
         "enableDebug": settings.debug,
         "wsEndpoints": {
             "chat": "/api/v1/ws/",
-            "notifications": "/api/v1/ws/notifications"
+            "notifications": "/api/v1/ws/notifications",
         },
         "apiEndpoints": {
             "auth": "/api/v1/auth",
@@ -33,6 +33,6 @@ async def get_config():
             "tools": "/api/v1/tools",
             "assistants": "/api/v1/assistants",
             "knowledge": "/api/v1/knowledge",
-            "health": "/api/v1/health"
-        }
-    } 
+            "health": "/api/v1/health",
+        },
+    }

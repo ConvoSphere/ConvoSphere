@@ -81,7 +81,9 @@ class AuditLog(Base):
     # Event information
     event_type = Column(SQLEnum(AuditEventType), nullable=False, index=True)
     severity = Column(
-        SQLEnum(AuditSeverity), default=AuditSeverity.INFO, nullable=False,
+        SQLEnum(AuditSeverity),
+        default=AuditSeverity.INFO,
+        nullable=False,
     )
 
     # User and session information
@@ -94,7 +96,8 @@ class AuditLog(Base):
 
     # Resource information
     resource_type = Column(
-        String(100), nullable=True,
+        String(100),
+        nullable=True,
     )  # e.g., "assistant", "conversation"
     resource_id = Column(String(255), nullable=True)
 

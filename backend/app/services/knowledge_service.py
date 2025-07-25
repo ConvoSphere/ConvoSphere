@@ -11,22 +11,30 @@ import os
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional, Dict
-
-from sqlalchemy import and_, or_, func
-from sqlalchemy.orm import Session
+from typing import Any
 
 from app.core.config import get_settings
-from app.models.knowledge import Document, DocumentChunk, SearchQuery, Tag, DocumentProcessingJob, DocumentStatus, DocumentType
+from app.core.database import get_db
+from app.models.knowledge import (
+    Document,
+    DocumentChunk,
+    DocumentProcessingJob,
+    DocumentStatus,
+    DocumentType,
+    SearchQuery,
+    Tag,
+)
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from .ai_service import AIService
 from .document_processor import document_processor
 from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
-from app.core.database import get_db
 
 try:
     import pypdf
+
     PYPDF_AVAILABLE = True
 except ImportError:
     PYPDF_AVAILABLE = False
@@ -36,27 +44,27 @@ logger = logging.getLogger(__name__)
 
 class TagService:
     """Service for managing document tags."""
-    
+
     def __init__(self, db: Session):
         self.db = db
-    
+
     def normalize_tag_name(self, tag_name: str) -> str:
         """Normalize tag name (lowercase, trim, etc.)."""
         return tag_name.lower().strip()
-    
+
     def get_or_create_tag(self, tag_name: str) -> Tag:
         """Get existing tag or create new one."""
         normalized_name = self.normalize_tag_name(tag_name)
-        
+
         tag = self.db.query(Tag).filter(Tag.name == normalized_name).first()
         if not tag:
             tag = Tag(name=normalized_name)
             self.db.add(tag)
             self.db.flush()  # Get the ID
-        
+
         return tag
-    
-    def get_tags(self, user_id: str, limit: int = 100) -> List[Tag]:
+
+    def get_tags(self, user_id: str, limit: int = 100) -> list[Tag]:
         """Get all tags for a user's documents."""
         return (
             self.db.query(Tag)
@@ -66,24 +74,21 @@ class TagService:
             .limit(limit)
             .all()
         )
-    
-    def search_tags(self, query: str, user_id: str, limit: int = 20) -> List[Tag]:
+
+    def search_tags(self, query: str, user_id: str, limit: int = 20) -> list[Tag]:
         """Search tags by name."""
         normalized_query = self.normalize_tag_name(query)
         return (
             self.db.query(Tag)
             .join(Document.tags)
             .filter(
-                and_(
-                    Document.user_id == user_id,
-                    Tag.name.contains(normalized_query)
-                )
+                and_(Document.user_id == user_id, Tag.name.contains(normalized_query)),
             )
             .order_by(Tag.usage_count.desc(), Tag.name)
             .limit(limit)
             .all()
         )
-    
+
     def delete_unused_tags(self) -> int:
         """Delete tags that are not used by any documents."""
         unused_tags = self.db.query(Tag).filter(Tag.usage_count == 0).all()
@@ -96,81 +101,85 @@ class TagService:
 
 class MetadataExtractor:
     """Service for extracting metadata from documents."""
-    
+
     @staticmethod
-    def extract_pdf_metadata(file_path: str) -> Dict[str, Any]:
+    def extract_pdf_metadata(file_path: str) -> dict[str, Any]:
         """Extract metadata from PDF files."""
         try:
             if not PYPDF_AVAILABLE:
                 logger.warning("pypdf not available for PDF metadata extraction")
                 return {}
-                
+
             metadata = {}
-            
-            with open(file_path, 'rb') as file:
+
+            with open(file_path, "rb") as file:
                 pdf_reader = pypdf.PdfReader(file)
-                
+
                 # Extract document info
                 if pdf_reader.metadata:
                     info = pdf_reader.metadata
-                    metadata['author'] = info.get('/Author')
-                    metadata['title'] = info.get('/Title')
-                    metadata['subject'] = info.get('/Subject')
-                    metadata['creator'] = info.get('/Creator')
-                    metadata['producer'] = info.get('/Producer')
-                    
+                    metadata["author"] = info.get("/Author")
+                    metadata["title"] = info.get("/Title")
+                    metadata["subject"] = info.get("/Subject")
+                    metadata["creator"] = info.get("/Creator")
+                    metadata["producer"] = info.get("/Producer")
+
                     # Extract creation date
-                    creation_date = info.get('/CreationDate')
+                    creation_date = info.get("/CreationDate")
                     if creation_date:
                         try:
                             # PDF date format: D:YYYYMMDDHHmmSSOHH'mm'
                             year_str = creation_date[2:6]
-                            metadata['year'] = int(year_str)
+                            metadata["year"] = int(year_str)
                         except (ValueError, IndexError):
                             pass
-                
+
                 # Count pages
-                metadata['page_count'] = len(pdf_reader.pages)
-                
+                metadata["page_count"] = len(pdf_reader.pages)
+
             return metadata
         except Exception as e:
             logger.warning(f"Failed to extract PDF metadata: {e}")
             return {}
-    
+
     @staticmethod
-    def extract_word_metadata(file_path: str) -> Dict[str, Any]:
+    def extract_word_metadata(file_path: str) -> dict[str, Any]:
         """Extract metadata from Word documents."""
         try:
             from docx import Document
+
             metadata = {}
-            
+
             doc = Document(file_path)
-            
+
             # Extract core properties
             core_props = doc.core_properties
             if core_props.author:
-                metadata['author'] = core_props.author
+                metadata["author"] = core_props.author
             if core_props.title:
-                metadata['title'] = core_props.title
+                metadata["title"] = core_props.title
             if core_props.subject:
-                metadata['subject'] = core_props.subject
+                metadata["subject"] = core_props.subject
             if core_props.created:
-                metadata['year'] = core_props.created.year
-            
+                metadata["year"] = core_props.created.year
+
             # Count paragraphs as rough word count
-            word_count = sum(len(paragraph.text.split()) for paragraph in doc.paragraphs)
-            metadata['word_count'] = word_count
-            
+            word_count = sum(
+                len(paragraph.text.split()) for paragraph in doc.paragraphs
+            )
+            metadata["word_count"] = word_count
+
             return metadata
         except Exception as e:
             logger.warning(f"Failed to extract Word metadata: {e}")
             return {}
-    
+
     @staticmethod
-    def detect_language(text: str) -> Optional[str]:
+    def detect_language(text: str) -> str | None:
         """Detect language of text content."""
         try:
             from langdetect import detect
+
             return detect(text)
         except Exception as e:
             logger.warning(f"Failed to detect language: {e}")
@@ -236,7 +245,7 @@ class KnowledgeService:
                 file_size=len(file_content),
                 mime_type=mime_type,
                 document_type=document_type,
-                **extracted_metadata
+                **extracted_metadata,
             )
 
             self.db.add(document)
@@ -252,59 +261,63 @@ class KnowledgeService:
             return document
 
         except Exception as e:
-            logger.error(f"Error creating document: {e}")
+            logger.exception(f"Error creating document: {e}")
             self.db.rollback()
             raise
 
     def _determine_document_type(self, file_type: str, mime_type: str) -> str:
         """Determine document type based on file extension and MIME type."""
         type_mapping = {
-            'pdf': DocumentType.PDF,
-            'doc': DocumentType.DOCUMENT,
-            'docx': DocumentType.DOCUMENT,
-            'txt': DocumentType.TEXT,
-            'md': DocumentType.TEXT,
-            'xlsx': DocumentType.SPREADSHEET,
-            'xls': DocumentType.SPREADSHEET,
-            'csv': DocumentType.SPREADSHEET,
-            'pptx': DocumentType.PRESENTATION,
-            'ppt': DocumentType.PRESENTATION,
-            'jpg': DocumentType.IMAGE,
-            'jpeg': DocumentType.IMAGE,
-            'png': DocumentType.IMAGE,
-            'mp3': DocumentType.AUDIO,
-            'wav': DocumentType.AUDIO,
-            'mp4': DocumentType.VIDEO,
-            'py': DocumentType.CODE,
-            'js': DocumentType.CODE,
-            'java': DocumentType.CODE,
+            "pdf": DocumentType.PDF,
+            "doc": DocumentType.DOCUMENT,
+            "docx": DocumentType.DOCUMENT,
+            "txt": DocumentType.TEXT,
+            "md": DocumentType.TEXT,
+            "xlsx": DocumentType.SPREADSHEET,
+            "xls": DocumentType.SPREADSHEET,
+            "csv": DocumentType.SPREADSHEET,
+            "pptx": DocumentType.PRESENTATION,
+            "ppt": DocumentType.PRESENTATION,
+            "jpg": DocumentType.IMAGE,
+            "jpeg": DocumentType.IMAGE,
+            "png": DocumentType.IMAGE,
+            "mp3": DocumentType.AUDIO,
+            "wav": DocumentType.AUDIO,
+            "mp4": DocumentType.VIDEO,
+            "py": DocumentType.CODE,
+            "js": DocumentType.CODE,
+            "java": DocumentType.CODE,
         }
-        
+
         return type_mapping.get(file_type, DocumentType.OTHER)
 
-    def _extract_document_metadata(self, file_path: str, file_type: str) -> Dict[str, Any]:
+    def _extract_document_metadata(
+        self, file_path: str, file_type: str,
+    ) -> dict[str, Any]:
         """Extract metadata from document file."""
         metadata = {}
-        
+
         try:
-            if file_type == 'pdf':
+            if file_type == "pdf":
                 metadata.update(self.metadata_extractor.extract_pdf_metadata(file_path))
-            elif file_type in ['doc', 'docx']:
-                metadata.update(self.metadata_extractor.extract_word_metadata(file_path))
-            
+            elif file_type in ["doc", "docx"]:
+                metadata.update(
+                    self.metadata_extractor.extract_word_metadata(file_path),
+                )
+
             # Detect language if we have text content
-            if file_type in ['txt', 'md']:
-                with open(file_path, 'r', encoding='utf-8') as f:
+            if file_type in ["txt", "md"]:
+                with open(file_path, encoding="utf-8") as f:
                     text = f.read()
                     language = self.metadata_extractor.detect_language(text)
                     if language:
-                        metadata['language'] = language
-                        metadata['word_count'] = len(text.split())
-                        metadata['character_count'] = len(text)
-        
+                        metadata["language"] = language
+                        metadata["word_count"] = len(text.split())
+                        metadata["character_count"] = len(text)
+
         except Exception as e:
             logger.warning(f"Failed to extract metadata from {file_path}: {e}")
-        
+
         return metadata
 
     async def process_document(self, document_id: str) -> bool:
@@ -326,7 +339,8 @@ class KnowledgeService:
 
             # Process document using document processor
             result = document_processor.process_document(
-                file_content, document.file_name,
+                file_content,
+                document.file_name,
             )
 
             if not result["success"]:
@@ -381,7 +395,8 @@ class KnowledgeService:
                         "chunk_type": chunk.chunk_type,
                         "user_id": str(document.user_id),
                         "processing_engine": result["metadata"].get(
-                            "processing_engine", "traditional",
+                            "processing_engine",
+                            "traditional",
                         ),
                         "author": document.author,
                         "language": document.language,
@@ -407,14 +422,18 @@ class KnowledgeService:
             self.db.add_all(chunks)
 
             # Update document metadata
-            document.processing_engine = result["metadata"].get("processing_engine", "traditional")
-            document.processing_options = result["metadata"].get("processing_options", {})
-            
+            document.processing_engine = result["metadata"].get(
+                "processing_engine", "traditional",
+            )
+            document.processing_options = result["metadata"].get(
+                "processing_options", {},
+            )
+
             # Update content statistics
             document.page_count = result["metadata"].get("page_count")
             document.word_count = result["metadata"].get("word_count")
             document.character_count = result["metadata"].get("character_count")
-            
+
             # Detect language if not already set
             if not document.language and chunks:
                 sample_text = chunks[0].content[:1000]  # Use first 1000 chars
@@ -431,7 +450,7 @@ class KnowledgeService:
             return True
 
         except Exception as e:
-            logger.error(f"Error processing document {document_id}: {e}")
+            logger.exception(f"Error processing document {document_id}: {e}")
             # Update document status to error
             document = (
                 self.db.query(Document).filter(Document.id == document_id).first()
@@ -452,7 +471,7 @@ class KnowledgeService:
         author: str | None = None,
         year: int | None = None,
         language: str | None = None,
-        tag_names: List[str] | None = None,
+        tag_names: list[str] | None = None,
     ) -> tuple[list[Document], int]:
         """Get documents for a user with advanced filtering."""
         query = self.db.query(Document).filter(Document.user_id == user_id)
@@ -500,8 +519,8 @@ class KnowledgeService:
         source: str | None = None,
         year: int | None = None,
         language: str | None = None,
-        keywords: List[str] | None = None,
-        tags: List[str] | None = None,
+        keywords: list[str] | None = None,
+        tags: list[str] | None = None,
     ) -> Document | None:
         """Update document metadata."""
         document = self.get_document(document_id, user_id)
@@ -559,7 +578,7 @@ class KnowledgeService:
             return True
 
         except Exception as e:
-            logger.error(f"Error deleting document {document_id}: {e}")
+            logger.exception(f"Error deleting document {document_id}: {e}")
             self.db.rollback()
             return False
 
@@ -614,7 +633,7 @@ class KnowledgeService:
             return search_results
 
         except Exception as e:
-            logger.error(f"Error searching documents: {e}")
+            logger.exception(f"Error searching documents: {e}")
             return []
 
     async def search_conversations(
@@ -653,7 +672,7 @@ class KnowledgeService:
             return search_results
 
         except Exception as e:
-            logger.error(f"Error searching conversations: {e}")
+            logger.exception(f"Error searching conversations: {e}")
             return []
 
     def get_search_history(
@@ -661,7 +680,7 @@ class KnowledgeService:
         user_id: str,
         skip: int = 0,
         limit: int = 50,
-    ) -> List[SearchQuery]:
+    ) -> list[SearchQuery]:
         """Get search history for a user."""
         return (
             self.db.query(SearchQuery)
@@ -672,11 +691,11 @@ class KnowledgeService:
             .all()
         )
 
-    def get_tags(self, user_id: str, limit: int = 100) -> List[Tag]:
+    def get_tags(self, user_id: str, limit: int = 100) -> list[Tag]:
         """Get all tags for a user's documents."""
         return self.tag_service.get_tags(user_id, limit)
 
-    def search_tags(self, query: str, user_id: str, limit: int = 20) -> List[Tag]:
+    def search_tags(self, query: str, user_id: str, limit: int = 20) -> list[Tag]:
         """Search tags by name."""
         return self.tag_service.search_tags(query, user_id, limit)
 
@@ -686,7 +705,7 @@ class KnowledgeService:
         user_id: str,
         job_type: str = "process",
         priority: int = 0,
-        processing_options: Dict[str, Any] | None = None,
+        processing_options: dict[str, Any] | None = None,
     ) -> DocumentProcessingJob:
         """Create a new document processing job."""
         job = DocumentProcessingJob(
@@ -696,11 +715,11 @@ class KnowledgeService:
             priority=priority,
             processing_options=processing_options or {},
         )
-        
+
         self.db.add(job)
         self.db.commit()
         self.db.refresh(job)
-        
+
         return job
 
     def get_processing_jobs(
@@ -708,16 +727,23 @@ class KnowledgeService:
         user_id: str,
         status: str | None = None,
         limit: int = 50,
-    ) -> List[DocumentProcessingJob]:
+    ) -> list[DocumentProcessingJob]:
         """Get processing jobs for a user."""
         query = self.db.query(DocumentProcessingJob).filter(
-            DocumentProcessingJob.user_id == user_id
+            DocumentProcessingJob.user_id == user_id,
         )
-        
+
         if status:
             query = query.filter(DocumentProcessingJob.status == status)
-        
-        return query.order_by(DocumentProcessingJob.priority.desc(), DocumentProcessingJob.created_at.desc()).limit(limit).all()
+
+        return (
+            query.order_by(
+                DocumentProcessingJob.priority.desc(),
+                DocumentProcessingJob.created_at.desc(),
+            )
+            .limit(limit)
+            .all()
+        )
 
     def _extract_text_from_file(self, file_path: str, file_type: str) -> str | None:
         """Extract text content from various file types."""
@@ -729,10 +755,11 @@ class KnowledgeService:
             elif file_type == "pdf":
                 # Implement PDF text extraction
                 try:
-                    import io
 
                     if not PYPDF_AVAILABLE:
-                        logger.error("pypdf not installed. Install with: pip install pypdf")
+                        logger.error(
+                            "pypdf not installed. Install with: pip install pypdf",
+                        )
                         return None
 
                     with open(file_path, "rb") as file:
@@ -742,7 +769,7 @@ class KnowledgeService:
                             text += page.extract_text() + "\n"
                         return text.strip()
                 except Exception as e:
-                    logger.error(f"PDF extraction error: {e}")
+                    logger.exception(f"PDF extraction error: {e}")
                     return None
 
             elif file_type in ["doc", "docx"]:
@@ -765,12 +792,12 @@ class KnowledgeService:
 
                     return text.strip()
                 except ImportError:
-                    logger.error(
+                    logger.exception(
                         "python-docx not installed. Install with: pip install python-docx",
                     )
                     return None
                 except Exception as e:
-                    logger.error(f"Word document extraction error: {e}")
+                    logger.exception(f"Word document extraction error: {e}")
                     return None
 
             else:
@@ -778,7 +805,7 @@ class KnowledgeService:
                 return None
 
         except Exception as e:
-            logger.error(f"Error extracting text from {file_path}: {e}")
+            logger.exception(f"Error extracting text from {file_path}: {e}")
             return None
 
     def _create_chunks(
@@ -836,5 +863,5 @@ class KnowledgeService:
             # Use AI service to generate embedding
             return self.ai_service.generate_embedding(text)
         except Exception as e:
-            logger.error(f"Error generating embedding: {e}")
+            logger.exception(f"Error generating embedding: {e}")
             return None

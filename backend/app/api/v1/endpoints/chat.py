@@ -8,6 +8,10 @@ and REST endpoints for chat management.
 import json
 from typing import Any
 
+from app.core.database import get_db
+from app.core.security import get_current_user_id
+from app.services.ai_service import AIResponse, ai_service
+from app.services.conversation_service import ConversationService
 from fastapi import (
     APIRouter,
     Depends,
@@ -20,11 +24,6 @@ from fastapi import (
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.services.ai_service import AIResponse, ai_service
-from app.services.conversation_service import ConversationService
 
 router = APIRouter()
 
@@ -159,7 +158,11 @@ async def websocket_endpoint(
             data = await websocket.receive_text()
             message_data = json.loads(data)
             await process_websocket_message(
-                websocket, conversation_id, message_data, db, user_id,
+                websocket,
+                conversation_id,
+                message_data,
+                db,
+                user_id,
             )
     except WebSocketDisconnect:
         manager.disconnect(websocket, conversation_id)
@@ -246,7 +249,9 @@ async def process_websocket_message(
                         "content": assistant_message.content,
                         "role": assistant_message.role,
                         "message_type": getattr(
-                            assistant_message, "message_type", "text",
+                            assistant_message,
+                            "message_type",
+                            "text",
                         ),
                         "timestamp": assistant_message.created_at.isoformat()
                         if hasattr(assistant_message, "created_at")
@@ -343,7 +348,8 @@ async def create_conversation(
 
 
 @router.get(
-    "/conversations/{conversation_id}/messages", response_model=list[MessageResponse],
+    "/conversations/{conversation_id}/messages",
+    response_model=list[MessageResponse],
 )
 async def get_conversation_messages(
     conversation_id: str,
@@ -386,7 +392,8 @@ async def get_conversation_messages(
 
 
 @router.post(
-    "/conversations/{conversation_id}/messages", response_model=MessageResponse,
+    "/conversations/{conversation_id}/messages",
+    response_model=MessageResponse,
 )
 async def send_message(
     conversation_id: str,

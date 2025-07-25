@@ -8,7 +8,7 @@ from app.core.redis_client import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_redis_connection():
     """Test Redis connection status."""
     # This test requires Redis to be running
@@ -20,7 +20,7 @@ async def test_redis_connection():
         pytest.skip("Redis not available")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_redis_info():
     """Test Redis info retrieval."""
     try:
@@ -31,7 +31,7 @@ async def test_redis_info():
         pytest.skip("Redis not available")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_cache_operations():
     """Test basic cache operations."""
     try:

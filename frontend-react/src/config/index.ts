@@ -1,13 +1,13 @@
 // Get API URL from environment variable or use default
-const apiUrl = import.meta.env.VITE_API_URL || "/api";
-const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000";
+const apiUrl = process.env.VITE_API_URL || import.meta?.env?.VITE_API_URL || "/api";
+const wsUrl = process.env.VITE_WS_URL || import.meta?.env?.VITE_WS_URL || "ws://localhost:8000";
 
 export const config = {
   apiUrl,
   wsUrl,
-  isDevelopment: import.meta.env.DEV,
-  isProduction: import.meta.env.PROD,
-  enableDebug: import.meta.env.VITE_ENABLE_DEBUG === 'true',
+  isDevelopment: process.env.NODE_ENV === 'development' || import.meta?.env?.DEV,
+  isProduction: process.env.NODE_ENV === 'production' || import.meta?.env?.PROD,
+  enableDebug: process.env.VITE_ENABLE_DEBUG === 'true' || import.meta?.env?.VITE_ENABLE_DEBUG === 'true',
   wsEndpoints: {
     chat: "/api/v1/ws/",
     notifications: "/api/v1/ws/notifications"

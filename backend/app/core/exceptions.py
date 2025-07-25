@@ -166,7 +166,9 @@ class ToolError(ChatError):
 class RateLimitError(ChatError):
     """Exception for rate limiting errors."""
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
+    def __init__(
+        self, message: str = "Rate limit exceeded", retry_after: int | None = None,
+    ):
         details = {}
         if retry_after:
             details["retry_after"] = retry_after

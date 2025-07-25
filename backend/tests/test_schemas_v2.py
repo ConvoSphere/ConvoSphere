@@ -12,10 +12,8 @@ import pytest
 from app.models.conversation import MessageRole, MessageType
 from app.schemas.agent import (
     AgentConfig,
-    ToolCall,
-)
-from app.schemas.agent import (
     AgentResponseSchema,
+    ToolCall,
 )
 from app.schemas.conversation import (
     ConversationCreate,

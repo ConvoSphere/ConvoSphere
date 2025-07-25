@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_full_auth_flow(async_client):
     """Test complete authentication flow."""
     try:
@@ -41,7 +41,7 @@ async def test_full_auth_flow(async_client):
         pytest.skip(f"Auth flow test skipped: {e}")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_health_check_integration(async_client):
     """Test health check integration."""
     # Test basic health check
@@ -64,7 +64,7 @@ async def test_health_check_integration(async_client):
         pytest.skip(f"Detailed health check skipped: {e}")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_rate_limiting_integration(async_client):
     """Test rate limiting across multiple endpoints."""
     try:
@@ -82,7 +82,7 @@ async def test_rate_limiting_integration(async_client):
         pytest.skip(f"Rate limiting test skipped: {e}")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_error_handling_integration(async_client):
     """Test error handling across the application."""
     # Test non-existent endpoint
@@ -99,12 +99,13 @@ async def test_error_handling_integration(async_client):
 
     # Test malformed authentication header
     response = async_client.get(
-        "/api/v1/users/me", headers={"Authorization": "InvalidToken"},
+        "/api/v1/users/me",
+        headers={"Authorization": "InvalidToken"},
     )
     assert response.status_code in [401, 403, 400, 404]  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_cors_integration(async_client):
     """Test CORS headers are present."""
     response = async_client.get("/health")

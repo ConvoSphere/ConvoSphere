@@ -8,9 +8,6 @@ into a unified interface for easy use throughout the application.
 from datetime import datetime, timedelta
 from typing import Any
 
-from loguru import logger
-from pydantic import BaseModel, Field
-
 from app.core.exceptions import ConfigurationError
 from app.services.async_processor import (
     TaskPriority,
@@ -33,17 +30,29 @@ from app.services.performance_monitor import (
     database_optimizer,
     performance_monitor,
 )
+from loguru import logger
+from pydantic import BaseModel, Field
 
 
 class PerformanceConfig(BaseModel):
     """Performance configuration with validation."""
 
     enable_caching: bool = Field(default=True, description="Enable caching")
-    enable_async_processing: bool = Field(default=True, description="Enable async processing")
-    enable_monitoring: bool = Field(default=True, description="Enable performance monitoring")
-    cache_ttl: int = Field(default=3600, ge=60, le=86400, description="Default cache TTL")
-    max_async_workers: int = Field(default=10, ge=1, le=50, description="Maximum async workers")
-    monitoring_interval: int = Field(default=60, ge=10, le=300, description="Monitoring interval in seconds")
+    enable_async_processing: bool = Field(
+        default=True, description="Enable async processing",
+    )
+    enable_monitoring: bool = Field(
+        default=True, description="Enable performance monitoring",
+    )
+    cache_ttl: int = Field(
+        default=3600, ge=60, le=86400, description="Default cache TTL",
+    )
+    max_async_workers: int = Field(
+        default=10, ge=1, le=50, description="Maximum async workers",
+    )
+    monitoring_interval: int = Field(
+        default=60, ge=10, le=300, description="Monitoring interval in seconds",
+    )
 
     model_config = {
         "validate_assignment": True,
@@ -128,7 +137,9 @@ class PerformanceIntegration:
 
     # Cache Integration Methods
 
-    async def get_cached_conversation(self, conversation_id: str) -> dict[str, Any] | None:
+    async def get_cached_conversation(
+        self, conversation_id: str,
+    ) -> dict[str, Any] | None:
         """Get cached conversation data."""
         if not self.config.enable_caching:
             return None
@@ -151,7 +162,9 @@ class PerformanceIntegration:
 
         try:
             success = await conversation_cache.set_conversation(
-                conversation_id, data, ttl or self.config.cache_ttl,
+                conversation_id,
+                data,
+                ttl or self.config.cache_ttl,
             )
 
             # Record cache metric
@@ -215,7 +228,11 @@ class PerformanceIntegration:
 
         try:
             success = await ai_response_cache.set_response(
-                user_id, message, response, context, ttl or self.config.cache_ttl,
+                user_id,
+                message,
+                response,
+                context,
+                ttl or self.config.cache_ttl,
             )
 
             # Record cache metric
@@ -277,7 +294,10 @@ class PerformanceIntegration:
 
         try:
             success = await tool_result_cache.set_result(
-                tool_name, arguments, result, ttl or self.config.cache_ttl,
+                tool_name,
+                arguments,
+                result,
+                ttl or self.config.cache_ttl,
             )
 
             # Record cache metric
@@ -472,7 +492,9 @@ class PerformanceIntegration:
 
     # Analytics and Reporting Methods
 
-    def get_performance_summary(self, time_range: timedelta = timedelta(hours=1)) -> dict[str, Any]:
+    def get_performance_summary(
+        self, time_range: timedelta = timedelta(hours=1),
+    ) -> dict[str, Any]:
         """Get comprehensive performance summary."""
         if not self.config.enable_monitoring:
             return {"error": "Performance monitoring is disabled"}
@@ -565,7 +587,9 @@ class PerformanceIntegration:
             try:
                 cache_stats = cache_service.get_stats()
                 health_status["services"]["cache"] = {
-                    "status": "healthy" if self.services_status["cache"] else "unhealthy",
+                    "status": "healthy"
+                    if self.services_status["cache"]
+                    else "unhealthy",
                     "hit_rate": cache_stats.get("hit_rate", 0),
                     "total_requests": cache_stats.get("total_requests", 0),
                 }
@@ -580,7 +604,9 @@ class PerformanceIntegration:
             try:
                 async_stats = async_processor.get_stats()
                 health_status["services"]["async_processor"] = {
-                    "status": "healthy" if self.services_status["async_processor"] else "unhealthy",
+                    "status": "healthy"
+                    if self.services_status["async_processor"]
+                    else "unhealthy",
                     "active_workers": async_stats.get("active_workers", 0),
                     "total_workers": async_stats.get("total_workers", 0),
                     "tasks_processed": async_stats.get("tasks_processed", 0),
@@ -596,7 +622,9 @@ class PerformanceIntegration:
             try:
                 monitor_stats = performance_monitor.get_stats()
                 health_status["services"]["monitoring"] = {
-                    "status": "healthy" if self.services_status["monitoring"] else "unhealthy",
+                    "status": "healthy"
+                    if self.services_status["monitoring"]
+                    else "unhealthy",
                     "total_metrics": monitor_stats.get("total_metrics", 0),
                     "active_alerts": monitor_stats.get("active_alerts", 0),
                 }
@@ -609,9 +637,15 @@ class PerformanceIntegration:
         # Determine overall status
         if not self.initialized:
             health_status["overall"] = "uninitialized"
-        elif any(service.get("status") == "error" for service in health_status["services"].values()):
+        elif any(
+            service.get("status") == "error"
+            for service in health_status["services"].values()
+        ):
             health_status["overall"] = "unhealthy"
-        elif any(service.get("status") == "unhealthy" for service in health_status["services"].values()):
+        elif any(
+            service.get("status") == "unhealthy"
+            for service in health_status["services"].values()
+        ):
             health_status["overall"] = "degraded"
 
         return health_status

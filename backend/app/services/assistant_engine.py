@@ -12,13 +12,12 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from loguru import logger
-
 from app.core.config import get_settings
 from app.services.ai_service import AIResponse, ai_service
 from app.services.context_manager import context_manager
 from app.services.knowledge_service import knowledge_service
 from app.services.tool_executor import ToolExecution, tool_executor
+from loguru import logger
 
 
 class ProcessingStatus(Enum):

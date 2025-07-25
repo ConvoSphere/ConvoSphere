@@ -118,8 +118,11 @@ class AIService:
             # Configure proxy host if provided
             if get_settings().litellm_proxy_host:
                 import os
+
                 os.environ["LITELLM_PROXY_HOST"] = get_settings().litellm_proxy_host
-                logger.info(f"LiteLLM proxy host configured: {get_settings().litellm_proxy_host}")
+                logger.info(
+                    f"LiteLLM proxy host configured: {get_settings().litellm_proxy_host}",
+                )
 
             logger.info("LiteLLM configured successfully")
         except Exception as e:
@@ -322,7 +325,9 @@ class AIService:
             logger.warning(f"Failed to track cost: {e}")
 
     async def get_embeddings(
-        self, text: str, model: str = "text-embedding-ada-002",
+        self,
+        text: str,
+        model: str = "text-embedding-ada-002",
     ) -> list[float]:
         """
         Generate embeddings for text.
@@ -427,7 +432,11 @@ class AIService:
 
         if not user_message:
             return await self.chat_completion(
-                messages, model, temperature, max_tokens, **kwargs,
+                messages,
+                model,
+                temperature,
+                max_tokens,
+                **kwargs,
             )
 
         # Prepare enhanced messages with context
@@ -445,11 +454,13 @@ class AIService:
                 # Insert system context after the first system message or at the beginning
                 if enhanced_messages and enhanced_messages[0].get("role") == "system":
                     enhanced_messages.insert(
-                        1, {"role": "system", "content": system_context},
+                        1,
+                        {"role": "system", "content": system_context},
                     )
                 else:
                     enhanced_messages.insert(
-                        0, {"role": "system", "content": system_context},
+                        0,
+                        {"role": "system", "content": system_context},
                     )
 
         # Prepare tools if enabled
@@ -566,7 +577,8 @@ class AIService:
         return "\n".join(context_parts)
 
     async def _prepare_tools_for_completion(
-        self, user_message: str,
+        self,
+        user_message: str,
     ) -> list[dict[str, Any]]:
         """
         Prepare available tools for AI completion.
@@ -617,7 +629,9 @@ class AIService:
             return []
 
     async def execute_tool_call(
-        self, tool_call: dict[str, Any], user_id: str,
+        self,
+        tool_call: dict[str, Any],
+        user_id: str,
     ) -> dict[str, Any]:
         """
         Execute a tool call from AI response.
@@ -639,7 +653,9 @@ class AIService:
             # Try to execute as regular tool first
             try:
                 result = await tool_service.execute_tool(
-                    tool_name, user_id, **arguments,
+                    tool_name,
+                    user_id,
+                    **arguments,
                 )
                 return {
                     "success": True,
@@ -667,7 +683,9 @@ class AIService:
             return {"error": str(e)}
 
     async def get_embeddings_batch(
-        self, texts: list[str], model: str = "text-embedding-ada-002",
+        self,
+        texts: list[str],
+        model: str = "text-embedding-ada-002",
     ) -> list[list[float]]:
         """
         Generate embeddings for multiple texts.
@@ -693,32 +711,47 @@ class AIService:
             logger.error(f"Error generating batch embeddings: {e}")
             raise
 
-    async def generate_response(self, messages: list[dict[str, str]], model: str | None = None) -> AIResponse:
+    async def generate_response(
+        self, messages: list[dict[str, str]], model: str | None = None,
+    ) -> AIResponse:
         """Generate AI response from messages."""
         try:
             response = await self.chat_completion(messages, model=model)
             return AIResponse(
-                content=response.get('choices', [{}])[0].get('message', {}).get('content', ''),
-                metadata=response
+                content=response.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", ""),
+                metadata=response,
             )
         except Exception as e:
             logger.error(f"Error generating response: {e}")
             return AIResponse(content="Sorry, I encountered an error.")
 
-    async def generate_response_with_tools(self, messages: list[dict[str, str]], tools: list[dict], model: str | None = None) -> AIResponse:
+    async def generate_response_with_tools(
+        self,
+        messages: list[dict[str, str]],
+        tools: list[dict],
+        model: str | None = None,
+    ) -> AIResponse:
         """Generate AI response with tool calls."""
         try:
             response = await self.chat_completion(messages, tools=tools, model=model)
             return AIResponse(
-                content=response.get('choices', [{}])[0].get('message', {}).get('content', ''),
-                tool_calls=response.get('choices', [{}])[0].get('message', {}).get('tool_calls'),
-                metadata=response
+                content=response.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", ""),
+                tool_calls=response.get("choices", [{}])[0]
+                .get("message", {})
+                .get("tool_calls"),
+                metadata=response,
             )
         except Exception as e:
             logger.error(f"Error generating response with tools: {e}")
             return AIResponse(content="Sorry, I encountered an error.")
 
-    async def embed_text(self, text: str, model: str = "text-embedding-ada-002") -> list[float]:
+    async def embed_text(
+        self, text: str, model: str = "text-embedding-ada-002",
+    ) -> list[float]:
         """Generate embeddings for text."""
         try:
             return await self.get_embeddings(text, model)

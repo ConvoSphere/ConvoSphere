@@ -1,10 +1,6 @@
 """Users endpoints for user management with enterprise features."""
 
 import psutil
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
-from opentelemetry.trace import get_current_span
-from sqlalchemy.orm import Session
-
 from app.core.config import get_settings
 from app.core.database import check_db_connection, get_db, get_db_info
 from app.core.redis_client import check_redis_connection, get_redis_info
@@ -36,6 +32,9 @@ from app.utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from opentelemetry.trace import get_current_span
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -64,7 +63,8 @@ async def list_users(
     role: UserRole | None = Query(None, description="Filter by role"),
     status: UserStatus | None = Query(None, description="Filter by status"),
     auth_provider: AuthProvider | None = Query(
-        None, description="Filter by auth provider",
+        None,
+        description="Filter by auth provider",
     ),
     organization_id: str | None = Query(None, description="Filter by organization"),
     group_id: str | None = Query(None, description="Filter by group"),
@@ -107,7 +107,8 @@ async def get_user(
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         # Check if user can access this user
@@ -116,7 +117,8 @@ async def get_user(
             and user.id != current_user.id
         ):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
             )
 
         return user_service._user_to_response(user)
@@ -224,7 +226,9 @@ async def bulk_update_users(
 
 # User groups management
 @router.post(
-    "/groups", response_model=UserGroupResponse, status_code=status.HTTP_201_CREATED,
+    "/groups",
+    response_model=UserGroupResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_group(
     group_data: UserGroupCreate,
@@ -268,7 +272,8 @@ async def get_group(
 
         if not group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Group not found",
             )
 
         return user_service._group_to_response(group)
@@ -387,7 +392,8 @@ async def get_user_by_email(
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         # Check permissions
@@ -396,7 +402,8 @@ async def get_user_by_email(
             and user.id != current_user.id
         ):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
             )
 
         return user_service._user_to_response(user)
@@ -417,7 +424,8 @@ async def get_user_by_username(
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         # Check permissions
@@ -426,7 +434,8 @@ async def get_user_by_username(
             and user.id != current_user.id
         ):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
             )
 
         return user_service._user_to_response(user)
@@ -448,7 +457,8 @@ async def authenticate_user(
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
             )
 
         return {"message": "Authentication successful", "user_id": str(user.id)}
@@ -461,6 +471,7 @@ async def authenticate_user(
 def is_admin(user: User) -> bool:
     return user.role in {UserRole.ADMIN, UserRole.SUPER_ADMIN}
 
+
 @router.get("/admin/default-language", response_model=str)
 async def get_default_language(
     current_user: User = Depends(get_current_user),
@@ -470,6 +481,7 @@ async def get_default_language(
         raise HTTPException(status_code=403, detail="Admin privileges required")
     settings = get_settings()
     return settings.default_language
+
 
 @router.put("/admin/default-language", response_model=str)
 async def set_default_language(
@@ -483,6 +495,7 @@ async def set_default_language(
     # Dynamisch zur Laufzeit setzen (nur für Demo, persistente Speicherung erfordert weitere Logik)
     settings.default_language = language
     return settings.default_language
+
 
 @router.get("/admin/system-status")
 async def get_system_status(
@@ -528,5 +541,7 @@ async def get_system_status(
         "tracing": {
             "trace_id": trace_id,
         },
-        "status": "ok" if all([db_healthy, redis_healthy, weaviate_healthy]) else "degraded",
+        "status": "ok"
+        if all([db_healthy, redis_healthy, weaviate_healthy])
+        else "degraded",
     }

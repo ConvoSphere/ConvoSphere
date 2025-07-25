@@ -11,8 +11,6 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from loguru import logger
-
 from app.core.exceptions import AIError, ConfigurationError
 from app.core.exceptions import ValidationError as AppValidationError
 from app.schemas.conversation_intelligence import (
@@ -31,7 +29,7 @@ from app.schemas.conversation_intelligence import (
     TopicInfo,
 )
 from app.services.cache_service import cache_service
-from app.services.conversation_service import ConversationService
+from loguru import logger
 
 
 class ConversationIntelligenceService:
@@ -71,14 +69,20 @@ class ConversationIntelligenceService:
             if hasattr(cache_service, "initialize"):
                 await cache_service.initialize()
                 self._cache_enabled = True
-                logger.info("Conversation intelligence service initialized with caching")
+                logger.info(
+                    "Conversation intelligence service initialized with caching",
+                )
             else:
                 self._cache_enabled = False
-                logger.info("Conversation intelligence service initialized without caching")
+                logger.info(
+                    "Conversation intelligence service initialized without caching",
+                )
 
         except Exception as e:
             logger.error(f"Failed to initialize conversation intelligence service: {e}")
-            raise ConfigurationError(f"Conversation intelligence service initialization failed: {str(e)}")
+            raise ConfigurationError(
+                f"Conversation intelligence service initialization failed: {str(e)}",
+            )
 
     async def analyze_conversation(
         self,
@@ -111,7 +115,9 @@ class ConversationIntelligenceService:
             # Get conversation data
             conversation = await self._get_conversation_data(request.conversation_id)
             if not conversation:
-                raise AppValidationError(f"Conversation {request.conversation_id} not found")
+                raise AppValidationError(
+                    f"Conversation {request.conversation_id} not found",
+                )
 
             # Perform analysis
             analysis_results = await self._perform_analysis(request, conversation)
@@ -123,7 +129,8 @@ class ConversationIntelligenceService:
                 **analysis_results,
                 processing_time=time.time() - start_time,
                 models_used=list(self._ai_models.values()),
-                analysis_completed=request.analysis_types or ["summary", "topics", "sentiment", "analytics"],
+                analysis_completed=request.analysis_types
+                or ["summary", "topics", "sentiment", "analytics"],
                 created_at=datetime.now(),
             )
 
@@ -134,7 +141,9 @@ class ConversationIntelligenceService:
             # Update metrics
             self._update_metrics(True, time.time() - start_time, response)
 
-            logger.info(f"Conversation intelligence analysis completed in {response.processing_time:.2f}s")
+            logger.info(
+                f"Conversation intelligence analysis completed in {response.processing_time:.2f}s",
+            )
             return response
 
         except Exception as e:
@@ -150,7 +159,9 @@ class ConversationIntelligenceService:
             # Get conversation data
             conversation = await self._get_conversation_data(request.conversation_id)
             if not conversation:
-                raise AppValidationError(f"Conversation {request.conversation_id} not found")
+                raise AppValidationError(
+                    f"Conversation {request.conversation_id} not found",
+                )
 
             # Generate summary
             summary = await self._generate_summary_content(conversation, request)
@@ -173,7 +184,9 @@ class ConversationIntelligenceService:
             # Get conversation data
             conversation = await self._get_conversation_data(request.conversation_id)
             if not conversation:
-                raise AppValidationError(f"Conversation {request.conversation_id} not found")
+                raise AppValidationError(
+                    f"Conversation {request.conversation_id} not found",
+                )
 
             # Detect topics
             topics = await self._detect_topics_content(conversation, request)
@@ -188,7 +201,9 @@ class ConversationIntelligenceService:
             logger.error(f"Topic detection failed: {e}")
             raise AIError(f"Topic detection failed: {str(e)}")
 
-    async def analyze_sentiment(self, request: SentimentAnalysisRequest) -> SentimentAnalysis:
+    async def analyze_sentiment(
+        self, request: SentimentAnalysisRequest,
+    ) -> SentimentAnalysis:
         """Analyze sentiment."""
         start_time = time.time()
 
@@ -224,7 +239,9 @@ class ConversationIntelligenceService:
                 summary_type=request.summary_type,
                 max_length=request.max_summary_length,
             )
-            results["summary"] = await self._generate_summary_content(conversation, summary_request)
+            results["summary"] = await self._generate_summary_content(
+                conversation, summary_request,
+            )
 
         # Detect topics if requested
         if request.detect_topics:
@@ -233,7 +250,9 @@ class ConversationIntelligenceService:
                 categories=request.topic_categories,
                 min_confidence=request.min_topic_confidence,
             )
-            results["topics"] = await self._detect_topics_content(conversation, topic_request)
+            results["topics"] = await self._detect_topics_content(
+                conversation, topic_request,
+            )
 
         # Analyze sentiment if requested
         if request.analyze_sentiment:
@@ -242,7 +261,8 @@ class ConversationIntelligenceService:
                 include_emotions=request.include_emotion_analysis,
             )
             results["sentiment"] = await self._analyze_sentiment_content(
-                self._get_conversation_text(conversation), sentiment_request,
+                self._get_conversation_text(conversation),
+                sentiment_request,
             )
 
         # Generate analytics if requested
@@ -265,7 +285,9 @@ class ConversationIntelligenceService:
         prompt = self._create_summary_prompt(conversation_text, request)
 
         # Generate summary using AI (simulated for now)
-        summary_text = await self._call_ai_model("summarization", prompt, request.max_length)
+        summary_text = await self._call_ai_model(
+            "summarization", prompt, request.max_length,
+        )
 
         # Extract key elements
         key_points = await self._extract_key_points(conversation_text)
@@ -318,7 +340,7 @@ class ConversationIntelligenceService:
         # Add temporal information
         topics = self._add_temporal_info(topics, conversation)
 
-        return topics[:request.max_topics]
+        return topics[: request.max_topics]
 
     async def _analyze_sentiment_content(
         self,
@@ -362,14 +384,20 @@ class ConversationIntelligenceService:
 
         # Basic metrics
         total_messages = len(messages)
-        total_participants = len({msg.get("user_id") for msg in messages if msg.get("user_id")})
+        total_participants = len(
+            {msg.get("user_id") for msg in messages if msg.get("user_id")},
+        )
         duration_minutes = self._calculate_duration(conversation)
 
         # Message analysis
         avg_message_length = self._calculate_avg_message_length(messages)
-        message_frequency = total_messages / duration_minutes if duration_minutes > 0 else 0.0
+        message_frequency = (
+            total_messages / duration_minutes if duration_minutes > 0 else 0.0
+        )
         response_times = self._calculate_response_times(messages)
-        avg_response_time = sum(response_times) / len(response_times) if response_times else 0.0
+        avg_response_time = (
+            sum(response_times) / len(response_times) if response_times else 0.0
+        )
 
         # Participant analysis
         participant_activity = self._analyze_participant_activity(messages)
@@ -385,7 +413,9 @@ class ConversationIntelligenceService:
             self._get_conversation_text(conversation),
             SentimentAnalysisRequest(conversation_id=request.conversation_id),
         )
-        key_phrases = await self._extract_key_phrases(self._get_conversation_text(conversation))
+        key_phrases = await self._extract_key_phrases(
+            self._get_conversation_text(conversation),
+        )
 
         # Quality metrics
         conversation_quality_score = self._calculate_quality_score(messages)
@@ -420,7 +450,9 @@ class ConversationIntelligenceService:
             lull_periods=lull_periods,
         )
 
-    async def _call_ai_model(self, model_type: str, prompt: str, max_length: int | None = None) -> str:
+    async def _call_ai_model(
+        self, model_type: str, prompt: str, max_length: int | None = None,
+    ) -> str:
         """Call AI model for analysis (simulated implementation)."""
         # This would integrate with existing AI service
         # For now, return simulated responses
@@ -443,7 +475,9 @@ class ConversationIntelligenceService:
             SummaryType.TIMELINE: "Organize information chronologically",
         }
 
-        instruction = summary_type_instructions.get(request.summary_type, "Create a summary")
+        instruction = summary_type_instructions.get(
+            request.summary_type, "Create a summary",
+        )
 
         return f"""
         {instruction} of the following conversation:
@@ -455,10 +489,16 @@ class ConversationIntelligenceService:
         Include key points: {request.include_key_points}
         """
 
-    def _create_topic_detection_prompt(self, text: str, request: TopicDetectionRequest) -> str:
+    def _create_topic_detection_prompt(
+        self, text: str, request: TopicDetectionRequest,
+    ) -> str:
         """Create topic detection prompt."""
-        categories = [cat.value for cat in request.categories] if request.categories else []
-        category_filter = f"Focus on categories: {', '.join(categories)}" if categories else ""
+        categories = (
+            [cat.value for cat in request.categories] if request.categories else []
+        )
+        category_filter = (
+            f"Focus on categories: {', '.join(categories)}" if categories else ""
+        )
 
         return f"""
         Detect topics in the following conversation:
@@ -472,7 +512,9 @@ class ConversationIntelligenceService:
         Include context: {request.include_context}
         """
 
-    def _create_sentiment_prompt(self, text: str, request: SentimentAnalysisRequest) -> str:
+    def _create_sentiment_prompt(
+        self, text: str, request: SentimentAnalysisRequest,
+    ) -> str:
         """Create sentiment analysis prompt."""
         return f"""
         Analyze the sentiment of the following text:
@@ -493,9 +535,21 @@ class ConversationIntelligenceService:
             "id": conversation_id,
             "title": "Sample Conversation",
             "messages": [
-                {"content": "Hello, how can I help you?", "user_id": "user1", "timestamp": datetime.now()},
-                {"content": "I need help with the API", "user_id": "user2", "timestamp": datetime.now()},
-                {"content": "Sure, what specific issue are you facing?", "user_id": "user1", "timestamp": datetime.now()},
+                {
+                    "content": "Hello, how can I help you?",
+                    "user_id": "user1",
+                    "timestamp": datetime.now(),
+                },
+                {
+                    "content": "I need help with the API",
+                    "user_id": "user2",
+                    "timestamp": datetime.now(),
+                },
+                {
+                    "content": "Sure, what specific issue are you facing?",
+                    "user_id": "user1",
+                    "timestamp": datetime.now(),
+                },
             ],
         }
 
@@ -546,14 +600,20 @@ class ConversationIntelligenceService:
         # Simulated questions extraction
         return ["Question 1", "Question 2"]
 
-    def _parse_topics_from_response(self, response: str, request: TopicDetectionRequest) -> list[TopicInfo]:
+    def _parse_topics_from_response(
+        self, response: str, request: TopicDetectionRequest,
+    ) -> list[TopicInfo]:
         """Parse topics from AI response."""
         # Simulated topic parsing
         topics = []
         for i, topic_name in enumerate(["Technical", "Business", "General"]):
             topic = TopicInfo(
                 topic=topic_name,
-                category=TopicCategory.TECHNICAL if i == 0 else TopicCategory.BUSINESS if i == 1 else TopicCategory.GENERAL,
+                category=TopicCategory.TECHNICAL
+                if i == 0
+                else TopicCategory.BUSINESS
+                if i == 1
+                else TopicCategory.GENERAL,
                 confidence=0.8 - i * 0.1,
                 keywords=[f"keyword_{i}_{j}" for j in range(3)],
                 frequency=i + 1,
@@ -579,7 +639,9 @@ class ConversationIntelligenceService:
             "sentiment_changes": [],
         }
 
-    def _add_temporal_info(self, topics: list[TopicInfo], conversation: dict[str, Any]) -> list[TopicInfo]:
+    def _add_temporal_info(
+        self, topics: list[TopicInfo], conversation: dict[str, Any],
+    ) -> list[TopicInfo]:
         """Add temporal information to topics."""
         messages = conversation.get("messages", [])
         if not messages:
@@ -595,9 +657,13 @@ class ConversationIntelligenceService:
                 last_index = max(topic.message_indices)
 
                 if first_index < len(messages):
-                    topic.first_mentioned = messages[first_index].get("timestamp", start_time)
+                    topic.first_mentioned = messages[first_index].get(
+                        "timestamp", start_time,
+                    )
                 if last_index < len(messages):
-                    topic.last_mentioned = messages[last_index].get("timestamp", start_time)
+                    topic.last_mentioned = messages[last_index].get(
+                        "timestamp", start_time,
+                    )
 
         return topics
 
@@ -625,7 +691,7 @@ class ConversationIntelligenceService:
         """Calculate response times between messages."""
         response_times = []
         for i in range(1, len(messages)):
-            prev_time = messages[i-1].get("timestamp", datetime.now())
+            prev_time = messages[i - 1].get("timestamp", datetime.now())
             curr_time = messages[i].get("timestamp", datetime.now())
 
             if isinstance(prev_time, str):
@@ -638,7 +704,9 @@ class ConversationIntelligenceService:
 
         return response_times
 
-    def _analyze_participant_activity(self, messages: list[dict[str, Any]]) -> dict[str, int]:
+    def _analyze_participant_activity(
+        self, messages: list[dict[str, Any]],
+    ) -> dict[str, int]:
         """Analyze participant activity."""
         activity = {}
         for msg in messages:
@@ -646,13 +714,17 @@ class ConversationIntelligenceService:
             activity[user_id] = activity.get(user_id, 0) + 1
         return activity
 
-    async def _analyze_participant_sentiment(self, messages: list[dict[str, Any]]) -> dict[str, SentimentType]:
+    async def _analyze_participant_sentiment(
+        self, messages: list[dict[str, Any]],
+    ) -> dict[str, SentimentType]:
         """Analyze sentiment per participant."""
         # Simulated participant sentiment analysis
         participants = {msg.get("user_id") for msg in messages if msg.get("user_id")}
         return dict.fromkeys(participants, SentimentType.POSITIVE)
 
-    def _calculate_participant_engagement(self, messages: list[dict[str, Any]]) -> dict[str, float]:
+    def _calculate_participant_engagement(
+        self, messages: list[dict[str, Any]],
+    ) -> dict[str, float]:
         """Calculate engagement scores per participant."""
         # Simulated engagement calculation
         participants = {msg.get("user_id") for msg in messages if msg.get("user_id")}
@@ -691,7 +763,6 @@ class ConversationIntelligenceService:
         # Lower response time = higher engagement
         return max(0.0, 1.0 - (avg_response_time / 300.0))  # 5 minutes max
 
-
     def _calculate_clarity_score(self, messages: list[dict[str, Any]]) -> float:
         """Calculate conversation clarity score."""
         if not messages:
@@ -708,8 +779,9 @@ class ConversationIntelligenceService:
         # Lower variance = higher clarity
         return max(0.0, 1.0 - (variance / 10000.0))
 
-
-    def _identify_conversation_phases(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _identify_conversation_phases(
+        self, messages: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Identify conversation phases."""
         # Simulated phase identification
         return [
@@ -717,7 +789,9 @@ class ConversationIntelligenceService:
             {"phase": "discussion", "start": 3, "end": len(messages) - 1},
         ]
 
-    def _find_peak_activity_time(self, messages: list[dict[str, Any]]) -> datetime | None:
+    def _find_peak_activity_time(
+        self, messages: list[dict[str, Any]],
+    ) -> datetime | None:
         """Find peak activity time."""
         if not messages:
             return None
@@ -731,24 +805,30 @@ class ConversationIntelligenceService:
 
         return peak_time
 
-    def _identify_lull_periods(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _identify_lull_periods(
+        self, messages: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Identify periods of low activity."""
         # Simulated lull period identification
         return [
             {"start": datetime.now(), "end": datetime.now(), "duration_minutes": 5.0},
         ]
 
-    def _validate_intelligence_request(self, request: ConversationIntelligenceRequest) -> None:
+    def _validate_intelligence_request(
+        self, request: ConversationIntelligenceRequest,
+    ) -> None:
         """Validate intelligence request."""
         if not request.conversation_id:
             raise AppValidationError("Conversation ID is required")
 
-        if not request.analysis_types and not any([
-            request.generate_summary,
-            request.detect_topics,
-            request.analyze_sentiment,
-            request.generate_analytics,
-        ]):
+        if not request.analysis_types and not any(
+            [
+                request.generate_summary,
+                request.detect_topics,
+                request.analyze_sentiment,
+                request.generate_analytics,
+            ],
+        ):
             raise AppValidationError("At least one analysis type must be requested")
 
     def _create_cache_key(self, request: ConversationIntelligenceRequest) -> str:
@@ -759,14 +839,18 @@ class ConversationIntelligenceService:
         key_data = {
             "conversation_id": request.conversation_id,
             "analysis_types": request.analysis_types,
-            "summary_type": request.summary_type.value if request.summary_type else None,
+            "summary_type": request.summary_type.value
+            if request.summary_type
+            else None,
             "max_summary_length": request.max_summary_length,
             "min_topic_confidence": request.min_topic_confidence,
         }
 
         return hashlib.md5(json.dumps(key_data, sort_keys=True).encode()).hexdigest()
 
-    async def _get_cached_result(self, cache_key: str) -> ConversationIntelligenceResponse | None:
+    async def _get_cached_result(
+        self, cache_key: str,
+    ) -> ConversationIntelligenceResponse | None:
         """Get cached intelligence result."""
         try:
             cached_data = await cache_service.get(
@@ -779,7 +863,9 @@ class ConversationIntelligenceService:
             logger.warning(f"Failed to get cached intelligence result: {e}")
         return None
 
-    async def _cache_result(self, cache_key: str, response: ConversationIntelligenceResponse) -> None:
+    async def _cache_result(
+        self, cache_key: str, response: ConversationIntelligenceResponse,
+    ) -> None:
         """Cache intelligence result."""
         try:
             await cache_service.set(
@@ -804,37 +890,44 @@ class ConversationIntelligenceService:
         if success:
             self.metrics.successful_requests += 1
             self.metrics.avg_processing_time = (
-                (self.metrics.avg_processing_time * (self.metrics.successful_requests - 1) + processing_time) /
-                self.metrics.successful_requests
-            )
+                self.metrics.avg_processing_time
+                * (self.metrics.successful_requests - 1)
+                + processing_time
+            ) / self.metrics.successful_requests
 
             if response:
                 # Update analysis type usage
                 for analysis_type in response.analysis_completed:
-                    self.metrics.analysis_type_usage[analysis_type] = \
+                    self.metrics.analysis_type_usage[analysis_type] = (
                         self.metrics.analysis_type_usage.get(analysis_type, 0) + 1
+                    )
 
                 # Update model usage
                 for model in response.models_used:
-                    self.metrics.model_usage[model] = \
+                    self.metrics.model_usage[model] = (
                         self.metrics.model_usage.get(model, 0) + 1
+                    )
 
                 # Update quality metrics
                 if response.summary:
                     self.metrics.avg_summary_length = (
-                        (self.metrics.avg_summary_length * (self.metrics.successful_requests - 1) + response.summary.word_count) /
-                        self.metrics.successful_requests
-                    )
+                        self.metrics.avg_summary_length
+                        * (self.metrics.successful_requests - 1)
+                        + response.summary.word_count
+                    ) / self.metrics.successful_requests
 
                 if response.topics:
                     self.metrics.avg_topic_count = (
-                        (self.metrics.avg_topic_count * (self.metrics.successful_requests - 1) + len(response.topics)) /
-                        self.metrics.successful_requests
-                    )
+                        self.metrics.avg_topic_count
+                        * (self.metrics.successful_requests - 1)
+                        + len(response.topics)
+                    ) / self.metrics.successful_requests
         else:
             self.metrics.failed_requests += 1
             if error:
-                self.metrics.error_counts[error] = self.metrics.error_counts.get(error, 0) + 1
+                self.metrics.error_counts[error] = (
+                    self.metrics.error_counts.get(error, 0) + 1
+                )
 
     async def get_metrics(self) -> IntelligenceMetrics:
         """Get current intelligence metrics."""

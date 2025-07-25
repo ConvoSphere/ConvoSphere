@@ -57,7 +57,11 @@ class I18nManager:
         """
         # 1. User preference
         user = getattr(request.state, "user", None)
-        if user and hasattr(user, "language") and user.language in self.supported_languages:
+        if (
+            user
+            and hasattr(user, "language")
+            and user.language in self.supported_languages
+        ):
             return user.language
         # 2. Query parameter
         lang_param = request.query_params.get("lang")

@@ -55,7 +55,10 @@ user_group_association = Table(
     Base.metadata,
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
     Column(
-        "group_id", UUID(as_uuid=True), ForeignKey("user_groups.id"), primary_key=True,
+        "group_id",
+        UUID(as_uuid=True),
+        ForeignKey("user_groups.id"),
+        primary_key=True,
     ),
 )
 
@@ -69,13 +72,17 @@ class UserGroup(Base):
     name = Column(String(200), nullable=False, index=True)
     description = Column(Text, nullable=True)
     organization_id = Column(
-        UUID(as_uuid=True), nullable=True, index=True,
+        UUID(as_uuid=True),
+        nullable=True,
+        index=True,
     )  # For multi-tenant support
 
     # Group settings
     is_active = Column(Boolean, default=True, nullable=False)
     is_system = Column(
-        Boolean, default=False, nullable=False,
+        Boolean,
+        default=False,
+        nullable=False,
     )  # System groups cannot be deleted
 
     # Permissions and settings
@@ -88,7 +95,9 @@ class UserGroup(Base):
 
     # Relationships
     users = relationship(
-        "User", secondary=user_group_association, back_populates="groups",
+        "User",
+        secondary=user_group_association,
+        back_populates="groups",
     )
 
     def __repr__(self) -> str:
@@ -111,7 +120,9 @@ class User(Base):
 
     # Enterprise fields
     organization_id = Column(
-        UUID(as_uuid=True), nullable=True, index=True,
+        UUID(as_uuid=True),
+        nullable=True,
+        index=True,
     )  # Multi-tenant support
     department = Column(String(200), nullable=True)
     job_title = Column(String(200), nullable=True)
@@ -119,10 +130,14 @@ class User(Base):
 
     # SSO and external authentication
     auth_provider = Column(
-        SQLEnum(AuthProvider), default=AuthProvider.LOCAL, nullable=False,
+        SQLEnum(AuthProvider),
+        default=AuthProvider.LOCAL,
+        nullable=False,
     )
     external_id = Column(
-        String(255), nullable=True, index=True,
+        String(255),
+        nullable=True,
+        index=True,
     )  # ID from external provider
     sso_attributes = Column(JSON, nullable=True)  # Additional SSO attributes
 
@@ -158,7 +173,9 @@ class User(Base):
 
     # Relationships
     groups = relationship(
-        "UserGroup", secondary=user_group_association, back_populates="users",
+        "UserGroup",
+        secondary=user_group_association,
+        back_populates="users",
     )
     assistants = relationship("Assistant", back_populates="creator")
     conversations = relationship("Conversation", back_populates="user")
@@ -299,7 +316,7 @@ class User(Base):
                     return True
 
         except Exception as e:
-            logger.error(f"Error checking assistant access: {e}")
+            logger.exception(f"Error checking assistant access: {e}")
         finally:
             db.close()
 
@@ -324,7 +341,7 @@ class User(Base):
                         group_id in manager_group_ids for group_id in target_group_ids
                     )
             except Exception as e:
-                logger.error(f"Error checking user management permissions: {e}")
+                logger.exception(f"Error checking user management permissions: {e}")
             finally:
                 db.close()
         return False

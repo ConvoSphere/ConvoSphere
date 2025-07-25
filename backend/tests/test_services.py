@@ -6,7 +6,7 @@ from app.services.tool_service import ToolService
 from app.services.user_service import UserService
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_db():
     """Mock database session for testing."""
     db = Mock()
@@ -34,7 +34,7 @@ def test_tool_service_initialization(mock_db):
     assert service is not None  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_user_service_methods(mock_db):
     """Test UserService methods exist and are callable."""
     service = UserService(mock_db)
@@ -48,7 +48,7 @@ async def test_user_service_methods(mock_db):
     # Note: change_password and other methods may not exist yet
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_assistant_service_methods(mock_db):
     """Test AssistantService methods exist and are callable."""
     service = AssistantService(mock_db)
@@ -61,7 +61,7 @@ async def test_assistant_service_methods(mock_db):
     assert hasattr(service, "deactivate_assistant")  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_tool_service_methods(mock_db):
     """Test ToolService methods exist and are callable."""
     service = ToolService(mock_db)

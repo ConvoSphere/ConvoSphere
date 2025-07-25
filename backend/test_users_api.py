@@ -39,7 +39,6 @@ class UsersAPITester:
 
     def test_create_user(self) -> dict[str, Any]:
         """Test creating a new user."""
-        print("\n=== Testing User Creation ===")
 
         user_data = {
             "email": f"testuser_{uuid.uuid4().hex[:8]}@example.com",
@@ -64,21 +63,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                user = response.json()
-                print(f"✅ User created successfully: {user['email']}")
-                return user
-            print(f"❌ Failed to create user: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error creating user: {e}")
+        except Exception:
             return {}
 
     def test_list_users(self) -> dict[str, Any]:
         """Test listing users with filters."""
-        print("\n=== Testing User Listing ===")
 
         try:
             response = requests.get(
@@ -91,22 +84,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                data = response.json()
-                print(f"✅ Users listed successfully: {data['total']} total users")
-                print(f"   Page {data['page']} of {data['pages']}")
-                return data
-            print(f"❌ Failed to list users: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error listing users: {e}")
+        except Exception:
             return {}
 
     def test_get_user(self, user_id: str) -> dict[str, Any]:
         """Test getting a specific user."""
-        print(f"\n=== Testing Get User {user_id} ===")
 
         try:
             response = requests.get(
@@ -114,21 +100,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                user = response.json()
-                print(f"✅ User retrieved successfully: {user['email']}")
-                return user
-            print(f"❌ Failed to get user: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error getting user: {e}")
+        except Exception:
             return {}
 
     def test_update_user(self, user_id: str) -> dict[str, Any]:
         """Test updating a user."""
-        print(f"\n=== Testing Update User {user_id} ===")
 
         update_data = {
             "display_name": "Updated Test User",
@@ -145,21 +125,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                user = response.json()
-                print(f"✅ User updated successfully: {user['display_name']}")
-                return user
-            print(f"❌ Failed to update user: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error updating user: {e}")
+        except Exception:
             return {}
 
     def test_create_group(self) -> dict[str, Any]:
         """Test creating a user group."""
-        print("\n=== Testing Group Creation ===")
 
         group_data = {
             "name": f"Test Group {uuid.uuid4().hex[:8]}",
@@ -175,21 +149,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                group = response.json()
-                print(f"✅ Group created successfully: {group['name']}")
-                return group
-            print(f"❌ Failed to create group: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error creating group: {e}")
+        except Exception:
             return {}
 
     def test_list_groups(self) -> dict[str, Any]:
         """Test listing user groups."""
-        print("\n=== Testing Group Listing ===")
 
         try:
             response = requests.get(
@@ -197,21 +165,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                groups = response.json()
-                print(f"✅ Groups listed successfully: {len(groups)} groups")
-                return groups
-            print(f"❌ Failed to list groups: {response.text}")
+                return response.json()
             return []
 
-        except Exception as e:
-            print(f"❌ Error listing groups: {e}")
+        except Exception:
             return []
 
     def test_assign_users_to_groups(self, user_ids: list, group_ids: list) -> bool:
         """Test assigning users to groups."""
-        print("\n=== Testing User-Group Assignment ===")
 
         assignment_data = {
             "user_ids": user_ids,
@@ -226,21 +188,16 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                result = response.json()
-                print(f"✅ Users assigned to groups successfully: {result['message']}")
+                response.json()
                 return True
-            print(f"❌ Failed to assign users to groups: {response.text}")
             return False
 
-        except Exception as e:
-            print(f"❌ Error assigning users to groups: {e}")
+        except Exception:
             return False
 
     def test_bulk_update_users(self, user_ids: list) -> bool:
         """Test bulk updating users."""
-        print("\n=== Testing Bulk User Update ===")
 
         bulk_data = {
             "user_ids": user_ids,
@@ -255,21 +212,16 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                result = response.json()
-                print(f"✅ Bulk update successful: {result['message']}")
+                response.json()
                 return True
-            print(f"❌ Failed to bulk update users: {response.text}")
             return False
 
-        except Exception as e:
-            print(f"❌ Error bulk updating users: {e}")
+        except Exception:
             return False
 
     def test_create_sso_user(self) -> dict[str, Any]:
         """Test creating a user via SSO."""
-        print("\n=== Testing SSO User Creation ===")
 
         sso_data = {
             "email": f"sso_user_{uuid.uuid4().hex[:8]}@example.com",
@@ -295,21 +247,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                user = response.json()
-                print(f"✅ SSO user created successfully: {user['email']}")
-                return user
-            print(f"❌ Failed to create SSO user: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error creating SSO user: {e}")
+        except Exception:
             return {}
 
     def test_user_stats(self) -> dict[str, Any]:
         """Test getting user statistics."""
-        print("\n=== Testing User Statistics ===")
 
         try:
             response = requests.get(
@@ -317,24 +263,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                stats = response.json()
-                print("✅ User stats retrieved successfully:")
-                print(f"   Total users: {stats['total_users']}")
-                print(f"   Active users: {stats['active_users']}")
-                print(f"   Verified users: {stats['verified_users']}")
-                return stats
-            print(f"❌ Failed to get user stats: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error getting user stats: {e}")
+        except Exception:
             return {}
 
     def test_user_search(self, email: str) -> dict[str, Any]:
         """Test searching for a user by email."""
-        print("\n=== Testing User Search by Email ===")
 
         try:
             response = requests.get(
@@ -342,21 +279,15 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                user = response.json()
-                print(f"✅ User found by email: {user['email']}")
-                return user
-            print(f"❌ Failed to find user by email: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error searching user by email: {e}")
+        except Exception:
             return {}
 
     def test_authenticate_user(self, email: str, password: str) -> bool:
         """Test user authentication."""
-        print("\n=== Testing User Authentication ===")
 
         auth_data = {
             "email": email,
@@ -370,27 +301,20 @@ class UsersAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                result = response.json()
-                print(f"✅ Authentication successful: {result['message']}")
+                response.json()
                 return True
-            print(f"❌ Authentication failed: {response.text}")
             return False
 
-        except Exception as e:
-            print(f"❌ Error during authentication: {e}")
+        except Exception:
             return False
 
     def run_all_tests(self):
         """Run all tests for the Users API."""
-        print("🚀 Starting Users API Tests")
-        print("=" * 50)
 
         # Test user creation
         user = self.test_create_user()
         if not user:
-            print("❌ Cannot continue without a test user")
             return
 
         user_id = user["id"]
@@ -431,8 +355,6 @@ class UsersAPITester:
         # Test authentication
         self.test_authenticate_user(user["email"], "SecurePass123!")
 
-        print("\n" + "=" * 50)
-        print("✅ Users API Tests Completed")
 
 
 def main():

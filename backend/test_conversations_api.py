@@ -39,7 +39,6 @@ class ConversationsAPITester:
 
     def test_create_conversation(self) -> dict[str, Any]:
         """Test creating a new conversation."""
-        print("\n=== Testing Conversation Creation ===")
 
         conversation_data = {
             "title": f"Test Conversation {uuid.uuid4().hex[:8]}",
@@ -61,21 +60,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                conversation = response.json()
-                print(f"✅ Conversation created successfully: {conversation['title']}")
-                return conversation
-            print(f"❌ Failed to create conversation: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error creating conversation: {e}")
+        except Exception:
             return {}
 
     def test_list_conversations(self) -> dict[str, Any]:
         """Test listing conversations with pagination."""
-        print("\n=== Testing Conversation Listing ===")
 
         try:
             response = requests.get(
@@ -87,24 +80,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                data = response.json()
-                print(
-                    f"✅ Conversations listed successfully: {data['total']} total conversations",
-                )
-                print(f"   Page {data['page']} of {data['pages']}")
-                return data
-            print(f"❌ Failed to list conversations: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error listing conversations: {e}")
+        except Exception:
             return {}
 
     def test_get_conversation(self, conversation_id: str) -> dict[str, Any]:
         """Test getting a specific conversation."""
-        print(f"\n=== Testing Get Conversation {conversation_id} ===")
 
         try:
             response = requests.get(
@@ -112,23 +96,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                conversation = response.json()
-                print(
-                    f"✅ Conversation retrieved successfully: {conversation['title']}",
-                )
-                return conversation
-            print(f"❌ Failed to get conversation: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error getting conversation: {e}")
+        except Exception:
             return {}
 
     def test_update_conversation(self, conversation_id: str) -> dict[str, Any]:
         """Test updating a conversation."""
-        print(f"\n=== Testing Update Conversation {conversation_id} ===")
 
         update_data = {
             "title": "Updated Test Conversation",
@@ -148,21 +124,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                conversation = response.json()
-                print(f"✅ Conversation updated successfully: {conversation['title']}")
-                return conversation
-            print(f"❌ Failed to update conversation: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error updating conversation: {e}")
+        except Exception:
             return {}
 
     def test_add_message(self, conversation_id: str) -> dict[str, Any]:
         """Test adding a message to a conversation."""
-        print(f"\n=== Testing Add Message to Conversation {conversation_id} ===")
 
         message_data = {
             "content": "Hello, this is a test message from the API!",
@@ -181,23 +151,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                message = response.json()
-                print(f"✅ Message added successfully: {message['content'][:50]}...")
-                return message
-            print(f"❌ Failed to add message: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error adding message: {e}")
+        except Exception:
             return {}
 
     def test_add_assistant_message(self, conversation_id: str) -> dict[str, Any]:
         """Test adding an assistant message to a conversation."""
-        print(
-            f"\n=== Testing Add Assistant Message to Conversation {conversation_id} ===",
-        )
 
         message_data = {
             "content": "Hello! I'm an AI assistant. How can I help you today?",
@@ -218,23 +180,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                message = response.json()
-                print(
-                    f"✅ Assistant message added successfully: {message['content'][:50]}...",
-                )
-                return message
-            print(f"❌ Failed to add assistant message: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error adding assistant message: {e}")
+        except Exception:
             return {}
 
     def test_add_tool_message(self, conversation_id: str) -> dict[str, Any]:
         """Test adding a tool message to a conversation."""
-        print(f"\n=== Testing Add Tool Message to Conversation {conversation_id} ===")
 
         message_data = {
             "content": "Tool execution completed successfully",
@@ -256,21 +210,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 201:
-                message = response.json()
-                print(f"✅ Tool message added successfully: {message['tool_name']}")
-                return message
-            print(f"❌ Failed to add tool message: {response.text}")
+                return response.json()
             return {}
 
-        except Exception as e:
-            print(f"❌ Error adding tool message: {e}")
+        except Exception:
             return {}
 
     def test_list_messages(self, conversation_id: str) -> dict[str, Any]:
         """Test listing messages in a conversation."""
-        print(f"\n=== Testing List Messages for Conversation {conversation_id} ===")
 
         try:
             response = requests.get(
@@ -278,21 +226,15 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                messages = response.json()
-                print(f"✅ Messages listed successfully: {len(messages)} messages")
-                return messages
-            print(f"❌ Failed to list messages: {response.text}")
+                return response.json()
             return []
 
-        except Exception as e:
-            print(f"❌ Error listing messages: {e}")
+        except Exception:
             return []
 
     def test_archive_conversation(self, conversation_id: str) -> bool:
         """Test archiving a conversation."""
-        print(f"\n=== Testing Archive Conversation {conversation_id} ===")
 
         try:
             response = requests.post(
@@ -300,21 +242,16 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
             if response.status_code == 200:
-                result = response.json()
-                print(f"✅ Conversation archived successfully: {result['message']}")
+                response.json()
                 return True
-            print(f"❌ Failed to archive conversation: {response.text}")
             return False
 
-        except Exception as e:
-            print(f"❌ Error archiving conversation: {e}")
+        except Exception:
             return False
 
     def test_delete_conversation(self, conversation_id: str) -> bool:
         """Test deleting a conversation."""
-        print(f"\n=== Testing Delete Conversation {conversation_id} ===")
 
         try:
             response = requests.delete(
@@ -322,26 +259,17 @@ class ConversationsAPITester:
                 headers=self.get_headers(),
             )
 
-            print(f"Status Code: {response.status_code}")
-            if response.status_code == 204:
-                print("✅ Conversation deleted successfully")
-                return True
-            print(f"❌ Failed to delete conversation: {response.text}")
-            return False
+            return response.status_code == 204
 
-        except Exception as e:
-            print(f"❌ Error deleting conversation: {e}")
+        except Exception:
             return False
 
     def run_all_tests(self):
         """Run all tests for the Conversations API."""
-        print("🚀 Starting Conversations API Tests")
-        print("=" * 50)
 
         # Test conversation creation
         conversation = self.test_create_conversation()
         if not conversation:
-            print("❌ Cannot continue without a test conversation")
             return
 
         conversation_id = conversation["id"]
@@ -356,9 +284,9 @@ class ConversationsAPITester:
         self.test_update_conversation(conversation_id)
 
         # Test adding messages
-        user_message = self.test_add_message(conversation_id)
-        assistant_message = self.test_add_assistant_message(conversation_id)
-        tool_message = self.test_add_tool_message(conversation_id)
+        self.test_add_message(conversation_id)
+        self.test_add_assistant_message(conversation_id)
+        self.test_add_tool_message(conversation_id)
 
         # Test listing messages
         self.test_list_messages(conversation_id)
@@ -372,14 +300,6 @@ class ConversationsAPITester:
         # Test deleting conversation
         self.test_delete_conversation(conversation_id)
 
-        print("\n" + "=" * 50)
-        print("✅ Conversations API Tests Completed")
-        print("   Created: 1 conversation")
-        print(
-            f"   Added: {len([m for m in [user_message, assistant_message, tool_message] if m])} messages",
-        )
-        print("   Archived: 1 conversation")
-        print("   Deleted: 1 conversation")
 
 
 def main():

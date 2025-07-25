@@ -37,7 +37,11 @@ class HTTPRequestTool(BaseTool):
     }
 
     async def execute(
-        self, url: str, method: str = "GET", headers: dict = None, data: dict = None,
+        self,
+        url: str,
+        method: str = "GET",
+        headers: dict = None,
+        data: dict = None,
     ) -> dict[str, Any]:
         """Make an HTTP request."""
         try:

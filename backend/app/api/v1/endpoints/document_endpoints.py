@@ -2,24 +2,21 @@
 Document-related API endpoints (upload, download, get, update, delete, process).
 """
 
-import os
-from pathlib import Path
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
 from app.schemas.knowledge import (
-    DocumentResponse,
     DocumentList,
+    DocumentResponse,
     DocumentUpdate,
     ProcessingOptions,
 )
-from app.services.docling_processor import docling_processor
 from app.services.knowledge_service import KnowledgeService
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from sqlalchemy.orm import Session
 
 router = APIRouter()
+
 
 # Upload document
 @router.post("/documents", response_model=DocumentResponse)
@@ -35,8 +32,9 @@ async def upload_document(
     """Upload a new document."""
     service = KnowledgeService(db)
     return await service.upload_document(
-        file, title, description, tags, processing_options, current_user
+        file, title, description, tags, processing_options, current_user,
     )
+
 
 # Get documents
 @router.get("/documents", response_model=DocumentList)
@@ -55,8 +53,17 @@ async def get_documents(
     """Get documents with filtering."""
     service = KnowledgeService(db)
     return await service.get_documents(
-        current_user, skip, limit, status, document_type, author, year, language, tag_names
+        current_user,
+        skip,
+        limit,
+        status,
+        document_type,
+        author,
+        year,
+        language,
+        tag_names,
     )
+
 
 # Get document by ID
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
@@ -68,6 +75,7 @@ async def get_document(
     """Get a specific document by ID."""
     service = KnowledgeService(db)
     return await service.get_document(document_id, current_user)
+
 
 # Update document
 @router.put("/documents/{document_id}", response_model=DocumentResponse)
@@ -81,6 +89,7 @@ async def update_document(
     service = KnowledgeService(db)
     return await service.update_document(document_id, document_update, current_user)
 
+
 # Delete document
 @router.delete("/documents/{document_id}")
 async def delete_document(
@@ -93,6 +102,7 @@ async def delete_document(
     await service.delete_document(document_id, current_user)
     return {"message": "Document deleted successfully"}
 
+
 # Process document
 @router.post("/documents/{document_id}/process")
 async def process_document(
@@ -103,6 +113,7 @@ async def process_document(
     """Process a document."""
     service = KnowledgeService(db)
     return await service.process_document(document_id, current_user)
+
 
 # Download document
 @router.get("/documents/{document_id}/download")
@@ -115,6 +126,7 @@ async def download_document(
     service = KnowledgeService(db)
     return await service.download_document(document_id, current_user)
 
+
 # Reprocess document
 @router.post("/documents/{document_id}/reprocess")
 async def reprocess_document(
@@ -125,7 +137,10 @@ async def reprocess_document(
 ):
     """Reprocess a document with new options."""
     service = KnowledgeService(db)
-    return await service.reprocess_document(document_id, processing_options, current_user)
+    return await service.reprocess_document(
+        document_id, processing_options, current_user,
+    )
+
 
 # Advanced upload
 @router.post("/documents/upload-advanced", response_model=DocumentResponse)
@@ -142,5 +157,5 @@ async def upload_document_advanced(
     """Upload a document with advanced options."""
     service = KnowledgeService(db)
     return await service.upload_document_advanced(
-        file, title, description, tags, engine, processing_options, current_user
+        file, title, description, tags, engine, processing_options, current_user,
     )

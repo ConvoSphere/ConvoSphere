@@ -8,10 +8,9 @@ and performance monitoring from Phase 3.
 import time
 from typing import Any
 
-from loguru import logger
-
 from app.services.ai_service import ai_service
 from app.services.performance_integration import performance_integration
+from loguru import logger
 
 
 class EnhancedAIService:
@@ -79,14 +78,22 @@ class EnhancedAIService:
         try:
             # Create cache key
             cache_key = self._create_cache_key(
-                messages, user_id, model, temperature, max_tokens,
-                use_knowledge_base, use_tools, max_context_chunks,
+                messages,
+                user_id,
+                model,
+                temperature,
+                max_tokens,
+                use_knowledge_base,
+                use_tools,
+                max_context_chunks,
             )
 
             # Try to get cached response
             if self.cache_enabled:
                 cached_response = await performance_integration.get_cached_ai_response(
-                    user_id, cache_key, context=str(conversation_id),
+                    user_id,
+                    cache_key,
+                    context=str(conversation_id),
                 )
 
                 if cached_response:
@@ -131,8 +138,11 @@ class EnhancedAIService:
             # Cache the response
             if self.cache_enabled:
                 await performance_integration.cache_ai_response(
-                    user_id, cache_key, response,
-                    context=str(conversation_id), ttl=cache_ttl,
+                    user_id,
+                    cache_key,
+                    response,
+                    context=str(conversation_id),
+                    ttl=cache_ttl,
                 )
 
             # Record performance metrics
@@ -171,7 +181,8 @@ class EnhancedAIService:
                     "total_requests": self.request_count,
                     "cache_hits": self.cache_hits,
                     "cache_misses": self.cache_misses,
-                    "cache_hit_rate": (self.cache_hits / max(1, self.request_count)) * 100,
+                    "cache_hit_rate": (self.cache_hits / max(1, self.request_count))
+                    * 100,
                 },
             }
 
@@ -224,8 +235,14 @@ class EnhancedAIService:
         if not self.async_processing_enabled:
             # Fallback to synchronous processing
             return await self._generate_response_sync(
-                conversation_id, user_message, user_id, assistant_id,
-                use_rag, use_tools, max_context_chunks, **kwargs,
+                conversation_id,
+                user_message,
+                user_id,
+                assistant_id,
+                use_rag,
+                use_tools,
+                max_context_chunks,
+                **kwargs,
             )
 
         try:
@@ -249,8 +266,14 @@ class EnhancedAIService:
             logger.error(f"Failed to submit async AI task: {e}")
             # Fallback to synchronous processing
             return await self._generate_response_sync(
-                conversation_id, user_message, user_id, assistant_id,
-                use_rag, use_tools, max_context_chunks, **kwargs,
+                conversation_id,
+                user_message,
+                user_id,
+                assistant_id,
+                use_rag,
+                use_tools,
+                max_context_chunks,
+                **kwargs,
             )
 
     async def get_response_status(self, task_id: str) -> dict[str, Any] | None:
@@ -379,7 +402,8 @@ class EnhancedAIService:
             # Try to get cached embedding
             if self.cache_enabled:
                 cached_embedding = await performance_integration.get_cached_tool_result(
-                    "embedding_service", {"text": text, "model": model},
+                    "embedding_service",
+                    {"text": text, "model": model},
                 )
 
                 if cached_embedding:
@@ -401,7 +425,10 @@ class EnhancedAIService:
             # Cache the embedding
             if self.cache_enabled:
                 await performance_integration.cache_tool_result(
-                    "embedding_service", {"text": text, "model": model}, embedding, cache_ttl,
+                    "embedding_service",
+                    {"text": text, "model": model},
+                    embedding,
+                    cache_ttl,
                 )
 
             response_time = time.time() - start_time
@@ -450,8 +477,11 @@ class EnhancedAIService:
             for text in texts:
                 # Try to get cached embedding for each text
                 if self.cache_enabled:
-                    cached_embedding = await performance_integration.get_cached_tool_result(
-                        "embedding_service", {"text": text, "model": model},
+                    cached_embedding = (
+                        await performance_integration.get_cached_tool_result(
+                            "embedding_service",
+                            {"text": text, "model": model},
+                        )
                     )
 
                     if cached_embedding:
@@ -466,7 +496,10 @@ class EnhancedAIService:
                 # Cache the embedding
                 if self.cache_enabled:
                     await performance_integration.cache_tool_result(
-                        "embedding_service", {"text": text, "model": model}, embedding, cache_ttl,
+                        "embedding_service",
+                        {"text": text, "model": model},
+                        embedding,
+                        cache_ttl,
                     )
 
             response_time = time.time() - start_time
@@ -516,7 +549,9 @@ class EnhancedAIService:
         ai_health = self.ai_service.health_check()
 
         return {
-            "status": "healthy" if ai_health.get("status") == "healthy" else "unhealthy",
+            "status": "healthy"
+            if ai_health.get("status") == "healthy"
+            else "unhealthy",
             "ai_service": ai_health,
             "performance_stats": self.get_performance_stats(),
             "cache_status": "enabled" if self.cache_enabled else "disabled",

@@ -27,7 +27,9 @@ class DataAnalysisTool(BaseTool):
     }
 
     async def execute(
-        self, data: list, analysis_type: str = "summary",
+        self,
+        data: list,
+        analysis_type: str = "summary",
     ) -> dict[str, Any]:
         """Perform data analysis."""
         try:

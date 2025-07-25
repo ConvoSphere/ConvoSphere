@@ -8,11 +8,10 @@ agent handoff, collaboration, and performance monitoring.
 from datetime import datetime
 from typing import Any
 
-from loguru import logger
-from pydantic import BaseModel, Field, field_validator
-
 from app.core.exceptions import ConversationError
 from app.schemas.agent import AgentConfig, AgentResponse, AgentState
+from loguru import logger
+from pydantic import BaseModel, Field, field_validator
 
 
 class AgentHandoffRequest(BaseModel):
@@ -51,7 +50,9 @@ class AgentHandoffRequest(BaseModel):
 class AgentCollaborationRequest(BaseModel):
     """Request for agent collaboration."""
 
-    agent_ids: list[str] = Field(..., min_length=2, max_length=5, description="Agent IDs to collaborate")
+    agent_ids: list[str] = Field(
+        ..., min_length=2, max_length=5, description="Agent IDs to collaborate",
+    )
     conversation_id: str = Field(..., description="Conversation ID")
     user_id: str = Field(..., description="User ID")
     collaboration_type: str = Field(
@@ -64,7 +65,9 @@ class AgentCollaborationRequest(BaseModel):
         pattern="^(round_robin|priority|expertise)$",
         description="Coordination strategy",
     )
-    shared_context: dict[str, Any] = Field(default_factory=dict, description="Shared context")
+    shared_context: dict[str, Any] = Field(
+        default_factory=dict, description="Shared context",
+    )
 
     @field_validator("agent_ids")
     @classmethod
@@ -86,12 +89,18 @@ class AgentPerformanceMetrics(BaseModel):
     agent_id: str = Field(..., description="Agent ID")
     conversation_id: str = Field(..., description="Conversation ID")
     response_time: float = Field(..., ge=0, description="Average response time")
-    success_rate: float = Field(..., ge=0, le=100, description="Success rate percentage")
-    user_satisfaction: float = Field(default=0.0, ge=0, le=5, description="User satisfaction score")
+    success_rate: float = Field(
+        ..., ge=0, le=100, description="Success rate percentage",
+    )
+    user_satisfaction: float = Field(
+        default=0.0, ge=0, le=5, description="User satisfaction score",
+    )
     tool_usage_count: int = Field(default=0, ge=0, description="Number of tools used")
     tokens_used: int = Field(default=0, ge=0, description="Total tokens used")
     error_count: int = Field(default=0, ge=0, description="Number of errors")
-    created_at: datetime = Field(default_factory=datetime.now, description="Metrics timestamp")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Metrics timestamp",
+    )
 
     model_config = {
         "validate_assignment": True,
@@ -106,12 +115,24 @@ class MultiAgentConversation(BaseModel):
     user_id: str = Field(..., description="User ID")
     agents: list[str] = Field(..., min_length=1, description="Participating agent IDs")
     current_agent: str = Field(..., description="Currently active agent")
-    conversation_flow: list[dict[str, Any]] = Field(default_factory=list, description="Conversation flow")
-    collaboration_mode: bool = Field(default=False, description="Whether in collaboration mode")
-    shared_context: dict[str, Any] = Field(default_factory=dict, description="Shared context")
-    performance_metrics: list[AgentPerformanceMetrics] = Field(default_factory=list, description="Performance metrics")
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=datetime.now, description="Last update timestamp")
+    conversation_flow: list[dict[str, Any]] = Field(
+        default_factory=list, description="Conversation flow",
+    )
+    collaboration_mode: bool = Field(
+        default=False, description="Whether in collaboration mode",
+    )
+    shared_context: dict[str, Any] = Field(
+        default_factory=dict, description="Shared context",
+    )
+    performance_metrics: list[AgentPerformanceMetrics] = Field(
+        default_factory=list, description="Performance metrics",
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation timestamp",
+    )
+    updated_at: datetime = Field(
+        default_factory=datetime.now, description="Last update timestamp",
+    )
 
     model_config = {
         "validate_assignment": True,
@@ -224,11 +245,15 @@ class MultiAgentManager:
 
             self.active_conversations[conversation_id] = conversation
 
-            logger.info(f"Created multi-agent conversation {conversation_id} with agents: {all_agents}")
+            logger.info(
+                f"Created multi-agent conversation {conversation_id} with agents: {all_agents}",
+            )
             return conversation
 
         except Exception as e:
-            raise ConversationError(f"Failed to create multi-agent conversation: {str(e)}")
+            raise ConversationError(
+                f"Failed to create multi-agent conversation: {str(e)}",
+            )
 
     async def handoff_agent(
         self,
@@ -249,14 +274,20 @@ class MultiAgentManager:
         try:
             conversation = self.active_conversations.get(request.conversation_id)
             if not conversation:
-                raise ConversationError(f"Conversation {request.conversation_id} not found")
+                raise ConversationError(
+                    f"Conversation {request.conversation_id} not found",
+                )
 
             # Validate agents
             if request.from_agent_id not in conversation.agents:
-                raise ConversationError(f"From agent {request.from_agent_id} not in conversation")
+                raise ConversationError(
+                    f"From agent {request.from_agent_id} not in conversation",
+                )
 
             if request.to_agent_id not in conversation.agents:
-                raise ConversationError(f"To agent {request.to_agent_id} not in conversation")
+                raise ConversationError(
+                    f"To agent {request.to_agent_id} not in conversation",
+                )
 
             # Update conversation
             old_agent = conversation.current_agent
@@ -288,15 +319,19 @@ class MultiAgentManager:
                 self.agent_states[to_state_key].updated_at = datetime.now()
 
             # Record handoff
-            self.handoff_history.append({
-                "conversation_id": request.conversation_id,
-                "from_agent": request.from_agent_id,
-                "to_agent": request.to_agent_id,
-                "reason": request.reason,
-                "timestamp": datetime.now(),
-            })
+            self.handoff_history.append(
+                {
+                    "conversation_id": request.conversation_id,
+                    "from_agent": request.from_agent_id,
+                    "to_agent": request.to_agent_id,
+                    "reason": request.reason,
+                    "timestamp": datetime.now(),
+                },
+            )
 
-            logger.info(f"Handoff from {old_agent} to {request.to_agent_id} in conversation {request.conversation_id}")
+            logger.info(
+                f"Handoff from {old_agent} to {request.to_agent_id} in conversation {request.conversation_id}",
+            )
             return conversation
 
         except Exception as e:
@@ -321,7 +356,9 @@ class MultiAgentManager:
         try:
             conversation = self.active_conversations.get(request.conversation_id)
             if not conversation:
-                raise ConversationError(f"Conversation {request.conversation_id} not found")
+                raise ConversationError(
+                    f"Conversation {request.conversation_id} not found",
+                )
 
             # Validate all agents are in conversation
             for agent_id in request.agent_ids:
@@ -351,14 +388,18 @@ class MultiAgentManager:
                     self.agent_states[state_key].updated_at = datetime.now()
 
             # Record collaboration
-            self.collaboration_history.append({
-                "conversation_id": request.conversation_id,
-                "agents": request.agent_ids,
-                "collaboration_type": request.collaboration_type,
-                "timestamp": datetime.now(),
-            })
+            self.collaboration_history.append(
+                {
+                    "conversation_id": request.conversation_id,
+                    "agents": request.agent_ids,
+                    "collaboration_type": request.collaboration_type,
+                    "timestamp": datetime.now(),
+                },
+            )
 
-            logger.info(f"Started collaboration between {request.agent_ids} in conversation {request.conversation_id}")
+            logger.info(
+                f"Started collaboration between {request.agent_ids} in conversation {request.conversation_id}",
+            )
             return conversation
 
         except Exception as e:
@@ -459,7 +500,9 @@ class MultiAgentManager:
         except Exception as e:
             raise ConversationError(f"Failed to get agent response: {str(e)}")
 
-    def get_conversation_state(self, conversation_id: str) -> MultiAgentConversation | None:
+    def get_conversation_state(
+        self, conversation_id: str,
+    ) -> MultiAgentConversation | None:
         """Get conversation state."""
         return self.active_conversations.get(conversation_id)
 
@@ -524,14 +567,16 @@ class MultiAgentManager:
         """Get list of available agents."""
         agents = []
         for agent_id, config in self.agent_registry.items():
-            agents.append({
-                "id": agent_id,
-                "name": config.name,
-                "description": config.description,
-                "model": config.model,
-                "temperature": config.temperature,
-                "tools": config.tools,
-            })
+            agents.append(
+                {
+                    "id": agent_id,
+                    "name": config.name,
+                    "description": config.description,
+                    "model": config.model,
+                    "temperature": config.temperature,
+                    "tools": config.tools,
+                },
+            )
         return agents
 
     def add_agent_to_registry(self, agent_id: str, config: AgentConfig) -> None:

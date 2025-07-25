@@ -63,8 +63,10 @@ class TestAuthEndpoints:
             mock_verify.return_value = "user123"
             with patch("app.api.v1.endpoints.auth.create_access_token") as mock_create:
                 mock_create.return_value = "new_token"
-                response = client.post("/api/v1/auth/refresh",
-                                     headers={"Authorization": "Bearer old_token"})
+                response = client.post(
+                    "/api/v1/auth/refresh",
+                    headers={"Authorization": "Bearer old_token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101
 
     def test_logout(self):
@@ -87,16 +89,18 @@ class TestUserEndpoints:
             mock_user.return_value = {"id": "123", "role": "admin"}
             with patch("app.api.v1.endpoints.users.user_service.get_users") as mock_get:
                 mock_get.return_value = [{"id": "1", "email": "user1@test.com"}]
-                response = client.get("/api/v1/users/",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/users/", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_get_user_profile(self):
         """Test getting user profile."""
         with patch("app.api.v1.endpoints.users.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123", "email": "test@example.com"}
-            response = client.get("/api/v1/users/me",
-                                headers={"Authorization": "Bearer token"})
+            response = client.get(
+                "/api/v1/users/me", headers={"Authorization": "Bearer token"},
+            )
             assert response.status_code == 200  # noqa: S101
 
     def test_update_user_profile(self):
@@ -104,21 +108,28 @@ class TestUserEndpoints:
         update_data = {"full_name": "Updated Name"}
         with patch("app.api.v1.endpoints.users.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123", "email": "test@example.com"}
-            with patch("app.api.v1.endpoints.users.user_service.update_user") as mock_update:
+            with patch(
+                "app.api.v1.endpoints.users.user_service.update_user",
+            ) as mock_update:
                 mock_update.return_value = {"id": "123", "full_name": "Updated Name"}
-                response = client.put("/api/v1/users/me",
-                                    json=update_data,
-                                    headers={"Authorization": "Bearer token"})
+                response = client.put(
+                    "/api/v1/users/me",
+                    json=update_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_delete_user(self):
         """Test deleting a user."""
         with patch("app.api.v1.endpoints.users.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123", "role": "admin"}
-            with patch("app.api.v1.endpoints.users.user_service.delete_user") as mock_delete:
+            with patch(
+                "app.api.v1.endpoints.users.user_service.delete_user",
+            ) as mock_delete:
                 mock_delete.return_value = True
-                response = client.delete("/api/v1/users/123",
-                                       headers={"Authorization": "Bearer token"})
+                response = client.delete(
+                    "/api/v1/users/123", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 204]  # noqa: S101
 
 
@@ -129,10 +140,13 @@ class TestAssistantEndpoints:
         """Test getting assistants."""
         with patch("app.api.v1.endpoints.assistants.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.assistants.assistant_service.get_assistants") as mock_get:
+            with patch(
+                "app.api.v1.endpoints.assistants.assistant_service.get_assistants",
+            ) as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Assistant"}]
-                response = client.get("/api/v1/assistants/",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/assistants/", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_create_assistant(self):
@@ -145,11 +159,15 @@ class TestAssistantEndpoints:
         }
         with patch("app.api.v1.endpoints.assistants.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.assistants.assistant_service.create_assistant") as mock_create:
+            with patch(
+                "app.api.v1.endpoints.assistants.assistant_service.create_assistant",
+            ) as mock_create:
                 mock_create.return_value = {"id": "1", "name": "Test Assistant"}
-                response = client.post("/api/v1/assistants/",
-                                     json=assistant_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/assistants/",
+                    json=assistant_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101
 
     def test_update_assistant(self):
@@ -157,21 +175,28 @@ class TestAssistantEndpoints:
         update_data = {"name": "Updated Assistant"}
         with patch("app.api.v1.endpoints.assistants.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.assistants.assistant_service.update_assistant") as mock_update:
+            with patch(
+                "app.api.v1.endpoints.assistants.assistant_service.update_assistant",
+            ) as mock_update:
                 mock_update.return_value = {"id": "1", "name": "Updated Assistant"}
-                response = client.put("/api/v1/assistants/1",
-                                    json=update_data,
-                                    headers={"Authorization": "Bearer token"})
+                response = client.put(
+                    "/api/v1/assistants/1",
+                    json=update_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_delete_assistant(self):
         """Test deleting an assistant."""
         with patch("app.api.v1.endpoints.assistants.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.assistants.assistant_service.delete_assistant") as mock_delete:
+            with patch(
+                "app.api.v1.endpoints.assistants.assistant_service.delete_assistant",
+            ) as mock_delete:
                 mock_delete.return_value = True
-                response = client.delete("/api/v1/assistants/1",
-                                       headers={"Authorization": "Bearer token"})
+                response = client.delete(
+                    "/api/v1/assistants/1", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 204]  # noqa: S101
 
 
@@ -182,10 +207,13 @@ class TestConversationEndpoints:
         """Test getting conversations."""
         with patch("app.api.v1.endpoints.conversations.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.conversations.conversation_service.get_conversations") as mock_get:
+            with patch(
+                "app.api.v1.endpoints.conversations.conversation_service.get_conversations",
+            ) as mock_get:
                 mock_get.return_value = [{"id": "1", "title": "Test Conversation"}]
-                response = client.get("/api/v1/conversations/",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/conversations/", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_create_conversation(self):
@@ -196,21 +224,29 @@ class TestConversationEndpoints:
         }
         with patch("app.api.v1.endpoints.conversations.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.conversations.conversation_service.create_conversation") as mock_create:
+            with patch(
+                "app.api.v1.endpoints.conversations.conversation_service.create_conversation",
+            ) as mock_create:
                 mock_create.return_value = {"id": "1", "title": "Test Conversation"}
-                response = client.post("/api/v1/conversations/",
-                                     json=conversation_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/conversations/",
+                    json=conversation_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101
 
     def test_get_conversation_messages(self):
         """Test getting conversation messages."""
         with patch("app.api.v1.endpoints.conversations.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.conversations.conversation_service.get_messages") as mock_get:
+            with patch(
+                "app.api.v1.endpoints.conversations.conversation_service.get_messages",
+            ) as mock_get:
                 mock_get.return_value = [{"id": "1", "content": "Hello"}]
-                response = client.get("/api/v1/conversations/1/messages",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/conversations/1/messages",
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
 
@@ -223,8 +259,9 @@ class TestToolEndpoints:
             mock_user.return_value = {"id": "123"}
             with patch("app.api.v1.endpoints.tools.tool_service.get_tools") as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Tool"}]
-                response = client.get("/api/v1/tools/",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/tools/", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_create_tool(self):
@@ -237,11 +274,15 @@ class TestToolEndpoints:
         }
         with patch("app.api.v1.endpoints.tools.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.tools.tool_service.create_tool") as mock_create:
+            with patch(
+                "app.api.v1.endpoints.tools.tool_service.create_tool",
+            ) as mock_create:
                 mock_create.return_value = {"id": "1", "name": "Test Tool"}
-                response = client.post("/api/v1/tools/",
-                                     json=tool_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/tools/",
+                    json=tool_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101
 
     def test_execute_tool(self):
@@ -251,11 +292,15 @@ class TestToolEndpoints:
         }
         with patch("app.api.v1.endpoints.tools.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.tools.tool_service.execute_tool") as mock_execute:
+            with patch(
+                "app.api.v1.endpoints.tools.tool_service.execute_tool",
+            ) as mock_execute:
                 mock_execute.return_value = {"result": "success"}
-                response = client.post("/api/v1/tools/1/execute",
-                                     json=execution_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/tools/1/execute",
+                    json=execution_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
 
@@ -266,12 +311,16 @@ class TestKnowledgeEndpoints:
         """Test uploading a document."""
         with patch("app.api.v1.endpoints.knowledge.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.knowledge.knowledge_service.process_document") as mock_process:
+            with patch(
+                "app.api.v1.endpoints.knowledge.knowledge_service.process_document",
+            ) as mock_process:
                 mock_process.return_value = {"id": "1", "filename": "test.pdf"}
                 files = {"file": ("test.pdf", b"test content", "application/pdf")}
-                response = client.post("/api/v1/knowledge/upload",
-                                     files=files,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/knowledge/upload",
+                    files=files,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101
 
     def test_search_knowledge(self):
@@ -279,21 +328,29 @@ class TestKnowledgeEndpoints:
         search_data = {"query": "test query"}
         with patch("app.api.v1.endpoints.knowledge.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.knowledge.knowledge_service.search") as mock_search:
+            with patch(
+                "app.api.v1.endpoints.knowledge.knowledge_service.search",
+            ) as mock_search:
                 mock_search.return_value = [{"id": "1", "content": "test result"}]
-                response = client.post("/api/v1/knowledge/search",
-                                     json=search_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/knowledge/search",
+                    json=search_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_get_documents(self):
         """Test getting documents."""
         with patch("app.api.v1.endpoints.knowledge.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.knowledge.knowledge_service.get_documents") as mock_get:
+            with patch(
+                "app.api.v1.endpoints.knowledge.knowledge_service.get_documents",
+            ) as mock_get:
                 mock_get.return_value = [{"id": "1", "filename": "test.pdf"}]
-                response = client.get("/api/v1/knowledge/documents",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/knowledge/documents",
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
 
@@ -307,7 +364,9 @@ class TestHealthEndpoints:
 
     def test_detailed_health_check(self):
         """Test detailed health check."""
-        with patch("app.api.v1.endpoints.health.health_service.get_detailed_status") as mock_status:
+        with patch(
+            "app.api.v1.endpoints.health.health_service.get_detailed_status",
+        ) as mock_status:
             mock_status.return_value = {
                 "status": "healthy",
                 "components": {
@@ -323,14 +382,17 @@ class TestHealthEndpoints:
         """Test system status endpoint."""
         with patch("app.api.v1.endpoints.health.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123", "role": "admin"}
-            with patch("app.api.v1.endpoints.health.performance_monitor.get_system_status") as mock_status:
+            with patch(
+                "app.api.v1.endpoints.health.performance_monitor.get_system_status",
+            ) as mock_status:
                 mock_status.return_value = {
                     "cpu_percent": 50.0,
                     "ram": {"percent": 60.0},
                     "disk": {"percent": 70.0},
                 }
-                response = client.get("/api/v1/health/system",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/health/system", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 400, 404]  # noqa: S101
 
 
@@ -342,14 +404,18 @@ class TestSearchEndpoints:
         search_data = {"query": "test query", "type": "all"}
         with patch("app.api.v1.endpoints.search.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.search.search_service.search") as mock_search:
+            with patch(
+                "app.api.v1.endpoints.search.search_service.search",
+            ) as mock_search:
                 mock_search.return_value = {
                     "results": [{"id": "1", "type": "conversation"}],
                     "total": 1,
                 }
-                response = client.post("/api/v1/search",
-                                     json=search_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/search",
+                    json=search_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
 
@@ -362,8 +428,9 @@ class TestMCPEndpoints:
             mock_user.return_value = {"id": "123"}
             with patch("app.api.v1.endpoints.mcp.mcp_service.get_servers") as mock_get:
                 mock_get.return_value = [{"id": "1", "name": "Test Server"}]
-                response = client.get("/api/v1/mcp/servers",
-                                    headers={"Authorization": "Bearer token"})
+                response = client.get(
+                    "/api/v1/mcp/servers", headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code == 200  # noqa: S101
 
     def test_connect_mcp_server(self):
@@ -371,9 +438,13 @@ class TestMCPEndpoints:
         connection_data = {"server_id": "1"}
         with patch("app.api.v1.endpoints.mcp.get_current_user") as mock_user:
             mock_user.return_value = {"id": "123"}
-            with patch("app.api.v1.endpoints.mcp.mcp_service.connect_server") as mock_connect:
+            with patch(
+                "app.api.v1.endpoints.mcp.mcp_service.connect_server",
+            ) as mock_connect:
                 mock_connect.return_value = {"status": "connected"}
-                response = client.post("/api/v1/mcp/connect",
-                                     json=connection_data,
-                                     headers={"Authorization": "Bearer token"})
+                response = client.post(
+                    "/api/v1/mcp/connect",
+                    json=connection_data,
+                    headers={"Authorization": "Bearer token"},
+                )
                 assert response.status_code in [200, 201]  # noqa: S101

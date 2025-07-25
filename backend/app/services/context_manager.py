@@ -68,7 +68,9 @@ class ContextManager:
         asyncio.create_task(self._cleanup_old_contexts())
 
     async def get_context(
-        self, conversation_id: str, user_id: str,
+        self,
+        conversation_id: str,
+        user_id: str,
     ) -> ConversationContext:
         """
         Get or create conversation context.

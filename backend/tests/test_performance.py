@@ -41,6 +41,7 @@ class TestPerformance:
 
     def test_concurrent_health_checks(self):
         """Test concurrent health check requests."""
+
         def make_request():
             return client.get("/health")
 
@@ -107,6 +108,7 @@ class TestPerformance:
 
     def test_database_connection_pool(self):
         """Test database connection pool performance."""
+
         def make_db_request():
             # Simulate database operation
             response = client.get("/api/v1/users/me")
@@ -188,6 +190,7 @@ class TestPerformance:
 
     def test_rate_limiting_performance(self):
         """Test rate limiting performance."""
+
         def make_request():
             return client.get("/health")
 
@@ -235,6 +238,7 @@ class TestPerformance:
 
     def test_authentication_performance(self):
         """Test authentication performance."""
+
         def make_authenticated_request():
             headers = {"Authorization": "Bearer invalid-token"}
             return client.get("/api/v1/users/me", headers=headers)
@@ -268,6 +272,7 @@ class TestPerformance:
 
     def test_database_query_performance(self):
         """Test database query performance."""
+
         def make_db_query():
             # Simulate database query
             response = client.get("/api/v1/conversations/")
@@ -308,6 +313,7 @@ class TestPerformance:
 
     def test_health_check_endpoint_load(self):
         """Test health check endpoint under load."""
+
         def make_health_request():
             return client.get("/health")
 
@@ -340,6 +346,7 @@ class TestPerformance:
 
         # Force garbage collection
         import gc
+
         gc.collect()
 
         final_memory = process.memory_info().rss / 1024 / 1024  # MB
@@ -396,12 +403,16 @@ class TestPerformance:
 
     def test_concurrent_user_sessions(self):
         """Test concurrent user sessions."""
+
         def simulate_user_session():
             # Login
-            login_response = client.post("/api/v1/auth/login", json={
-                "email": "test@example.com",
-                "password": "password123",
-            })
+            login_response = client.post(
+                "/api/v1/auth/login",
+                json={
+                    "email": "test@example.com",
+                    "password": "password123",
+                },
+            )
 
             if login_response.status_code == 200:
                 token = login_response.json().get("token")
@@ -430,6 +441,7 @@ class TestLoadTesting:
 
     def test_sustained_load(self):
         """Test sustained load over time."""
+
         def make_request():
             return client.get("/health")
 
@@ -448,6 +460,7 @@ class TestLoadTesting:
 
     def test_burst_load(self):
         """Test burst load handling."""
+
         def make_request():
             return client.get("/health")
 
@@ -467,20 +480,27 @@ class TestLoadTesting:
 
     def test_mixed_workload(self):
         """Test mixed workload performance."""
+
         def health_check():
             return client.get("/health")
 
         def login_request():
-            return client.post("/api/v1/auth/login", json={
-                "email": "test@example.com",
-                "password": "password123",
-            })
+            return client.post(
+                "/api/v1/auth/login",
+                json={
+                    "email": "test@example.com",
+                    "password": "password123",
+                },
+            )
 
         def search_request():
-            return client.post("/api/v1/search", json={
-                "query": "test",
-                "type": "all",
-            })
+            return client.post(
+                "/api/v1/search",
+                json={
+                    "query": "test",
+                    "type": "all",
+                },
+            )
 
         start_time = time.time()
 

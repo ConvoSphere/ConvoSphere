@@ -11,22 +11,29 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import redis.asyncio as redis
-from loguru import logger
-from pydantic import BaseModel, Field, field_validator
-
 from app.core.config import settings
 from app.core.exceptions import ConfigurationError
+from loguru import logger
+from pydantic import BaseModel, Field, field_validator
 
 
 class CacheConfig(BaseModel):
     """Cache configuration with validation."""
 
     redis_url: str = Field(..., description="Redis connection URL")
-    default_ttl: int = Field(default=3600, ge=60, le=86400, description="Default TTL in seconds")
-    max_connections: int = Field(default=10, ge=1, le=50, description="Maximum Redis connections")
-    connection_timeout: float = Field(default=5.0, ge=1.0, le=30.0, description="Connection timeout")
+    default_ttl: int = Field(
+        default=3600, ge=60, le=86400, description="Default TTL in seconds",
+    )
+    max_connections: int = Field(
+        default=10, ge=1, le=50, description="Maximum Redis connections",
+    )
+    connection_timeout: float = Field(
+        default=5.0, ge=1.0, le=30.0, description="Connection timeout",
+    )
     retry_attempts: int = Field(default=3, ge=1, le=10, description="Retry attempts")
-    enable_compression: bool = Field(default=True, description="Enable data compression")
+    enable_compression: bool = Field(
+        default=True, description="Enable data compression",
+    )
     cache_prefix: str = Field(default="convosphere", description="Cache key prefix")
 
     @field_validator("redis_url")
@@ -48,7 +55,9 @@ class CacheConfig(BaseModel):
 class CacheKey(BaseModel):
     """Cache key with namespace and validation."""
 
-    namespace: str = Field(..., min_length=1, max_length=50, description="Cache namespace")
+    namespace: str = Field(
+        ..., min_length=1, max_length=50, description="Cache namespace",
+    )
     key: str = Field(..., min_length=1, max_length=200, description="Cache key")
     version: str = Field(default="v1", description="Cache version")
 
@@ -74,11 +83,17 @@ class CacheEntry(BaseModel):
     """Cache entry with metadata."""
 
     data: Any = Field(..., description="Cached data")
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation timestamp",
+    )
     expires_at: datetime | None = Field(None, description="Expiration timestamp")
     access_count: int = Field(default=0, ge=0, description="Access count")
-    last_accessed: datetime = Field(default_factory=datetime.now, description="Last access timestamp")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    last_accessed: datetime = Field(
+        default_factory=datetime.now, description="Last access timestamp",
+    )
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata",
+    )
 
     def is_expired(self) -> bool:
         """Check if entry is expired."""
@@ -120,7 +135,7 @@ class CacheService:
         try:
             # Use the global Redis client if available
             from app.core.redis_client import get_redis, is_redis_available
-            
+
             if is_redis_available():
                 self.redis_client = await get_redis()
                 if self.redis_client is not None:
@@ -129,8 +144,10 @@ class CacheService:
                     return
 
             # Fallback to creating our own connection if global client is not available
-            logger.warning("Global Redis client not available, creating fallback connection")
-            
+            logger.warning(
+                "Global Redis client not available, creating fallback connection",
+            )
+
             # Create connection pool
             self.connection_pool = redis.ConnectionPool.from_url(
                 self.config.redis_url,
@@ -240,7 +257,11 @@ class CacheService:
                 )
 
             self.stats["hits"] += 1
-            return cached_entry.get("data") if isinstance(cached_entry, dict) else cached_entry
+            return (
+                cached_entry.get("data")
+                if isinstance(cached_entry, dict)
+                else cached_entry
+            )
 
         except Exception as e:
             self.stats["errors"] += 1
@@ -385,7 +406,9 @@ class CacheService:
 
             # Calculate hit rate
             total_requests = self.stats["hits"] + self.stats["misses"]
-            hit_rate = (self.stats["hits"] / total_requests * 100) if total_requests > 0 else 0
+            hit_rate = (
+                (self.stats["hits"] / total_requests * 100) if total_requests > 0 else 0
+            )
 
             return {
                 "hits": self.stats["hits"],
@@ -449,7 +472,9 @@ class ConversationCache:
     ) -> bool:
         """Cache conversation messages."""
         cache_key = self._create_key(conversation_id, "messages")
-        return await self.cache_service.set(cache_key, messages, ttl or self.default_ttl)
+        return await self.cache_service.set(
+            cache_key, messages, ttl or self.default_ttl,
+        )
 
     async def invalidate_conversation(self, conversation_id: str) -> bool:
         """Invalidate all conversation cache entries."""
@@ -485,6 +510,7 @@ class AIResponseCache:
     def _hash_message(self, message: str, context: str | None = None) -> str:
         """Create hash for message and context."""
         import hashlib
+
         content = f"{message}:{context or ''}"
         return hashlib.md5(content.encode()).hexdigest()
 
@@ -510,7 +536,9 @@ class AIResponseCache:
         """Cache AI response."""
         message_hash = self._hash_message(message, context)
         cache_key = self._create_key(user_id, message_hash)
-        return await self.cache_service.set(cache_key, response, ttl or self.default_ttl)
+        return await self.cache_service.set(
+            cache_key, response, ttl or self.default_ttl,
+        )
 
 
 class ToolResultCache:
@@ -531,6 +559,7 @@ class ToolResultCache:
     def _hash_arguments(self, arguments: dict[str, Any]) -> str:
         """Create hash for tool arguments."""
         import hashlib
+
         args_str = json.dumps(arguments, sort_keys=True)
         return hashlib.md5(args_str.encode()).hexdigest()
 

@@ -53,7 +53,9 @@ class Conversation(Base):
     user = relationship("User", back_populates="conversations")
 
     assistant_id = Column(
-        UUID(as_uuid=True), ForeignKey("assistants.id"), nullable=False,
+        UUID(as_uuid=True),
+        ForeignKey("assistants.id"),
+        nullable=False,
     )
     assistant = relationship("Assistant", back_populates="conversations")
 
@@ -70,7 +72,9 @@ class Conversation(Base):
 
     # Relationships
     messages = relationship(
-        "Message", back_populates="conversation", cascade="all, delete-orphan",
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
@@ -131,12 +135,16 @@ class Message(Base):
     content = Column(Text, nullable=False)
     role = Column(SQLEnum(MessageRole), nullable=False)
     message_type = Column(
-        SQLEnum(MessageType), default=MessageType.TEXT, nullable=False,
+        SQLEnum(MessageType),
+        default=MessageType.TEXT,
+        nullable=False,
     )
 
     # Relationships
     conversation_id = Column(
-        UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False,
+        UUID(as_uuid=True),
+        ForeignKey("conversations.id"),
+        nullable=False,
     )
     conversation = relationship("Conversation", back_populates="messages")
 

@@ -2,10 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
-from passlib.context import CryptContext
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import Session, joinedload
-
+from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password
 from app.models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
 from app.schemas.user import (
@@ -31,7 +28,9 @@ from app.utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
-from app.core.database import get_db
+from passlib.context import CryptContext
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
 
 
 class UserService:
@@ -43,29 +42,32 @@ class UserService:
 
     # User CRUD operations
     def create_user(
-        self, 
-        user_data: UserCreate | None = None, 
+        self,
+        user_data: UserCreate | None = None,
         current_user: User | None = None,
         email: str | None = None,
         username: str | None = None,
         password: str | None = None,
         full_name: str | None = None,
-        **kwargs
+        **kwargs,
     ) -> User:
         """Create a new user."""
         # Handle both UserCreate object and individual parameters
         if user_data is None:
             # Create UserCreate object from individual parameters
             from app.schemas.user import UserCreate
+
             user_data = UserCreate(
                 email=email,
                 username=username,
                 password=password,
                 first_name=full_name.split()[0] if full_name else None,
-                last_name=' '.join(full_name.split()[1:]) if full_name and len(full_name.split()) > 1 else None,
-                **kwargs
+                last_name=" ".join(full_name.split()[1:])
+                if full_name and len(full_name.split()) > 1
+                else None,
+                **kwargs,
             )
-        
+
         # Check if user already exists
         if self.get_user_by_email(user_data.email):
             raise UserAlreadyExistsError(
@@ -151,7 +153,9 @@ class UserService:
         )
 
     def get_user_by_external_id(
-        self, external_id: str, auth_provider: AuthProvider,
+        self,
+        external_id: str,
+        auth_provider: AuthProvider,
     ) -> User | None:
         """Get user by external ID and auth provider."""
         return (
@@ -161,14 +165,18 @@ class UserService:
             )
             .filter(
                 and_(
-                    User.external_id == external_id, User.auth_provider == auth_provider,
+                    User.external_id == external_id,
+                    User.auth_provider == auth_provider,
                 ),
             )
             .first()
         )
 
     def update_user(
-        self, user_id: str, user_data: UserUpdate, current_user: User,
+        self,
+        user_id: str,
+        user_data: UserUpdate,
+        current_user: User,
     ) -> User:
         """Update user."""
         user = self.get_user_by_id(user_id)
@@ -209,7 +217,9 @@ class UserService:
         return True
 
     def list_users(
-        self, search_params: UserSearchParams, current_user: User,
+        self,
+        search_params: UserSearchParams,
+        current_user: User,
     ) -> UserListResponse:
         """List users with filtering and pagination."""
         query = self.db.query(User).options(joinedload(User.groups))
@@ -393,7 +403,8 @@ class UserService:
         """Create user from SSO authentication."""
         # Check if user already exists
         existing_user = self.get_user_by_external_id(
-            sso_data.external_id, sso_data.auth_provider,
+            sso_data.external_id,
+            sso_data.auth_provider,
         )
         if existing_user:
             return existing_user
@@ -430,7 +441,9 @@ class UserService:
 
     # User groups management
     def create_group(
-        self, group_data: UserGroupCreate, current_user: User,
+        self,
+        group_data: UserGroupCreate,
+        current_user: User,
     ) -> UserGroup:
         """Create a new user group."""
         if not current_user.has_permission("group:write"):
@@ -462,7 +475,10 @@ class UserService:
         )
 
     def update_group(
-        self, group_id: str, group_data: UserGroupUpdate, current_user: User,
+        self,
+        group_id: str,
+        group_data: UserGroupUpdate,
+        current_user: User,
     ) -> UserGroup:
         """Update user group."""
         group = self.get_group_by_id(group_id)
@@ -504,7 +520,9 @@ class UserService:
         return True
 
     def list_groups(
-        self, organization_id: str | None = None, current_user: User = None,
+        self,
+        organization_id: str | None = None,
+        current_user: User = None,
     ) -> list[UserGroup]:
         """List user groups."""
         query = self.db.query(UserGroup).options(joinedload(UserGroup.users))
@@ -533,7 +551,9 @@ class UserService:
         return True
 
     def assign_users_to_groups(
-        self, assignment: UserGroupAssignment, current_user: User,
+        self,
+        assignment: UserGroupAssignment,
+        current_user: User,
     ) -> int:
         """Assign multiple users to groups."""
         if not current_user.has_permission("user:write"):
@@ -562,7 +582,9 @@ class UserService:
 
     # User statistics
     def get_user_stats(
-        self, organization_id: str | None = None, current_user: User = None,
+        self,
+        organization_id: str | None = None,
+        current_user: User = None,
     ) -> UserStats:
         """Get user statistics."""
         query = self.db.query(User)

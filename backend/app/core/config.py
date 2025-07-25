@@ -14,7 +14,8 @@ class Settings(BaseSettings):
 
     # Application
     app_name: str = Field(
-        default="AI Assistant Platform", description="Application name",
+        default="AI Assistant Platform",
+        description="Application name",
     )
     app_version: str = Field(default="1.0.0", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
@@ -39,7 +40,11 @@ class Settings(BaseSettings):
         description="Frontend URL for CORS configuration",
     )
     cors_origins: list[str] = Field(
-        default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"],
+        default=[
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8081",
+        ],
         description="List of allowed CORS origins",
     )
 
@@ -59,10 +64,12 @@ class Settings(BaseSettings):
     )
     jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
     jwt_access_token_expire_minutes: int = Field(
-        default=30, description="JWT access token expire minutes",
+        default=30,
+        description="JWT access token expire minutes",
     )
     jwt_refresh_token_expire_days: int = Field(
-        default=7, description="JWT refresh token expire days",
+        default=7,
+        description="JWT refresh token expire days",
     )
 
     # AI Providers
@@ -74,17 +81,21 @@ class Settings(BaseSettings):
     litellm_model: str = Field(default="gpt-4", description="LiteLLM model")
     litellm_max_tokens: int = Field(default=4096, description="LiteLLM max tokens")
     litellm_temperature: float = Field(default=0.7, description="LiteLLM temperature")
-    litellm_proxy_host: str | None = Field(default=None, description="LiteLLM proxy host")
+    litellm_proxy_host: str | None = Field(
+        default=None, description="LiteLLM proxy host",
+    )
 
     # Weaviate Configuration
     weaviate_url: str = Field(
-        default="http://localhost:8080", description="Weaviate URL",
+        default="http://localhost:8080",
+        description="Weaviate URL",
     )
     weaviate_api_key: str | None = Field(default=None, description="Weaviate API key")
 
     # Knowledge Base Configuration
     default_embedding_model: str = Field(
-        default="text-embedding-ada-002", description="Default embedding model",
+        default="text-embedding-ada-002",
+        description="Default embedding model",
     )
     default_chunk_size: int = Field(default=500, description="Default chunk size")
     default_chunk_overlap: int = Field(default=50, description="Default chunk overlap")
@@ -134,33 +145,50 @@ class Settings(BaseSettings):
     # External Services
     serper_api_key: str | None = Field(default=None, description="Serper API key")
     wolfram_alpha_api_key: str | None = Field(
-        default=None, description="Wolfram Alpha API key",
+        default=None,
+        description="Wolfram Alpha API key",
     )
 
     # SSO Configuration
     # Google OAuth2
     sso_google_enabled: bool = Field(default=False, description="Enable Google SSO")
-    sso_google_client_id: str | None = Field(default=None, description="Google OAuth2 client ID")
-    sso_google_client_secret: str | None = Field(default=None, description="Google OAuth2 client secret")
+    sso_google_client_id: str | None = Field(
+        default=None, description="Google OAuth2 client ID",
+    )
+    sso_google_client_secret: str | None = Field(
+        default=None, description="Google OAuth2 client secret",
+    )
     sso_google_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/google",
         description="Google OAuth2 redirect URI",
     )
 
     # Microsoft OAuth2
-    sso_microsoft_enabled: bool = Field(default=False, description="Enable Microsoft SSO")
-    sso_microsoft_client_id: str | None = Field(default=None, description="Microsoft OAuth2 client ID")
-    sso_microsoft_client_secret: str | None = Field(default=None, description="Microsoft OAuth2 client secret")
+    sso_microsoft_enabled: bool = Field(
+        default=False, description="Enable Microsoft SSO",
+    )
+    sso_microsoft_client_id: str | None = Field(
+        default=None, description="Microsoft OAuth2 client ID",
+    )
+    sso_microsoft_client_secret: str | None = Field(
+        default=None, description="Microsoft OAuth2 client secret",
+    )
     sso_microsoft_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/microsoft",
         description="Microsoft OAuth2 redirect URI",
     )
-    sso_microsoft_tenant_id: str | None = Field(default=None, description="Microsoft tenant ID")
+    sso_microsoft_tenant_id: str | None = Field(
+        default=None, description="Microsoft tenant ID",
+    )
 
     # GitHub OAuth2
     sso_github_enabled: bool = Field(default=False, description="Enable GitHub SSO")
-    sso_github_client_id: str | None = Field(default=None, description="GitHub OAuth2 client ID")
-    sso_github_client_secret: str | None = Field(default=None, description="GitHub OAuth2 client secret")
+    sso_github_client_id: str | None = Field(
+        default=None, description="GitHub OAuth2 client ID",
+    )
+    sso_github_client_secret: str | None = Field(
+        default=None, description="GitHub OAuth2 client secret",
+    )
     sso_github_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/github",
         description="GitHub OAuth2 redirect URI",
@@ -168,7 +196,9 @@ class Settings(BaseSettings):
 
     # SAML Configuration
     sso_saml_enabled: bool = Field(default=False, description="Enable SAML SSO")
-    sso_saml_metadata_url: str | None = Field(default=None, description="SAML metadata URL")
+    sso_saml_metadata_url: str | None = Field(
+        default=None, description="SAML metadata URL",
+    )
     sso_saml_entity_id: str = Field(
         default="http://localhost:8000",
         description="SAML entity ID",
@@ -177,14 +207,20 @@ class Settings(BaseSettings):
         default="http://localhost:8000/api/v1/auth/sso/callback/saml",
         description="SAML assertion consumer service URL",
     )
-    sso_saml_cert_file: str | None = Field(default=None, description="SAML certificate file path")
-    sso_saml_key_file: str | None = Field(default=None, description="SAML private key file path")
+    sso_saml_cert_file: str | None = Field(
+        default=None, description="SAML certificate file path",
+    )
+    sso_saml_key_file: str | None = Field(
+        default=None, description="SAML private key file path",
+    )
 
     # OIDC Configuration
     sso_oidc_enabled: bool = Field(default=False, description="Enable OIDC SSO")
     sso_oidc_issuer_url: str | None = Field(default=None, description="OIDC issuer URL")
     sso_oidc_client_id: str | None = Field(default=None, description="OIDC client ID")
-    sso_oidc_client_secret: str | None = Field(default=None, description="OIDC client secret")
+    sso_oidc_client_secret: str | None = Field(
+        default=None, description="OIDC client secret",
+    )
     sso_oidc_redirect_uri: str = Field(
         default="http://localhost:8000/api/v1/auth/sso/callback/oidc",
         description="OIDC redirect URI",
@@ -192,26 +228,20 @@ class Settings(BaseSettings):
 
     # Registration
     registration_enabled: bool = Field(
-        default=True, 
-        json_schema_extra={"env": "REGISTRATION_ENABLED"}
+        default=True, json_schema_extra={"env": "REGISTRATION_ENABLED"},
     )
 
     performance_monitoring_enabled: bool = Field(
-        default=True, 
-        json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"}
+        default=True, json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"},
     )
     performance_monitoring_interval: int = Field(
-        default=60, 
-        json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"}
+        default=60, json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"},
     )
     performance_alert_thresholds: dict = Field(default_factory=dict)
 
     default_ai_model: str = Field(
-        default="gpt-4", 
-        json_schema_extra={"env": "DEFAULT_AI_MODEL"}
+        default="gpt-4", json_schema_extra={"env": "DEFAULT_AI_MODEL"},
     )
-
-
 
     @field_validator("secret_key")
     @classmethod
@@ -235,9 +265,13 @@ class Settings(BaseSettings):
         """Parse CORS origins from comma-separated string."""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
-        elif isinstance(v, list):
+        if isinstance(v, list):
             return v
-        return ["http://localhost:5173", "http://localhost:3000", "http://localhost:8081"]
+        return [
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8081",
+        ]
 
     model_config = ConfigDict(
         case_sensitive=False,
@@ -247,12 +281,14 @@ class Settings(BaseSettings):
 
 _settings_instance = None
 
+
 def get_settings() -> Settings:
     """Get application settings instance (singleton)."""
     global _settings_instance
     if _settings_instance is None:
         _settings_instance = Settings()
     return _settings_instance
+
 
 # Global settings instance
 settings = get_settings()

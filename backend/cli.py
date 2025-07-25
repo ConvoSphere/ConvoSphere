@@ -25,50 +25,81 @@ from app.services.user_service import UserService
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @click.group()
 def cli():
     """Admin CLI for ChatAssistant platform."""
+
 
 @cli.group()
 def db():
     """Database management commands."""
 
+
 @db.command("migrate")
 def migrate():
     """Run Alembic migrations (upgrade head)."""
-    result = subprocess.run(["alembic", "upgrade", "head"], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(
+        ["alembic", "upgrade", "head"],
+        check=False,
+        cwd=os.path.dirname(__file__),
+        capture_output=True,
+        text=True,
+    )
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
         sys.exit(result.returncode)
+
 
 @db.command("downgrade")
 @click.argument("revision")
 def downgrade(revision):
     """Downgrade DB to a specific revision."""
-    result = subprocess.run(["alembic", "downgrade", revision], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(
+        ["alembic", "downgrade", revision],
+        check=False,
+        cwd=os.path.dirname(__file__),
+        capture_output=True,
+        text=True,
+    )
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
         sys.exit(result.returncode)
 
+
 @db.command("status")
 def status():
     """Show Alembic migration status."""
-    result = subprocess.run(["alembic", "current"], check=False, cwd=os.path.dirname(__file__), capture_output=True, text=True)
+    result = subprocess.run(
+        ["alembic", "current"],
+        check=False,
+        cwd=os.path.dirname(__file__),
+        capture_output=True,
+        text=True,
+    )
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
         sys.exit(result.returncode)
+
 
 @cli.group()
 def user():
     """User management commands."""
 
+
 @user.command("create-admin")
 @click.option("--email", prompt=True, help="Admin email")
 @click.option("--username", prompt=True, help="Admin username")
-@click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True, help="Admin password")
+@click.option(
+    "--password",
+    prompt=True,
+    hide_input=True,
+    confirmation_prompt=True,
+    help="Admin password",
+)
 @click.option("--first-name", default=None, help="First name")
 @click.option("--last-name", default=None, help="Last name")
 def create_admin(email, username, password, first_name, last_name):
@@ -93,6 +124,7 @@ def create_admin(email, username, password, first_name, last_name):
     finally:
         db.close()
 
+
 @user.command("list")
 def list_users():
     """List all users (id, email, username, role, status)."""
@@ -101,23 +133,49 @@ def list_users():
     try:
         # Dummy current_user mit Super-Admin-Rechten für vollständige Liste
         from app.models.user import UserRole
+
         class DummyUser:
             role = UserRole.SUPER_ADMIN
             organization_id = None
-            def has_permission(self, perm): return True
-        search_params = type("Search", (), {"query":None, "role":None, "status":None, "auth_provider":None, "organization_id":None, "group_id":None, "is_verified":None, "created_after":None, "created_before":None, "last_login_after":None, "last_login_before":None, "page":1, "size":100})()
+
+            def has_permission(self, perm):
+                return True
+
+        search_params = type(
+            "Search",
+            (),
+            {
+                "query": None,
+                "role": None,
+                "status": None,
+                "auth_provider": None,
+                "organization_id": None,
+                "group_id": None,
+                "is_verified": None,
+                "created_after": None,
+                "created_before": None,
+                "last_login_after": None,
+                "last_login_before": None,
+                "page": 1,
+                "size": 100,
+            },
+        )()
         users = user_service.list_users(search_params, DummyUser()).users
         for user in users:
-            click.echo(f"{user.id} | {user.email} | {user.username} | {user.role} | {user.status}")
+            click.echo(
+                f"{user.id} | {user.email} | {user.username} | {user.role} | {user.status}",
+            )
     except Exception as e:
         click.echo(f"❌ Error: {e}")
         sys.exit(1)
     finally:
         db.close()
 
+
 @cli.group()
 def scripts():
     """Run utility scripts from the scripts/ folder."""
+
 
 @scripts.command("run")
 @click.argument("script")
@@ -128,15 +186,22 @@ def run_script(script, args):
     if not os.path.isfile(script_path):
         click.echo(f"❌ Script not found: {script_path}")
         sys.exit(1)
-    result = subprocess.run([sys.executable, script_path, *args], check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, script_path, *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
     click.echo(result.stdout)
     if result.returncode != 0:
         click.echo(result.stderr)
         sys.exit(result.returncode)
 
+
 @cli.group()
 def health():
     """System health check commands."""
+
 
 @health.command("check")
 def health_check():
@@ -169,17 +234,30 @@ def health_check():
     except Exception:
         click.echo("Weaviate: ❌")
 
+
 @cli.group()
 def translations():
     """Translation validation commands."""
 
+
 @translations.command("validate")
-@click.option("--frontend-dir", default="frontend-react/src/i18n", help="Frontend translations directory")
-@click.option("--backend-dir", default="backend/app/translations", help="Backend translations directory")
-@click.option("--languages", default="en,de,fr,es", help="Comma-separated language codes")
+@click.option(
+    "--frontend-dir",
+    default="frontend-react/src/i18n",
+    help="Frontend translations directory",
+)
+@click.option(
+    "--backend-dir",
+    default="backend/app/translations",
+    help="Backend translations directory",
+)
+@click.option(
+    "--languages", default="en,de,fr,es", help="Comma-separated language codes",
+)
 def validate_translations(frontend_dir, backend_dir, languages):
     """Validate translation files for structure and parameter consistency."""
     langs = [l.strip() for l in languages.split(",") if l.strip()]
+
     def load_translation_file(file_path: Path):
         try:
             with open(file_path, encoding="utf-8") as f:
@@ -187,6 +265,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
         except Exception as e:
             click.echo(f"Error loading {file_path}: {e}")
             return {}
+
     def get_all_keys(data, prefix=""):
         keys = set()
         for key, value in data.items():
@@ -196,6 +275,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
             else:
                 keys.add(full_key)
         return keys
+
     def get_nested_value(data, key):
         keys = key.split(".")
         current = data
@@ -205,6 +285,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
             else:
                 return ""
         return str(current) if current is not None else ""
+
     def validate_translation_files(translation_dir: Path, languages):
         click.echo(f"Validating translation files in {translation_dir}")
         click.echo("=" * 50)
@@ -249,6 +330,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
             else:
                 click.echo("  ✅ No extra keys")
         return all_valid
+
     def validate_parameter_consistency(translation_dir: Path, languages):
         click.echo(f"\nValidating parameter consistency in {translation_dir}")
         click.echo("=" * 50)
@@ -265,6 +347,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
                 value = get_nested_value(data, key)
                 if isinstance(value, str) and "{" in value and "}" in value:
                     import re
+
                     params = re.findall(r"\{(\w+)\}", value)
                     if params:
                         param_keys[lang][key] = set(params)
@@ -282,7 +365,9 @@ def validate_translations(frontend_dir, backend_dir, languages):
                     lang_params = params[key]
                     if ref_params != lang_params:
                         click.echo(f"  ❌ Parameter mismatch in '{key}':")
-                        click.echo(f"    Reference ({reference_lang}): {sorted(ref_params)}")
+                        click.echo(
+                            f"    Reference ({reference_lang}): {sorted(ref_params)}",
+                        )
                         click.echo(f"    {lang}: {sorted(lang_params)}")
                         all_consistent = False
                     else:
@@ -291,6 +376,7 @@ def validate_translations(frontend_dir, backend_dir, languages):
                     click.echo(f"  ❌ Missing key with parameters: '{key}'")
                     all_consistent = False
         return all_consistent
+
     frontend_valid = validate_translation_files(Path(frontend_dir), langs)
     backend_valid = validate_translation_files(Path(backend_dir), langs)
     frontend_params_valid = validate_parameter_consistency(Path(frontend_dir), langs)
@@ -300,9 +386,18 @@ def validate_translations(frontend_dir, backend_dir, languages):
     click.echo("=" * 50)
     click.echo(f"Frontend structure: {'✅ PASS' if frontend_valid else '❌ FAIL'}")
     click.echo(f"Backend structure:  {'✅ PASS' if backend_valid else '❌ FAIL'}")
-    click.echo(f"Frontend params:    {'✅ PASS' if frontend_params_valid else '❌ FAIL'}")
-    click.echo(f"Backend params:     {'✅ PASS' if backend_params_valid else '❌ FAIL'}")
-    overall_success = frontend_valid and backend_valid and frontend_params_valid and backend_params_valid
+    click.echo(
+        f"Frontend params:    {'✅ PASS' if frontend_params_valid else '❌ FAIL'}",
+    )
+    click.echo(
+        f"Backend params:     {'✅ PASS' if backend_params_valid else '❌ FAIL'}",
+    )
+    overall_success = (
+        frontend_valid
+        and backend_valid
+        and frontend_params_valid
+        and backend_params_valid
+    )
     if overall_success:
         click.echo("\n🎉 All validations passed!")
         sys.exit(0)
@@ -310,17 +405,21 @@ def validate_translations(frontend_dir, backend_dir, languages):
         click.echo("\n❌ Some validations failed. Please fix the issues above.")
         sys.exit(1)
 
+
 @cli.group()
 def mcp():
     """MCP integration commands."""
+
 
 @mcp.command("start-server")
 def start_mcp_server():
     """Start the example MCP server for testing."""
     import os as _os
     import sys as _sys
+
     _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "app"))
     from app.tools.example_mcp_server import main as mcp_main
+
     click.echo("Starting Example MCP Server...")
     click.echo("Server will be available at: http://localhost:8080")
     click.echo("Health check: http://localhost:8080/health")
@@ -333,9 +432,11 @@ def start_mcp_server():
         click.echo(f"Error starting MCP server: {e}")
         _sys.exit(1)
 
+
 @cli.group()
 def test():
     """Testing and integration commands."""
+
 
 @test.command("api-integration")
 @click.option("--backend-url", default="http://localhost:8000", help="Backend API URL")
@@ -344,44 +445,68 @@ def api_integration(backend_url):
     import asyncio as _asyncio
     import sys as _sys
     from pathlib import Path as _Path
-    _sys.path.insert(0, str(_Path(__file__).parent.parent / "frontend-react" / "src" / "services"))
+
+    _sys.path.insert(
+        0, str(_Path(__file__).parent.parent / "frontend-react" / "src" / "services"),
+    )
     try:
         from api import APIClient
     except ImportError:
-        click.echo("❌ Could not import APIClient. Make sure the frontend services are available.")
+        click.echo(
+            "❌ Could not import APIClient. Make sure the frontend services are available.",
+        )
         _sys.exit(1)
+
     class APIIntegrationTester:
         def __init__(self, backend_url: str = "http://localhost:8000"):
             self.backend_url = backend_url
             self.api_client = APIClient(backend_url)
             self.test_results = []
+
         def log_test(self, test_name: str, success: bool, details: str = ""):
             status = "✅ PASS" if success else "❌ FAIL"
             click.echo(f"{status} {test_name}")
             if details:
                 click.echo(f"   {details}")
-            self.test_results.append({"test": test_name, "success": success, "details": details})
+            self.test_results.append(
+                {"test": test_name, "success": success, "details": details},
+            )
+
         async def test_health_check(self):
             try:
                 response = await self.api_client.health_check()
                 if response.success:
-                    self.log_test("Health Check", True, f"Status: {response.data.get('status', 'unknown')}")
+                    self.log_test(
+                        "Health Check",
+                        True,
+                        f"Status: {response.data.get('status', 'unknown')}",
+                    )
                 else:
                     self.log_test("Health Check", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("Health Check", False, f"Exception: {str(e)}")
+
         async def test_auth_endpoints(self):
             try:
-                test_user = {"email": "test@example.com", "username": "testuser", "password": "TestPassword123!", "full_name": "Test User"}
+                test_user = {
+                    "email": "test@example.com",
+                    "username": "testuser",
+                    "password": "TestPassword123!",
+                    "full_name": "Test User",
+                }
                 response = await self.api_client.register(test_user)
                 if response.success:
                     self.log_test("User Registration", True)
                 else:
-                    self.log_test("User Registration", False, f"Error: {response.error}")
+                    self.log_test(
+                        "User Registration", False, f"Error: {response.error}",
+                    )
             except Exception as e:
                 self.log_test("User Registration", False, f"Exception: {str(e)}")
             try:
-                response = await self.api_client.login("test@example.com", "TestPassword123!")
+                response = await self.api_client.login(
+                    "test@example.com", "TestPassword123!",
+                )
                 if response.success:
                     self.log_test("User Login", True)
                     if hasattr(response, "data") and response.data:
@@ -392,26 +517,37 @@ def api_integration(backend_url):
                     self.log_test("User Login", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("User Login", False, f"Exception: {str(e)}")
+
         async def test_assistant_endpoints(self):
             try:
                 response = await self.api_client.get_assistants()
                 if response.success:
                     assistants = response.data or []
-                    self.log_test("Get Assistants", True, f"Found {len(assistants)} assistants")
+                    self.log_test(
+                        "Get Assistants", True, f"Found {len(assistants)} assistants",
+                    )
                 else:
                     self.log_test("Get Assistants", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("Get Assistants", False, f"Exception: {str(e)}")
+
         async def test_conversation_endpoints(self):
             try:
                 response = await self.api_client.get_conversations()
                 if response.success:
                     conversations = response.data or []
-                    self.log_test("Get Conversations", True, f"Found {len(conversations)} conversations")
+                    self.log_test(
+                        "Get Conversations",
+                        True,
+                        f"Found {len(conversations)} conversations",
+                    )
                 else:
-                    self.log_test("Get Conversations", False, f"Error: {response.error}")
+                    self.log_test(
+                        "Get Conversations", False, f"Error: {response.error}",
+                    )
             except Exception as e:
                 self.log_test("Get Conversations", False, f"Exception: {str(e)}")
+
         async def test_tool_endpoints(self):
             try:
                 response = await self.api_client.get_tools()
@@ -422,22 +558,28 @@ def api_integration(backend_url):
                     self.log_test("Get Tools", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("Get Tools", False, f"Exception: {str(e)}")
+
         async def test_knowledge_endpoints(self):
             try:
                 response = await self.api_client.get_documents()
                 if response.success:
                     documents = response.data or []
-                    self.log_test("Get Documents", True, f"Found {len(documents)} documents")
+                    self.log_test(
+                        "Get Documents", True, f"Found {len(documents)} documents",
+                    )
                 else:
                     self.log_test("Get Documents", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("Get Documents", False, f"Exception: {str(e)}")
+
         async def test_mcp_endpoints(self):
             try:
                 response = await self.api_client.get_mcp_servers()
                 if response.success:
                     servers = response.data or []
-                    self.log_test("Get MCP Servers", True, f"Found {len(servers)} servers")
+                    self.log_test(
+                        "Get MCP Servers", True, f"Found {len(servers)} servers",
+                    )
                 else:
                     self.log_test("Get MCP Servers", False, f"Error: {response.error}")
             except Exception as e:
@@ -451,6 +593,7 @@ def api_integration(backend_url):
                     self.log_test("Get MCP Tools", False, f"Error: {response.error}")
             except Exception as e:
                 self.log_test("Get MCP Tools", False, f"Exception: {str(e)}")
+
         async def run_all_tests(self):
             click.echo("🚀 Starting API Integration Tests")
             click.echo("=" * 50)
@@ -481,17 +624,20 @@ def api_integration(backend_url):
             click.echo(f"Total Tests: {total}")
             click.echo(f"Passed: {passed}")
             click.echo(f"Failed: {total - passed}")
-            click.echo(f"Success Rate: {(passed/total)*100:.1f}%")
+            click.echo(f"Success Rate: {(passed / total) * 100:.1f}%")
             if passed == total:
                 click.echo("\n🎉 All integration tests passed!")
             else:
                 click.echo("\n⚠️  Some tests failed. Check the details above.")
             return passed == total
+
     async def main():
         tester = APIIntegrationTester(backend_url)
         success = await tester.run_all_tests()
         _sys.exit(0 if success else 1)
+
     _asyncio.run(main())
+
 
 if __name__ == "__main__":
     cli()

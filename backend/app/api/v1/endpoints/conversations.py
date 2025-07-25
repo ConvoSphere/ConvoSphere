@@ -1,8 +1,5 @@
 """Conversations endpoints for conversation management (enterprise-ready)."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
@@ -15,6 +12,8 @@ from app.schemas.conversation import (
     MessageResponse,
 )
 from app.services.conversation_service import ConversationService
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -22,7 +21,9 @@ router = APIRouter()
 
 
 @router.post(
-    "/", response_model=ConversationResponse, status_code=status.HTTP_201_CREATED,
+    "/",
+    response_model=ConversationResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_conversation(
     conversation_data: ConversationCreate,

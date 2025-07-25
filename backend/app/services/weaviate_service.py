@@ -10,8 +10,8 @@ import os
 from typing import Any
 
 import weaviate
-from weaviate.classes.init import Auth
 from loguru import logger
+from weaviate.classes.init import Auth
 
 
 class WeaviateService:
@@ -31,19 +31,19 @@ class WeaviateService:
                 host = self.url[8:]  # Remove "https://"
             else:
                 host = self.url
-            
+
             # Extract host and port
             if ":" in host:
                 host, port_str = host.split(":", 1)
                 port = int(port_str)
             else:
                 port = 8080
-            
+
             # Create auth credentials if API key is provided
             auth_credentials = None
             if self.api_key:
                 auth_credentials = Auth.api_key(self.api_key)
-            
+
             # Use v4 API to connect to Weaviate
             client = weaviate.connect_to_custom(
                 http_host=host,
@@ -52,9 +52,9 @@ class WeaviateService:
                 grpc_host=host,
                 grpc_port=50051,
                 grpc_secure=False,
-                auth_credentials=auth_credentials
+                auth_credentials=auth_credentials,
             )
-            
+
             logger.info(f"Connected to Weaviate at {self.url}")
             return client
         except Exception as e:
@@ -82,7 +82,7 @@ class WeaviateService:
             if not self.client:
                 logger.warning("Weaviate client not available")
                 return
-                
+
             obj = {
                 "conversation_id": conversation_id,
                 "message_id": message_id,
@@ -90,7 +90,7 @@ class WeaviateService:
                 "role": role,
                 "metadata": metadata or {},
             }
-            
+
             # Use v4 API for data insertion
             self.client.data.insert(obj, collection_name="ChatMessage")
             logger.info(f"Indexed message {message_id} in Weaviate")
@@ -98,28 +98,37 @@ class WeaviateService:
             logger.error(f"Failed to index message: {e}")
 
     def semantic_search_messages(
-        self, query: str, conversation_id: str | None = None, limit: int = 5,
+        self,
+        query: str,
+        conversation_id: str | None = None,
+        limit: int = 5,
     ) -> list[dict[str, Any]]:
         """Semantic search in chat messages."""
         try:
             if not self.client:
                 logger.warning("Weaviate client not available")
                 return []
-                
+
             # Build query using v4 API
-            query_builder = self.client.query.get(
-                "ChatMessage",
-                ["message_id", "content", "role", "conversation_id", "metadata"]
-            ).with_near_text({"concepts": [query]}).with_limit(limit)
-            
+            query_builder = (
+                self.client.query.get(
+                    "ChatMessage",
+                    ["message_id", "content", "role", "conversation_id", "metadata"],
+                )
+                .with_near_text({"concepts": [query]})
+                .with_limit(limit)
+            )
+
             # Add filter if conversation_id is provided
             if conversation_id:
-                query_builder = query_builder.with_where({
-                    "path": ["conversation_id"],
-                    "operator": "Equal",
-                    "valueString": conversation_id,
-                })
-            
+                query_builder = query_builder.with_where(
+                    {
+                        "path": ["conversation_id"],
+                        "operator": "Equal",
+                        "valueString": conversation_id,
+                    },
+                )
+
             result = query_builder.do()
             return result["data"]["Get"]["ChatMessage"]
         except Exception as e:
@@ -138,14 +147,14 @@ class WeaviateService:
             if not self.client:
                 logger.warning("Weaviate client not available")
                 return
-                
+
             obj = {
                 "doc_id": doc_id,
                 "content": content,
                 "source": source,
                 "metadata": metadata or {},
             }
-            
+
             # Use v4 API for data insertion
             self.client.data.insert(obj, collection_name="Knowledge")
             logger.info(f"Indexed knowledge doc {doc_id} in Weaviate")
@@ -153,14 +162,16 @@ class WeaviateService:
             logger.error(f"Failed to index knowledge: {e}")
 
     def semantic_search_knowledge(
-        self, query: str, limit: int = 5,
+        self,
+        query: str,
+        limit: int = 5,
     ) -> list[dict[str, Any]]:
         """Semantic search in knowledge base."""
         try:
             if not self.client:
                 logger.warning("Weaviate client not available")
                 return []
-                
+
             result = (
                 self.client.query.get(
                     "Knowledge",
