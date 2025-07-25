@@ -7,8 +7,9 @@ from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
 from fastapi import APIRouter, Depends, Query, HTTPException
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 
 # Pydantic models
@@ -67,7 +68,7 @@ class AssistantUpdate(BaseModel):
 class AssistantResponse(BaseModel):
     """Model for assistant response."""
 
-    id: str
+    id: UUID
     name: str
     description: str | None
     personality: str | None
@@ -83,7 +84,7 @@ class AssistantResponse(BaseModel):
     tags: list[str]
     tools_config: list[dict]
     tools_enabled: bool
-    creator_id: str
+    creator_id: UUID
     version: str
 
     model_config = ConfigDict(from_attributes=True)
@@ -94,21 +95,16 @@ router = APIRouter()
 
 # Get all assistants
 @router.get("/", response_model=list[AssistantResponse])
-async def get_assistants(
+def get_assistants(
     status: str | None = Query(None, description="Filter by status"),
     category: str | None = Query(None, description="Filter by category"),
     include_public: bool = Query(True, description="Include public assistants"),
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    """Get all assistants for the current user."""
+    """Get all assistants for the current user (optionally including public)."""
     service = AssistantService(db)
-    return await service.get_assistants(
-        user_id=current_user_id,
-        status=status,
-        category=category,
-        include_public=include_public,
-    )
+    return service.get_user_assistants(current_user_id, include_public=include_public)
 
 
 # Get public assistants
@@ -201,19 +197,19 @@ async def get_assistant(
 
 # Create assistant
 @router.post("/", response_model=AssistantResponse)
-async def create_assistant(
+def create_assistant(
     assistant_data: AssistantCreate,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """Create a new assistant."""
     service = AssistantService(db)
-    return await service.create_assistant(assistant_data, current_user_id)
+    return service.create_assistant(assistant_data, current_user_id)
 
 
 # Update assistant
 @router.put("/{assistant_id}", response_model=AssistantResponse)
-async def update_assistant(
+def update_assistant(
     assistant_id: str,
     assistant_data: AssistantUpdate,
     current_user_id: str = Depends(get_current_user_id),
@@ -221,7 +217,7 @@ async def update_assistant(
 ):
     """Update an assistant."""
     service = AssistantService(db)
-    return await service.update_assistant(assistant_id, assistant_data, current_user_id)
+    return service.update_assistant(assistant_id, assistant_data, current_user_id)
 
 
 # Delete assistant

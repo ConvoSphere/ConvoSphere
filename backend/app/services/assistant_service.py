@@ -21,46 +21,35 @@ class AssistantService:
 
     def create_assistant(
         self,
-        assistant_data: dict,
+        assistant_data: Any,  # Accepts AssistantCreate
         user_id: str,
     ) -> Assistant:
         """
         Create a new assistant.
-
-        Args:
-            assistant_data: Assistant creation data
-            user_id: ID of the user creating the assistant
-
-        Returns:
-            Assistant: Created assistant
-
-        Raises:
-            ValueError: If required fields are missing
         """
-        if not assistant_data.get("name") or not assistant_data.get("system_prompt"):
+        # Use attribute access for Pydantic models
+        if not getattr(assistant_data, 'name', None) or not getattr(assistant_data, 'system_prompt', None):
             raise ValueError("Name and system_prompt are required")
 
         assistant = Assistant(
             creator_id=user_id,
-            name=assistant_data["name"],
-            description=assistant_data.get("description"),
-            personality=assistant_data.get("personality"),
-            system_prompt=assistant_data["system_prompt"],
-            instructions=assistant_data.get("instructions"),
-            model=assistant_data.get("model", "gpt-4"),
-            temperature=str(assistant_data.get("temperature", 0.7)),
-            max_tokens=str(assistant_data.get("max_tokens", 4096)),
-            category=assistant_data.get("category"),
-            tags=assistant_data.get("tags", []),
-            is_public=assistant_data.get("is_public", False),
-            is_template=assistant_data.get("is_template", False),
+            name=assistant_data.name,
+            description=getattr(assistant_data, 'description', None),
+            personality=getattr(assistant_data, 'personality', None),
+            system_prompt=assistant_data.system_prompt,
+            instructions=getattr(assistant_data, 'instructions', None),
+            model=getattr(assistant_data, 'model', 'gpt-4'),
+            temperature=str(getattr(assistant_data, 'temperature', 0.7)),
+            max_tokens=str(getattr(assistant_data, 'max_tokens', 4096)),
+            category=getattr(assistant_data, 'category', None),
+            tags=getattr(assistant_data, 'tags', []),
+            is_public=getattr(assistant_data, 'is_public', False),
+            is_template=getattr(assistant_data, 'is_template', False),
             status=AssistantStatus.DRAFT,
         )
-
         self.db.add(assistant)
         self.db.commit()
         self.db.refresh(assistant)
-
         logger.info(f"Assistant created: {assistant.name} by user {user_id}")
         return assistant
 
@@ -259,33 +248,22 @@ class AssistantService:
     def update_assistant(
         self,
         assistant_id: str,
-        assistant_data: dict,
+        assistant_data: Any,  # Accepts AssistantUpdate
         user_id: str,
     ) -> Assistant | None:
         """
         Update an assistant.
-
-        Args:
-            assistant_id: Assistant ID
-            assistant_data: Assistant update data
-            user_id: User ID (for authorization)
-
-        Returns:
-            Optional[Assistant]: Updated assistant if found and authorized
         """
         assistant = self.get_assistant(assistant_id, user_id)
-
         if not assistant:
             return None
-
-        # Update fields
-        for field, value in assistant_data.items():
-            if hasattr(assistant, field) and value is not None:
+        # Update fields using attribute access
+        for field in assistant_data.model_fields:
+            value = getattr(assistant_data, field, None)
+            if value is not None and hasattr(assistant, field):
                 setattr(assistant, field, value)
-
         self.db.commit()
         self.db.refresh(assistant)
-
         logger.info(f"Assistant updated: {assistant.name} by user {user_id}")
         return assistant
 
