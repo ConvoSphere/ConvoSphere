@@ -63,53 +63,74 @@ The AI Assistant Platform follows a **modular, scalable architecture** designed 
 
 ### Frontend Layer (NiceGUI)
 
-The frontend is built using **NiceGUI 2.20.0**, a Python-based reactive UI framework that provides a modern web interface with real-time capabilities.
+The frontend is built using **React 18** with TypeScript, providing a modern, responsive web interface with real-time capabilities and enterprise-grade UI components.
 
 #### Frontend Structure
 ```
-frontend/
-├── pages/                    # Page components
-│   ├── auth/                # Authentication pages
-│   ├── dashboard.py         # Main dashboard
-│   ├── chat.py              # Chat interface
-│   ├── assistants.py        # Assistant management
-│   ├── knowledge_base.py    # Knowledge base interface
-│   ├── tools.py             # Tool management
-│   ├── settings.py          # User settings
-│   └── admin.py             # Admin panel
-├── components/              # Reusable UI components
-│   ├── common/              # Common components
-│   ├── chat/                # Chat-specific components
-│   ├── forms/               # Form components
-│   ├── dialogs/             # Dialog components
-│   └── responsive/          # Responsive design components
-├── services/                # Business logic and API integration
-│   ├── api.py               # API client
-│   ├── auth_service.py      # Authentication service
-│   ├── websocket_service.py # WebSocket communication
-│   ├── assistant_service.py # Assistant management
-│   ├── conversation_service.py # Chat management
-│   ├── knowledge_service.py # Knowledge base service
-│   ├── tool_service.py      # Tool integration
-│   └── user_service.py      # User management
-├── utils/                   # Utilities and helpers
-│   ├── theme_manager.py     # Theme management
-│   ├── performance_manager.py # Performance optimization
-│   ├── validators.py        # Input validation
-│   └── helpers.py           # Helper functions
-└── tests/                   # Test suite
-    ├── test_services.py     # Service tests
-    ├── test_components.py   # Component tests
-    └── test_pages.py        # Page tests
+frontend-react/
+├── src/
+│   ├── pages/                    # Page components
+│   │   ├── Chat.tsx             # Main chat interface (14KB)
+│   │   ├── KnowledgeBase.tsx    # Knowledge base management (12KB)
+│   │   ├── SystemStatus.tsx     # System monitoring (5.1KB)
+│   │   ├── Login.tsx            # Authentication (4.8KB)
+│   │   ├── Register.tsx         # User registration (3.5KB)
+│   │   ├── Admin.tsx            # Admin dashboard (3.1KB)
+│   │   ├── Assistants.tsx       # AI assistants (2.6KB)
+│   │   ├── Tools.tsx            # Tool integration (2.1KB)
+│   │   ├── McpTools.tsx         # MCP tools (2.1KB)
+│   │   ├── Conversations.tsx    # Conversation management (2.0KB)
+│   │   ├── Profile.tsx          # User profile (1.9KB)
+│   │   ├── Settings.tsx         # Application settings (1.9KB)
+│   │   └── Dashboard.tsx        # Main dashboard (625B)
+│   ├── components/              # Reusable UI components
+│   │   ├── Layout.tsx           # Main layout with sidebar
+│   │   ├── Sidebar.tsx          # Navigation sidebar
+│   │   ├── HeaderBar.tsx        # Top header bar
+│   │   ├── LazyComponents.tsx   # Lazy-loaded components
+│   │   ├── ProtectedRoute.tsx   # Route protection
+│   │   ├── ErrorBoundary.tsx    # Error handling
+│   │   └── PerformanceMonitor.tsx # Performance tracking
+│   ├── store/                   # State management (Zustand)
+│   │   ├── authStore.ts         # Authentication state
+│   │   ├── themeStore.ts        # Theme management
+│   │   ├── chatStore.ts         # Chat state
+│   │   └── knowledgeStore.ts    # Knowledge base state
+│   ├── services/                # API integration
+│   │   ├── api.ts               # API client
+│   │   ├── authService.ts       # Authentication service
+│   │   ├── websocketService.ts  # WebSocket communication
+│   │   ├── chatService.ts       # Chat management
+│   │   ├── knowledgeService.ts  # Knowledge base service
+│   │   └── userService.ts       # User management
+│   ├── utils/                   # Utilities and helpers
+│   │   ├── performance.ts       # Performance monitoring
+│   │   ├── validators.ts        # Input validation
+│   │   └── helpers.ts           # Helper functions
+│   ├── i18n/                    # Internationalization
+│   │   ├── en.json              # English translations
+│   │   └── de.json              # German translations
+│   └── styles/                  # Styling and themes
+│       ├── index.css            # Global styles
+│       └── App.css              # App-specific styles
+├── public/                     # Static assets
+├── cypress/                    # E2E tests
+└── __tests__/                  # Unit tests
+    ├── components/              # Component tests
+    ├── pages/                   # Page tests
+    └── services/                # Service tests
 ```
 
 #### Frontend Features
-- **Reactive UI**: Real-time updates and responsive design
-- **Component-Based**: Reusable UI components
-- **State Management**: Centralized state management
-- **Theme System**: Light/dark themes with customization
-- **Accessibility**: WCAG-compliant interface
-- **Performance**: Lazy loading and optimization
+- **Modern React**: TypeScript, React 18 with concurrent features
+- **Enterprise UI**: Ant Design components with responsive design
+- **State Management**: Zustand for lightweight state management
+- **Routing**: React Router with protected routes
+- **Internationalization**: i18next with EN/DE support
+- **Performance**: Lazy loading, code splitting, performance monitoring
+- **Accessibility**: WCAG 2.1 AA compliant interface
+- **Theme System**: Light/dark themes with dynamic switching
+- **Error Handling**: Error boundaries and robust error management
 
 ### Backend Layer (FastAPI)
 

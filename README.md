@@ -39,13 +39,16 @@ make dev
 ## ✨ Key Features
 
 ### Core Capabilities
-- **Real-time Chat**: WebSocket-based messaging with instant delivery
+- **Real-time Chat**: WebSocket-based messaging with instant delivery and file attachments
 - **AI Integration**: Powered by LiteLLM with support for multiple AI providers
-- **User Authentication**: JWT-based authentication with social login options
+- **User Authentication**: JWT-based authentication with role-based access control
 - **File Upload**: Support for PDF, DOCX, and text files with AI processing
-- **Knowledge Base**: Document storage and semantic search capabilities
-- **Conversation Management**: Organize and manage chat conversations
+- **Knowledge Base**: Advanced document storage and semantic search capabilities
+- **Conversation Management**: Organize and manage chat conversations with history
+- **AI Assistants**: Create and manage custom AI assistants with different personalities
+- **Tool Integration**: MCP (Model Context Protocol) tools and custom tool management
 - **Responsive Design**: Mobile-first design with dark/light theme support
+- **Internationalization**: Multi-language support (EN/DE) with i18next
 
 ### Advanced Features
 - **Voice Input**: Speech-to-text functionality
@@ -142,12 +145,14 @@ graph TB
 - **LiteLLM**: AI provider abstraction layer
 
 ### Frontend
-- **React 18**: Modern React with concurrent features
+- **React 18**: Modern React with TypeScript and concurrent features
 - **TypeScript**: Type-safe JavaScript development
 - **Zustand**: Lightweight state management
-- **Ant Design**: Enterprise UI component library
+- **Ant Design**: Enterprise UI component library with responsive design
+- **React Router**: Client-side routing with protected routes
 - **WebSocket**: Real-time communication
-- **React Router**: Client-side routing
+- **i18next**: Internationalization (EN/DE)
+- **Performance Monitoring**: Real-time performance tracking
 
 ### Development & Testing
 - **Python 3.11+**: Backend programming language
