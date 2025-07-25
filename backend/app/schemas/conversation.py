@@ -235,6 +235,7 @@ class ConversationResponse(ConversationBase):
     id: UUID = Field(..., description="Conversation ID")
     user_id: UUID = Field(..., description="Owner user ID")
     assistant_id: UUID = Field(..., description="Assistant ID")
+    assistant_name: str = Field(..., description="Assistant name")
     is_active: bool = Field(..., description="Active status")
     is_archived: bool = Field(..., description="Archived status")
     message_count: int = Field(..., ge=0, description="Number of messages")

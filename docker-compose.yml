@@ -35,6 +35,7 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs
+      - ./backend:/app/backend  # Mount source code for development
     depends_on:
       postgres:
         condition: service_healthy

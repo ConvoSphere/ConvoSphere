@@ -288,8 +288,8 @@ def create_application() -> FastAPI:
     # Add routes
     app.include_router(api_router, prefix="/api/v1")
 
-    # Add legacy routes for frontend compatibility
-    app.include_router(api_router, prefix="/api")
+    # Add legacy routes for frontend compatibility - REMOVED DUPLICATE
+    # app.include_router(api_router, prefix="/api")  # This was causing 307 redirects
 
     # Root endpoint
     @app.get("/")

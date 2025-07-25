@@ -8,6 +8,9 @@ Create Date: 2024-01-01 12:00:00.000000
 
 from collections.abc import Sequence
 
+from alembic import op
+import sqlalchemy as sa
+
 # revision identifiers, used by Alembic.
 revision: str = "2024_01_01_enhance_knowledge_base"
 down_revision: str | Sequence[str] | None = "c02ce5c4f07b"

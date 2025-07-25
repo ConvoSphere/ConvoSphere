@@ -15,6 +15,7 @@ from app.schemas.conversation import (
     MessageCreate,
 )
 from sqlalchemy import and_, desc
+from sqlalchemy.orm import joinedload
 
 
 class ConversationService:
@@ -134,6 +135,7 @@ class ConversationService:
         """
         conversations = (
             self.db.query(Conversation)
+            .options(joinedload(Conversation.assistant))  # Load assistant relationship
             .filter(
                 Conversation.user_id == user_id,
             )

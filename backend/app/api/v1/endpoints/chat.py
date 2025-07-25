@@ -76,7 +76,10 @@ manager = ConnectionManager()
 
 # Pydantic models
 
-
+class ConversationCreateRequest(BaseModel):
+    """Create conversation request model for chat API."""
+    assistant_id: str
+    title: str | None = None
 
 class MessageResponse(BaseModel):
     """Message response model."""
@@ -87,13 +90,6 @@ class MessageResponse(BaseModel):
     message_type: str
     timestamp: str
     metadata: dict[str, Any] | None = None
-
-
-class ConversationCreate(BaseModel):
-    """Create conversation request model."""
-
-    assistant_id: str
-    title: str | None = None
 
 
 class ConversationResponse(BaseModel):
@@ -337,8 +333,8 @@ async def get_conversations(
                 title=conv["title"],
                 assistant_id=str(conv["assistant_id"]),
                 assistant_name=conv.get("assistant_name", "Unknown Assistant"),
-                created_at=conv["created_at"].isoformat() if hasattr(conv["created_at"], "isoformat") else str(conv["created_at"]),
-                updated_at=conv["updated_at"].isoformat() if hasattr(conv["updated_at"], "isoformat") else str(conv["updated_at"]),
+                created_at=conv["created_at"],
+                updated_at=conv["updated_at"],
                 message_count=conv.get("message_count", 0),
             )
             for conv in conversations
@@ -355,7 +351,7 @@ async def get_conversations(
 # REST endpoints (existing code)
 @router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation(
-    conversation_data: ConversationCreate,
+    conversation_data: ConversationCreateRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -382,13 +378,13 @@ async def create_conversation(
         conversation = conversation_service.create_conversation(conversation_create)
 
         return ConversationResponse(
-            id=str(conversation.id),
-            title=conversation.title,
-            assistant_id=str(conversation.assistant_id),
-            assistant_name=conversation.assistant.name,
-            created_at=conversation.created_at.isoformat(),
-            updated_at=conversation.updated_at.isoformat(),
-            message_count=conversation.message_count,
+            id=str(conversation["id"]),
+            title=conversation["title"],
+            assistant_id=str(conversation["assistant_id"]),
+            assistant_name=conversation.get("assistant_name", "Unknown Assistant"),
+            created_at=conversation["created_at"],
+            updated_at=conversation["updated_at"],
+            message_count=conversation.get("message_count", 0),
         )
 
     except Exception as e:
@@ -421,16 +417,16 @@ async def get_conversation_messages(
     """
     try:
         conversation_service = ConversationService(db)
-        messages = await conversation_service.get_conversation_messages(conversation_id)
+        messages = conversation_service.get_conversation_messages(conversation_id)
 
         return [
             MessageResponse(
-                id=str(message.id),
-                content=message.content,
-                role=message.role,
-                message_type=message.message_type,
-                timestamp=message.created_at.isoformat(),
-                metadata=message.metadata,
+                id=str(message["id"]),
+                content=message["content"],
+                role=message["role"],
+                message_type=message["message_type"],
+                timestamp=message["created_at"],
+                metadata=message.get("metadata"),
             )
             for message in messages
         ]

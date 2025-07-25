@@ -13,9 +13,19 @@ from app.schemas.conversation import (
 )
 from app.services.conversation_service import ConversationService
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from typing import Any
 
 router = APIRouter()
+
+# API-specific request schema (without user_id)
+class ConversationCreateRequest(BaseModel):
+    """Create conversation request model for API."""
+    assistant_id: str
+    title: str | None = None
+    description: str | None = None
+    conversation_metadata: dict[str, Any] | None = None
 
 # --- Conversation CRUD ---
 
@@ -26,13 +36,23 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def create_conversation(
-    conversation_data: ConversationCreate,
+    conversation_data: ConversationCreateRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Create a new conversation."""
     service = ConversationService(db)
-    return service.create_conversation(conversation_data)
+    
+    # Create ConversationCreate object with user_id from authenticated user
+    conversation_create = ConversationCreate(
+        user_id=str(current_user.id),
+        assistant_id=conversation_data.assistant_id,
+        title=conversation_data.title or "New Conversation",
+        description=conversation_data.description,
+        conversation_metadata=conversation_data.conversation_metadata,
+    )
+    
+    return service.create_conversation(conversation_create)
 
 
 @router.get("/", response_model=ConversationListResponse)
