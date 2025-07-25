@@ -23,6 +23,14 @@ export async function ssoLogin(provider: string) {
   window.location.href = `/api/v1/auth/sso/login/${provider}`;
 }
 
+export async function handleSSOCallback(provider: string, code: string, state?: string) {
+  // Handle SSO callback with authorization code
+  const response = await api.get(`/v1/auth/sso/callback/${provider}?code=${code}${state ? `&state=${state}` : ''}`);
+  const { access_token } = response.data;
+  localStorage.setItem('token', access_token);
+  return access_token;
+}
+
 export async function ssoLink(provider: string) {
   // Call backend SSO link endpoint
   const response = await api.post(`/v1/auth/sso/link/${provider}`);

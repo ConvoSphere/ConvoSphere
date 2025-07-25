@@ -19,6 +19,7 @@ from app.core.security import (
 from app.models.user import User, UserRole
 from app.schemas.user import SSOUserCreate
 from app.services.user_service import UserService
+from app.services.oauth_service import oauth_service
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
@@ -413,79 +414,58 @@ async def get_sso_providers():
 @router.get("/sso/login/{provider}")
 async def sso_login(provider: str, request: Request):
     """Initiate SSO login with the given provider."""
-    settings = get_settings()
-
-    # Check if provider is enabled and configured
-    if provider == "google" and not (
-        settings.sso_google_enabled and settings.sso_google_client_id
-    ):
-        raise HTTPException(status_code=400, detail="Google SSO not configured")
-    if provider == "microsoft" and not (
-        settings.sso_microsoft_enabled and settings.sso_microsoft_client_id
-    ):
-        raise HTTPException(status_code=400, detail="Microsoft SSO not configured")
-    if provider == "github" and not (
-        settings.sso_github_enabled and settings.sso_github_client_id
-    ):
-        raise HTTPException(status_code=400, detail="GitHub SSO not configured")
-    if provider == "saml" and not (
-        settings.sso_saml_enabled and settings.sso_saml_metadata_url
-    ):
-        raise HTTPException(status_code=400, detail="SAML SSO not configured")
-    if provider == "oidc" and not (
-        settings.sso_oidc_enabled and settings.sso_oidc_issuer_url
-    ):
-        raise HTTPException(status_code=400, detail="OIDC SSO not configured")
-
-    # Redirect to provider's auth URL (implement with Authlib or fastapi-sso)
-    # For now, return redirect URL structure
-    redirect_urls = {
-        "google": f"https://accounts.google.com/oauth/authorize?client_id={settings.sso_google_client_id}&redirect_uri={settings.sso_google_redirect_uri}&response_type=code&scope=openid email profile",
-        "microsoft": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id}/oauth2/v2.0/authorize?client_id={settings.sso_microsoft_client_id}&redirect_uri={settings.sso_microsoft_redirect_uri}&response_type=code&scope=openid email profile",
-        "github": f"https://github.com/login/oauth/authorize?client_id={settings.sso_github_client_id}&redirect_uri={settings.sso_github_redirect_uri}&scope=read:user user:email",
-        "saml": "/api/v1/auth/sso/login/saml",  # SAML requires special handling
-        "oidc": f"{settings.sso_oidc_issuer_url}/auth?client_id={settings.sso_oidc_client_id}&redirect_uri={settings.sso_oidc_redirect_uri}&response_type=code&scope=openid email profile",
-    }
-
-    return {"redirect_url": redirect_urls.get(provider, "")}
+    try:
+        # Use OAuth service to get authorization URL
+        return await oauth_service.get_authorization_url(provider, request)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"SSO login failed for {provider}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to initiate {provider} SSO login"
+        )
 
 
 @router.get("/sso/callback/{provider}")
 async def sso_callback(provider: str, request: Request, db: Session = Depends(get_db)):
     """Handle SSO callback and user provisioning/account-linking."""
-    # Pseudo-code: Extract user info from provider
-    # user_info = await oidc_client.get_user_info(request, provider)
-    user_info = {
-        "email": "sso@example.com",
-        "external_id": "123",
-        "auth_provider": provider,
-    }
-    user_service = UserService(db)
-    user = user_service.get_user_by_external_id(user_info["external_id"], provider)
-    if not user:
-        sso_data = SSOUserCreate(
-            email=user_info["email"],
-            auth_provider=provider,
-            external_id=user_info["external_id"],
-            sso_attributes=user_info,
+    try:
+        # Handle OAuth callback
+        callback_result = await oauth_service.handle_callback(provider, request)
+        user_info = callback_result['user_info']
+        
+        # Process SSO user (create or update)
+        user = await oauth_service.process_sso_user(user_info, provider, db)
+        
+        # Create JWT tokens
+        tokens = await oauth_service.create_sso_tokens(user)
+        
+        # Log SSO event
+        log_security_event(
+            event_type="sso_login",
+            user_id=user.id,
+            description=f"User {user.email} logged in via SSO ({provider})",
+            severity="info",
         )
-        user = user_service.create_sso_user(sso_data)
-    # Log SSO event
-    log_security_event(
-        event_type="sso_login",
-        user_id=user.id,
-        description=f"User {user.email} logged in via SSO ({provider})",
-        severity="info",
-    )
-    # Issue tokens
-    access_token = create_access_token(subject=user.id)
-    refresh_token = create_refresh_token(subject=user.id)
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer",
-        expires_in=get_settings().jwt_access_token_expire_minutes * 60,
-    )
+        
+        logger.info(f"SSO login successful for {user.email} via {provider}")
+        
+        return TokenResponse(
+            access_token=tokens['access_token'],
+            refresh_token=tokens['refresh_token'],
+            token_type=tokens['token_type'],
+            expires_in=tokens['expires_in']
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"SSO callback failed for {provider}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"SSO authentication failed: {str(e)}"
+        )
 
 
 @router.post("/sso/link/{provider}")

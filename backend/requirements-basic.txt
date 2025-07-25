@@ -9,6 +9,9 @@ weaviate-client
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
+authlib[fastapi]
+fastapi-sso
+python-saml
 httpx
 python-dotenv
 loguru

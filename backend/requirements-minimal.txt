@@ -22,6 +22,9 @@ weaviate-client>=3.25.3
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.18
+authlib[fastapi]>=0.2.0
+fastapi-sso>=0.1.0
+python-saml>=1.16.0
 
 # HTTP Client
 httpx>=0.25.2
