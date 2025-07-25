@@ -128,6 +128,61 @@ async def get_public_assistants(
     )
 
 
+# Get assistant statuses
+@router.get("/status/list")
+async def get_assistant_statuses():
+    """Get all available assistant statuses."""
+    return [status.value for status in AssistantStatus]
+
+
+@router.get("/default", response_model=AssistantResponse)
+async def get_default_assistant(
+    db: Session = Depends(get_db),
+):
+    """Get the default assistant."""
+    service = AssistantService(db)
+    assistant = service.get_default_assistant()
+    if not assistant:
+        raise HTTPException(
+            status_code=404,
+            detail="No default assistant found"
+        )
+    return assistant
+
+
+@router.get("/default/id")
+async def get_default_assistant_id(
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Get the default assistant ID for the current user."""
+    service = AssistantService(db)
+    default_assistant_id = service.get_user_default_assistant_id(current_user_id)
+    if not default_assistant_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No default assistant configured for user"
+        )
+    return {"assistant_id": default_assistant_id}
+
+
+@router.post("/default/set")
+async def set_default_assistant(
+    assistant_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Set the default assistant for the current user."""
+    service = AssistantService(db)
+    success = service.set_user_default_assistant(current_user_id, assistant_id)
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to set default assistant. Assistant may not exist or you may not have access."
+        )
+    return {"message": "Default assistant set successfully"}
+
+
 # Get assistant by ID
 @router.get("/{assistant_id}", response_model=AssistantResponse)
 async def get_assistant(
@@ -200,25 +255,3 @@ async def deactivate_assistant(
     """Deactivate an assistant."""
     service = AssistantService(db)
     return await service.deactivate_assistant(assistant_id, current_user_id)
-
-
-# Get assistant statuses
-@router.get("/status/list")
-async def get_assistant_statuses():
-    """Get all available assistant statuses."""
-    return [status.value for status in AssistantStatus]
-
-
-@router.get("/default", response_model=AssistantResponse)
-async def get_default_assistant(
-    db: Session = Depends(get_db),
-):
-    """Get the default assistant."""
-    service = AssistantService(db)
-    assistant = service.get_default_assistant()
-    if not assistant:
-        raise HTTPException(
-            status_code=404,
-            detail="No default assistant found"
-        )
-    return assistant

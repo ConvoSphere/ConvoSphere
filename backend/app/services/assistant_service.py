@@ -177,6 +177,70 @@ class AssistantService:
             .first()
         )
 
+    def get_user_default_assistant_id(self, user_id: str) -> str | None:
+        """
+        Get the default assistant ID for a user from their preferences.
+
+        Args:
+            user_id: User ID
+
+        Returns:
+            Optional[str]: Default assistant ID if configured, None otherwise
+        """
+        from app.models.user import User
+        
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user or not user.preferences:
+            return None
+        
+        return user.preferences.get("default_assistant_id")
+
+    def set_user_default_assistant(self, user_id: str, assistant_id: str) -> bool:
+        """
+        Set the default assistant for a user.
+
+        Args:
+            user_id: User ID
+            assistant_id: Assistant ID to set as default
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        from app.models.user import User
+        
+        # Verify the assistant exists and user has access
+        assistant = self.get_assistant(assistant_id, user_id)
+        if not assistant:
+            return False
+        
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return False
+        
+        # Initialize preferences if not exists
+        if not user.preferences:
+            user.preferences = {}
+        
+        user.preferences["default_assistant_id"] = assistant_id
+        self.db.commit()
+        return True
+
+    def get_user_default_assistant(self, user_id: str) -> Assistant | None:
+        """
+        Get the default assistant for a user.
+
+        Args:
+            user_id: User ID
+
+        Returns:
+            Optional[Assistant]: Default assistant if configured, None otherwise
+        """
+        default_assistant_id = self.get_user_default_assistant_id(user_id)
+        if not default_assistant_id:
+            return None
+        
+        return self.get_assistant(default_assistant_id, user_id)
+
     def update_assistant(
         self,
         assistant_id: str,

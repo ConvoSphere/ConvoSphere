@@ -60,8 +60,22 @@ const Chat: React.FC = () => {
           }
         }
         
-        // Get default assistant first
-        const assistantResponse = await fetch(`${config.apiUrl}/v1/assistants/default`, {
+        // Get default assistant ID first
+        const assistantIdResponse = await fetch(`${config.apiUrl}/v1/assistants/default/id`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!assistantIdResponse.ok) {
+          throw new Error('Failed to get default assistant ID');
+        }
+        
+        const { assistant_id } = await assistantIdResponse.json();
+        
+        // Get the full assistant details
+        const assistantResponse = await fetch(`${config.apiUrl}/v1/assistants/${assistant_id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
