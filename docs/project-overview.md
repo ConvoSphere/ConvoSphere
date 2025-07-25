@@ -37,11 +37,11 @@ The AI Assistant Platform is designed to **democratize AI assistant technology**
 
 ### Component Breakdown
 
-#### Frontend Layer (NiceGUI)
-- **Pages**: Dashboard, Chat, Assistants, Knowledge Base, Tools, Settings, Admin
-- **Components**: Reusable UI components with responsive design
-- **Services**: API integration, WebSocket communication, state management
-- **Utils**: Helper functions, validators, theme management
+#### Frontend Layer (React)
+- **Pages**: Dashboard, Chat, Assistants, Knowledge Base, Tools, Conversations, MCP Tools, Settings, Profile, Admin, System Status
+- **Components**: Reusable UI components with responsive design and Ant Design
+- **Services**: API integration, WebSocket communication, state management with Zustand
+- **Utils**: Helper functions, validators, theme management, internationalization
 
 #### Backend Layer (FastAPI)
 - **API Endpoints**: RESTful API for all platform operations
@@ -64,10 +64,13 @@ The AI Assistant Platform is designed to **democratize AI assistant technology**
 ## 🔧 Key Technologies
 
 ### Frontend Stack
-- **NiceGUI 2.20.0**: Python-based reactive UI framework
+- **React 18**: Modern React with TypeScript and concurrent features
+- **Ant Design**: Enterprise UI component library
+- **Zustand**: Lightweight state management
+- **React Router**: Client-side routing with protected routes
 - **WebSocket**: Real-time communication
-- **CSS/JavaScript**: Custom styling and interactions
-- **Responsive Design**: Mobile-first approach
+- **i18next**: Internationalization (EN/DE)
+- **Responsive Design**: Mobile-first approach with accessibility support
 
 ### Backend Stack
 - **FastAPI**: High-performance web framework
