@@ -25,7 +25,7 @@ passlib[bcrypt]
 python-multipart
 authlib[fastapi]
 fastapi-sso
-python-saml
+pysaml2
 
 # HTTP Client
 httpx

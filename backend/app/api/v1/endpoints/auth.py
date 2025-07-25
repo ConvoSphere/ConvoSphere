@@ -20,6 +20,7 @@ from app.models.user import User, UserRole
 from app.schemas.user import SSOUserCreate
 from app.services.user_service import UserService
 from app.services.oauth_service import oauth_service
+from app.services.saml_service import saml_service
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
@@ -394,6 +395,7 @@ async def get_sso_providers():
                 "type": "saml",
                 "icon": "saml",
                 "login_url": "/api/v1/auth/sso/login/saml",
+                "metadata_url": "/api/v1/auth/sso/metadata",
             },
         )
 
@@ -415,8 +417,14 @@ async def get_sso_providers():
 async def sso_login(provider: str, request: Request):
     """Initiate SSO login with the given provider."""
     try:
-        # Use OAuth service to get authorization URL
-        return await oauth_service.get_authorization_url(provider, request)
+        if provider == "saml":
+            # Handle SAML login
+            login_url = await saml_service.get_login_url(request)
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(url=login_url)
+        else:
+            # Use OAuth service to get authorization URL
+            return await oauth_service.get_authorization_url(provider, request)
     except HTTPException:
         raise
     except Exception as e:
@@ -431,15 +439,26 @@ async def sso_login(provider: str, request: Request):
 async def sso_callback(provider: str, request: Request, db: Session = Depends(get_db)):
     """Handle SSO callback and user provisioning/account-linking."""
     try:
-        # Handle OAuth callback
-        callback_result = await oauth_service.handle_callback(provider, request)
-        user_info = callback_result['user_info']
-        
-        # Process SSO user (create or update)
-        user = await oauth_service.process_sso_user(user_info, provider, db)
-        
-        # Create JWT tokens
-        tokens = await oauth_service.create_sso_tokens(user)
+        if provider == "saml":
+            # Handle SAML callback
+            callback_result = await saml_service.handle_saml_response(request)
+            user_info = callback_result['user_info']
+            
+            # Process SAML user (create or update)
+            user = await saml_service.process_saml_user(user_info, db)
+            
+            # Create JWT tokens
+            tokens = await saml_service.create_saml_tokens(user)
+        else:
+            # Handle OAuth callback
+            callback_result = await oauth_service.handle_callback(provider, request)
+            user_info = callback_result['user_info']
+            
+            # Process SSO user (create or update)
+            user = await oauth_service.process_sso_user(user_info, provider, db)
+            
+            # Create JWT tokens
+            tokens = await oauth_service.create_sso_tokens(user)
         
         # Log SSO event
         log_security_event(
@@ -488,6 +507,23 @@ async def sso_link(
         severity="info",
     )
     return {"message": f"SSO account linked for {provider}"}
+
+
+@router.get("/sso/metadata")
+async def get_saml_metadata():
+    """Get SAML metadata for this service provider."""
+    try:
+        metadata = saml_service.get_metadata()
+        from fastapi.responses import Response
+        return Response(content=metadata, media_type="application/xml")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get SAML metadata: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get SAML metadata"
+        )
 
 
 # Example for permission denied:

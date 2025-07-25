@@ -11,7 +11,7 @@ passlib[bcrypt]
 python-multipart
 authlib[fastapi]
 fastapi-sso
-python-saml
+pysaml2
 httpx
 python-dotenv
 loguru

@@ -7,7 +7,7 @@ Das AI Assistant Platform unterstützt verschiedene SSO-Provider für die Authen
 - **Google OAuth2** - Für Google Workspace und persönliche Google-Konten
 - **Microsoft OAuth2** - Für Azure AD und Microsoft 365
 - **GitHub OAuth2** - Für GitHub-Konten
-- **SAML** - Für Enterprise Identity Provider (geplant)
+- **SAML** - Für Enterprise Identity Provider
 - **OIDC** - Für OpenID Connect Provider (geplant)
 
 ## 🚀 Schnellstart
@@ -35,9 +35,17 @@ SSO_GITHUB_ENABLED=true
 SSO_GITHUB_CLIENT_ID=your-github-client-id
 SSO_GITHUB_CLIENT_SECRET=your-github-client-secret
 SSO_GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/github
+
+# SAML Configuration
+SSO_SAML_ENABLED=true
+SSO_SAML_METADATA_URL=https://idp.example.com/metadata
+SSO_SAML_ENTITY_ID=http://localhost:8000
+SSO_SAML_ACS_URL=http://localhost:8000/api/v1/auth/sso/callback/saml
+SSO_SAML_CERT_FILE=/path/to/certificate.crt
+SSO_SAML_KEY_FILE=/path/to/private.key
 ```
 
-### 2. OAuth Provider konfigurieren
+### 2. SSO Provider konfigurieren
 
 #### Google OAuth2 Setup
 
@@ -69,6 +77,27 @@ SSO_GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/github
    - Homepage URL: `http://localhost:8000`
    - Authorization callback URL: `http://localhost:8000/api/v1/auth/sso/callback/github`
 4. Kopieren Sie Client ID und Client Secret
+
+#### SAML Setup
+
+1. **IdP Metadata URL konfigurieren**
+   - Stellen Sie sicher, dass Ihr Identity Provider eine Metadata URL bereitstellt
+   - Die URL sollte SAML 2.0 Metadata im XML-Format zurückgeben
+
+2. **Certificate und Private Key (optional)**
+   - Für Produktionsumgebungen sollten Sie ein gültiges SSL-Zertifikat verwenden
+   - Für Tests werden automatisch temporäre Zertifikate erstellt
+
+3. **SAML Metadata abrufen**
+   ```bash
+   curl http://localhost:8000/api/v1/auth/sso/metadata
+   ```
+   - Verwenden Sie diese Metadata in Ihrem Identity Provider
+
+4. **IdP konfigurieren**
+   - Entity ID: `http://localhost:8000`
+   - ACS URL: `http://localhost:8000/api/v1/auth/sso/callback/saml`
+   - Name ID Format: `urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress`
 
 ### 3. Backend starten
 
@@ -115,7 +144,7 @@ GET /api/v1/auth/sso/login/{provider}
 ```
 
 **Parameter:**
-- `provider`: OAuth provider (google, microsoft, github)
+- `provider`: SSO provider (google, microsoft, github, saml)
 
 **Response:** Redirect zur OAuth Provider Login-Seite
 
@@ -126,9 +155,10 @@ GET /api/v1/auth/sso/callback/{provider}
 ```
 
 **Parameter:**
-- `provider`: OAuth provider (google, microsoft, github)
-- `code`: Authorization code von OAuth Provider
-- `state`: State parameter für CSRF-Schutz
+- `provider`: SSO provider (google, microsoft, github, saml)
+- `code`: Authorization code von OAuth Provider (nur für OAuth2)
+- `state`: State parameter für CSRF-Schutz (nur für OAuth2)
+- `SAMLResponse`: Base64-encoded SAML response (nur für SAML)
 
 **Response:**
 ```json
@@ -148,7 +178,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Parameter:**
-- `provider`: OAuth provider (google, microsoft, github)
+- `provider`: SSO provider (google, microsoft, github, saml)
 
 **Response:**
 ```json
@@ -156,6 +186,18 @@ Authorization: Bearer {access_token}
   "message": "SSO account linked for google"
 }
 ```
+
+### SAML Metadata
+
+```http
+GET /api/v1/auth/sso/metadata
+```
+
+**Response:** SAML 2.0 Metadata XML
+
+**Verwendung:**
+- Diese Metadata wird benötigt, um den Service Provider in Ihrem Identity Provider zu konfigurieren
+- Die Metadata enthält alle notwendigen Endpoints und Zertifikate
 
 ## 🔐 Sicherheit
 
@@ -195,11 +237,12 @@ Wenn ein User sich zum ersten Mal über SSO anmeldet:
 
 ### User-Attribute Mapping
 
-| OAuth Provider | Email | External ID | First Name | Last Name | Display Name | Avatar |
-|----------------|-------|-------------|------------|-----------|--------------|--------|
+| SSO Provider | Email | External ID | First Name | Last Name | Display Name | Avatar |
+|--------------|-------|-------------|------------|-----------|--------------|--------|
 | Google | ✅ | sub | given_name | family_name | name | picture |
 | Microsoft | ✅ | sub | given_name | family_name | name | ❌ |
 | GitHub | ✅ | id | name.split()[0] | name.split()[1:] | name | avatar_url |
+| SAML | ✅ | uid/userid/employeeID | givenName/firstName | sn/lastName/surname | displayName/cn/commonName | ❌ |
 
 ### Account Linking
 
@@ -217,6 +260,7 @@ Bestehende User können SSO-Accounts verknüpfen:
 ```bash
 cd backend
 python3 -m pytest tests/test_sso.py -v
+python3 -m pytest tests/test_saml.py -v
 ```
 
 ### Integration Tests
