@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Optional
 
 from app.core.database import SessionLocal as AppSessionLocal
-from app.core.redis_client import get_redis_client
-from app.core.weaviate_client import get_weaviate_client
+from app.core.redis_client import get_redis
+from app.core.weaviate_client import get_weaviate
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
@@ -24,7 +24,7 @@ from app.schemas.user import UserCreate
 from app.services.user_service import UserService
 
 # DB-Session vorbereiten
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
