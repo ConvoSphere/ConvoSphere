@@ -81,3 +81,39 @@ class FileUploadError(ChatAssistantError):
 
 class ProcessingError(ChatAssistantError):
     """Raised when data processing fails."""
+
+
+class AuthenticationError(ChatAssistantError):
+    """Raised when authentication fails."""
+
+
+class SSOConfigurationError(ChatAssistantError):
+    """Raised when SSO configuration is invalid."""
+
+
+class GroupSyncError(ChatAssistantError):
+    """Raised when group synchronization fails."""
+
+
+class DomainGroupNotFoundError(ChatAssistantError):
+    """Raised when domain group is not found."""
+
+
+class ResourceNotFoundError(ChatAssistantError):
+    """Raised when resource is not found."""
+
+
+class InvitationNotFoundError(ChatAssistantError):
+    """Raised when invitation is not found."""
+
+
+class InvalidAccessLevelError(ChatAssistantError):
+    """Raised when access level is invalid."""
+
+
+class SessionError(ChatAssistantError):
+    """Raised when session operation fails."""
+
+
+class SecurityError(ChatAssistantError):
+    """Raised when security check fails."""
