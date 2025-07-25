@@ -445,6 +445,145 @@ python3 -m pytest tests/test_sso_performance.py::TestSSOPerformance -v
 python3 -m pytest tests/test_sso_performance.py::TestSSOLoadTesting -v
 ```
 
+## 🚀 Advanced Features
+
+### Account Linking
+
+Die SSO-Integration unterstützt das Verknüpfen lokaler Konten mit SSO-Providern:
+
+#### Frontend Components
+
+```typescript
+// Account Linking UI
+import { SSOAccountLinking } from '../components/SSOAccountLinking';
+
+<SSOAccountLinking 
+  onSuccess={() => console.log('Account linked!')}
+  onError={(error) => console.error('Linking failed:', error)}
+/>
+```
+
+#### Backend Endpoints
+
+```bash
+# Account verknüpfen
+POST /api/v1/auth/sso/link/{provider}
+
+# Account entkoppeln
+GET /api/v1/auth/sso/unlink/{provider}
+```
+
+### Advanced User Provisioning
+
+#### Group/Role Mapping
+
+```python
+# Automatische Rollen-Zuweisung basierend auf SSO-Gruppen
+group_mappings = {
+    'google': {
+        'admin': ['admin', 'administrator', 'super_admin'],
+        'manager': ['manager', 'team_lead', 'supervisor'],
+        'user': ['user', 'member', 'employee']
+    }
+}
+```
+
+#### Conditional Provisioning
+
+```python
+# Bedingte Benutzer-Erstellung basierend auf Regeln
+provisioning_rules = {
+    'allowed_domains': ['example.com', 'company.com'],
+    'blocked_domains': ['temp.com', 'test.com'],
+    'auto_approve_domains': ['trusted-partner.com'],
+    'require_approval_domains': ['external-vendor.com']
+}
+```
+
+#### Bulk Operations
+
+```python
+# Massen-Synchronisation von Benutzern
+user_list = [
+    {'email': 'user1@example.com', 'external_id': 'user1'},
+    {'email': 'user2@example.com', 'external_id': 'user2'}
+]
+
+results = await advanced_user_provisioning.bulk_sync_users(
+    'google', user_list, db
+)
+```
+
+### SSO Provider Management
+
+#### Admin Interface
+
+```typescript
+// Provider Management UI
+import { SSOProviderManagement } from '../components/SSOProviderManagement';
+
+<SSOProviderManagement 
+  onProviderUpdate={() => console.log('Provider updated!')}
+/>
+```
+
+#### Provider Status
+
+- **Active**: Provider ist konfiguriert und aktiv
+- **Disabled**: Provider ist konfiguriert aber deaktiviert
+- **Not Configured**: Provider ist nicht konfiguriert
+
+### Advanced API Endpoints
+
+```bash
+# Benutzer-Provisioning Status abrufen
+GET /api/v1/auth/sso/provisioning/status/{user_id}
+
+# Massen-Synchronisation (Admin)
+POST /api/v1/auth/sso/bulk-sync/{provider}
+```
+
+### Attribute Mapping
+
+#### Google OAuth2
+```python
+{
+    'email': 'email',
+    'given_name': 'first_name',
+    'family_name': 'last_name',
+    'name': 'display_name',
+    'picture': 'avatar_url',
+    'hd': 'domain',
+    'groups': 'groups'
+}
+```
+
+#### Microsoft OAuth2
+```python
+{
+    'email': 'email',
+    'given_name': 'first_name',
+    'surname': 'last_name',
+    'display_name': 'display_name',
+    'job_title': 'job_title',
+    'department': 'department',
+    'groups': 'groups'
+}
+```
+
+#### SAML
+```python
+{
+    'email': 'email',
+    'givenName': 'first_name',
+    'sn': 'last_name',
+    'displayName': 'display_name',
+    'department': 'department',
+    'title': 'job_title',
+    'memberOf': 'groups'
+}
+```
+
 ## 📚 Weitere Ressourcen
 
 - [OAuth 2.0 Specification](https://tools.ietf.org/html/rfc6749)

@@ -37,6 +37,26 @@ export async function ssoLink(provider: string) {
   return response.data;
 }
 
+export async function ssoUnlink(provider: string) {
+  // Call backend SSO unlink endpoint
+  const response = await api.get(`/v1/auth/sso/unlink/${provider}`);
+  return response.data;
+}
+
+export async function getUserProvisioningStatus(userId: string) {
+  // Get user provisioning status
+  const response = await api.get(`/v1/auth/sso/provisioning/status/${userId}`);
+  return response.data;
+}
+
+export async function bulkSyncUsers(provider: string, userList: any[]) {
+  // Bulk sync users from SSO provider
+  const response = await api.post(`/v1/auth/sso/bulk-sync/${provider}`, {
+    user_list: userList
+  });
+  return response.data;
+}
+
 export function logout() {
   localStorage.removeItem('token');
 } 

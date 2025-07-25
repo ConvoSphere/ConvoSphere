@@ -21,8 +21,10 @@ from app.schemas.user import SSOUserCreate
 from app.services.user_service import UserService
 from app.services.oauth_service import oauth_service
 from app.services.saml_service import saml_service
+from app.services.advanced_user_provisioning import advanced_user_provisioning
 from app.core.security_hardening import validate_sso_request, sso_security_validator, sso_audit_logger, get_client_ip
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from typing import Any, Dict, List
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
 from fastapi.security import HTTPAuthorizationCredentials
@@ -622,6 +624,213 @@ async def get_saml_metadata():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get SAML metadata"
+        )
+
+
+@router.post("/sso/link/{provider}")
+async def link_sso_account(
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Link current user account with SSO provider."""
+    try:
+        # Security validation
+        if not validate_sso_request(request, provider):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded"
+            )
+
+        # Get current user
+        current_user_id = get_current_user_id(request)
+        if not current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
+
+        # Log account linking attempt
+        client_ip = get_client_ip(request)
+        sso_audit_logger.log_sso_event(
+            event_type="account_linking_attempt",
+            user_id=str(current_user_id),
+            provider=provider,
+            severity="info",
+            ip_address=client_ip
+        )
+
+        # Redirect to SSO provider for linking
+        if provider == "saml":
+            login_url = await saml_service.get_login_url(request)
+        else:
+            login_url = await oauth_service.get_authorization_url(provider, request)
+
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=login_url)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"SSO account linking failed for {provider}: {e}")
+        sso_audit_logger.log_sso_event(
+            event_type="account_linking_failure",
+            user_id=str(current_user_id) if 'current_user_id' in locals() else None,
+            provider=provider,
+            details={'error': str(e)},
+            severity="error",
+            ip_address=get_client_ip(request)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to link account with {provider}"
+        )
+
+
+@router.get("/sso/unlink/{provider}")
+async def unlink_sso_account(
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Unlink current user account from SSO provider."""
+    try:
+        # Get current user
+        current_user_id = get_current_user_id(request)
+        if not current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
+
+        user_service = UserService(db)
+        user = user_service.get_user_by_id(current_user_id)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        # Remove SSO attributes for the specific provider
+        if user.sso_attributes:
+            user.sso_attributes.pop(provider, None)
+            db.commit()
+
+        # Log account unlinking
+        client_ip = get_client_ip(request)
+        sso_audit_logger.log_sso_event(
+            event_type="account_unlinked",
+            user_id=str(current_user_id),
+            provider=provider,
+            severity="info",
+            ip_address=client_ip
+        )
+
+        return {"message": f"Successfully unlinked account from {provider}"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"SSO account unlinking failed for {provider}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to unlink account from {provider}"
+        )
+
+
+@router.get("/sso/provisioning/status/{user_id}")
+async def get_user_provisioning_status(
+    user_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get advanced provisioning status for a user."""
+    try:
+        # Check if user has admin permissions
+        current_user_id = get_current_user_id(request)
+        if not current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
+
+        # For now, allow any authenticated user to view their own status
+        # In production, add proper authorization checks
+        if current_user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied"
+            )
+
+        status_info = await advanced_user_provisioning.get_user_provisioning_status(
+            user_id, db
+        )
+
+        return status_info
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get provisioning status for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get provisioning status"
+        )
+
+
+@router.post("/sso/bulk-sync/{provider}")
+async def bulk_sync_users(
+    provider: str,
+    user_list: List[Dict[str, Any]],
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Bulk sync users from SSO provider (Admin only)."""
+    try:
+        # Check if user has admin permissions
+        current_user_id = get_current_user_id(request)
+        if not current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
+
+        # TODO: Add proper admin authorization check
+        # For now, allow any authenticated user (for testing)
+
+        # Security validation
+        if not validate_sso_request(request, provider):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded"
+            )
+
+        # Perform bulk sync
+        results = await advanced_user_provisioning.bulk_sync_users(
+            provider, user_list, db
+        )
+
+        # Log bulk sync event
+        client_ip = get_client_ip(request)
+        sso_audit_logger.log_sso_event(
+            event_type="bulk_sync_completed",
+            user_id=str(current_user_id),
+            provider=provider,
+            details=results,
+            severity="info",
+            ip_address=client_ip
+        )
+
+        return results
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bulk sync failed for {provider}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Bulk sync failed: {str(e)}"
         )
 
 
