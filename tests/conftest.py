@@ -15,6 +15,10 @@ from httpx import AsyncClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+# Update import paths for new test structure
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from backend.app.core.database import get_db
 from backend.app.models.base import Base
 
