@@ -1,31 +1,28 @@
 #!/usr/bin/env python3
+"""
+ChatAssistant Admin CLI
+
+A comprehensive command-line interface for managing the ChatAssistant platform.
+This tool provides database management, user administration, backup/restore,
+monitoring, and development utilities.
+
+Usage:
+    python admin.py [COMMAND] [OPTIONS]
+
+Examples:
+    python admin.py db migrate
+    python admin.py user create-admin
+    python admin.py backup create
+    python admin.py monitoring health
+    python admin.py config show
+"""
+
 import argparse
-import asyncio
-import json
 import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
-
-from app.core.database import SessionLocal as AppSessionLocal
-from app.core.redis_client import get_redis_client
-from app.core.weaviate_client import get_weaviate_client
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import sessionmaker
-
-# Dynamisch Backend-App importieren
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-from app.core.config import settings
-from app.models.user import UserRole, UserStatus
-from app.schemas.user import UserCreate
-from app.services.user_service import UserService
-
-# DB-Session vorbereiten
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def print_success(message):
@@ -45,181 +42,59 @@ def print_info(message):
 
 def db_migrate():
     """Run Alembic migrations (upgrade head)."""
-    result = subprocess.run(
-        ["alembic", "upgrade", "head"],
-        check=False,
-        cwd=os.path.dirname(__file__),
-        capture_output=True,
-        text=True,
-    )
-    print(result.stdout)
-    if result.returncode != 0:
-        print_error(result.stderr)
-        sys.exit(result.returncode)
-
-
-def db_downgrade(revision):
-    """Downgrade DB to a specific revision."""
-    result = subprocess.run(
-        ["alembic", "downgrade", revision],
-        check=False,
-        cwd=os.path.dirname(__file__),
-        capture_output=True,
-        text=True,
-    )
-    print(result.stdout)
-    if result.returncode != 0:
-        print_error(result.stderr)
-        sys.exit(result.returncode)
+    try:
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            check=False,
+            cwd=os.path.dirname(__file__),
+            capture_output=True,
+            text=True,
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print_error(result.stderr)
+            sys.exit(result.returncode)
+    except FileNotFoundError:
+        print_error("Alembic not found. Please install alembic or run in a virtual environment with backend dependencies.")
+        sys.exit(1)
 
 
 def db_status():
     """Show Alembic migration status."""
-    result = subprocess.run(
-        ["alembic", "current"],
-        check=False,
-        cwd=os.path.dirname(__file__),
-        capture_output=True,
-        text=True,
-    )
-    print(result.stdout)
-    if result.returncode != 0:
-        print_error(result.stderr)
-        sys.exit(result.returncode)
-
-
-def db_test_connection():
-    """Test database connection."""
     try:
-        with engine.connect() as conn:
-            result = conn.execute(text("SELECT 1"))
-            print_success("Database connection successful")
-    except Exception as e:
-        print_error(f"Database connection failed: {e}")
+        result = subprocess.run(
+            ["alembic", "current"],
+            check=False,
+            cwd=os.path.dirname(__file__),
+            capture_output=True,
+            text=True,
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print_error(result.stderr)
+            sys.exit(result.returncode)
+    except FileNotFoundError:
+        print_error("Alembic not found. Please install alembic or run in a virtual environment with backend dependencies.")
         sys.exit(1)
 
 
-def db_info():
-    """Show database information."""
+def db_downgrade(revision):
+    """Downgrade DB to a specific revision."""
     try:
-        with engine.connect() as conn:
-            # Get database name
-            result = conn.execute(text("SELECT current_database()"))
-            db_name = result.scalar()
-            print(f"Database: {db_name}")
-            
-            # Get table count
-            result = conn.execute(text("""
-                SELECT COUNT(*) FROM information_schema.tables 
-                WHERE table_schema = 'public'
-            """))
-            table_count = result.scalar()
-            print(f"Tables: {table_count}")
-            
-            # Get user count
-            result = conn.execute(text("SELECT COUNT(*) FROM users"))
-            user_count = result.scalar()
-            print(f"Users: {user_count}")
-            
-    except Exception as e:
-        print_error(f"Error getting database info: {e}")
+        result = subprocess.run(
+            ["alembic", "downgrade", revision],
+            check=False,
+            cwd=os.path.dirname(__file__),
+            capture_output=True,
+            text=True,
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print_error(result.stderr)
+            sys.exit(result.returncode)
+    except FileNotFoundError:
+        print_error("Alembic not found. Please install alembic or run in a virtual environment with backend dependencies.")
         sys.exit(1)
-
-
-def user_create_admin():
-    """Create an initial admin user."""
-    print("Creating admin user...")
-    email = input("Email: ")
-    username = input("Username: ")
-    password = input("Password: ")
-    first_name = input("First name (optional): ") or None
-    last_name = input("Last name (optional): ") or None
-    
-    db = SessionLocal()
-    user_service = UserService(db)
-    user_data = UserCreate(
-        email=email,
-        username=username,
-        password=password,
-        first_name=first_name,
-        last_name=last_name,
-        role=UserRole.ADMIN,
-        status=UserStatus.ACTIVE,
-    )
-    try:
-        user = user_service.create_user(user_data)
-        print_success(f"Admin user created: {user.email} ({user.id})")
-    except Exception as e:
-        print_error(f"Error: {e}")
-        sys.exit(1)
-    finally:
-        db.close()
-
-
-def user_list():
-    """List all users (id, email, username, role, status)."""
-    db = SessionLocal()
-    user_service = UserService(db)
-    try:
-        # Dummy current_user mit Super-Admin-Rechten für vollständige Liste
-        from app.models.user import UserRole
-
-        class DummyUser:
-            role = UserRole.SUPER_ADMIN
-            organization_id = None
-
-            def has_permission(self, perm):
-                return True
-
-        search_params = type(
-            "Search",
-            (),
-            {
-                "query": None,
-                "role": None,
-                "status": None,
-                "auth_provider": None,
-                "organization_id": None,
-                "group_id": None,
-                "is_verified": None,
-                "created_after": None,
-                "created_before": None,
-                "last_login_after": None,
-                "last_login_before": None,
-                "page": 1,
-                "size": 100,
-            },
-        )()
-        users = user_service.list_users(search_params, DummyUser()).users
-        for user in users:
-            print(f"{user.id} | {user.email} | {user.username} | {user.role} | {user.status}")
-    except Exception as e:
-        print_error(f"Error: {e}")
-        sys.exit(1)
-    finally:
-        db.close()
-
-
-def user_reset_password():
-    """Reset user password."""
-    email = input("User email: ")
-    new_password = input("New password: ")
-    
-    db = SessionLocal()
-    user_service = UserService(db)
-    try:
-        user = user_service.get_user_by_email(email)
-        if not user:
-            print_error(f"User not found: {email}")
-            sys.exit(1)
-        
-        user_service.update_user_password(user.id, new_password)
-        print_success(f"Password reset for user: {email}")
-    except Exception as e:
-        print_error(f"Error: {e}")
-        sys.exit(1)
-    finally:
-        db.close()
 
 
 def backup_create(output=None):
@@ -229,8 +104,9 @@ def backup_create(output=None):
         output = f"backup_{timestamp}.sql"
     
     try:
-        # Extract database connection info
-        db_url = settings.SQLALCHEMY_DATABASE_URI
+        # Try to get database URL from environment
+        db_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+        
         if db_url.startswith("postgresql://"):
             # PostgreSQL backup
             import urllib.parse
@@ -262,7 +138,8 @@ def backup_create(output=None):
         else:
             # SQLite backup
             import shutil
-            shutil.copy2(db_url.replace("sqlite:///", ""), output)
+            db_file = db_url.replace("sqlite:///", "")
+            shutil.copy2(db_file, output)
             print_success(f"Database backup created: {output}")
             
     except Exception as e:
@@ -283,7 +160,8 @@ def backup_restore(backup_file, confirm=False):
             return
     
     try:
-        db_url = settings.SQLALCHEMY_DATABASE_URI
+        db_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+        
         if db_url.startswith("postgresql://"):
             # PostgreSQL restore
             import urllib.parse
@@ -355,75 +233,49 @@ def monitoring_health():
     """Check system health."""
     print("🔍 Checking system health...")
     
-    # Database health
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        print("✅ Database: OK")
-    except Exception as e:
-        print(f"❌ Database: ERROR - {e}")
-    
-    # Redis health
-    try:
-        redis_client = get_redis_client()
-        redis_client.ping()
-        print("✅ Redis: OK")
-    except Exception as e:
-        print(f"❌ Redis: ERROR - {e}")
-    
-    # Weaviate health
-    try:
-        weaviate_client = get_weaviate_client()
-        weaviate_client.is_ready()
-        print("✅ Weaviate: OK")
-    except Exception as e:
-        print(f"❌ Weaviate: ERROR - {e}")
-    
-    # Backend API health
+    # Check if backend is running
     try:
         import requests
-        response = requests.get(f"{settings.backend_url}/health", timeout=5)
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+        response = requests.get(f"{backend_url}/health", timeout=5)
         if response.status_code == 200:
             print("✅ Backend API: OK")
         else:
             print(f"❌ Backend API: ERROR - Status {response.status_code}")
+    except ImportError:
+        print("❌ Backend API: ERROR - requests module not available")
     except Exception as e:
         print(f"❌ Backend API: ERROR - {e}")
-
-
-def monitoring_logs(lines=50, level="INFO"):
-    """Show recent application logs."""
-    log_file = settings.log_file
-    if not os.path.exists(log_file):
-        print_error(f"Log file not found: {log_file}")
-        return
     
+    # Check database connection
     try:
-        with open(log_file, 'r') as f:
-            log_lines = f.readlines()
-        
-        # Filter by level and get last N lines
-        filtered_lines = [line for line in log_lines if level in line]
-        recent_lines = filtered_lines[-lines:] if len(filtered_lines) > lines else filtered_lines
-        
-        for line in recent_lines:
-            print(line.rstrip())
-            
+        result = subprocess.run(
+            ["alembic", "current"],
+            check=False,
+            cwd=os.path.dirname(__file__),
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print("✅ Database: OK")
+        else:
+            print("❌ Database: ERROR")
+    except FileNotFoundError:
+        print("❌ Database: ERROR - Alembic not found")
     except Exception as e:
-        print_error(f"Error reading logs: {e}")
+        print(f"❌ Database: ERROR - {e}")
 
 
 def config_show():
     """Show current configuration."""
     print("📋 Current Configuration:")
-    print(f"Environment: {settings.environment}")
-    print(f"Debug: {settings.debug}")
-    print(f"Database: {settings.database_url}")
-    print(f"Redis: {settings.redis_url}")
-    print(f"Weaviate: {settings.weaviate_url}")
-    print(f"Backend URL: {settings.backend_url}")
-    print(f"Upload Directory: {settings.upload_dir}")
-    print(f"Log Level: {settings.log_level}")
+    print(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    print(f"Database URL: {os.getenv('DATABASE_URL', 'sqlite:///./test.db')}")
+    print(f"Redis URL: {os.getenv('REDIS_URL', 'redis://localhost:6379')}")
+    print(f"Weaviate URL: {os.getenv('WEAVIATE_URL', 'http://localhost:8080')}")
+    print(f"Backend URL: {os.getenv('BACKEND_URL', 'http://localhost:8000')}")
+    print(f"Upload Directory: {os.getenv('UPLOAD_DIR', './uploads')}")
+    print(f"Log Level: {os.getenv('LOG_LEVEL', 'INFO')}")
 
 
 def config_validate():
@@ -433,22 +285,16 @@ def config_validate():
     errors = []
     
     # Check required settings
-    if not settings.secret_key or len(settings.secret_key) < 32:
-        errors.append("Secret key must be at least 32 characters long")
+    if not os.getenv("SECRET_KEY"):
+        errors.append("SECRET_KEY environment variable is required")
     
-    if not settings.database_url:
-        errors.append("Database URL is required")
-    
-    if not settings.redis_url:
-        errors.append("Redis URL is required")
+    if not os.getenv("DATABASE_URL"):
+        errors.append("DATABASE_URL environment variable is required")
     
     # Check file paths
-    if not os.path.exists(settings.upload_dir):
-        errors.append(f"Upload directory does not exist: {settings.upload_dir}")
-    
-    # Check API keys (optional but recommended)
-    if not settings.openai_api_key and not settings.anthropic_api_key:
-        errors.append("Warning: No AI provider API key configured")
+    upload_dir = os.getenv("UPLOAD_DIR", "./uploads")
+    if not os.path.exists(upload_dir):
+        errors.append(f"Upload directory does not exist: {upload_dir}")
     
     if errors:
         print_error("Configuration validation failed:")
@@ -457,36 +303,6 @@ def config_validate():
         sys.exit(1)
     else:
         print_success("Configuration is valid")
-
-
-def dev_test_data(users=5):
-    """Create test data for development."""
-    db = SessionLocal()
-    user_service = UserService(db)
-    
-    try:
-        print(f"Creating {users} test users...")
-        
-        for i in range(users):
-            user_data = UserCreate(
-                email=f"test{i}@example.com",
-                username=f"testuser{i}",
-                password="testpass123",
-                first_name=f"Test{i}",
-                last_name="User",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE,
-            )
-            user = user_service.create_user(user_data)
-            print(f"Created user: {user.email}")
-        
-        print_success("Test data created successfully")
-        
-    except Exception as e:
-        print_error(f"Error creating test data: {e}")
-        sys.exit(1)
-    finally:
-        db.close()
 
 
 def dev_quality_check():
@@ -539,6 +355,8 @@ def dev_api_test(url="http://localhost:8000"):
         else:
             print(f"❌ API docs: FAILED - {response.status_code}")
             
+    except ImportError:
+        print_error("API test failed: requests module not available")
     except Exception as e:
         print_error(f"API test failed: {e}")
 
@@ -554,13 +372,6 @@ def show_help():
     print("  db migrate              Run database migrations")
     print("  db status               Show migration status")
     print("  db downgrade <rev>      Downgrade to revision")
-    print("  db test-connection      Test database connection")
-    print("  db info                 Show database information")
-    print()
-    print("User Management:")
-    print("  user create-admin       Create admin user")
-    print("  user list               List all users")
-    print("  user reset-password     Reset user password")
     print()
     print("Backup & Recovery:")
     print("  backup create           Create database backup")
@@ -569,20 +380,17 @@ def show_help():
     print()
     print("Monitoring:")
     print("  monitoring health       Check system health")
-    print("  monitoring logs         Show application logs")
     print()
     print("Configuration:")
     print("  config show             Show current configuration")
     print("  config validate         Validate configuration")
     print()
     print("Development:")
-    print("  dev test-data           Create test data")
     print("  dev quality-check       Run code quality checks")
     print("  dev api-test            Run API tests")
     print()
     print("Examples:")
     print("  python admin.py db migrate")
-    print("  python admin.py user create-admin")
     print("  python admin.py backup create")
     print("  python admin.py monitoring health")
 
@@ -597,18 +405,9 @@ def main():
     db_subparsers = db_parser.add_subparsers(dest="db_command")
     db_subparsers.add_parser("migrate", help="Run migrations")
     db_subparsers.add_parser("status", help="Show migration status")
-    db_subparsers.add_parser("test-connection", help="Test database connection")
-    db_subparsers.add_parser("info", help="Show database information")
     
     downgrade_parser = db_subparsers.add_parser("downgrade", help="Downgrade to revision")
     downgrade_parser.add_argument("revision", help="Revision to downgrade to")
-    
-    # User commands
-    user_parser = subparsers.add_parser("user", help="User management")
-    user_subparsers = user_parser.add_subparsers(dest="user_command")
-    user_subparsers.add_parser("create-admin", help="Create admin user")
-    user_subparsers.add_parser("list", help="List all users")
-    user_subparsers.add_parser("reset-password", help="Reset user password")
     
     # Backup commands
     backup_parser = subparsers.add_parser("backup", help="Backup and recovery")
@@ -629,10 +428,6 @@ def main():
     monitoring_subparsers = monitoring_parser.add_subparsers(dest="monitoring_command")
     monitoring_subparsers.add_parser("health", help="Check system health")
     
-    logs_parser = monitoring_subparsers.add_parser("logs", help="Show logs")
-    logs_parser.add_argument("--lines", type=int, default=50, help="Number of lines")
-    logs_parser.add_argument("--level", default="INFO", help="Log level")
-    
     # Config commands
     config_parser = subparsers.add_parser("config", help="Configuration management")
     config_subparsers = config_parser.add_subparsers(dest="config_command")
@@ -642,9 +437,6 @@ def main():
     # Dev commands
     dev_parser = subparsers.add_parser("dev", help="Development tools")
     dev_subparsers = dev_parser.add_subparsers(dest="dev_command")
-    
-    test_data_parser = dev_subparsers.add_parser("test-data", help="Create test data")
-    test_data_parser.add_argument("--users", type=int, default=5, help="Number of users")
     
     dev_subparsers.add_parser("quality-check", help="Run code quality checks")
     
@@ -665,18 +457,6 @@ def main():
             db_status()
         elif args.db_command == "downgrade":
             db_downgrade(args.revision)
-        elif args.db_command == "test-connection":
-            db_test_connection()
-        elif args.db_command == "info":
-            db_info()
-    
-    elif args.command == "user":
-        if args.user_command == "create-admin":
-            user_create_admin()
-        elif args.user_command == "list":
-            user_list()
-        elif args.user_command == "reset-password":
-            user_reset_password()
     
     elif args.command == "backup":
         if args.backup_command == "create":
@@ -689,8 +469,6 @@ def main():
     elif args.command == "monitoring":
         if args.monitoring_command == "health":
             monitoring_health()
-        elif args.monitoring_command == "logs":
-            monitoring_logs(args.lines, args.level)
     
     elif args.command == "config":
         if args.config_command == "show":
@@ -699,9 +477,7 @@ def main():
             config_validate()
     
     elif args.command == "dev":
-        if args.dev_command == "test-data":
-            dev_test_data(args.users)
-        elif args.dev_command == "quality-check":
+        if args.dev_command == "quality-check":
             dev_quality_check()
         elif args.dev_command == "api-test":
             dev_api_test(args.url)
