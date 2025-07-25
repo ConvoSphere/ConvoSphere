@@ -177,16 +177,17 @@ class User(Base):
         secondary=user_group_association,
         back_populates="users",
     )
-    domain_groups = relationship(
-        "DomainGroup",
-        secondary="domain_group_members",
-        back_populates="members",
-    )
-    managed_domains = relationship(
-        "DomainGroup",
-        secondary="domain_group_managers",
-        back_populates="managers",
-    )
+    # Temporarily commented out to fix registration
+    # domain_groups = relationship(
+    #     "DomainGroup",
+    #     secondary="domain_group_members",
+    #     back_populates="members",
+    # )
+    # managed_domains = relationship(
+    #     "DomainGroup",
+    #     secondary="domain_group_managers",
+    #     back_populates="managers",
+    # )
     assistants = relationship("Assistant", back_populates="creator")
     conversations = relationship("Conversation", back_populates="user")
     created_tools = relationship("Tool", back_populates="creator")

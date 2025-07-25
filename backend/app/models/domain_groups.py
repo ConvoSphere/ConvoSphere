@@ -147,11 +147,12 @@ class DomainGroup(Base):
     parent_domain = relationship("DomainGroup", remote_side=[id], backref="child_domains")
     
     # Domain managers
-    managers = relationship(
-        "User",
-        secondary="domain_group_managers",
-        back_populates="managed_domains"
-    )
+    # Temporarily commented out to fix registration
+    # managers = relationship(
+    #     "User",
+    #     secondary="domain_group_managers",
+    #     back_populates="managed_domains"
+    # )
     
     def __repr__(self) -> str:
         return f"<DomainGroup(id={self.id}, name='{self.name}', type='{self.domain_type}')>"
