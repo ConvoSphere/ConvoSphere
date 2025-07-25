@@ -428,9 +428,9 @@ class ToolExecutor:
             }
 
             if param.enum:
-                schema["function"]["parameters"]["properties"][param.name]["enum"] = (
-                    param.enum
-                )
+                schema["function"]["parameters"]["properties"][param.name][
+                    "enum"
+                ] = param.enum
 
             if param.min_value is not None:
                 schema["function"]["parameters"]["properties"][param.name][
@@ -517,9 +517,9 @@ class ToolExecutor:
             "completed": completed,
             "failed": failed,
             "timeout": timeout,
-            "success_rate": (completed / total_executions * 100)
-            if total_executions > 0
-            else 0,
+            "success_rate": (
+                (completed / total_executions * 100) if total_executions > 0 else 0
+            ),
             "average_execution_time": avg_execution_time,
             "available_tools": len(self.tools),
         }

@@ -184,18 +184,27 @@ class ExtendedAuditLog(Base):
     event_type = Column(SQLEnum(AuditEventType), nullable=False, index=True)
     event_category = Column(SQLEnum(AuditEventCategory), nullable=False, index=True)
     severity = Column(
-        SQLEnum(AuditSeverity), default=AuditSeverity.INFO, nullable=False, index=True,
+        SQLEnum(AuditSeverity),
+        default=AuditSeverity.INFO,
+        nullable=False,
+        index=True,
     )
 
     # Timestamps
     timestamp = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True,
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True,
     )
     event_duration = Column(Integer, nullable=True)  # Duration in milliseconds
 
     # User and session information
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True,
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True,
     )
     username = Column(String(255), nullable=True, index=True)
     session_id = Column(String(255), nullable=True, index=True)
@@ -242,7 +251,10 @@ class ExtendedAuditLog(Base):
         Index("idx_audit_event_type_timestamp", "event_type", "timestamp"),
         Index("idx_audit_severity_timestamp", "severity", "timestamp"),
         Index(
-            "idx_audit_resource_timestamp", "resource_type", "resource_id", "timestamp",
+            "idx_audit_resource_timestamp",
+            "resource_type",
+            "resource_id",
+            "timestamp",
         ),
         Index("idx_audit_compliance_timestamp", "compliance_frameworks", "timestamp"),
     )
@@ -343,10 +355,13 @@ class AuditRetentionRule(Base):
 
     # Action settings
     action_on_expiry = Column(
-        String(50), default="delete", nullable=False,
+        String(50),
+        default="delete",
+        nullable=False,
     )  # delete, archive, anonymize
     notify_before_expiry = Column(
-        Integer, nullable=True,
+        Integer,
+        nullable=True,
     )  # Days before expiry to notify
 
     # Status
@@ -379,7 +394,9 @@ class ComplianceReport(Base):
 
     # Status
     status = Column(
-        String(50), default="draft", nullable=False,
+        String(50),
+        default="draft",
+        nullable=False,
     )  # draft, review, approved, archived
     approved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     approved_at = Column(DateTime(timezone=True), nullable=True)
@@ -455,7 +472,9 @@ class AuditArchive(Base):
 
     # Status
     status = Column(
-        String(50), default="archiving", nullable=False,
+        String(50),
+        default="archiving",
+        nullable=False,
     )  # archiving, completed, failed
     archived_at = Column(DateTime(timezone=True), nullable=True)
     retention_expiry = Column(DateTime(timezone=True), nullable=True)

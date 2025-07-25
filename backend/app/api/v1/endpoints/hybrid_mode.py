@@ -5,12 +5,8 @@ This module provides API endpoints for managing hybrid chat/agent mode
 switching, configuration, and status queries.
 """
 
-from typing import Any, Dict, List, Optional
 from datetime import datetime
-
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
@@ -23,6 +19,9 @@ from app.schemas.hybrid_mode import (
     ModeDecision,
 )
 from app.services.hybrid_mode_manager import hybrid_mode_manager
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -32,20 +31,41 @@ class ModeChangeRequestModel(BaseModel):
     """Request model for mode change."""
 
     target_mode: ConversationMode = Field(..., description="Target conversation mode")
-    reason: Optional[str] = Field(None, description="User-provided reason for mode change")
-    force_change: bool = Field(default=False, description="Force mode change ignoring recommendations")
+    reason: Optional[str] = Field(
+        None, description="User-provided reason for mode change"
+    )
+    force_change: bool = Field(
+        default=False, description="Force mode change ignoring recommendations"
+    )
 
 
 class HybridModeConfigModel(BaseModel):
     """Configuration model for hybrid mode."""
 
-    auto_mode_enabled: bool = Field(default=True, description="Enable automatic mode switching")
-    complexity_threshold: float = Field(default=0.7, ge=0.0, le=1.0, description="Complexity threshold for agent mode")
-    confidence_threshold: float = Field(default=0.8, ge=0.0, le=1.0, description="Confidence threshold for mode decisions")
-    context_window_size: int = Field(default=10, ge=1, le=100, description="Context window size for memory")
-    memory_retention_hours: int = Field(default=24, ge=1, le=168, description="Memory retention in hours")
-    reasoning_steps_max: int = Field(default=5, ge=1, le=20, description="Maximum reasoning steps")
-    tool_relevance_threshold: float = Field(default=0.6, ge=0.0, le=1.0, description="Tool relevance threshold")
+    auto_mode_enabled: bool = Field(
+        default=True, description="Enable automatic mode switching"
+    )
+    complexity_threshold: float = Field(
+        default=0.7, ge=0.0, le=1.0, description="Complexity threshold for agent mode"
+    )
+    confidence_threshold: float = Field(
+        default=0.8,
+        ge=0.0,
+        le=1.0,
+        description="Confidence threshold for mode decisions",
+    )
+    context_window_size: int = Field(
+        default=10, ge=1, le=100, description="Context window size for memory"
+    )
+    memory_retention_hours: int = Field(
+        default=24, ge=1, le=168, description="Memory retention in hours"
+    )
+    reasoning_steps_max: int = Field(
+        default=5, ge=1, le=20, description="Maximum reasoning steps"
+    )
+    tool_relevance_threshold: float = Field(
+        default=0.6, ge=0.0, le=1.0, description="Tool relevance threshold"
+    )
 
 
 class ConversationModeStatus(BaseModel):
@@ -54,7 +74,9 @@ class ConversationModeStatus(BaseModel):
     conversation_id: str = Field(..., description="Conversation ID")
     current_mode: ConversationMode = Field(..., description="Current conversation mode")
     last_mode_change: str = Field(..., description="Last mode change timestamp")
-    mode_history: List[Dict[str, Any]] = Field(default_factory=list, description="Mode change history")
+    mode_history: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Mode change history"
+    )
     config: HybridModeConfigModel = Field(..., description="Current configuration")
 
 
@@ -62,11 +84,17 @@ class ModeDecisionRequest(BaseModel):
     """Request model for mode decision."""
 
     user_message: str = Field(..., description="User message to analyze")
-    context: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Conversation context")
-    force_mode: Optional[ConversationMode] = Field(None, description="Force specific mode")
+    context: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="Conversation context"
+    )
+    force_mode: Optional[ConversationMode] = Field(
+        None, description="Force specific mode"
+    )
 
 
-@router.post("/conversations/{conversation_id}/initialize", response_model=HybridModeState)
+@router.post(
+    "/conversations/{conversation_id}/initialize", response_model=HybridModeState
+)
 async def initialize_hybrid_mode(
     conversation_id: str,
     initial_mode: ConversationMode = ConversationMode.AUTO,
@@ -76,14 +104,14 @@ async def initialize_hybrid_mode(
 ):
     """
     Initialize hybrid mode for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         initial_mode: Initial conversation mode
         config: Hybrid mode configuration
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         HybridModeState: Initialized hybrid mode state
     """
@@ -111,7 +139,9 @@ async def initialize_hybrid_mode(
         )
 
 
-@router.post("/conversations/{conversation_id}/mode/change", response_model=ModeChangeResponse)
+@router.post(
+    "/conversations/{conversation_id}/mode/change", response_model=ModeChangeResponse
+)
 async def change_conversation_mode(
     conversation_id: str,
     request: ModeChangeRequestModel,
@@ -120,13 +150,13 @@ async def change_conversation_mode(
 ):
     """
     Change the mode for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         request: Mode change request
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         ModeChangeResponse: Mode change response
     """
@@ -140,8 +170,10 @@ async def change_conversation_mode(
         )
 
         response = await hybrid_mode_manager.change_mode(mode_change_request)
-        
-        logger.info(f"Changed mode for conversation {conversation_id}: {response.previous_mode} -> {response.new_mode}")
+
+        logger.info(
+            f"Changed mode for conversation {conversation_id}: {response.previous_mode} -> {response.new_mode}"
+        )
         return response
 
     except Exception as e:
@@ -152,7 +184,10 @@ async def change_conversation_mode(
         )
 
 
-@router.get("/conversations/{conversation_id}/mode/status", response_model=ConversationModeStatus)
+@router.get(
+    "/conversations/{conversation_id}/mode/status",
+    response_model=ConversationModeStatus,
+)
 async def get_conversation_mode_status(
     conversation_id: str,
     current_user_id: str = Depends(get_current_user_id),
@@ -160,12 +195,12 @@ async def get_conversation_mode_status(
 ):
     """
     Get the current mode status for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         ConversationModeStatus: Current mode status
     """
@@ -195,7 +230,9 @@ async def get_conversation_mode_status(
         )
 
 
-@router.post("/conversations/{conversation_id}/mode/decide", response_model=ModeDecision)
+@router.post(
+    "/conversations/{conversation_id}/mode/decide", response_model=ModeDecision
+)
 async def decide_conversation_mode(
     conversation_id: str,
     request: ModeDecisionRequest,
@@ -204,13 +241,13 @@ async def decide_conversation_mode(
 ):
     """
     Get mode decision for a user message.
-    
+
     Args:
         conversation_id: Conversation ID
         request: Mode decision request
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         ModeDecision: Mode decision with reasoning
     """
@@ -242,7 +279,9 @@ async def decide_conversation_mode(
         )
 
 
-@router.put("/conversations/{conversation_id}/config", response_model=HybridModeConfigModel)
+@router.put(
+    "/conversations/{conversation_id}/config", response_model=HybridModeConfigModel
+)
 async def update_conversation_config(
     conversation_id: str,
     config: HybridModeConfigModel,
@@ -251,13 +290,13 @@ async def update_conversation_config(
 ):
     """
     Update hybrid mode configuration for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         config: New configuration
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         HybridModeConfigModel: Updated configuration
     """
@@ -290,19 +329,21 @@ async def update_conversation_config(
 @router.get("/conversations/{conversation_id}/mode/history")
 async def get_mode_history(
     conversation_id: str,
-    limit: int = Query(default=20, ge=1, le=100, description="Number of history entries to return"),
+    limit: int = Query(
+        default=20, ge=1, le=100, description="Number of history entries to return"
+    ),
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """
     Get mode change history for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         limit: Number of history entries to return
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         List[Dict]: Mode change history
     """
@@ -336,20 +377,23 @@ async def cleanup_conversation_mode(
 ):
     """
     Clean up hybrid mode state for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Cleanup result
     """
     try:
         hybrid_mode_manager.cleanup_conversation(conversation_id)
-        
+
         logger.info(f"Cleaned up hybrid mode for conversation {conversation_id}")
-        return {"success": True, "message": f"Cleaned up hybrid mode for conversation {conversation_id}"}
+        return {
+            "success": True,
+            "message": f"Cleaned up hybrid mode for conversation {conversation_id}",
+        }
 
     except Exception as e:
         logger.error(f"Error cleaning up conversation mode: {e}")
@@ -366,11 +410,11 @@ async def get_hybrid_mode_stats(
 ):
     """
     Get hybrid mode statistics.
-    
+
     Args:
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Hybrid mode statistics
     """
@@ -393,11 +437,11 @@ async def get_available_modes(
 ):
     """
     Get available conversation modes.
-    
+
     Args:
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Available modes with descriptions
     """
@@ -413,16 +457,24 @@ async def get_available_modes(
                 "mode": ConversationMode.AGENT,
                 "name": "Agent Mode",
                 "description": "Tool-enabled responses with reasoning and actions",
-                "features": ["Tool usage", "Step-by-step reasoning", "External actions"],
+                "features": [
+                    "Tool usage",
+                    "Step-by-step reasoning",
+                    "External actions",
+                ],
             },
             {
                 "mode": ConversationMode.AUTO,
                 "name": "Auto Mode",
                 "description": "Automatic mode switching based on query analysis",
-                "features": ["Smart switching", "Complexity analysis", "Context awareness"],
+                "features": [
+                    "Smart switching",
+                    "Complexity analysis",
+                    "Context awareness",
+                ],
             },
         ]
-        
+
         return {"modes": modes}
 
     except Exception as e:
@@ -430,4 +482,4 @@ async def get_available_modes(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get available modes: {str(e)}",
-        ) 
+        )

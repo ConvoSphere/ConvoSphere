@@ -122,13 +122,13 @@ class Conversation(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-        
+
         # Add assistant name if relationship is loaded
-        if hasattr(self, 'assistant') and self.assistant:
+        if hasattr(self, "assistant") and self.assistant:
             result["assistant_name"] = self.assistant.name
         else:
             result["assistant_name"] = "Unknown Assistant"
-            
+
         return result
 
 

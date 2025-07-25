@@ -371,3 +371,7 @@ class ConversationService:
         self.db.commit()
 
         return True
+
+
+# Global conversation service instance (for static access, e.g. in AIService)
+conversation_service = None  # Must be initialized with DB session, e.g. in FastAPI startup or via dependency injection

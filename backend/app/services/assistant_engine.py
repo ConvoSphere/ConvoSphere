@@ -10,8 +10,6 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from loguru import logger
-
 from app.core.config import get_settings
 from app.core.exceptions import ConversationError
 from app.schemas.hybrid_mode import (
@@ -25,6 +23,7 @@ from app.services.conversation_service import conversation_service
 from app.services.hybrid_mode_manager import hybrid_mode_manager
 from app.services.knowledge_service import knowledge_service
 from app.services.tool_executor_v2 import tool_executor
+from loguru import logger
 
 
 @dataclass
@@ -123,7 +122,7 @@ class AssistantEngine:
         """
         # Create processing request
         request_id = f"req_{len(self.processing_requests)}_{datetime.now().timestamp()}"
-        
+
         request = ProcessingRequest(
             request_id=request_id,
             user_id=user_id,
@@ -184,16 +183,24 @@ class AssistantEngine:
 
             # Update conversation mode if needed
             if mode_decision.recommended_mode != mode_decision.current_mode:
-                await self._update_conversation_mode(request, mode_decision.recommended_mode)
+                await self._update_conversation_mode(
+                    request, mode_decision.recommended_mode
+                )
 
             # Prepare knowledge base context if enabled
             knowledge_context = ""
-            if request.use_knowledge_base and mode_decision.recommended_mode == ConversationMode.AGENT:
+            if (
+                request.use_knowledge_base
+                and mode_decision.recommended_mode == ConversationMode.AGENT
+            ):
                 knowledge_context = await self._prepare_knowledge_context(request)
 
             # Prepare tools based on mode
             tools = []
-            if request.use_tools and mode_decision.recommended_mode == ConversationMode.AGENT:
+            if (
+                request.use_tools
+                and mode_decision.recommended_mode == ConversationMode.AGENT
+            ):
                 tools = await self._prepare_tools(request.message)
 
             # Generate AI response with structured output
@@ -203,7 +210,10 @@ class AssistantEngine:
 
             # Execute tool calls if in agent mode
             tool_results = []
-            if mode_decision.recommended_mode == ConversationMode.AGENT and ai_response.tool_calls:
+            if (
+                mode_decision.recommended_mode == ConversationMode.AGENT
+                and ai_response.tool_calls
+            ):
                 tool_results = await self._execute_tools(ai_response.tool_calls)
 
             # Create structured response
@@ -215,7 +225,11 @@ class AssistantEngine:
                 reasoning_process=mode_decision.reasoning_steps,
                 metadata=ai_response.metadata or {},
                 model_used=request.model or self.default_model,
-                tokens_used=ai_response.metadata.get("total_tokens", 0) if ai_response.metadata else 0,
+                tokens_used=(
+                    ai_response.metadata.get("total_tokens", 0)
+                    if ai_response.metadata
+                    else 0
+                ),
                 processing_time=(datetime.now() - start_time).total_seconds(),
             )
 
@@ -257,7 +271,9 @@ class AssistantEngine:
                 config=config,
             )
 
-    async def _get_conversation_context(self, request: ProcessingRequest) -> Dict[str, Any]:
+    async def _get_conversation_context(
+        self, request: ProcessingRequest
+    ) -> Dict[str, Any]:
         """Get conversation context for mode decision."""
         try:
             # Get recent messages
@@ -267,8 +283,10 @@ class AssistantEngine:
             )
 
             # Get conversation metadata
-            conversation = await conversation_service.get_conversation(request.conversation_id)
-            
+            conversation = await conversation_service.get_conversation(
+                request.conversation_id
+            )
+
             context = {
                 "messages": [
                     {
@@ -289,7 +307,9 @@ class AssistantEngine:
             logger.error(f"Error getting conversation context: {e}")
             return {"messages": [], "conversation_metadata": {}, "message_count": 0}
 
-    async def _update_conversation_mode(self, request: ProcessingRequest, new_mode: ConversationMode):
+    async def _update_conversation_mode(
+        self, request: ProcessingRequest, new_mode: ConversationMode
+    ):
         """Update conversation mode."""
         try:
             mode_change_request = ModeChangeRequest(
@@ -298,9 +318,11 @@ class AssistantEngine:
                 target_mode=new_mode,
                 reason="Automatic mode decision",
             )
-            
+
             await hybrid_mode_manager.change_mode(mode_change_request)
-            logger.info(f"Updated conversation {request.conversation_id} to mode {new_mode}")
+            logger.info(
+                f"Updated conversation {request.conversation_id} to mode {new_mode}"
+            )
 
         except Exception as e:
             logger.error(f"Error updating conversation mode: {e}")
@@ -417,10 +439,12 @@ class AssistantEngine:
 
         # Add conversation history
         for msg in context.get("messages", [])[-10:]:  # Last 10 messages
-            messages.append({
-                "role": msg["role"],
-                "content": msg["content"],
-            })
+            messages.append(
+                {
+                    "role": msg["role"],
+                    "content": msg["content"],
+                }
+            )
 
         # Add current user message
         messages.append({"role": "user", "content": request.message})
@@ -461,7 +485,9 @@ Confidence: {mode_decision.confidence:.2f}
 
         return base_message
 
-    async def _execute_tools(self, tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def _execute_tools(
+        self, tool_calls: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Execute tool calls and return results."""
         results = []
 
@@ -472,28 +498,36 @@ Confidence: {mode_decision.confidence:.2f}
 
                 if tool_name:
                     result = await tool_executor.execute_tool(tool_name, arguments)
-                    results.append({
-                        "tool_name": tool_name,
-                        "arguments": arguments,
-                        "result": result,
-                        "success": True,
-                    })
+                    results.append(
+                        {
+                            "tool_name": tool_name,
+                            "arguments": arguments,
+                            "result": result,
+                            "success": True,
+                        }
+                    )
                 else:
-                    results.append({
-                        "tool_name": "unknown",
-                        "arguments": arguments,
-                        "result": "Tool name not found",
-                        "success": False,
-                    })
+                    results.append(
+                        {
+                            "tool_name": "unknown",
+                            "arguments": arguments,
+                            "result": "Tool name not found",
+                            "success": False,
+                        }
+                    )
 
             except Exception as e:
                 logger.error(f"Error executing tool {tool_call}: {e}")
-                results.append({
-                    "tool_name": tool_call.get("function", {}).get("name", "unknown"),
-                    "arguments": tool_call.get("function", {}).get("arguments", {}),
-                    "result": f"Error: {str(e)}",
-                    "success": False,
-                })
+                results.append(
+                    {
+                        "tool_name": tool_call.get("function", {}).get(
+                            "name", "unknown"
+                        ),
+                        "arguments": tool_call.get("function", {}).get("arguments", {}),
+                        "result": f"Error: {str(e)}",
+                        "success": False,
+                    }
+                )
 
         return results
 
@@ -511,7 +545,9 @@ Confidence: {mode_decision.confidence:.2f}
                 metadata={
                     "mode_decision": structured_response.mode_decision.dict(),
                     "tool_calls": structured_response.tool_calls,
-                    "reasoning_process": [step.dict() for step in structured_response.reasoning_process],
+                    "reasoning_process": [
+                        step.dict() for step in structured_response.reasoning_process
+                    ],
                     "model_used": structured_response.model_used,
                     "tokens_used": structured_response.tokens_used,
                 },

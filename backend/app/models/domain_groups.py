@@ -131,7 +131,10 @@ domain_group_hierarchy = Table(
         primary_key=True,
     ),
     Column(
-        "relationship_type", String(50), default="contains", nullable=False,
+        "relationship_type",
+        String(50),
+        default="contains",
+        nullable=False,
     ),  # contains, collaborates, reports_to
     Column("created_at", DateTime(timezone=True), server_default=func.now()),
 )
@@ -150,13 +153,17 @@ class DomainGroup(Base):
     # Domain categorization
     domain_type = Column(SQLEnum(DomainType), nullable=False, index=True)
     parent_domain_id = Column(
-        UUID(as_uuid=True), ForeignKey("domain_groups.id"), nullable=True,
+        UUID(as_uuid=True),
+        ForeignKey("domain_groups.id"),
+        nullable=True,
     )
 
     # Organization and metadata
     organization_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     external_id = Column(
-        String(255), nullable=True, index=True,
+        String(255),
+        nullable=True,
+        index=True,
     )  # For external system integration
     tags = Column(JSON, nullable=True)  # Flexible tagging system
 
@@ -167,7 +174,9 @@ class DomainGroup(Base):
 
     # Access control
     default_access_level = Column(
-        SQLEnum(AccessLevel), default=AccessLevel.READ_WRITE, nullable=False,
+        SQLEnum(AccessLevel),
+        default=AccessLevel.READ_WRITE,
+        nullable=False,
     )
     allow_self_join = Column(Boolean, default=False, nullable=False)
     require_approval = Column(Boolean, default=True, nullable=False)
@@ -190,12 +199,16 @@ class DomainGroup(Base):
     )
 
     resources = relationship(
-        "DomainResource", back_populates="domain_group", lazy="dynamic",
+        "DomainResource",
+        back_populates="domain_group",
+        lazy="dynamic",
     )
 
     # Hierarchy relationships
     parent_domain = relationship(
-        "DomainGroup", remote_side=[id], backref="child_domains",
+        "DomainGroup",
+        remote_side=[id],
+        backref="child_domains",
     )
 
     # Domain managers
@@ -285,7 +298,10 @@ domain_group_managers = Table(
     ),
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
     Column(
-        "manager_type", String(50), default="manager", nullable=False,
+        "manager_type",
+        String(50),
+        default="manager",
+        nullable=False,
     ),  # manager, admin, owner
     Column("assigned_at", DateTime(timezone=True), server_default=func.now()),
     Column("assigned_by", UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
@@ -299,7 +315,9 @@ class DomainResource(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     domain_group_id = Column(
-        UUID(as_uuid=True), ForeignKey("domain_groups.id"), nullable=False,
+        UUID(as_uuid=True),
+        ForeignKey("domain_groups.id"),
+        nullable=False,
     )
 
     # Resource identification
@@ -309,7 +327,9 @@ class DomainResource(Base):
 
     # Access control
     access_level = Column(
-        SQLEnum(AccessLevel), default=AccessLevel.READ_WRITE, nullable=False,
+        SQLEnum(AccessLevel),
+        default=AccessLevel.READ_WRITE,
+        nullable=False,
     )
     is_public = Column(Boolean, default=False, nullable=False)
 
@@ -347,19 +367,25 @@ class DomainInvitation(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     domain_group_id = Column(
-        UUID(as_uuid=True), ForeignKey("domain_groups.id"), nullable=False,
+        UUID(as_uuid=True),
+        ForeignKey("domain_groups.id"),
+        nullable=False,
     )
 
     # Invitation details
     email = Column(String(255), nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     access_level = Column(
-        SQLEnum(AccessLevel), default=AccessLevel.READ_WRITE, nullable=False,
+        SQLEnum(AccessLevel),
+        default=AccessLevel.READ_WRITE,
+        nullable=False,
     )
 
     # Invitation status
     status = Column(
-        String(20), default="pending", nullable=False,
+        String(20),
+        default="pending",
+        nullable=False,
     )  # pending, accepted, declined, expired
     token = Column(String(255), nullable=False, unique=True, index=True)
 
@@ -391,7 +417,9 @@ class DomainActivity(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     domain_group_id = Column(
-        UUID(as_uuid=True), ForeignKey("domain_groups.id"), nullable=False,
+        UUID(as_uuid=True),
+        ForeignKey("domain_groups.id"),
+        nullable=False,
     )
 
     # Activity details

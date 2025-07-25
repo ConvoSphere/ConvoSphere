@@ -54,7 +54,7 @@ install:
 	@echo "Installing dependencies..."
 	pip install -r requirements.txt
 	pip install -r backend/requirements.txt
-	pip install -r frontend/requirements.txt
+	pip install -r frontend-react/requirements.txt
 	pip install -r docs/requirements-docs.txt
 
 dev:
@@ -63,41 +63,40 @@ dev:
 	@echo "Starting backend..."
 	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 	@echo "Starting frontend..."
-	cd frontend && python -m main
+	cd frontend-react && python -m main
 
 test:
 	@echo "Running tests..."
 	cd backend && pytest
-	cd frontend && pytest
+	cd frontend-react && pytest
 
 format:
 	@echo "Formatting code..."
-	ruff format backend/ frontend/
-	black backend/ frontend/
-	isort backend/ frontend/
+	black backend/ frontend-react/
+	isort backend/ frontend-react/
 
 lint:
 	@echo "Running linting..."
-	ruff check backend/ frontend/
-	ruff format --check backend/ frontend/
+	ruff check backend/ frontend-react/
+	black --check backend/ frontend-react/
 
 security-check:
 	@echo "Running security checks..."
-	bandit -r backend/ frontend/ -f json -o bandit-report.json || true
+	bandit -r backend/ frontend-react/ -f json -o bandit-report.json || true
 	@echo "Security report saved to bandit-report.json"
 
 code-quality:
 	@echo "Running comprehensive code quality checks..."
 	@echo "1. Formatting check..."
-	ruff format --check backend/ frontend/
+	black --check backend/ frontend-react/
 	@echo "2. Linting check..."
-	ruff check backend/ frontend/
+	ruff check backend/ frontend-react/
 	@echo "3. Import sorting check..."
-	isort --check-only --diff backend/ frontend/
+	isort --check-only --diff backend/ frontend-react/
 	@echo "4. Type checking..."
-	mypy backend/ frontend/ --ignore-missing-imports
+	mypy backend/ frontend-react/ --ignore-missing-imports
 	@echo "5. Security check..."
-	bandit -r backend/ frontend/ -f json -o bandit-report.json || true
+	bandit -r backend/ frontend-react/ -f json -o bandit-report.json || true
 	@echo "Code quality checks completed!"
 
 # Communication testing
@@ -280,24 +279,24 @@ quality-report:
 	@echo "Generated: $(shell date)" >> quality-report.txt
 	@echo "" >> quality-report.txt
 	@echo "=== Ruff Linting ===" >> quality-report.txt
-	ruff check backend/ frontend/ >> quality-report.txt 2>&1 || true
+	ruff check backend/ frontend-react/ >> quality-report.txt 2>&1 || true
 	@echo "" >> quality-report.txt
 	@echo "=== Security Scan ===" >> quality-report.txt
-	bandit -r backend/ frontend/ -f txt >> quality-report.txt 2>&1 || true
+	bandit -r backend/ frontend-react/ -f txt >> quality-report.txt 2>&1 || true
 	@echo "" >> quality-report.txt
 	@echo "=== Type Checking ===" >> quality-report.txt
-	mypy backend/ frontend/ --ignore-missing-imports >> quality-report.txt 2>&1 || true
+	mypy backend/ frontend-react/ --ignore-missing-imports >> quality-report.txt 2>&1 || true
 	@echo "Quality report saved to quality-report.txt"
 
 # Performance testing
 performance-test:
 	@echo "Running performance tests..."
-	pytest --benchmark-only backend/tests/performance/ frontend/tests/performance/
+	pytest --benchmark-only backend/tests/performance/ frontend-react/tests/performance/
 
 # Coverage report
 coverage-report:
 	@echo "Generating coverage report..."
-	pytest --cov=backend --cov=frontend --cov-report=html --cov-report=term-missing
+	pytest --cov=backend --cov=frontend-react --cov-report=html --cov-report=term-missing
 	@echo "Coverage report generated in htmlcov/"
 
 # All checks (for CI/CD)

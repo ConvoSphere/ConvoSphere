@@ -549,9 +549,9 @@ class EnhancedAIService:
         ai_health = self.ai_service.health_check()
 
         return {
-            "status": "healthy"
-            if ai_health.get("status") == "healthy"
-            else "unhealthy",
+            "status": (
+                "healthy" if ai_health.get("status") == "healthy" else "unhealthy"
+            ),
             "ai_service": ai_health,
             "performance_stats": self.get_performance_stats(),
             "cache_status": "enabled" if self.cache_enabled else "disabled",

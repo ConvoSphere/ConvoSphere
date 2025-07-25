@@ -70,7 +70,9 @@ class OAuthService:
             )
 
     async def get_authorization_url(
-        self, provider: str, request: Request,
+        self,
+        provider: str,
+        request: Request,
     ) -> RedirectResponse:
         """
         Get authorization URL for OAuth provider.
@@ -135,7 +137,10 @@ class OAuthService:
             )
 
     async def _get_user_info(
-        self, provider: str, client, token: dict[str, Any],
+        self,
+        provider: str,
+        client,
+        token: dict[str, Any],
     ) -> dict[str, Any]:
         """
         Get user information from OAuth provider.
@@ -157,7 +162,9 @@ class OAuthService:
         raise ValueError(f"Unsupported provider: {provider}")
 
     async def _get_google_user_info(
-        self, client, token: dict[str, Any],
+        self,
+        client,
+        token: dict[str, Any],
     ) -> dict[str, Any]:
         """Get user info from Google."""
         resp = await client.get("userinfo", token=token)
@@ -174,7 +181,9 @@ class OAuthService:
         }
 
     async def _get_microsoft_user_info(
-        self, client, token: dict[str, Any],
+        self,
+        client,
+        token: dict[str, Any],
     ) -> dict[str, Any]:
         """Get user info from Microsoft."""
         resp = await client.get("userinfo", token=token)
@@ -191,7 +200,9 @@ class OAuthService:
         }
 
     async def _get_github_user_info(
-        self, client, token: dict[str, Any],
+        self,
+        client,
+        token: dict[str, Any],
     ) -> dict[str, Any]:
         """Get user info from GitHub."""
         # Get basic user info
@@ -209,12 +220,14 @@ class OAuthService:
         return {
             "email": primary_email,
             "external_id": str(user_info.get("id")),
-            "first_name": user_info.get("name", "").split()[0]
-            if user_info.get("name")
-            else None,
-            "last_name": " ".join(user_info.get("name", "").split()[1:])
-            if user_info.get("name") and len(user_info.get("name", "").split()) > 1
-            else None,
+            "first_name": (
+                user_info.get("name", "").split()[0] if user_info.get("name") else None
+            ),
+            "last_name": (
+                " ".join(user_info.get("name", "").split()[1:])
+                if user_info.get("name") and len(user_info.get("name", "").split()) > 1
+                else None
+            ),
             "display_name": user_info.get("name"),
             "avatar_url": user_info.get("avatar_url"),
             "sso_attributes": {**user_info, "emails": emails},
@@ -262,7 +275,10 @@ class OAuthService:
         return provider_mapping.get(provider, AuthProvider.LOCAL)
 
     async def process_sso_user(
-        self, user_info: dict[str, Any], provider: str, db,
+        self,
+        user_info: dict[str, Any],
+        provider: str,
+        db,
     ) -> User:
         """
         Process SSO user and create/update user account.
@@ -280,7 +296,8 @@ class OAuthService:
 
         # Check if user already exists by external ID
         existing_user = user_service.get_user_by_external_id(
-            user_info["external_id"], auth_provider,
+            user_info["external_id"],
+            auth_provider,
         )
 
         if existing_user:

@@ -76,7 +76,9 @@ class TestMessageSchemas:
         with pytest.raises(ValidationError) as exc_info:
             MessageCreate(**message_data)
 
-        assert "String should have at most 50000 characters" in str(exc_info.value)  # noqa: S101
+        assert "String should have at most 50000 characters" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_message_create_with_tool_data(self):
         """Test message creation with tool data."""
@@ -104,7 +106,9 @@ class TestMessageSchemas:
         with pytest.raises(ValidationError) as exc_info:
             MessageCreate(**message_data)
 
-        assert "Tool name cannot be empty when provided" in str(exc_info.value)  # noqa: S101
+        assert "Tool name cannot be empty when provided" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_message_create_negative_tokens(self):
         """Test message creation with negative tokens."""
@@ -165,7 +169,9 @@ class TestConversationSchemas:
         with pytest.raises(ValidationError) as exc_info:
             ConversationCreate(**conversation_data)
 
-        assert "String should have at most 500 characters" in str(exc_info.value)  # noqa: S101
+        assert "String should have at most 500 characters" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_conversation_create_invalid_access(self):
         """Test conversation creation with invalid access level."""
@@ -236,7 +242,9 @@ class TestConversationSchemas:
         with pytest.raises(ValidationError) as exc_info:
             ConversationSearchParams(**search_params)
 
-        assert "Input should be greater than or equal to 1" in str(exc_info.value)  # noqa: S101
+        assert "Input should be greater than or equal to 1" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_conversation_search_params_invalid_size(self):
         """Test conversation search with invalid size."""
@@ -249,7 +257,9 @@ class TestConversationSchemas:
         with pytest.raises(ValidationError) as exc_info:
             ConversationSearchParams(**search_params)
 
-        assert "Input should be less than or equal to 100" in str(exc_info.value)  # noqa: S101
+        assert "Input should be less than or equal to 100" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_conversation_search_params_future_date(self):
         """Test conversation search with future date."""
@@ -275,7 +285,9 @@ class TestConversationSchemas:
         with pytest.raises(ValidationError) as exc_info:
             ConversationSearchParams(**search_params)
 
-        assert "created_before must be after created_after" in str(exc_info.value)  # noqa: S101
+        assert "created_before must be after created_after" in str(
+            exc_info.value
+        )  # noqa: S101
 
 
 class TestAgentSchemas:
@@ -369,7 +381,9 @@ class TestAgentSchemas:
         with pytest.raises(ValidationError) as exc_info:
             AgentConfig(**agent_config_data)
 
-        assert "Input should be less than or equal to 2" in str(exc_info.value)  # noqa: S101
+        assert "Input should be less than or equal to 2" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_agent_config_too_many_tools(self):
         """Test agent config with too many tools."""
@@ -428,7 +442,9 @@ class TestAgentSchemas:
         with pytest.raises(ValidationError) as exc_info:
             AgentResponseSchema(**response_data)
 
-        assert "Input should be less than or equal to 1" in str(exc_info.value)  # noqa: S101
+        assert "Input should be less than or equal to 1" in str(
+            exc_info.value
+        )  # noqa: S101
 
     def test_agent_response_negative_tokens(self):
         """Test agent response with negative tokens."""
@@ -442,7 +458,9 @@ class TestAgentSchemas:
         with pytest.raises(ValidationError) as exc_info:
             AgentResponseSchema(**response_data)
 
-        assert "Input should be greater than or equal to 0" in str(exc_info.value)  # noqa: S101
+        assert "Input should be greater than or equal to 0" in str(
+            exc_info.value
+        )  # noqa: S101
 
 
 class TestSchemaIntegration:

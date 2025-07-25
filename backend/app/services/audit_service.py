@@ -146,9 +146,11 @@ class AuditService:
                 context=context or {},
                 metadata=metadata or {},
                 tags=tags or [],
-                compliance_frameworks=[f.value for f in compliance_frameworks]
-                if compliance_frameworks
-                else None,
+                compliance_frameworks=(
+                    [f.value for f in compliance_frameworks]
+                    if compliance_frameworks
+                    else None
+                ),
                 data_classification=data_classification,
                 threat_level=threat_level,
                 risk_score=risk_score,
@@ -290,9 +292,11 @@ class AuditService:
                     "error_message": log.error_message,
                     "tags": log.tags,
                     "compliance_frameworks": log.compliance_frameworks,
-                    "data_classification": log.data_classification.value
-                    if log.data_classification
-                    else None,
+                    "data_classification": (
+                        log.data_classification.value
+                        if log.data_classification
+                        else None
+                    ),
                     "threat_level": log.threat_level,
                     "risk_score": log.risk_score,
                     "security_impact": log.security_impact,
@@ -357,7 +361,8 @@ class AuditService:
 
             # Generate recommendations
             recommendations = await self._generate_compliance_recommendations(
-                findings, framework,
+                findings,
+                framework,
             )
 
             # Calculate metrics
@@ -433,7 +438,8 @@ class AuditService:
 
                 if rule.data_classification:
                     query = query.filter(
-                        ExtendedAuditLog.data_classification == rule.data_classification,
+                        ExtendedAuditLog.data_classification
+                        == rule.data_classification,
                     )
 
                 # Exclude logs under legal hold
@@ -565,9 +571,11 @@ class AuditService:
                 "compliance_stats": compliance_stats,
                 "security_incidents": security_incidents,
                 "failed_actions": failed_actions,
-                "success_rate": ((total_events - failed_actions) / total_events * 100)
-                if total_events > 0
-                else 0,
+                "success_rate": (
+                    ((total_events - failed_actions) / total_events * 100)
+                    if total_events > 0
+                    else 0
+                ),
             }
 
         except Exception as e:
@@ -703,7 +711,10 @@ class AuditService:
             logger.error(f"Failed to check alerts: {str(e)}")
 
     async def _trigger_alert(
-        self, alert: AuditAlert, audit_log: ExtendedAuditLog, count: int,
+        self,
+        alert: AuditAlert,
+        audit_log: ExtendedAuditLog,
+        count: int,
     ) -> None:
         """Trigger an audit alert."""
         try:
@@ -744,7 +755,9 @@ class AuditService:
             logger.error(f"Failed to cache audit event: {str(e)}")
 
     async def _analyze_compliance_findings(
-        self, audit_logs: list[ExtendedAuditLog], framework: ComplianceFramework,
+        self,
+        audit_logs: list[ExtendedAuditLog],
+        framework: ComplianceFramework,
     ) -> list[dict[str, Any]]:
         """Analyze audit logs for compliance findings."""
         findings = []
@@ -794,7 +807,9 @@ class AuditService:
         return findings
 
     async def _generate_compliance_recommendations(
-        self, findings: list[dict[str, Any]], framework: ComplianceFramework,
+        self,
+        findings: list[dict[str, Any]],
+        framework: ComplianceFramework,
     ) -> list[dict[str, Any]]:
         """Generate compliance recommendations based on findings."""
         recommendations = []
@@ -822,7 +837,9 @@ class AuditService:
         return recommendations
 
     async def _calculate_compliance_metrics(
-        self, audit_logs: list[ExtendedAuditLog], framework: ComplianceFramework,
+        self,
+        audit_logs: list[ExtendedAuditLog],
+        framework: ComplianceFramework,
     ) -> dict[str, Any]:
         """Calculate compliance metrics."""
         total_events = len(audit_logs)
@@ -841,16 +858,20 @@ class AuditService:
             "total_events": total_events,
             "failed_events": failed_events,
             "security_events": security_events,
-            "success_rate": ((total_events - failed_events) / total_events * 100)
-            if total_events > 0
-            else 0,
-            "security_incident_rate": (security_events / total_events * 100)
-            if total_events > 0
-            else 0,
+            "success_rate": (
+                ((total_events - failed_events) / total_events * 100)
+                if total_events > 0
+                else 0
+            ),
+            "security_incident_rate": (
+                (security_events / total_events * 100) if total_events > 0 else 0
+            ),
         }
 
     async def _archive_logs(
-        self, logs: list[ExtendedAuditLog], rule: AuditRetentionRule,
+        self,
+        logs: list[ExtendedAuditLog],
+        rule: AuditRetentionRule,
     ) -> None:
         """Archive audit logs for long-term storage."""
         try:

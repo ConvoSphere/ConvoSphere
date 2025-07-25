@@ -131,7 +131,10 @@ class SSOSecurityValidator:
             return False
 
     def rate_limit_check(
-        self, identifier: str, max_requests: int = 10, window: int = 60,
+        self,
+        identifier: str,
+        max_requests: int = 10,
+        window: int = 60,
     ) -> bool:
         """
         Check rate limiting for SSO operations.
@@ -220,7 +223,8 @@ class SSOSecurityValidator:
                 # Remove potentially dangerous characters
                 sanitized_value = value.replace("<", "&lt;").replace(">", "&gt;")
                 sanitized_value = sanitized_value.replace('"', "&quot;").replace(
-                    "'", "&#x27;",
+                    "'",
+                    "&#x27;",
                 )
                 sanitized[key] = sanitized_value
             else:

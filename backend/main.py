@@ -298,9 +298,11 @@ def create_application() -> FastAPI:
         return {
             "message": "Welcome to AI Assistant Platform",
             "version": get_settings().app_version,
-            "docs": "/docs"
-            if get_settings().debug
-            else "Documentation disabled in production",
+            "docs": (
+                "/docs"
+                if get_settings().debug
+                else "Documentation disabled in production"
+            ),
         }
 
     return app

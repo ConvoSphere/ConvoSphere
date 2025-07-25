@@ -62,7 +62,9 @@ class AttributeMapper:
         }
 
     def map_attributes(
-        self, provider: str, sso_attributes: dict[str, Any],
+        self,
+        provider: str,
+        sso_attributes: dict[str, Any],
     ) -> dict[str, Any]:
         """
         Map SSO attributes to user fields.
@@ -229,7 +231,10 @@ class AdvancedUserProvisioning:
         self.conditional_provisioning = ConditionalProvisioning()
 
     async def provision_user_advanced(
-        self, user_info: dict[str, Any], provider: str, db: Session,
+        self,
+        user_info: dict[str, Any],
+        provider: str,
+        db: Session,
     ) -> tuple[User | None, str, dict[str, Any]]:
         """
         Advanced user provisioning with group/role mapping and conditional logic.
@@ -255,7 +260,8 @@ class AdvancedUserProvisioning:
 
             # Map SSO attributes to user fields
             mapped_attributes = self.attribute_mapper.map_attributes(
-                provider, user_info,
+                provider,
+                user_info,
             )
 
             # Extract groups and map to roles
@@ -292,19 +298,24 @@ class AdvancedUserProvisioning:
 
             # Check if user exists
             existing_user = user_service.get_user_by_external_id(
-                user_info["external_id"], auth_provider,
+                user_info["external_id"],
+                auth_provider,
             )
 
             if existing_user:
                 # Update existing user
                 user = await self._update_existing_user(
-                    existing_user, enhanced_user_info, db,
+                    existing_user,
+                    enhanced_user_info,
+                    db,
                 )
                 action = "updated"
             else:
                 # Create new user
                 user = await self._create_new_user(
-                    enhanced_user_info, auth_provider, db,
+                    enhanced_user_info,
+                    auth_provider,
+                    db,
                 )
                 action = "created"
 
@@ -326,7 +337,10 @@ class AdvancedUserProvisioning:
             return None, "error", {"error": str(e)}
 
     async def _update_existing_user(
-        self, user: User, user_info: dict[str, Any], db: Session,
+        self,
+        user: User,
+        user_info: dict[str, Any],
+        db: Session,
     ) -> User:
         """Update existing user with new SSO information."""
         # Update basic fields
@@ -352,7 +366,10 @@ class AdvancedUserProvisioning:
         return user
 
     async def _create_new_user(
-        self, user_info: dict[str, Any], auth_provider: AuthProvider, db: Session,
+        self,
+        user_info: dict[str, Any],
+        auth_provider: AuthProvider,
+        db: Session,
     ) -> User:
         """Create new user with advanced provisioning."""
         user_service = UserService(db)
@@ -387,7 +404,10 @@ class AdvancedUserProvisioning:
         return provider_mapping.get(provider, AuthProvider.LOCAL)
 
     async def bulk_sync_users(
-        self, provider: str, user_list: list[dict[str, Any]], db: Session,
+        self,
+        provider: str,
+        user_list: list[dict[str, Any]],
+        db: Session,
     ) -> dict[str, Any]:
         """
         Bulk sync users from SSO provider.
@@ -412,7 +432,9 @@ class AdvancedUserProvisioning:
         for user_info in user_list:
             try:
                 user, status, metadata = await self.provision_user_advanced(
-                    user_info, provider, db,
+                    user_info,
+                    provider,
+                    db,
                 )
 
                 if user:
@@ -447,7 +469,9 @@ class AdvancedUserProvisioning:
         return results
 
     async def get_user_provisioning_status(
-        self, user_id: str, db: Session,
+        self,
+        user_id: str,
+        db: Session,
     ) -> dict[str, Any]:
         """
         Get provisioning status for a user.

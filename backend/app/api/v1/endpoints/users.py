@@ -541,7 +541,7 @@ async def get_system_status(
         "tracing": {
             "trace_id": trace_id,
         },
-        "status": "ok"
-        if all([db_healthy, redis_healthy, weaviate_healthy])
-        else "degraded",
+        "status": (
+            "ok" if all([db_healthy, redis_healthy, weaviate_healthy]) else "degraded"
+        ),
     }

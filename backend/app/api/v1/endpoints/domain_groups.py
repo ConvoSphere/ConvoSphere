@@ -45,7 +45,9 @@ router = APIRouter()
 
 # Domain Group CRUD Operations
 @router.post(
-    "/", response_model=DomainGroupResponse, status_code=status.HTTP_201_CREATED,
+    "/",
+    response_model=DomainGroupResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_domain_group(
     domain_data: DomainGroupCreate,
@@ -73,10 +75,12 @@ async def list_domain_groups(
     is_active: bool | None = Query(None, description="Filter by active status"),
     tags: list[str] | None = Query(None, description="Filter by tags"),
     created_after: datetime | None = Query(
-        None, description="Filter by creation date (after)",
+        None,
+        description="Filter by creation date (after)",
     ),
     created_before: datetime | None = Query(
-        None, description="Filter by creation date (before)",
+        None,
+        description="Filter by creation date (before)",
     ),
     page: int = Query(1, ge=1, description="Page number"),
     size: int = Query(20, ge=1, le=100, description="Page size"),
@@ -125,7 +129,8 @@ async def get_domain_group(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
         return _domain_group_to_response(domain_group)
     except PermissionDeniedError as e:
@@ -143,7 +148,9 @@ async def update_domain_group(
     try:
         domain_service = DomainService(db)
         domain_group = domain_service.update_domain_group(
-            domain_id, domain_data, current_user,
+            domain_id,
+            domain_data,
+            current_user,
         )
         return _domain_group_to_response(domain_group)
     except PermissionDeniedError as e:
@@ -188,7 +195,8 @@ async def add_domain_member(
             # Return member information
             return _get_member_response(domain_id, member_data.user_id, db)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to add member",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to add member",
         )
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -210,7 +218,8 @@ async def list_domain_members(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
 
         # Get members with user information
@@ -235,12 +244,16 @@ async def update_domain_member(
     try:
         domain_service = DomainService(db)
         success = domain_service.update_domain_member(
-            domain_id, user_id, member_data, current_user,
+            domain_id,
+            user_id,
+            member_data,
+            current_user,
         )
         if success:
             return _get_member_response(domain_id, user_id, db)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to update member",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to update member",
         )
     except PermissionDeniedError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
@@ -285,7 +298,9 @@ async def add_domain_resource(
     try:
         domain_service = DomainService(db)
         resource = domain_service.add_domain_resource(
-            domain_id, resource_data, current_user,
+            domain_id,
+            resource_data,
+            current_user,
         )
         return _domain_resource_to_response(resource)
     except PermissionDeniedError as e:
@@ -298,7 +313,8 @@ async def add_domain_resource(
 async def list_domain_resources(
     domain_id: str,
     resource_type: ResourceType | None = Query(
-        None, description="Filter by resource type",
+        None,
+        description="Filter by resource type",
     ),
     is_active: bool | None = Query(None, description="Filter by active status"),
     db: Session = Depends(get_db),
@@ -310,7 +326,8 @@ async def list_domain_resources(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
 
         # Get resources with filtering
@@ -326,7 +343,8 @@ async def list_domain_resources(
 
 
 @router.get(
-    "/{domain_id}/resources/{resource_id}", response_model=DomainResourceResponse,
+    "/{domain_id}/resources/{resource_id}",
+    response_model=DomainResourceResponse,
 )
 async def get_domain_resource(
     domain_id: str,
@@ -340,15 +358,18 @@ async def get_domain_resource(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
 
         resource = domain_group.resources.filter_by(
-            resource_id=resource_id, is_active=True,
+            resource_id=resource_id,
+            is_active=True,
         ).first()
         if not resource:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Resource not found",
             )
 
         return _domain_resource_to_response(resource)
@@ -357,7 +378,8 @@ async def get_domain_resource(
 
 
 @router.put(
-    "/{domain_id}/resources/{resource_id}", response_model=DomainResourceResponse,
+    "/{domain_id}/resources/{resource_id}",
+    response_model=DomainResourceResponse,
 )
 async def update_domain_resource(
     domain_id: str,
@@ -370,7 +392,10 @@ async def update_domain_resource(
     try:
         domain_service = DomainService(db)
         resource = domain_service.update_domain_resource(
-            domain_id, resource_id, resource_data, current_user,
+            domain_id,
+            resource_id,
+            resource_data,
+            current_user,
         )
         return _domain_resource_to_response(resource)
     except PermissionDeniedError as e:
@@ -382,7 +407,8 @@ async def update_domain_resource(
 
 
 @router.delete(
-    "/{domain_id}/resources/{resource_id}", status_code=status.HTTP_204_NO_CONTENT,
+    "/{domain_id}/resources/{resource_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def remove_domain_resource(
     domain_id: str,
@@ -418,7 +444,9 @@ async def create_domain_invitation(
     try:
         domain_service = DomainService(db)
         invitation = domain_service.create_domain_invitation(
-            domain_id, invitation_data, current_user,
+            domain_id,
+            invitation_data,
+            current_user,
         )
         return _domain_invitation_to_response(invitation)
     except PermissionDeniedError as e:
@@ -440,7 +468,8 @@ async def list_domain_invitations(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
 
         # Get invitations with filtering
@@ -486,7 +515,8 @@ async def list_domain_activities(
     domain_id: str,
     activity_type: str | None = Query(None, description="Filter by activity type"),
     resource_type: ResourceType | None = Query(
-        None, description="Filter by resource type",
+        None,
+        description="Filter by resource type",
     ),
     limit: int = Query(50, ge=1, le=200, description="Number of activities to return"),
     db: Session = Depends(get_db),
@@ -498,7 +528,8 @@ async def list_domain_activities(
         domain_group = domain_service.get_domain_group_by_id(domain_id, current_user)
         if not domain_group:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Domain group not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Domain group not found",
             )
 
         # Get activities with filtering
@@ -638,7 +669,9 @@ def _domain_activity_to_response(activity) -> DomainActivityResponse:
 
 
 def _get_member_response(
-    domain_id: str, user_id: str, db: Session,
+    domain_id: str,
+    user_id: str,
+    db: Session,
 ) -> DomainMemberResponse:
     """Get member response with user information."""
     from app.models.domain_groups import DomainGroup
@@ -649,7 +682,8 @@ def _get_member_response(
 
     if not user or not domain_group:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User or domain not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User or domain not found",
         )
 
     # Get member access level

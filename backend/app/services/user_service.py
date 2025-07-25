@@ -62,9 +62,11 @@ class UserService:
                 username=username,
                 password=password,
                 first_name=full_name.split()[0] if full_name else None,
-                last_name=" ".join(full_name.split()[1:])
-                if full_name and len(full_name.split()) > 1
-                else None,
+                last_name=(
+                    " ".join(full_name.split()[1:])
+                    if full_name and len(full_name.split()) > 1
+                    else None
+                ),
                 **kwargs,
             )
 

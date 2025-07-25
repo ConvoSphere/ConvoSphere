@@ -39,7 +39,9 @@ class SSOProvider:
         self.priority = config.get("priority", 0)
 
     async def authenticate(
-        self, credentials: dict[str, Any], db: Session,
+        self,
+        credentials: dict[str, Any],
+        db: Session,
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user and return user object with additional data."""
         raise NotImplementedError
@@ -69,13 +71,16 @@ class LDAPProvider(SSOProvider):
         self.user_search_base = config.get("user_search_base", self.base_dn)
         self.group_search_base = config.get("group_search_base", self.base_dn)
         self.user_search_filter = config.get(
-            "user_search_filter", "(sAMAccountName={username})",
+            "user_search_filter",
+            "(sAMAccountName={username})",
         )
         self.group_search_filter = config.get(
-            "group_search_filter", "(member={user_dn})",
+            "group_search_filter",
+            "(member={user_dn})",
         )
         self.attributes = config.get(
-            "attributes", ["cn", "mail", "displayName", "memberOf"],
+            "attributes",
+            ["cn", "mail", "displayName", "memberOf"],
         )
 
         # Role mapping configuration
@@ -94,7 +99,9 @@ class LDAPProvider(SSOProvider):
             raise SSOConfigurationError("LDAP configuration incomplete")
 
     async def authenticate(
-        self, credentials: dict[str, Any], db: Session,
+        self,
+        credentials: dict[str, Any],
+        db: Session,
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user against LDAP."""
         username = credentials.get("username")
@@ -106,16 +113,24 @@ class LDAPProvider(SSOProvider):
         try:
             # Connect to LDAP server
             server = Server(
-                self.server_url, use_ssl=self.use_ssl, connect_timeout=self.timeout,
+                self.server_url,
+                use_ssl=self.use_ssl,
+                connect_timeout=self.timeout,
             )
             conn = Connection(
-                server, user=self.bind_dn, password=self.bind_password, auto_bind=True,
+                server,
+                user=self.bind_dn,
+                password=self.bind_password,
+                auto_bind=True,
             )
 
             # Search for user
             user_filter = self.user_search_filter.format(username=username)
             conn.search(
-                self.user_search_base, user_filter, SUBTREE, attributes=self.attributes,
+                self.user_search_base,
+                user_filter,
+                SUBTREE,
+                attributes=self.attributes,
             )
 
             if not conn.entries:
@@ -126,7 +141,10 @@ class LDAPProvider(SSOProvider):
 
             # Verify password
             user_conn = Connection(
-                server, user=user_dn, password=password, auto_bind=True,
+                server,
+                user=user_dn,
+                password=password,
+                auto_bind=True,
             )
             if not user_conn.bound:
                 raise AuthenticationError("Invalid credentials")
@@ -168,15 +186,23 @@ class LDAPProvider(SSOProvider):
                 raise UserNotFoundError("User not found")
 
             server = Server(
-                self.server_url, use_ssl=self.use_ssl, connect_timeout=self.timeout,
+                self.server_url,
+                use_ssl=self.use_ssl,
+                connect_timeout=self.timeout,
             )
             conn = Connection(
-                server, user=self.bind_dn, password=self.bind_password, auto_bind=True,
+                server,
+                user=self.bind_dn,
+                password=self.bind_password,
+                auto_bind=True,
             )
 
             user_filter = self.user_search_filter.format(username=user.username)
             conn.search(
-                self.user_search_base, user_filter, SUBTREE, attributes=self.attributes,
+                self.user_search_base,
+                user_filter,
+                SUBTREE,
+                attributes=self.attributes,
             )
 
             if not conn.entries:
@@ -187,12 +213,14 @@ class LDAPProvider(SSOProvider):
 
             return {
                 "dn": user_entry.entry_dn,
-                "email": user_attrs.get("mail", [""])[0]
-                if user_attrs.get("mail")
-                else "",
-                "display_name": user_attrs.get("displayName", [""])[0]
-                if user_attrs.get("displayName")
-                else "",
+                "email": (
+                    user_attrs.get("mail", [""])[0] if user_attrs.get("mail") else ""
+                ),
+                "display_name": (
+                    user_attrs.get("displayName", [""])[0]
+                    if user_attrs.get("displayName")
+                    else ""
+                ),
                 "groups": await self.sync_user_groups(user, db),
                 "last_sync": datetime.now().isoformat(),
             }
@@ -205,10 +233,15 @@ class LDAPProvider(SSOProvider):
         """Synchronize user groups from LDAP."""
         try:
             server = Server(
-                self.server_url, use_ssl=self.use_ssl, connect_timeout=self.timeout,
+                self.server_url,
+                use_ssl=self.use_ssl,
+                connect_timeout=self.timeout,
             )
             conn = Connection(
-                server, user=self.bind_dn, password=self.bind_password, auto_bind=True,
+                server,
+                user=self.bind_dn,
+                password=self.bind_password,
+                auto_bind=True,
             )
 
             # Get user DN
@@ -248,7 +281,8 @@ class LDAPProvider(SSOProvider):
                 elif self.auto_create_groups:
                     # Auto-create domain groups for LDAP groups
                     domain_group = await self._create_domain_group_from_ldap(
-                        ldap_group, db,
+                        ldap_group,
+                        db,
                     )
                     if domain_group:
                         app_groups.append(str(domain_group.id))
@@ -260,7 +294,11 @@ class LDAPProvider(SSOProvider):
             raise GroupSyncError(f"LDAP group sync failed: {str(e)}")
 
     async def _get_or_create_user(
-        self, username: str, email: str, display_name: str, db: Session,
+        self,
+        username: str,
+        email: str,
+        display_name: str,
+        db: Session,
     ) -> User:
         """Get existing user or create new one from LDAP."""
         user = db.query(User).filter(User.username == username).first()
@@ -290,7 +328,9 @@ class LDAPProvider(SSOProvider):
         return user
 
     async def _create_domain_group_from_ldap(
-        self, ldap_group: str, db: Session,
+        self,
+        ldap_group: str,
+        db: Session,
     ) -> DomainGroup | None:
         """Create domain group from LDAP group."""
         try:
@@ -396,7 +436,9 @@ class SAMLProvider(SSOProvider):
             raise SSOConfigurationError(f"SAML configuration error: {str(e)}")
 
     async def authenticate(
-        self, credentials: dict[str, Any], db: Session,
+        self,
+        credentials: dict[str, Any],
+        db: Session,
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user via SAML."""
         saml_response = credentials.get("saml_response")
@@ -426,7 +468,11 @@ class SAMLProvider(SSOProvider):
 
             # Get or create user
             user = await self._get_or_create_user(
-                username, email, first_name, last_name, db,
+                username,
+                email,
+                first_name,
+                last_name,
+                db,
             )
 
             # Sync groups
@@ -463,7 +509,10 @@ class SAMLProvider(SSOProvider):
         }
 
     async def sync_user_groups(
-        self, user: User, groups: list[str], db: Session,
+        self,
+        user: User,
+        groups: list[str],
+        db: Session,
     ) -> list[str]:
         """Synchronize user groups from SAML."""
         try:
@@ -488,7 +537,12 @@ class SAMLProvider(SSOProvider):
             raise GroupSyncError(f"SAML group sync failed: {str(e)}")
 
     async def _get_or_create_user(
-        self, username: str, email: str, first_name: str, last_name: str, db: Session,
+        self,
+        username: str,
+        email: str,
+        first_name: str,
+        last_name: str,
+        db: Session,
     ) -> User:
         """Get existing user or create new one from SAML."""
         user = db.query(User).filter(User.username == username).first()
@@ -518,7 +572,9 @@ class SAMLProvider(SSOProvider):
         return user
 
     async def _create_domain_group_from_saml(
-        self, saml_group: str, db: Session,
+        self,
+        saml_group: str,
+        db: Session,
     ) -> DomainGroup | None:
         """Create domain group from SAML group."""
         try:
@@ -587,12 +643,19 @@ class OAuthProvider(SSOProvider):
         self.issuer = config.get("issuer")
 
         if not all(
-            [self.client_id, self.client_secret, self.authorization_url, self.token_url],
+            [
+                self.client_id,
+                self.client_secret,
+                self.authorization_url,
+                self.token_url,
+            ],
         ):
             raise SSOConfigurationError("OAuth configuration incomplete")
 
     async def authenticate(
-        self, credentials: dict[str, Any], db: Session,
+        self,
+        credentials: dict[str, Any],
+        db: Session,
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user via OAuth."""
         authorization_code = credentials.get("code")
@@ -604,7 +667,8 @@ class OAuthProvider(SSOProvider):
         try:
             # Exchange authorization code for access token
             token_data = await self._exchange_code_for_token(
-                authorization_code, redirect_uri,
+                authorization_code,
+                redirect_uri,
             )
             access_token = token_data.get("access_token")
 
@@ -626,7 +690,11 @@ class OAuthProvider(SSOProvider):
 
             # Get or create user
             user = await self._get_or_create_user(
-                username, email, first_name, last_name, db,
+                username,
+                email,
+                first_name,
+                last_name,
+                db,
             )
 
             # Sync groups
@@ -668,7 +736,10 @@ class OAuthProvider(SSOProvider):
             return {"error": str(e)}
 
     async def sync_user_groups(
-        self, user: User, groups: list[str], db: Session,
+        self,
+        user: User,
+        groups: list[str],
+        db: Session,
     ) -> list[str]:
         """Synchronize user groups from OAuth provider."""
         try:
@@ -693,7 +764,9 @@ class OAuthProvider(SSOProvider):
             raise GroupSyncError(f"OAuth group sync failed: {str(e)}")
 
     async def _exchange_code_for_token(
-        self, authorization_code: str, redirect_uri: str,
+        self,
+        authorization_code: str,
+        redirect_uri: str,
     ) -> dict[str, Any]:
         """Exchange authorization code for access token."""
         token_data = {
@@ -718,7 +791,12 @@ class OAuthProvider(SSOProvider):
         return response.json()
 
     async def _get_or_create_user(
-        self, username: str, email: str, first_name: str, last_name: str, db: Session,
+        self,
+        username: str,
+        email: str,
+        first_name: str,
+        last_name: str,
+        db: Session,
     ) -> User:
         """Get existing user or create new one from OAuth."""
         user = db.query(User).filter(User.username == username).first()
@@ -748,7 +826,9 @@ class OAuthProvider(SSOProvider):
         return user
 
     async def _create_domain_group_from_oauth(
-        self, oauth_group: str, db: Session,
+        self,
+        oauth_group: str,
+        db: Session,
     ) -> DomainGroup | None:
         """Create domain group from OAuth group."""
         try:
@@ -817,7 +897,10 @@ class SSOManager:
                 )
 
     async def authenticate(
-        self, provider_name: str, credentials: dict[str, Any], db: Session,
+        self,
+        provider_name: str,
+        credentials: dict[str, Any],
+        db: Session,
     ) -> tuple[User, dict[str, Any]]:
         """Authenticate user with specified SSO provider."""
         provider = self.providers.get(provider_name)
@@ -830,7 +913,10 @@ class SSOManager:
         return await provider.authenticate(credentials, db)
 
     async def get_user_info(
-        self, provider_name: str, user_id: str, db: Session,
+        self,
+        provider_name: str,
+        user_id: str,
+        db: Session,
     ) -> dict[str, Any]:
         """Get user information from specified SSO provider."""
         provider = self.providers.get(provider_name)
@@ -840,7 +926,10 @@ class SSOManager:
         return await provider.get_user_info(user_id, db)
 
     async def sync_user_groups(
-        self, provider_name: str, user: User, db: Session,
+        self,
+        provider_name: str,
+        user: User,
+        db: Session,
     ) -> list[str]:
         """Synchronize user groups from specified SSO provider."""
         provider = self.providers.get(provider_name)

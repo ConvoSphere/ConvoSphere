@@ -136,7 +136,9 @@ class TestSAMLService:
 
                     # Mock certificate
                     mock_cert = MagicMock()
-                    mock_x509.CertificateBuilder.return_value.subject_name.return_value.issuer_name.return_value.public_key.return_value.serial_number.return_value.not_valid_before.return_value.not_valid_after.return_value.add_extension.return_value.sign.return_value = mock_cert
+                    mock_x509.CertificateBuilder.return_value.subject_name.return_value.issuer_name.return_value.public_key.return_value.serial_number.return_value.not_valid_before.return_value.not_valid_after.return_value.add_extension.return_value.sign.return_value = (
+                        mock_cert
+                    )
 
                     # Mock serialization
                     mock_cert.public_bytes.return_value = b"mock_cert_data"
@@ -162,7 +164,10 @@ class TestSAMLService:
 
     @pytest.mark.asyncio
     async def test_get_login_url_success(
-        self, saml_service, mock_settings, mock_saml_client,
+        self,
+        saml_service,
+        mock_settings,
+        mock_saml_client,
     ):
         """Test successful login URL generation."""
         saml_service.settings = mock_settings
@@ -192,7 +197,10 @@ class TestSAMLService:
 
     @pytest.mark.asyncio
     async def test_get_login_url_failure(
-        self, saml_service, mock_settings, mock_saml_client,
+        self,
+        saml_service,
+        mock_settings,
+        mock_saml_client,
     ):
         """Test login URL generation failure."""
         saml_service.settings = mock_settings
@@ -228,7 +236,10 @@ class TestSAMLService:
 
     @pytest.mark.asyncio
     async def test_handle_saml_response_success(
-        self, saml_service, mock_settings, mock_saml_client,
+        self,
+        saml_service,
+        mock_settings,
+        mock_saml_client,
     ):
         """Test successful SAML response handling."""
         saml_service.settings = mock_settings

@@ -125,7 +125,8 @@ class SAMLService:
                     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Bavaria"),
                     x509.NameAttribute(NameOID.LOCALITY_NAME, "Munich"),
                     x509.NameAttribute(
-                        NameOID.ORGANIZATION_NAME, "AI Assistant Platform",
+                        NameOID.ORGANIZATION_NAME,
+                        "AI Assistant Platform",
                     ),
                     x509.NameAttribute(NameOID.COMMON_NAME, "localhost"),
                 ],
@@ -152,10 +153,14 @@ class SAMLService:
 
             # Create temporary files
             cert_file = tempfile.NamedTemporaryFile(
-                mode="w", suffix=".crt", delete=False,
+                mode="w",
+                suffix=".crt",
+                delete=False,
             )
             key_file = tempfile.NamedTemporaryFile(
-                mode="w", suffix=".key", delete=False,
+                mode="w",
+                suffix=".key",
+                delete=False,
             )
 
             # Write certificate
@@ -215,12 +220,17 @@ class SAMLService:
 
             # Create authentication request
             authn_req = self.saml_client.create_authn_request(
-                idp_entity_id, binding=BINDING_HTTP_REDIRECT, sign=False,
+                idp_entity_id,
+                binding=BINDING_HTTP_REDIRECT,
+                sign=False,
             )
 
             # Get the redirect URL
             redirect_url = self.saml_client.apply_binding(
-                BINDING_HTTP_REDIRECT, authn_req, idp_entity_id, relay_state="",
+                BINDING_HTTP_REDIRECT,
+                authn_req,
+                idp_entity_id,
+                relay_state="",
             )
 
             return redirect_url[1]  # URL is the second element
@@ -270,7 +280,8 @@ class SAMLService:
 
             # Parse and validate SAML response
             authn_response = self.saml_client.parse_authn_request_response(
-                saml_response, BINDING_HTTP_POST,
+                saml_response,
+                BINDING_HTTP_POST,
             )
 
             # Extract user information
@@ -305,7 +316,8 @@ class SAMLService:
         except Exception as e:
             logger.error(f"Failed to extract SAML response: {e}")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid SAML response",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid SAML response",
             )
 
     def _extract_user_info(self, authn_response) -> dict[str, Any]:
@@ -419,7 +431,8 @@ class SAMLService:
 
         # Check if user already exists by external ID
         existing_user = user_service.get_user_by_external_id(
-            user_info["external_id"], auth_provider,
+            user_info["external_id"],
+            auth_provider,
         )
 
         if existing_user:

@@ -374,9 +374,11 @@ async def websocket_endpoint(
                             conversation_id=conversation_id,
                             use_knowledge_base=bool(knowledge_documents),
                             max_context_chunks=len(knowledge_documents),
-                            model=str(conversation.assistant_id)
-                            if conversation.assistant_id
-                            else None,
+                            model=(
+                                str(conversation.assistant_id)
+                                if conversation.assistant_id
+                                else None
+                            ),
                         )
 
                         if ai_response and ai_response.get("choices"):
@@ -418,9 +420,11 @@ async def websocket_endpoint(
                                         "content": response_content,
                                         "role": "assistant",
                                         "timestamp": ai_message_dict["created_at"],
-                                        "messageType": "knowledge"
-                                        if knowledge_documents
-                                        else "text",
+                                        "messageType": (
+                                            "knowledge"
+                                            if knowledge_documents
+                                            else "text"
+                                        ),
                                         "documents": knowledge_documents,
                                         "metadata": metadata,
                                     },

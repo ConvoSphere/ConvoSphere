@@ -63,7 +63,8 @@ class DomainService:
         # Validate parent domain if specified
         if domain_data.parent_domain_id:
             parent_domain = self.get_domain_group_by_id(
-                domain_data.parent_domain_id, current_user,
+                domain_data.parent_domain_id,
+                current_user,
             )
             if not parent_domain:
                 raise DomainGroupNotFoundError("Parent domain group not found")
@@ -602,7 +603,8 @@ class DomainService:
 
         # Check if user is already a member
         domain_group = self.get_domain_group_by_id(
-            str(invitation.domain_group_id), current_user,
+            str(invitation.domain_group_id),
+            current_user,
         )
         if domain_group.members.filter_by(id=current_user.id).first():
             raise PermissionDeniedError("User is already a member of this domain group")
@@ -777,7 +779,9 @@ class DomainService:
         return self._can_manage_domain_group(domain_group, user)
 
     def _can_manage_domain_resources(
-        self, domain_group: DomainGroup, user: User,
+        self,
+        domain_group: DomainGroup,
+        user: User,
     ) -> bool:
         """Check if user can manage domain resources."""
         return self._can_manage_domain_group(domain_group, user)

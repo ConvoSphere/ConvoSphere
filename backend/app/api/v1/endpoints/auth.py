@@ -641,7 +641,9 @@ async def get_saml_metadata():
 
 @router.post("/sso/link/{provider}")
 async def link_sso_account(
-    provider: str, request: Request, db: Session = Depends(get_db),
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db),
 ):
     """Link current user account with SSO provider."""
     try:
@@ -700,7 +702,9 @@ async def link_sso_account(
 
 @router.get("/sso/unlink/{provider}")
 async def unlink_sso_account(
-    provider: str, request: Request, db: Session = Depends(get_db),
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db),
 ):
     """Unlink current user account from SSO provider."""
     try:
@@ -717,7 +721,8 @@ async def unlink_sso_account(
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         # Remove SSO attributes for the specific provider
@@ -749,7 +754,9 @@ async def unlink_sso_account(
 
 @router.get("/sso/provisioning/status/{user_id}")
 async def get_user_provisioning_status(
-    user_id: str, request: Request, db: Session = Depends(get_db),
+    user_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
 ):
     """Get advanced provisioning status for a user."""
     try:
@@ -765,11 +772,13 @@ async def get_user_provisioning_status(
         # In production, add proper authorization checks
         if current_user_id != user_id:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied",
             )
 
         status_info = await advanced_user_provisioning.get_user_provisioning_status(
-            user_id, db,
+            user_id,
+            db,
         )
 
         return status_info
@@ -813,7 +822,9 @@ async def bulk_sync_users(
 
         # Perform bulk sync
         results = await advanced_user_provisioning.bulk_sync_users(
-            provider, user_list, db,
+            provider,
+            user_list,
+            db,
         )
 
         # Log bulk sync event
