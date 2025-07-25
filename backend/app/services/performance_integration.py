@@ -600,9 +600,9 @@ class PerformanceIntegration:
             try:
                 cache_stats = cache_service.get_stats()
                 health_status["services"]["cache"] = {
-                    "status": "healthy"
-                    if self.services_status["cache"]
-                    else "unhealthy",
+                    "status": (
+                        "healthy" if self.services_status["cache"] else "unhealthy"
+                    ),
                     "hit_rate": cache_stats.get("hit_rate", 0),
                     "total_requests": cache_stats.get("total_requests", 0),
                 }
@@ -617,9 +617,11 @@ class PerformanceIntegration:
             try:
                 async_stats = async_processor.get_stats()
                 health_status["services"]["async_processor"] = {
-                    "status": "healthy"
-                    if self.services_status["async_processor"]
-                    else "unhealthy",
+                    "status": (
+                        "healthy"
+                        if self.services_status["async_processor"]
+                        else "unhealthy"
+                    ),
                     "active_workers": async_stats.get("active_workers", 0),
                     "total_workers": async_stats.get("total_workers", 0),
                     "tasks_processed": async_stats.get("tasks_processed", 0),
@@ -635,9 +637,9 @@ class PerformanceIntegration:
             try:
                 monitor_stats = performance_monitor.get_stats()
                 health_status["services"]["monitoring"] = {
-                    "status": "healthy"
-                    if self.services_status["monitoring"]
-                    else "unhealthy",
+                    "status": (
+                        "healthy" if self.services_status["monitoring"] else "unhealthy"
+                    ),
                     "total_metrics": monitor_stats.get("total_metrics", 0),
                     "active_alerts": monitor_stats.get("active_alerts", 0),
                 }

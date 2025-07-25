@@ -2,14 +2,15 @@
 Assistant management API endpoints (CRUD, activate, deactivate, status).
 """
 
+from uuid import UUID
+
 from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.assistant import AssistantStatus
 from app.services.assistant_service import AssistantService
-from fastapi import APIRouter, Depends, Query, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from sqlalchemy.orm import Session
-from uuid import UUID
 
 
 # Pydantic models
@@ -139,10 +140,7 @@ async def get_default_assistant(
     service = AssistantService(db)
     assistant = service.get_default_assistant()
     if not assistant:
-        raise HTTPException(
-            status_code=404,
-            detail="No default assistant found"
-        )
+        raise HTTPException(status_code=404, detail="No default assistant found")
     return assistant
 
 
@@ -156,16 +154,16 @@ async def get_default_assistant_id(
     default_assistant_id = service.get_user_default_assistant_id(current_user_id)
     if not default_assistant_id:
         raise HTTPException(
-            status_code=404,
-            detail="No default assistant configured for user"
+            status_code=404, detail="No default assistant configured for user"
         )
     return {"assistant_id": default_assistant_id}
 
 
 class DefaultAssistantRequest(BaseModel):
     """Request model for setting default assistant."""
+
     assistant_id: str = Field(..., description="Assistant ID to set as default")
-    
+
     @field_validator("assistant_id")
     @classmethod
     def validate_assistant_id(cls, v: str) -> str:
@@ -175,6 +173,7 @@ class DefaultAssistantRequest(BaseModel):
             return v
         except ValueError:
             raise ValueError("assistant_id must be a valid UUID")
+
 
 @router.post("/default/set")
 async def set_default_assistant(
@@ -188,7 +187,7 @@ async def set_default_assistant(
     if not success:
         raise HTTPException(
             status_code=400,
-            detail="Failed to set default assistant. Assistant may not exist or you may not have access."
+            detail="Failed to set default assistant. Assistant may not exist or you may not have access.",
         )
     return {"message": "Default assistant set successfully"}
 
@@ -198,7 +197,11 @@ async def set_default_assistant(
 def get_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+    assistant_id: str = Path(
+        ...,
+        description="Assistant ID",
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    ),
 ):
     """Get assistant by ID."""
     service = AssistantService(db)
@@ -223,7 +226,11 @@ def update_assistant(
     assistant_data: AssistantUpdate,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+    assistant_id: str = Path(
+        ...,
+        description="Assistant ID",
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    ),
 ):
     """Update an assistant."""
     service = AssistantService(db)
@@ -235,7 +242,11 @@ def update_assistant(
 def delete_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+    assistant_id: str = Path(
+        ...,
+        description="Assistant ID",
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    ),
 ):
     """Delete an assistant."""
     service = AssistantService(db)
@@ -248,7 +259,11 @@ def delete_assistant(
 def activate_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+    assistant_id: str = Path(
+        ...,
+        description="Assistant ID",
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    ),
 ):
     """Activate an assistant."""
     service = AssistantService(db)
@@ -260,7 +275,11 @@ def activate_assistant(
 def deactivate_assistant(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    assistant_id: str = Path(..., description="Assistant ID", pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+    assistant_id: str = Path(
+        ...,
+        description="Assistant ID",
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    ),
 ):
     """Deactivate an assistant."""
     service = AssistantService(db)

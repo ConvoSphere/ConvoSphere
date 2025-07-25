@@ -131,7 +131,9 @@ class TestUserServiceComprehensive:
         ]
 
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = users
+            mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
+                users
+            )
             mock_db.query.return_value.count.return_value = 2
 
             result = user_service.get_users(skip=0, limit=10)

@@ -43,7 +43,9 @@ class RBACCache:
         """Cache user permissions."""
         cache_key = f"{self.cache_prefix}user_permissions:{user_id}"
         return self.redis.setex(
-            cache_key, self.user_permissions_ttl, json.dumps(list(permissions)),
+            cache_key,
+            self.user_permissions_ttl,
+            json.dumps(list(permissions)),
         )
 
     def invalidate_user_permissions(self, user_id: str) -> bool:
@@ -66,7 +68,9 @@ class RBACCache:
         """Cache role permissions."""
         cache_key = f"{self.cache_prefix}role_permissions:{role}"
         return self.redis.setex(
-            cache_key, self.role_permissions_ttl, json.dumps(list(permissions)),
+            cache_key,
+            self.role_permissions_ttl,
+            json.dumps(list(permissions)),
         )
 
     def get_user_groups(self, user_id: str) -> list[dict[str, Any]] | None:
@@ -90,7 +94,10 @@ class RBACCache:
         return bool(self.redis.delete(cache_key))
 
     def get_permission_evaluation(
-        self, user_id: str, permission: str, resource_id: str | None = None,
+        self,
+        user_id: str,
+        permission: str,
+        resource_id: str | None = None,
     ) -> bool | None:
         """Get cached permission evaluation result."""
         resource_suffix = f":{resource_id}" if resource_id else ""
@@ -113,11 +120,15 @@ class RBACCache:
         resource_suffix = f":{resource_id}" if resource_id else ""
         cache_key = f"{self.cache_prefix}permission_eval:{user_id}:{permission}{resource_suffix}"
         return self.redis.setex(
-            cache_key, self.permission_evaluation_ttl, json.dumps(result),
+            cache_key,
+            self.permission_evaluation_ttl,
+            json.dumps(result),
         )
 
     def invalidate_permission_evaluation(
-        self, user_id: str, permission: str = None,
+        self,
+        user_id: str,
+        permission: str = None,
     ) -> bool:
         """Invalidate permission evaluation cache."""
         if permission:
@@ -189,7 +200,9 @@ def cache_permission_evaluation(ttl: int = 60):
                 str(resource.id) if resource and hasattr(resource, "id") else None
             )
             cached_result = rbac_cache.get_permission_evaluation(
-                str(user.id), permission, resource_id,
+                str(user.id),
+                permission,
+                resource_id,
             )
 
             if cached_result is not None:
@@ -201,7 +214,10 @@ def cache_permission_evaluation(ttl: int = 60):
 
             # Cache result
             rbac_cache.set_permission_evaluation(
-                str(user.id), permission, result, resource_id,
+                str(user.id),
+                permission,
+                result,
+                resource_id,
             )
 
             return result
@@ -380,7 +396,11 @@ class RBACPerformanceMonitor:
         self.metrics_prefix = "rbac_metrics:"
 
     def record_permission_check(
-        self, user_id: str, permission: str, duration: float, cached: bool,
+        self,
+        user_id: str,
+        permission: str,
+        duration: float,
+        cached: bool,
     ):
         """Record permission check metrics."""
         timestamp = int(time.time())

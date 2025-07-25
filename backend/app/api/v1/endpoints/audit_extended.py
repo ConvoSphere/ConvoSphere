@@ -65,22 +65,27 @@ router = APIRouter()
 async def get_audit_logs(
     user_id: str | None = Query(None, description="Filter by user ID"),
     event_type: AuditEventType | None = Query(
-        None, description="Filter by event type",
+        None,
+        description="Filter by event type",
     ),
     event_category: AuditEventCategory | None = Query(
-        None, description="Filter by event category",
+        None,
+        description="Filter by event category",
     ),
     severity: str | None = Query(None, description="Filter by severity level"),
     resource_type: str | None = Query(None, description="Filter by resource type"),
     resource_id: str | None = Query(None, description="Filter by resource ID"),
     compliance_framework: ComplianceFramework | None = Query(
-        None, description="Filter by compliance framework",
+        None,
+        description="Filter by compliance framework",
     ),
     data_classification: DataClassification | None = Query(
-        None, description="Filter by data classification",
+        None,
+        description="Filter by data classification",
     ),
     start_date: datetime | None = Query(
-        None, description="Start date for filtering",
+        None,
+        description="Start date for filtering",
     ),
     end_date: datetime | None = Query(None, description="End date for filtering"),
     page: int = Query(1, ge=1, description="Page number"),
@@ -186,9 +191,11 @@ async def get_audit_log(
             "metadata": audit_log.metadata,
             "tags": audit_log.tags,
             "compliance_frameworks": audit_log.compliance_frameworks,
-            "data_classification": audit_log.data_classification.value
-            if audit_log.data_classification
-            else None,
+            "data_classification": (
+                audit_log.data_classification.value
+                if audit_log.data_classification
+                else None
+            ),
             "threat_level": audit_log.threat_level,
             "risk_score": audit_log.risk_score,
             "security_impact": audit_log.security_impact,
@@ -249,11 +256,13 @@ async def update_audit_log(
 @router.get("/statistics", response_model=AuditStatisticsResponse)
 async def get_audit_statistics(
     start_date: datetime | None = Query(
-        None, description="Start date for statistics",
+        None,
+        description="Start date for statistics",
     ),
     end_date: datetime | None = Query(None, description="End date for statistics"),
     organization_id: str | None = Query(
-        None, description="Organization ID for filtering",
+        None,
+        description="Organization ID for filtering",
     ),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -344,7 +353,9 @@ async def get_audit_policies(
 
 
 @router.post(
-    "/policies", response_model=AuditPolicyResponse, status_code=status.HTTP_201_CREATED,
+    "/policies",
+    response_model=AuditPolicyResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_audit_policy(
     policy_data: AuditPolicyCreate,
@@ -604,7 +615,8 @@ async def delete_retention_rule(
 @router.get("/compliance-reports", response_model=ComplianceReportListResponse)
 async def get_compliance_reports(
     framework: ComplianceFramework | None = Query(
-        None, description="Filter by framework",
+        None,
+        description="Filter by framework",
     ),
     status: str | None = Query(None, description="Filter by status"),
     page: int = Query(1, ge=1, description="Page number"),
@@ -761,7 +773,8 @@ async def update_compliance_report(
 
 
 @router.delete(
-    "/compliance-reports/{report_id}", status_code=status.HTTP_204_NO_CONTENT,
+    "/compliance-reports/{report_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_compliance_report(
     report_id: UUID,
@@ -817,7 +830,9 @@ async def get_audit_alerts(
 
 
 @router.post(
-    "/alerts", response_model=AuditAlertResponse, status_code=status.HTTP_201_CREATED,
+    "/alerts",
+    response_model=AuditAlertResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_audit_alert(
     alert_data: AuditAlertCreate,

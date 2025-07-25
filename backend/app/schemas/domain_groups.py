@@ -15,10 +15,15 @@ class DomainGroupBase(BaseModel):
     """Base schema for domain groups."""
 
     name: str = Field(
-        ..., min_length=1, max_length=200, description="Domain group name",
+        ...,
+        min_length=1,
+        max_length=200,
+        description="Domain group name",
     )
     description: str | None = Field(
-        None, max_length=2000, description="Domain group description",
+        None,
+        max_length=2000,
+        description="Domain group description",
     )
     display_name: str | None = Field(None, max_length=200, description="Display name")
 
@@ -29,26 +34,32 @@ class DomainGroupBase(BaseModel):
     # Organization and metadata
     organization_id: UUID | None = Field(None, description="Organization ID")
     external_id: str | None = Field(
-        None, max_length=255, description="External system ID",
+        None,
+        max_length=255,
+        description="External system ID",
     )
     tags: list[str] | None = Field(None, description="Tags for categorization")
 
     # Domain settings
     is_public: bool = Field(False, description="Whether domain group is public")
     default_access_level: AccessLevel = Field(
-        AccessLevel.READ_WRITE, description="Default access level for new members",
+        AccessLevel.READ_WRITE,
+        description="Default access level for new members",
     )
     allow_self_join: bool = Field(
-        False, description="Allow users to join without invitation",
+        False,
+        description="Allow users to join without invitation",
     )
     require_approval: bool = Field(True, description="Require approval for new members")
 
     # Domain-specific settings
     settings: dict[str, Any] | None = Field(
-        None, description="Domain-specific configuration",
+        None,
+        description="Domain-specific configuration",
     )
     permissions: list[str] | None = Field(
-        None, description="Custom permissions for the domain",
+        None,
+        description="Custom permissions for the domain",
     )
 
 
@@ -109,7 +120,8 @@ class DomainMemberBase(BaseModel):
 
     user_id: UUID = Field(..., description="User ID")
     access_level: AccessLevel = Field(
-        AccessLevel.READ_WRITE, description="Access level in domain",
+        AccessLevel.READ_WRITE,
+        description="Access level in domain",
     )
     is_active: bool = Field(True, description="Whether membership is active")
 
@@ -150,15 +162,19 @@ class DomainResourceBase(BaseModel):
 
     # Access control
     access_level: AccessLevel = Field(
-        AccessLevel.READ_WRITE, description="Access level for this resource",
+        AccessLevel.READ_WRITE,
+        description="Access level for this resource",
     )
     is_public: bool = Field(
-        False, description="Whether resource is public within domain",
+        False,
+        description="Whether resource is public within domain",
     )
 
     # Metadata
     description: str | None = Field(
-        None, max_length=2000, description="Resource description",
+        None,
+        max_length=2000,
+        description="Resource description",
     )
     tags: list[str] | None = Field(None, description="Resource tags")
     metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
@@ -203,7 +219,8 @@ class DomainInvitationBase(BaseModel):
 
     email: str = Field(..., description="Email address to invite")
     access_level: AccessLevel = Field(
-        AccessLevel.READ_WRITE, description="Access level for invited user",
+        AccessLevel.READ_WRITE,
+        description="Access level for invited user",
     )
     message: str | None = Field(None, max_length=1000, description="Invitation message")
 
@@ -212,7 +229,10 @@ class DomainInvitationCreate(DomainInvitationBase):
     """Schema for creating domain invitations."""
 
     expires_in_days: int = Field(
-        7, ge=1, le=30, description="Days until invitation expires",
+        7,
+        ge=1,
+        le=30,
+        description="Days until invitation expires",
     )
 
 

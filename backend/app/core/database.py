@@ -69,22 +69,22 @@ def create_default_assistant():
     try:
         from app.models.assistant import Assistant, AssistantStatus
         from app.models.user import User
-        
+
         # Get database session
         db = next(get_db())
-        
+
         # Check if any assistants exist
         existing_assistant = db.query(Assistant).first()
         if existing_assistant:
             logger.info("Assistants already exist, skipping default assistant creation")
             return
-        
+
         # Get the first user (admin) to be the creator
         admin_user = db.query(User).filter(User.role == "admin").first()
         if not admin_user:
             logger.warning("No admin user found, cannot create default assistant")
             return
-        
+
         # Create default assistant
         default_assistant = Assistant(
             creator_id=admin_user.id,
@@ -102,17 +102,18 @@ def create_default_assistant():
             tools_config=[],
             tools_enabled=True,
         )
-        
+
         db.add(default_assistant)
         db.commit()
         db.refresh(default_assistant)
-        
+
         logger.info(f"Created default assistant: {default_assistant.id}")
-        
+
     except Exception as e:
         logger.error(f"Failed to create default assistant: {e}")
-        if 'db' in locals():
+        if "db" in locals():
             db.rollback()
+
 
 def init_db() -> None:
     """Initialize database tables."""
@@ -123,10 +124,10 @@ def init_db() -> None:
         # Create all tables
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
-        
+
         # Create default assistant
         create_default_assistant()
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise

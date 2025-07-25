@@ -218,7 +218,9 @@ class SessionManager:
             raise SessionError(f"Failed to create session: {str(e)}")
 
     def validate_session(
-        self, session_id: str, request: Request,
+        self,
+        session_id: str,
+        request: Request,
     ) -> SessionData | None:
         """Validate session and return session data if valid."""
         try:
@@ -283,7 +285,9 @@ class SessionManager:
             return False
 
     def deactivate_user_sessions(
-        self, user_id: str, exclude_session_id: str | None = None,
+        self,
+        user_id: str,
+        exclude_session_id: str | None = None,
     ) -> int:
         """Deactivate all sessions for a user except the specified one."""
         try:
@@ -506,7 +510,9 @@ class SessionManager:
             logger.error(f"Failed to enforce session limit: {str(e)}")
 
     def _update_session_activity(
-        self, session_id: str, last_activity: datetime,
+        self,
+        session_id: str,
+        last_activity: datetime,
     ) -> bool:
         """Update session last activity."""
         try:
@@ -523,7 +529,9 @@ class SessionManager:
             return False
 
     def _detect_session_hijacking(
-        self, session_data: SessionData, request: Request,
+        self,
+        session_data: SessionData,
+        request: Request,
     ) -> bool:
         """Detect potential session hijacking."""
         try:
@@ -540,7 +548,8 @@ class SessionManager:
             if session_data.user_agent != current_user_agent:
                 # Allow for minor user agent changes (browser updates)
                 if not self._is_safe_user_agent_change(
-                    session_data.user_agent, current_user_agent,
+                    session_data.user_agent,
+                    current_user_agent,
                 ):
                     return True
 

@@ -143,7 +143,11 @@ class RateLimiter:
         self.rate_limit_prefix = "rate_limit:"
 
     def check_rate_limit(
-        self, identifier: str, limit: int, window: int, request: Request,
+        self,
+        identifier: str,
+        limit: int,
+        window: int,
+        request: Request,
     ) -> tuple[bool, dict[str, Any]]:
         """Check rate limit for given identifier."""
         key = f"{self.rate_limit_prefix}{identifier}"
@@ -214,14 +218,19 @@ class IPWhitelistManager:
         return self.redis.sismember(f"{self.blacklist_prefix}global", ip_address)
 
     def add_to_whitelist(
-        self, ip_address: str, organization_id: str | None = None,
+        self,
+        ip_address: str,
+        organization_id: str | None = None,
     ) -> bool:
         """Add IP to whitelist."""
         key = f"{self.whitelist_prefix}{organization_id or 'global'}"
         return self.redis.sadd(key, ip_address) > 0
 
     def add_to_blacklist(
-        self, ip_address: str, reason: str, duration: int = 3600,
+        self,
+        ip_address: str,
+        reason: str,
+        duration: int = 3600,
     ) -> bool:
         """Add IP to blacklist with expiration."""
         key = f"{self.blacklist_prefix}global"
@@ -255,7 +264,10 @@ class ThreatDetector:
         self.anomaly_threshold = 5
 
     def detect_anomalies(
-        self, user: User, request: Request, action: str,
+        self,
+        user: User,
+        request: Request,
+        action: str,
     ) -> list[SecurityEvent]:
         """Detect security anomalies."""
         events = []
@@ -273,7 +285,9 @@ class ThreatDetector:
         return events
 
     def _detect_login_anomalies(
-        self, user: User, request: Request,
+        self,
+        user: User,
+        request: Request,
     ) -> list[SecurityEvent]:
         """Detect unusual login patterns."""
         events = []
@@ -315,7 +329,10 @@ class ThreatDetector:
         return events
 
     def _detect_permission_anomalies(
-        self, user: User, request: Request, action: str,
+        self,
+        user: User,
+        request: Request,
+        action: str,
     ) -> list[SecurityEvent]:
         """Detect permission-related anomalies."""
         events = []
@@ -340,7 +357,9 @@ class ThreatDetector:
         return events
 
     def _detect_behavioral_anomalies(
-        self, user: User, request: Request,
+        self,
+        user: User,
+        request: Request,
     ) -> list[SecurityEvent]:
         """Detect behavioral anomalies."""
         events = []

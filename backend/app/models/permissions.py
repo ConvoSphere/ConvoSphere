@@ -109,7 +109,10 @@ class Permission(Base):
         return f"{self.resource}:{self.action}"
 
     def evaluate_conditions(
-        self, user: "User", resource: Any = None, context: dict[str, Any] = None,
+        self,
+        user: "User",
+        resource: Any = None,
+        context: dict[str, Any] = None,
     ) -> bool:
         """Evaluate permission conditions."""
         if not self.conditions:
@@ -124,7 +127,11 @@ class Permission(Base):
         return True
 
     def _evaluate_condition(
-        self, condition: str, user: "User", resource: Any, context: dict[str, Any],
+        self,
+        condition: str,
+        user: "User",
+        resource: Any,
+        context: dict[str, Any],
     ) -> bool:
         """Evaluate a single condition."""
         if condition == PermissionCondition.OWN_RESOURCE:

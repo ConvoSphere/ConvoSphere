@@ -47,7 +47,6 @@ class AuditLogCreate(AuditLogBase):
     """Schema for creating audit log entries."""
 
 
-
 class AuditLogUpdate(BaseModel):
     """Schema for updating audit log entries."""
 
@@ -102,7 +101,6 @@ class AuditPolicyBase(BaseModel):
 
 class AuditPolicyCreate(AuditPolicyBase):
     """Schema for creating audit policies."""
-
 
 
 class AuditPolicyUpdate(BaseModel):
@@ -160,7 +158,6 @@ class RetentionRuleCreate(RetentionRuleBase):
     """Schema for creating retention rules."""
 
 
-
 class RetentionRuleUpdate(BaseModel):
     """Schema for updating retention rules."""
 
@@ -203,7 +200,6 @@ class ComplianceReportBase(BaseModel):
 
 class ComplianceReportCreate(ComplianceReportBase):
     """Schema for creating compliance reports."""
-
 
 
 class ComplianceReportUpdate(BaseModel):
@@ -257,7 +253,6 @@ class AuditAlertCreate(AuditAlertBase):
     """Schema for creating audit alerts."""
 
 
-
 class AuditAlertUpdate(BaseModel):
     """Schema for updating audit alerts."""
 
@@ -305,7 +300,6 @@ class AuditArchiveBase(BaseModel):
 
 class AuditArchiveCreate(AuditArchiveBase):
     """Schema for creating audit archives."""
-
 
 
 class AuditArchiveUpdate(BaseModel):

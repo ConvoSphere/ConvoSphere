@@ -7,15 +7,14 @@ management system for structured responses and mode switching.
 
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field
-
 from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.schemas.hybrid_mode import ConversationMode, StructuredResponse
 from app.services.assistant_engine import assistant_engine
 from app.services.conversation_service import conversation_service
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -24,15 +23,27 @@ router = APIRouter()
 class ChatMessageRequest(BaseModel):
     """Request model for chat messages with hybrid mode support."""
 
-    message: str = Field(..., min_length=1, max_length=10000, description="User message")
+    message: str = Field(
+        ..., min_length=1, max_length=10000, description="User message"
+    )
     assistant_id: Optional[str] = Field(None, description="Assistant ID")
-    use_knowledge_base: bool = Field(default=True, description="Use knowledge base context")
+    use_knowledge_base: bool = Field(
+        default=True, description="Use knowledge base context"
+    )
     use_tools: bool = Field(default=True, description="Enable tool usage")
-    max_context_chunks: int = Field(default=5, ge=1, le=20, description="Maximum knowledge chunks")
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="AI temperature")
-    max_tokens: Optional[int] = Field(None, ge=1, le=100000, description="Maximum tokens")
+    max_context_chunks: int = Field(
+        default=5, ge=1, le=20, description="Maximum knowledge chunks"
+    )
+    temperature: float = Field(
+        default=0.7, ge=0.0, le=2.0, description="AI temperature"
+    )
+    max_tokens: Optional[int] = Field(
+        None, ge=1, le=100000, description="Maximum tokens"
+    )
     model: Optional[str] = Field(None, description="AI model to use")
-    force_mode: Optional[ConversationMode] = Field(None, description="Force specific conversation mode")
+    force_mode: Optional[ConversationMode] = Field(
+        None, description="Force specific conversation mode"
+    )
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
 
@@ -46,16 +57,24 @@ class ChatMessageResponse(BaseModel):
     model_used: str = Field(..., description="Model used for response")
     tokens_used: int = Field(..., description="Tokens used")
     processing_time: float = Field(..., description="Processing time in seconds")
-    tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Tool calls made")
-    mode_decision: Optional[Dict[str, Any]] = Field(None, description="Mode decision information")
-    reasoning_process: Optional[List[Dict[str, Any]]] = Field(None, description="Reasoning process")
+    tool_calls: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Tool calls made"
+    )
+    mode_decision: Optional[Dict[str, Any]] = Field(
+        None, description="Mode decision information"
+    )
+    reasoning_process: Optional[List[Dict[str, Any]]] = Field(
+        None, description="Reasoning process"
+    )
     error_message: Optional[str] = Field(None, description="Error message if failed")
 
 
 class ConversationListResponse(BaseModel):
     """Response model for conversation list."""
 
-    conversations: List[Dict[str, Any]] = Field(..., description="List of conversations")
+    conversations: List[Dict[str, Any]] = Field(
+        ..., description="List of conversations"
+    )
     total: int = Field(..., description="Total number of conversations")
     page: int = Field(..., description="Current page")
     per_page: int = Field(..., description="Items per page")
@@ -63,7 +82,9 @@ class ConversationListResponse(BaseModel):
 
 @router.post("/conversations", response_model=Dict[str, Any])
 async def create_conversation(
-    title: str = Field(..., min_length=1, max_length=500, description="Conversation title"),
+    title: str = Field(
+        ..., min_length=1, max_length=500, description="Conversation title"
+    ),
     assistant_id: Optional[str] = Field(None, description="Assistant ID"),
     description: Optional[str] = Field(None, description="Conversation description"),
     current_user_id: str = Depends(get_current_user_id),
@@ -71,14 +92,14 @@ async def create_conversation(
 ):
     """
     Create a new conversation with hybrid mode support.
-    
+
     Args:
         title: Conversation title
         assistant_id: Assistant ID
         description: Conversation description
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Created conversation data
     """
@@ -92,6 +113,7 @@ async def create_conversation(
 
         # Initialize hybrid mode for the new conversation
         from app.services.hybrid_mode_manager import hybrid_mode_manager
+
         hybrid_mode_manager.initialize_conversation(
             conversation_id=str(conversation.id),
             user_id=current_user_id,
@@ -99,12 +121,14 @@ async def create_conversation(
         )
 
         logger.info(f"Created conversation {conversation.id} with hybrid mode support")
-        
+
         return {
             "id": str(conversation.id),
             "title": conversation.title,
             "description": conversation.description,
-            "assistant_id": str(conversation.assistant_id) if conversation.assistant_id else None,
+            "assistant_id": (
+                str(conversation.assistant_id) if conversation.assistant_id else None
+            ),
             "created_at": conversation.created_at.isoformat(),
             "hybrid_mode_initialized": True,
         }
@@ -126,13 +150,13 @@ async def get_conversations(
 ):
     """
     Get user conversations with hybrid mode status.
-    
+
     Args:
         page: Page number
         per_page: Items per page
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         ConversationListResponse: List of conversations with hybrid mode status
     """
@@ -145,8 +169,9 @@ async def get_conversations(
 
         # Add hybrid mode status to each conversation
         from app.services.hybrid_mode_manager import hybrid_mode_manager
+
         enhanced_conversations = []
-        
+
         for conv in conversations:
             conv_data = {
                 "id": str(conv.id),
@@ -158,7 +183,7 @@ async def get_conversations(
                 "message_count": conv.message_count,
                 "is_active": conv.is_active,
             }
-            
+
             # Add hybrid mode status
             hybrid_state = hybrid_mode_manager.get_state(str(conv.id))
             if hybrid_state:
@@ -169,7 +194,7 @@ async def get_conversations(
                 }
             else:
                 conv_data["hybrid_mode"] = None
-            
+
             enhanced_conversations.append(conv_data)
 
         total = await conversation_service.get_user_conversation_count(current_user_id)
@@ -189,7 +214,9 @@ async def get_conversations(
         )
 
 
-@router.post("/conversations/{conversation_id}/messages", response_model=ChatMessageResponse)
+@router.post(
+    "/conversations/{conversation_id}/messages", response_model=ChatMessageResponse
+)
 async def send_message(
     conversation_id: str,
     request: ChatMessageRequest,
@@ -198,13 +225,13 @@ async def send_message(
 ):
     """
     Send a message to a conversation with hybrid mode support.
-    
+
     Args:
         conversation_id: Conversation ID
         request: Chat message request
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         ChatMessageResponse: Response with structured output
     """
@@ -251,10 +278,12 @@ async def send_message(
         # Extract structured response data
         mode_decision = None
         reasoning_process = None
-        
+
         if result.structured_response:
             mode_decision = result.structured_response.mode_decision.dict()
-            reasoning_process = [step.dict() for step in result.structured_response.reasoning_process]
+            reasoning_process = [
+                step.dict() for step in result.structured_response.reasoning_process
+            ]
 
         return ChatMessageResponse(
             success=True,
@@ -289,14 +318,14 @@ async def get_conversation_messages(
 ):
     """
     Get conversation messages with hybrid mode metadata.
-    
+
     Args:
         conversation_id: Conversation ID
         page: Page number
         per_page: Items per page
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         List[Dict]: Messages with hybrid mode metadata
     """
@@ -327,16 +356,18 @@ async def get_conversation_messages(
                 "tokens_used": msg.tokens_used,
                 "model_used": msg.model_used,
             }
-            
+
             # Add hybrid mode metadata if available
             if msg.message_metadata and msg.role.value == "assistant":
                 if "mode_decision" in msg.message_metadata:
                     msg_data["mode_decision"] = msg.message_metadata["mode_decision"]
                 if "reasoning_process" in msg.message_metadata:
-                    msg_data["reasoning_process"] = msg.message_metadata["reasoning_process"]
+                    msg_data["reasoning_process"] = msg.message_metadata[
+                        "reasoning_process"
+                    ]
                 if "tool_calls" in msg.message_metadata:
                     msg_data["tool_calls"] = msg.message_metadata["tool_calls"]
-            
+
             enhanced_messages.append(msg_data)
 
         return {
@@ -364,12 +395,12 @@ async def delete_conversation(
 ):
     """
     Delete a conversation and clean up hybrid mode state.
-    
+
     Args:
         conversation_id: Conversation ID
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Deletion result
     """
@@ -387,10 +418,13 @@ async def delete_conversation(
 
         # Clean up hybrid mode state
         from app.services.hybrid_mode_manager import hybrid_mode_manager
+
         hybrid_mode_manager.cleanup_conversation(conversation_id)
 
-        logger.info(f"Deleted conversation {conversation_id} and cleaned up hybrid mode state")
-        
+        logger.info(
+            f"Deleted conversation {conversation_id} and cleaned up hybrid mode state"
+        )
+
         return {"success": True, "message": "Conversation deleted successfully"}
 
     except HTTPException:
@@ -411,12 +445,12 @@ async def get_conversation_mode_status(
 ):
     """
     Get the current hybrid mode status for a conversation.
-    
+
     Args:
         conversation_id: Conversation ID
         current_user_id: Current user ID
         db: Database session
-        
+
     Returns:
         Dict: Hybrid mode status
     """
@@ -430,8 +464,9 @@ async def get_conversation_mode_status(
             )
 
         from app.services.hybrid_mode_manager import hybrid_mode_manager
+
         state = hybrid_mode_manager.get_state(conversation_id)
-        
+
         if not state:
             return {
                 "hybrid_mode_initialized": False,

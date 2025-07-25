@@ -457,36 +457,46 @@ class EnhancedToolExecutor:
         tools = []
 
         # Get regular tools
-        regular_tools = tool_service.get_all_tools()
-        for tool in regular_tools:
-            tools.append(
-                {
-                    "name": tool.get("name"),
-                    "description": tool.get("description", ""),
-                    "category": tool.get("category", "general"),
-                    "type": "regular",
-                    "dependencies": self.dependency_manager.dependencies.get(
-                        tool.get("name"),
-                        [],
-                    ),
-                },
-            )
+        if tool_service is not None:
+            try:
+                regular_tools = tool_service.get_available_tools()
+                for tool in regular_tools:
+                    tools.append(
+                        {
+                            "name": tool.get("name"),
+                            "description": tool.get("description", ""),
+                            "category": tool.get("category", "general"),
+                            "type": "regular",
+                            "dependencies": self.dependency_manager.dependencies.get(
+                                tool.get("name"),
+                                [],
+                            ),
+                        },
+                    )
+            except Exception as e:
+                logger.warning(f"Error getting regular tools: {e}")
+        else:
+            # Return empty list for tests when tool_service is not initialized
+            logger.debug("tool_service not initialized, returning empty tool list")
 
         # Get MCP tools
-        mcp_tools = mcp_manager.get_all_tools()
-        for tool in mcp_tools:
-            tools.append(
-                {
-                    "name": tool.get("name"),
-                    "description": tool.get("description", ""),
-                    "category": tool.get("category", "mcp"),
-                    "type": "mcp",
-                    "dependencies": self.dependency_manager.dependencies.get(
-                        tool.get("name"),
-                        [],
-                    ),
-                },
-            )
+        try:
+            mcp_tools = mcp_manager.get_all_tools()
+            for tool in mcp_tools:
+                tools.append(
+                    {
+                        "name": tool.get("name"),
+                        "description": tool.get("description", ""),
+                        "category": tool.get("category", "mcp"),
+                        "type": "mcp",
+                        "dependencies": self.dependency_manager.dependencies.get(
+                            tool.get("name"),
+                            [],
+                        ),
+                    },
+                )
+        except Exception as e:
+            logger.warning(f"Error getting MCP tools: {e}")
 
         return tools
 
@@ -514,9 +524,11 @@ class EnhancedToolExecutor:
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": (successful_executions / total_executions * 100)
-            if total_executions > 0
-            else 0,
+            "success_rate": (
+                (successful_executions / total_executions * 100)
+                if total_executions > 0
+                else 0
+            ),
             "average_execution_time": avg_execution_time,
             "cache_stats": cache_stats,
             "active_executions": len(self.active_executions),

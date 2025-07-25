@@ -624,11 +624,11 @@ class ConversationIntelligenceService:
         for i, topic_name in enumerate(["Technical", "Business", "General"]):
             topic = TopicInfo(
                 topic=topic_name,
-                category=TopicCategory.TECHNICAL
-                if i == 0
-                else TopicCategory.BUSINESS
-                if i == 1
-                else TopicCategory.GENERAL,
+                category=(
+                    TopicCategory.TECHNICAL
+                    if i == 0
+                    else TopicCategory.BUSINESS if i == 1 else TopicCategory.GENERAL
+                ),
                 confidence=0.8 - i * 0.1,
                 keywords=[f"keyword_{i}_{j}" for j in range(3)],
                 frequency=i + 1,
@@ -865,9 +865,9 @@ class ConversationIntelligenceService:
         key_data = {
             "conversation_id": request.conversation_id,
             "analysis_types": request.analysis_types,
-            "summary_type": request.summary_type.value
-            if request.summary_type
-            else None,
+            "summary_type": (
+                request.summary_type.value if request.summary_type else None
+            ),
             "max_summary_length": request.max_summary_length,
             "min_topic_confidence": request.min_topic_confidence,
         }

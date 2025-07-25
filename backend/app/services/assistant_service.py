@@ -28,23 +28,25 @@ class AssistantService:
         Create a new assistant.
         """
         # Use attribute access for Pydantic models
-        if not getattr(assistant_data, 'name', None) or not getattr(assistant_data, 'system_prompt', None):
+        if not getattr(assistant_data, "name", None) or not getattr(
+            assistant_data, "system_prompt", None
+        ):
             raise ValueError("Name and system_prompt are required")
 
         assistant = Assistant(
             creator_id=user_id,
             name=assistant_data.name,
-            description=getattr(assistant_data, 'description', None),
-            personality=getattr(assistant_data, 'personality', None),
+            description=getattr(assistant_data, "description", None),
+            personality=getattr(assistant_data, "personality", None),
             system_prompt=assistant_data.system_prompt,
-            instructions=getattr(assistant_data, 'instructions', None),
-            model=getattr(assistant_data, 'model', 'gpt-4'),
-            temperature=str(getattr(assistant_data, 'temperature', 0.7)),
-            max_tokens=str(getattr(assistant_data, 'max_tokens', 4096)),
-            category=getattr(assistant_data, 'category', None),
-            tags=getattr(assistant_data, 'tags', []),
-            is_public=getattr(assistant_data, 'is_public', False),
-            is_template=getattr(assistant_data, 'is_template', False),
+            instructions=getattr(assistant_data, "instructions", None),
+            model=getattr(assistant_data, "model", "gpt-4"),
+            temperature=str(getattr(assistant_data, "temperature", 0.7)),
+            max_tokens=str(getattr(assistant_data, "max_tokens", 4096)),
+            category=getattr(assistant_data, "category", None),
+            tags=getattr(assistant_data, "tags", []),
+            is_public=getattr(assistant_data, "is_public", False),
+            is_template=getattr(assistant_data, "is_template", False),
             status=AssistantStatus.DRAFT,
         )
         self.db.add(assistant)
@@ -53,7 +55,9 @@ class AssistantService:
         logger.info(f"Assistant created: {assistant.name} by user {user_id}")
         return assistant
 
-    def get_assistant(self, assistant_id: str, user_id: str | None = None) -> Assistant | None:
+    def get_assistant(
+        self, assistant_id: str, user_id: str | None = None
+    ) -> Assistant | None:
         """
         Get assistant by ID.
 
@@ -65,16 +69,13 @@ class AssistantService:
             Optional[Assistant]: Assistant if found, None otherwise
         """
         query = self.db.query(Assistant).filter(Assistant.id == assistant_id)
-        
+
         # If user_id is provided, check permissions
         if user_id:
             query = query.filter(
-                or_(
-                    Assistant.creator_id == user_id,
-                    Assistant.is_public == True
-                )
+                or_(Assistant.creator_id == user_id, Assistant.is_public == True)
             )
-        
+
         return query.first()
 
     def get_user_assistants(
@@ -178,25 +179,25 @@ class AssistantService:
             Optional[str]: Default assistant ID if configured, None otherwise
         """
         from app.models.user import User
-        
+
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
             return None
-        
+
         # Check user preferences first
         if user.preferences and user.preferences.get("default_assistant_id"):
             return user.preferences.get("default_assistant_id")
-        
+
         # Fallback: get first available assistant for user
         user_assistants = self.get_user_assistants(user_id, include_public=True)
         if user_assistants:
             return str(user_assistants[0].id)
-        
+
         # Final fallback: get first public assistant
         public_assistants = self.get_public_assistants(limit=1)
         if public_assistants:
             return str(public_assistants[0].id)
-        
+
         return None
 
     def set_user_default_assistant(self, user_id: str, assistant_id: str) -> bool:
@@ -211,20 +212,20 @@ class AssistantService:
             bool: True if successful, False otherwise
         """
         from app.models.user import User
-        
+
         # Verify the assistant exists and user has access
         assistant = self.get_assistant(assistant_id, user_id)
         if not assistant:
             return False
-        
+
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
             return False
-        
+
         # Initialize preferences if not exists
         if not user.preferences:
             user.preferences = {}
-        
+
         user.preferences["default_assistant_id"] = assistant_id
         self.db.commit()
         return True
@@ -242,7 +243,7 @@ class AssistantService:
         default_assistant_id = self.get_user_default_assistant_id(user_id)
         if not default_assistant_id:
             return None
-        
+
         return self.get_assistant(default_assistant_id, user_id)
 
     def update_assistant(
@@ -303,11 +304,11 @@ class AssistantService:
         assistant = self.get_assistant(assistant_id, user_id)
         if not assistant:
             return None
-        
+
         assistant.status = AssistantStatus.ACTIVE
         self.db.commit()
         self.db.refresh(assistant)
-        
+
         logger.info(f"Assistant activated: {assistant.name} by user {user_id}")
         return assistant
 
@@ -325,11 +326,11 @@ class AssistantService:
         assistant = self.get_assistant(assistant_id, user_id)
         if not assistant:
             return None
-        
+
         assistant.status = AssistantStatus.INACTIVE
         self.db.commit()
         self.db.refresh(assistant)
-        
+
         logger.info(f"Assistant deactivated: {assistant.name} by user {user_id}")
         return assistant
 

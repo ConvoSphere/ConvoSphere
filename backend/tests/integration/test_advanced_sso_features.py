@@ -266,7 +266,9 @@ class TestAdvancedUserProvisioning:
             mock_service.create_sso_user.return_value = mock_user
 
             user, status, metadata = await provisioning.provision_user_advanced(
-                user_info, "google", mock_db,
+                user_info,
+                "google",
+                mock_db,
             )
 
             assert user is not None
@@ -275,7 +277,8 @@ class TestAdvancedUserProvisioning:
             assert "admin" in metadata["roles_assigned"]
             assert "user" in metadata["roles_assigned"]
 
-    def test_provision_user_blocked(self, provisioning, mock_db):
+    @pytest.mark.asyncio
+    async def test_provision_user_blocked(self, provisioning, mock_db):
         """Test blocked user provisioning."""
         user_info = {
             "email": "user@temp.com",
@@ -284,14 +287,17 @@ class TestAdvancedUserProvisioning:
         }
 
         user, status, metadata = await provisioning.provision_user_advanced(
-            user_info, "google", mock_db,
+            user_info,
+            "google",
+            mock_db,
         )
 
         assert user is None
         assert status == "blocked"
         assert "blocked" in metadata["reason"]
 
-    def test_update_existing_user(self, provisioning, mock_db):
+    @pytest.mark.asyncio
+    async def test_update_existing_user(self, provisioning, mock_db):
         """Test updating existing user."""
         user_info = {
             "email": "user@example.com",
@@ -314,7 +320,9 @@ class TestAdvancedUserProvisioning:
             mock_service.get_user_by_external_id.return_value = existing_user
 
             user, status, metadata = await provisioning.provision_user_advanced(
-                user_info, "google", mock_db,
+                user_info,
+                "google",
+                mock_db,
             )
 
             assert user is not None
@@ -322,7 +330,8 @@ class TestAdvancedUserProvisioning:
             assert metadata["action"] == "updated"
             assert "admin" in metadata["roles_assigned"]
 
-    def test_bulk_sync_users(self, provisioning, mock_db):
+    @pytest.mark.asyncio
+    async def test_bulk_sync_users(self, provisioning, mock_db):
         """Test bulk user synchronization."""
         user_list = [
             {
@@ -372,7 +381,8 @@ class TestAdvancedUserProvisioning:
             mock_service.get_user_by_id.return_value = mock_user
 
             status_info = await provisioning.get_user_provisioning_status(
-                user_id, mock_db,
+                user_id,
+                mock_db,
             )
 
             assert status_info["user_id"] == "user123"
@@ -393,7 +403,8 @@ class TestAdvancedUserProvisioning:
             mock_service.get_user_by_id.return_value = None
 
             status_info = await provisioning.get_user_provisioning_status(
-                user_id, mock_db,
+                user_id,
+                mock_db,
             )
 
             assert status_info["error"] == "User not found"
@@ -437,7 +448,9 @@ class TestAdvancedSSOIntegration:
 
             # Execute provisioning
             user, status, metadata = await provisioning.provision_user_advanced(
-                user_info, "google", mock_db,
+                user_info,
+                "google",
+                mock_db,
             )
 
             # Verify results
@@ -486,7 +499,9 @@ class TestAdvancedSSOIntegration:
 
         for test_case in test_cases:
             user, status, metadata = await provisioning.provision_user_advanced(
-                test_case["user_info"], "google", mock_db,
+                test_case["user_info"],
+                "google",
+                mock_db,
             )
 
             assert status == test_case["expected_status"]

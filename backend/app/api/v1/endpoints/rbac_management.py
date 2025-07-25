@@ -91,7 +91,8 @@ async def get_permission(
         permission = rbac_service.get_permission_by_id(permission_id, current_user)
         if not permission:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Permission not found",
             )
         return rbac_service._permission_to_response(permission)
     except PermissionDeniedError as e:
@@ -109,7 +110,9 @@ async def update_permission(
     try:
         rbac_service = RBACService(db)
         permission = rbac_service.update_permission(
-            permission_id, permission_data, current_user,
+            permission_id,
+            permission_data,
+            current_user,
         )
         return rbac_service._permission_to_response(permission)
     except PermissionDeniedError as e:
@@ -132,7 +135,9 @@ async def delete_permission(
 
 # ABAC Rule Management
 @router.post(
-    "/abac/rules", response_model=ABACRuleResponse, status_code=status.HTTP_201_CREATED,
+    "/abac/rules",
+    response_model=ABACRuleResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_abac_rule(
     rule_data: ABACRuleCreate,
@@ -184,7 +189,8 @@ async def get_abac_rule(
         rule = rbac_service.get_abac_rule_by_id(rule_id, current_user)
         if not rule:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="ABAC rule not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="ABAC rule not found",
             )
         return rbac_service._abac_rule_to_response(rule)
     except PermissionDeniedError as e:
@@ -251,7 +257,8 @@ async def list_abac_policies(
     try:
         rbac_service = RBACService(db)
         policies = rbac_service.list_abac_policies(
-            is_active=is_active, current_user=current_user,
+            is_active=is_active,
+            current_user=current_user,
         )
         return [rbac_service._abac_policy_to_response(p) for p in policies]
     except PermissionDeniedError as e:
@@ -312,7 +319,8 @@ async def get_cache_stats(
     """Get RBAC cache statistics."""
     if not current_user.has_permission("rbac:read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
 
     stats = rbac_cache.get_cache_stats()
@@ -334,7 +342,8 @@ async def get_performance_stats(
     """Get RBAC performance statistics for a user."""
     if not current_user.has_permission("rbac:read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
 
     if permission:
@@ -366,7 +375,8 @@ async def clear_rbac_cache(
     """Clear RBAC cache."""
     if not current_user.has_permission("rbac:manage"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
 
     if user_id:
@@ -392,7 +402,8 @@ async def get_security_events(
     """Get security events."""
     if not current_user.has_permission("security:read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
 
     # This would integrate with the security monitoring system
@@ -413,7 +424,8 @@ async def get_permission_matrix(
     """Get permission matrix showing all roles and their permissions."""
     if not current_user.has_permission("rbac:read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
 
     # Build permission matrix

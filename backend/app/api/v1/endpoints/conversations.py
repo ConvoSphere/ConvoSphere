@@ -1,5 +1,7 @@
 """Conversations endpoints for conversation management (enterprise-ready)."""
 
+from typing import Any
+
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
@@ -15,17 +17,19 @@ from app.services.conversation_service import ConversationService
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import Any
 
 router = APIRouter()
+
 
 # API-specific request schema (without user_id)
 class ConversationCreateRequest(BaseModel):
     """Create conversation request model for API."""
+
     assistant_id: str
     title: str | None = None
     description: str | None = None
     conversation_metadata: dict[str, Any] | None = None
+
 
 # --- Conversation CRUD ---
 
@@ -42,7 +46,7 @@ async def create_conversation(
 ):
     """Create a new conversation."""
     service = ConversationService(db)
-    
+
     # Create ConversationCreate object with user_id from authenticated user
     conversation_create = ConversationCreate(
         user_id=str(current_user.id),
@@ -51,7 +55,7 @@ async def create_conversation(
         description=conversation_data.description,
         conversation_metadata=conversation_data.conversation_metadata,
     )
-    
+
     return service.create_conversation(conversation_create)
 
 
@@ -181,6 +185,7 @@ async def add_message(
         raise HTTPException(status_code=403, detail="Access denied")
     # Create MessageCreate object with conversation_id
     from app.schemas.conversation import MessageCreate as SchemaMessageCreate
+
     message_create = SchemaMessageCreate(
         conversation_id=conversation_id,
         content=message_data.content,

@@ -102,10 +102,12 @@ def db_info():
 
             # Get table count
             result = conn.execute(
-                text("""
+                text(
+                    """
                 SELECT COUNT(*) FROM information_schema.tables 
                 WHERE table_schema = 'public'
-            """),
+            """
+                ),
             )
             table_count = result.scalar()
             print(f"Tables: {table_count}")
@@ -256,7 +258,8 @@ def backup_create(output=None):
                     "-f",
                     output,
                 ],
-                check=False, env=env,
+                check=False,
+                env=env,
                 capture_output=True,
                 text=True,
             )
@@ -322,7 +325,8 @@ def backup_restore(backup_file, confirm=False):
                     "-f",
                     backup_file,
                 ],
-                check=False, env=env,
+                check=False,
+                env=env,
                 capture_output=True,
                 text=True,
             )
@@ -522,7 +526,10 @@ def dev_quality_check():
 
     # Format check
     result = subprocess.run(
-        ["ruff", "format", "--check", "."], check=False, capture_output=True, text=True,
+        ["ruff", "format", "--check", "."],
+        check=False,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         print("✅ Code formatting: OK")
@@ -531,7 +538,9 @@ def dev_quality_check():
         print(result.stdout)
 
     # Linting
-    result = subprocess.run(["ruff", "check", "."], check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        ["ruff", "check", "."], check=False, capture_output=True, text=True
+    )
     if result.returncode == 0:
         print("✅ Linting: OK")
     else:
@@ -539,7 +548,9 @@ def dev_quality_check():
         print(result.stdout)
 
     # Security check
-    result = subprocess.run(["bandit", "-r", "."], check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        ["bandit", "-r", "."], check=False, capture_output=True, text=True
+    )
     if result.returncode == 0:
         print("✅ Security check: OK")
     else:
@@ -584,47 +595,51 @@ def db_reset(confirm=False):
             return
 
     print("🗑️  Resetting database...")
-    
+
     try:
         # Step 1: Drop all tables
         print("  📋 Dropping all tables...")
         with engine.connect() as conn:
             # Disable foreign key checks temporarily
             conn.execute(text("SET session_replication_role = replica;"))
-            
+
             # Get all table names
-            result = conn.execute(text("""
+            result = conn.execute(
+                text(
+                    """
                 SELECT tablename FROM pg_tables 
                 WHERE schemaname = 'public' 
                 AND tablename != 'alembic_version'
-            """))
+            """
+                )
+            )
             tables = [row[0] for row in result]
-            
+
             # Drop all tables
             for table in tables:
                 conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
-            
+
             # Re-enable foreign key checks
             conn.execute(text("SET session_replication_role = DEFAULT;"))
             conn.commit()
-        
+
         print("  ✅ All tables dropped successfully")
-        
+
         # Step 2: Reset Alembic version table
         print("  📋 Resetting Alembic version table...")
         with engine.connect() as conn:
             conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
             conn.commit()
-        
+
         print("  ✅ Alembic version table reset")
-        
+
         # Step 3: Run migrations to recreate all tables
         print("  📋 Running migrations to recreate tables...")
         db_migrate()
-        
+
         print("  ✅ Database reset completed successfully")
         print_success("Database has been completely reset and reinitialized")
-        
+
     except Exception as e:
         print_error(f"Database reset failed: {e}")
         sys.exit(1)
@@ -642,30 +657,34 @@ def db_clear_data(confirm=False):
             return
 
     print("🗑️  Clearing all data from database...")
-    
+
     try:
         with engine.connect() as conn:
             # Disable foreign key checks temporarily
             conn.execute(text("SET session_replication_role = replica;"))
-            
+
             # Get all table names
-            result = conn.execute(text("""
+            result = conn.execute(
+                text(
+                    """
                 SELECT tablename FROM pg_tables 
                 WHERE schemaname = 'public' 
                 AND tablename != 'alembic_version'
-            """))
+            """
+                )
+            )
             tables = [row[0] for row in result]
-            
+
             # Truncate all tables
             for table in tables:
                 conn.execute(text(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE"))
-            
+
             # Re-enable foreign key checks
             conn.execute(text("SET session_replication_role = DEFAULT;"))
             conn.commit()
-        
+
         print_success("All data has been cleared from the database")
-        
+
     except Exception as e:
         print_error(f"Data clearing failed: {e}")
         sys.exit(1)
@@ -684,7 +703,9 @@ def show_help():
     print("  db downgrade <rev>      Downgrade to revision")
     print("  db test-connection      Test database connection")
     print("  db info                 Show database information")
-    print("  db reset                Completely reset database (drop all tables and recreate)")
+    print(
+        "  db reset                Completely reset database (drop all tables and recreate)"
+    )
     print("  db clear-data           Clear all data but keep table structure")
     print()
     print("User Management:")
@@ -729,11 +750,16 @@ def main():
     db_subparsers.add_parser("status", help="Show migration status")
     db_subparsers.add_parser("test-connection", help="Test database connection")
     db_subparsers.add_parser("info", help="Show database information")
-    db_subparsers.add_parser("reset", help="Completely reset database (drop all tables and recreate)")
-    db_subparsers.add_parser("clear-data", help="Clear all data but keep table structure")
+    db_subparsers.add_parser(
+        "reset", help="Completely reset database (drop all tables and recreate)"
+    )
+    db_subparsers.add_parser(
+        "clear-data", help="Clear all data but keep table structure"
+    )
 
     downgrade_parser = db_subparsers.add_parser(
-        "downgrade", help="Downgrade to revision",
+        "downgrade",
+        help="Downgrade to revision",
     )
     downgrade_parser.add_argument("revision", help="Revision to downgrade to")
 
@@ -754,7 +780,9 @@ def main():
     restore_parser = backup_subparsers.add_parser("restore", help="Restore from backup")
     restore_parser.add_argument("backup_file", help="Backup file to restore")
     restore_parser.add_argument(
-        "--confirm", action="store_true", help="Skip confirmation",
+        "--confirm",
+        action="store_true",
+        help="Skip confirmation",
     )
 
     list_parser = backup_subparsers.add_parser("list", help="List backups")
@@ -781,14 +809,19 @@ def main():
 
     test_data_parser = dev_subparsers.add_parser("test-data", help="Create test data")
     test_data_parser.add_argument(
-        "--users", type=int, default=5, help="Number of users",
+        "--users",
+        type=int,
+        default=5,
+        help="Number of users",
     )
 
     dev_subparsers.add_parser("quality-check", help="Run code quality checks")
 
     api_test_parser = dev_subparsers.add_parser("api-test", help="Run API tests")
     api_test_parser.add_argument(
-        "--url", default="http://localhost:8000", help="API URL",
+        "--url",
+        default="http://localhost:8000",
+        help="API URL",
     )
 
     args = parser.parse_args()

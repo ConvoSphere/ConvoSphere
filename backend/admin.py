@@ -141,7 +141,8 @@ def backup_create(output=None):
                     "-f",
                     output,
                 ],
-                check=False, env=env,
+                check=False,
+                env=env,
                 capture_output=True,
                 text=True,
             )
@@ -209,7 +210,8 @@ def backup_restore(backup_file, confirm=False):
                     "-f",
                     backup_file,
                 ],
-                check=False, env=env,
+                check=False,
+                env=env,
                 capture_output=True,
                 text=True,
             )
@@ -345,7 +347,10 @@ def dev_quality_check():
 
     # Format check
     result = subprocess.run(
-        ["ruff", "format", "--check", "."], check=False, capture_output=True, text=True,
+        ["ruff", "format", "--check", "."],
+        check=False,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         print("✅ Code formatting: OK")
@@ -354,7 +359,9 @@ def dev_quality_check():
         print(result.stdout)
 
     # Linting
-    result = subprocess.run(["ruff", "check", "."], check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        ["ruff", "check", "."], check=False, capture_output=True, text=True
+    )
     if result.returncode == 0:
         print("✅ Linting: OK")
     else:
@@ -362,7 +369,9 @@ def dev_quality_check():
         print(result.stdout)
 
     # Security check
-    result = subprocess.run(["bandit", "-r", "."], check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        ["bandit", "-r", "."], check=False, capture_output=True, text=True
+    )
     if result.returncode == 0:
         print("✅ Security check: OK")
     else:
@@ -846,7 +855,8 @@ def main():
     db_subparsers.add_parser("status", help="Show migration status")
 
     downgrade_parser = db_subparsers.add_parser(
-        "downgrade", help="Downgrade to revision",
+        "downgrade",
+        help="Downgrade to revision",
     )
     downgrade_parser.add_argument("revision", help="Revision to downgrade to")
 
@@ -869,17 +879,23 @@ def main():
     update_parser.add_argument("--first-name", help="First name")
     update_parser.add_argument("--last-name", help="Last name")
     update_parser.add_argument(
-        "--role", choices=["user", "admin", "super_admin"], help="User role",
+        "--role",
+        choices=["user", "admin", "super_admin"],
+        help="User role",
     )
     update_parser.add_argument(
-        "--status", choices=["active", "inactive", "suspended"], help="User status",
+        "--status",
+        choices=["active", "inactive", "suspended"],
+        help="User status",
     )
 
     # User delete command
     delete_parser = user_subparsers.add_parser("delete", help="Delete user")
     delete_parser.add_argument("identifier", help="User email, username, or ID")
     delete_parser.add_argument(
-        "--confirm", action="store_true", help="Skip confirmation",
+        "--confirm",
+        action="store_true",
+        help="Skip confirmation",
     )
 
     # User create command
@@ -912,7 +928,9 @@ def main():
     restore_parser = backup_subparsers.add_parser("restore", help="Restore from backup")
     restore_parser.add_argument("backup_file", help="Backup file to restore")
     restore_parser.add_argument(
-        "--confirm", action="store_true", help="Skip confirmation",
+        "--confirm",
+        action="store_true",
+        help="Skip confirmation",
     )
 
     list_parser = backup_subparsers.add_parser("list", help="List backups")
@@ -937,7 +955,9 @@ def main():
 
     api_test_parser = dev_subparsers.add_parser("api-test", help="Run API tests")
     api_test_parser.add_argument(
-        "--url", default="http://localhost:8000", help="API URL",
+        "--url",
+        default="http://localhost:8000",
+        help="API URL",
     )
 
     args = parser.parse_args()

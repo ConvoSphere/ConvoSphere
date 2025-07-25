@@ -51,7 +51,8 @@ async def get_sso_providers():
         return provider_info
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -65,7 +66,8 @@ async def get_sso_provider_config(
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required",
             )
 
         sso_manager = get_sso_manager()
@@ -73,7 +75,8 @@ async def get_sso_provider_config(
 
         if not config:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found",
             )
 
         # Remove sensitive information
@@ -87,7 +90,8 @@ async def get_sso_provider_config(
         return safe_config
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -128,7 +132,8 @@ async def ldap_login(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -154,7 +159,8 @@ async def get_ldap_user_info(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -182,11 +188,13 @@ async def sync_ldap_groups(
 
     except GroupSyncError as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         )
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -202,15 +210,18 @@ async def saml_login(
         provider = sso_manager.providers.get(provider_name)
 
         if not provider or not isinstance(
-            provider, sso_manager.providers["saml"].__class__,
+            provider,
+            sso_manager.providers["saml"].__class__,
         ):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="SAML provider not found",
             )
 
         # Generate SAML request
         authn_request = provider.saml_client.create_authn_request(
-            provider.config.get("idp_entity_id"), relay_state=relay_state,
+            provider.config.get("idp_entity_id"),
+            relay_state=relay_state,
         )
 
         # Redirect to IdP
@@ -218,7 +229,8 @@ async def saml_login(
 
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -235,7 +247,8 @@ async def saml_acs(
 
         if not saml_response:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="SAML response required",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="SAML response required",
             )
 
         sso_manager = get_sso_manager()
@@ -267,7 +280,8 @@ async def saml_acs(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -280,7 +294,8 @@ async def saml_metadata():
 
         if not provider:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="SAML provider not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="SAML provider not found",
             )
 
         # Generate SP metadata
@@ -290,7 +305,8 @@ async def saml_metadata():
 
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -307,10 +323,12 @@ async def oauth_login(
         provider = sso_manager.providers.get(provider_name)
 
         if not provider or not isinstance(
-            provider, sso_manager.providers["oauth"].__class__,
+            provider,
+            sso_manager.providers["oauth"].__class__,
         ):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="OAuth provider not found",
             )
 
         # Build OAuth authorization URL
@@ -330,7 +348,8 @@ async def oauth_login(
 
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -349,7 +368,9 @@ async def oauth_callback(
         credentials = {"code": code, "redirect_uri": redirect_uri, "state": state}
 
         user, additional_data = await sso_manager.authenticate(
-            provider_name, credentials, db,
+            provider_name,
+            credentials,
+            db,
         )
 
         # Create access token
@@ -377,7 +398,8 @@ async def oauth_callback(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -397,7 +419,9 @@ async def get_oauth_user_info(
 
         sso_manager = get_sso_manager()
         user_info = await sso_manager.get_user_info(
-            provider_name, str(current_user.id), db,
+            provider_name,
+            str(current_user.id),
+            db,
         )
 
         return user_info
@@ -406,7 +430,8 @@ async def get_oauth_user_info(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -424,7 +449,9 @@ async def generic_sso_login(
         credentials = {"username": login_data.username, "password": login_data.password}
 
         user, additional_data = await sso_manager.authenticate(
-            provider_name, credentials, db,
+            provider_name,
+            credentials,
+            db,
         )
 
         # Create access token
@@ -452,7 +479,8 @@ async def generic_sso_login(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -476,11 +504,13 @@ async def generic_sync_groups(
 
     except GroupSyncError as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         )
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -498,7 +528,8 @@ async def get_sso_users(
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required",
             )
 
         query = db.query(User).filter(User.auth_provider != AuthProvider.LOCAL)
@@ -534,13 +565,15 @@ async def sync_sso_user(
             and str(current_user.id) != user_id
         ):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Access denied",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied",
             )
 
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         if user.auth_provider == AuthProvider.LOCAL:
@@ -571,7 +604,8 @@ async def sync_sso_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e),
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
         )
 
 
@@ -618,7 +652,8 @@ async def reload_sso_config(
         # Check if user is admin
         if current_user.role not in ["super_admin", "admin"]:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required",
             )
 
         # This would reload configuration from database or config file

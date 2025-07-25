@@ -119,9 +119,9 @@ class ABACRule(Base):
             "username": user.username,
             "role": user.role,
             "status": user.status,
-            "organization_id": str(user.organization_id)
-            if user.organization_id
-            else None,
+            "organization_id": (
+                str(user.organization_id) if user.organization_id else None
+            ),
             "department": user.department,
             "job_title": user.job_title,
             "employee_id": user.employee_id,
@@ -167,7 +167,8 @@ class ABACRule(Base):
         return attributes
 
     def _extract_environment_attributes(
-        self, context: dict[str, Any],
+        self,
+        context: dict[str, Any],
     ) -> dict[str, Any]:
         """Extract environment attributes for ABAC evaluation."""
         return {
@@ -182,7 +183,9 @@ class ABACRule(Base):
         }
 
     def _evaluate_condition(
-        self, condition: dict[str, Any], attributes: dict[str, Any],
+        self,
+        condition: dict[str, Any],
+        attributes: dict[str, Any],
     ) -> bool:
         """Evaluate a single ABAC condition."""
         attribute_type = condition.get("attribute_type")
@@ -200,7 +203,10 @@ class ABACRule(Base):
         return self._apply_operator(operator, attribute_value, value)
 
     def _apply_operator(
-        self, operator: str, attribute_value: Any, expected_value: Any,
+        self,
+        operator: str,
+        attribute_value: Any,
+        expected_value: Any,
     ) -> bool:
         """Apply comparison operator."""
         if operator == OperatorType.EQUALS:

@@ -40,8 +40,12 @@ class AgentMemory(BaseModel):
     user_id: UUID = Field(..., description="User ID")
     memory_type: str = Field(..., description="Type of memory (short_term, long_term)")
     content: Dict[str, Any] = Field(..., description="Memory content")
-    importance: float = Field(default=0.5, ge=0.0, le=1.0, description="Memory importance")
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
+    importance: float = Field(
+        default=0.5, ge=0.0, le=1.0, description="Memory importance"
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation timestamp"
+    )
     expires_at: Optional[datetime] = Field(None, description="Expiration timestamp")
 
     @field_validator("importance")
@@ -60,10 +64,14 @@ class AgentReasoning(BaseModel):
     conversation_id: UUID = Field(..., description="Conversation ID")
     step: int = Field(..., ge=1, description="Reasoning step number")
     thought: str = Field(..., min_length=1, description="Reasoning thought")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in reasoning")
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Confidence in reasoning"
+    )
     evidence: List[str] = Field(default_factory=list, description="Supporting evidence")
     conclusion: Optional[str] = Field(None, description="Reasoning conclusion")
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation timestamp"
+    )
 
     @field_validator("confidence")
     @classmethod
@@ -83,12 +91,24 @@ class ModeDecision(BaseModel):
     recommended_mode: ConversationMode = Field(..., description="Recommended next mode")
     reason: ModeDecisionReason = Field(..., description="Reason for mode decision")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in decision")
-    complexity_score: float = Field(..., ge=0.0, le=1.0, description="Query complexity score")
-    available_tools: List[str] = Field(default_factory=list, description="Available tools")
-    context_relevance: float = Field(..., ge=0.0, le=1.0, description="Context relevance score")
-    reasoning_steps: List[AgentReasoning] = Field(default_factory=list, description="Reasoning process")
-    memory_context: List[AgentMemory] = Field(default_factory=list, description="Relevant memory context")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Decision timestamp")
+    complexity_score: float = Field(
+        ..., ge=0.0, le=1.0, description="Query complexity score"
+    )
+    available_tools: List[str] = Field(
+        default_factory=list, description="Available tools"
+    )
+    context_relevance: float = Field(
+        ..., ge=0.0, le=1.0, description="Context relevance score"
+    )
+    reasoning_steps: List[AgentReasoning] = Field(
+        default_factory=list, description="Reasoning process"
+    )
+    memory_context: List[AgentMemory] = Field(
+        default_factory=list, description="Relevant memory context"
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Decision timestamp"
+    )
 
     @field_validator("confidence", "complexity_score", "context_relevance")
     @classmethod
@@ -102,15 +122,34 @@ class ModeDecision(BaseModel):
 class HybridModeConfig(BaseModel):
     """Configuration for hybrid mode management."""
 
-    auto_mode_enabled: bool = Field(default=True, description="Enable automatic mode switching")
-    complexity_threshold: float = Field(default=0.7, ge=0.0, le=1.0, description="Complexity threshold for agent mode")
-    confidence_threshold: float = Field(default=0.8, ge=0.0, le=1.0, description="Confidence threshold for mode decisions")
-    context_window_size: int = Field(default=10, ge=1, le=100, description="Context window size for memory")
-    memory_retention_hours: int = Field(default=24, ge=1, le=168, description="Memory retention in hours")
-    reasoning_steps_max: int = Field(default=5, ge=1, le=20, description="Maximum reasoning steps")
-    tool_relevance_threshold: float = Field(default=0.6, ge=0.0, le=1.0, description="Tool relevance threshold")
+    auto_mode_enabled: bool = Field(
+        default=True, description="Enable automatic mode switching"
+    )
+    complexity_threshold: float = Field(
+        default=0.7, ge=0.0, le=1.0, description="Complexity threshold for agent mode"
+    )
+    confidence_threshold: float = Field(
+        default=0.8,
+        ge=0.0,
+        le=1.0,
+        description="Confidence threshold for mode decisions",
+    )
+    context_window_size: int = Field(
+        default=10, ge=1, le=100, description="Context window size for memory"
+    )
+    memory_retention_hours: int = Field(
+        default=24, ge=1, le=168, description="Memory retention in hours"
+    )
+    reasoning_steps_max: int = Field(
+        default=5, ge=1, le=20, description="Maximum reasoning steps"
+    )
+    tool_relevance_threshold: float = Field(
+        default=0.6, ge=0.0, le=1.0, description="Tool relevance threshold"
+    )
 
-    @field_validator("complexity_threshold", "confidence_threshold", "tool_relevance_threshold")
+    @field_validator(
+        "complexity_threshold", "confidence_threshold", "tool_relevance_threshold"
+    )
     @classmethod
     def validate_thresholds(cls, v: float) -> float:
         """Validate threshold values."""
@@ -126,12 +165,22 @@ class HybridModeState(BaseModel):
     user_id: UUID = Field(..., description="User ID")
     current_mode: ConversationMode = Field(..., description="Current mode")
     last_mode_change: datetime = Field(..., description="Last mode change timestamp")
-    mode_history: List[Dict[str, Any]] = Field(default_factory=list, description="Mode change history")
-    memory_context: List[AgentMemory] = Field(default_factory=list, description="Current memory context")
-    reasoning_context: List[AgentReasoning] = Field(default_factory=list, description="Current reasoning context")
+    mode_history: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Mode change history"
+    )
+    memory_context: List[AgentMemory] = Field(
+        default_factory=list, description="Current memory context"
+    )
+    reasoning_context: List[AgentReasoning] = Field(
+        default_factory=list, description="Current reasoning context"
+    )
     config: HybridModeConfig = Field(..., description="Mode configuration")
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=datetime.now, description="Last update timestamp")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation timestamp"
+    )
+    updated_at: datetime = Field(
+        default_factory=datetime.now, description="Last update timestamp"
+    )
 
 
 class ModeChangeRequest(BaseModel):
@@ -141,7 +190,9 @@ class ModeChangeRequest(BaseModel):
     user_id: UUID = Field(..., description="User ID")
     target_mode: ConversationMode = Field(..., description="Target mode")
     reason: Optional[str] = Field(None, description="User-provided reason")
-    force_change: bool = Field(default=False, description="Force mode change ignoring recommendations")
+    force_change: bool = Field(
+        default=False, description="Force mode change ignoring recommendations"
+    )
 
 
 class ModeChangeResponse(BaseModel):
@@ -151,8 +202,12 @@ class ModeChangeResponse(BaseModel):
     previous_mode: ConversationMode = Field(..., description="Previous mode")
     new_mode: ConversationMode = Field(..., description="New mode")
     reason: str = Field(..., description="Reason for mode change")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Change timestamp")
-    warnings: List[str] = Field(default_factory=list, description="Any warnings about the change")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Change timestamp"
+    )
+    warnings: List[str] = Field(
+        default_factory=list, description="Any warnings about the change"
+    )
 
 
 class StructuredResponse(BaseModel):
@@ -160,10 +215,18 @@ class StructuredResponse(BaseModel):
 
     content: str = Field(..., description="Response content")
     mode_decision: ModeDecision = Field(..., description="Mode decision information")
-    tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Tool calls made")
-    memory_updates: List[AgentMemory] = Field(default_factory=list, description="Memory updates")
-    reasoning_process: List[AgentReasoning] = Field(default_factory=list, description="Reasoning process")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    tool_calls: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Tool calls made"
+    )
+    memory_updates: List[AgentMemory] = Field(
+        default_factory=list, description="Memory updates"
+    )
+    reasoning_process: List[AgentReasoning] = Field(
+        default_factory=list, description="Reasoning process"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
     model_used: str = Field(..., description="Model used for response")
     tokens_used: int = Field(..., ge=0, description="Tokens used")
     processing_time: float = Field(..., ge=0, description="Processing time in seconds")
@@ -182,4 +245,4 @@ class StructuredResponse(BaseModel):
         """Validate processing time."""
         if v < 0:
             raise ValueError("Processing time cannot be negative")
-        return v 
+        return v

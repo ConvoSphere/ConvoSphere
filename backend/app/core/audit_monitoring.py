@@ -40,7 +40,10 @@ class AuditMetrics:
         self.performance_prefix = "audit_performance:"
 
     async def record_audit_event(
-        self, event_type: AuditEventType, duration_ms: int, success: bool = True,
+        self,
+        event_type: AuditEventType,
+        duration_ms: int,
+        success: bool = True,
     ) -> None:
         """Record audit event metrics."""
         try:
@@ -78,14 +81,18 @@ class AuditMetrics:
             else:
                 self.redis_client.set(avg_key, duration_ms)
                 self.redis_client.set(
-                    f"{self.performance_prefix}count:{event_type.value}", 1,
+                    f"{self.performance_prefix}count:{event_type.value}",
+                    1,
                 )
 
         except Exception as e:
             logger.error(f"Failed to record audit metrics: {str(e)}")
 
     async def record_query_performance(
-        self, query_type: str, duration_ms: int, result_count: int,
+        self,
+        query_type: str,
+        duration_ms: int,
+        result_count: int,
     ) -> None:
         """Record query performance metrics."""
         try:
@@ -107,7 +114,10 @@ class AuditMetrics:
             logger.error(f"Failed to record query performance: {str(e)}")
 
     async def record_cache_performance(
-        self, cache_operation: str, hit: bool, duration_ms: int,
+        self,
+        cache_operation: str,
+        hit: bool,
+        duration_ms: int,
     ) -> None:
         """Record cache performance metrics."""
         try:
@@ -156,23 +166,28 @@ class AuditMetrics:
             # Get event metrics
             for event_type in event_types or list(AuditEventType):
                 event_metrics = await self._get_event_metrics(
-                    event_type, start_date, end_date,
+                    event_type,
+                    start_date,
+                    end_date,
                 )
                 metrics["event_metrics"][event_type.value] = event_metrics
 
             # Get performance metrics
             metrics["performance_metrics"] = await self._get_performance_metrics(
-                start_date, end_date,
+                start_date,
+                end_date,
             )
 
             # Get cache metrics
             metrics["cache_metrics"] = await self._get_cache_metrics(
-                start_date, end_date,
+                start_date,
+                end_date,
             )
 
             # Get database metrics
             metrics["database_metrics"] = await self._get_database_metrics(
-                start_date, end_date,
+                start_date,
+                end_date,
             )
 
             return metrics
@@ -259,9 +274,9 @@ class AuditMetrics:
                                 "event_type": event_type.value,
                                 "error_rate": error_rate,
                                 "threshold": 10,
-                                "severity": "warning"
-                                if error_rate < 25
-                                else "critical",
+                                "severity": (
+                                    "warning" if error_rate < 25 else "critical"
+                                ),
                             },
                         )
 
@@ -280,9 +295,9 @@ class AuditMetrics:
                                 "event_type": event_type.value,
                                 "avg_duration_ms": avg_duration,
                                 "threshold": 1000,
-                                "severity": "warning"
-                                if avg_duration < 2000
-                                else "critical",
+                                "severity": (
+                                    "warning" if avg_duration < 2000 else "critical"
+                                ),
                             },
                         )
 
@@ -294,7 +309,10 @@ class AuditMetrics:
 
     # Private methods
     async def _get_event_metrics(
-        self, event_type: AuditEventType, start_date: datetime, end_date: datetime,
+        self,
+        event_type: AuditEventType,
+        start_date: datetime,
+        end_date: datetime,
     ) -> dict[str, Any]:
         """Get metrics for specific event type."""
         try:
@@ -356,13 +374,15 @@ class AuditMetrics:
                     "total_events": total_events,
                     "successful_events": successful_events,
                     "failed_events": failed_events,
-                    "success_rate": (successful_events / total_events * 100)
-                    if total_events > 0
-                    else 0,
+                    "success_rate": (
+                        (successful_events / total_events * 100)
+                        if total_events > 0
+                        else 0
+                    ),
                     "avg_duration_ms": avg_duration,
-                    "peak_hour": peak_hour_query.hour.isoformat()
-                    if peak_hour_query
-                    else None,
+                    "peak_hour": (
+                        peak_hour_query.hour.isoformat() if peak_hour_query else None
+                    ),
                     "peak_count": peak_hour_query.count if peak_hour_query else 0,
                 },
             )
@@ -374,7 +394,9 @@ class AuditMetrics:
             return {}
 
     async def _get_performance_metrics(
-        self, start_date: datetime, end_date: datetime,
+        self,
+        start_date: datetime,
+        end_date: datetime,
     ) -> dict[str, Any]:
         """Get overall performance metrics."""
         try:
@@ -396,7 +418,9 @@ class AuditMetrics:
             return {}
 
     async def _get_cache_metrics(
-        self, start_date: datetime, end_date: datetime,
+        self,
+        start_date: datetime,
+        end_date: datetime,
     ) -> dict[str, Any]:
         """Get cache performance metrics."""
         try:
@@ -418,7 +442,9 @@ class AuditMetrics:
             return {}
 
     async def _get_database_metrics(
-        self, start_date: datetime, end_date: datetime,
+        self,
+        start_date: datetime,
+        end_date: datetime,
     ) -> dict[str, Any]:
         """Get database performance metrics."""
         try:
@@ -560,14 +586,14 @@ class AuditPerformanceMonitor:
             return {
                 "total_events_current_hour": total_events,
                 "total_errors_current_hour": total_errors,
-                "error_rate_current_hour": (total_errors / total_events * 100)
-                if total_events > 0
-                else 0,
-                "system_status": "healthy"
-                if total_errors / total_events < 0.1
-                else "degraded"
-                if total_events > 0
-                else "unknown",
+                "error_rate_current_hour": (
+                    (total_errors / total_events * 100) if total_events > 0 else 0
+                ),
+                "system_status": (
+                    "healthy"
+                    if total_errors / total_events < 0.1
+                    else "degraded" if total_events > 0 else "unknown"
+                ),
             }
 
         except Exception as e:
@@ -624,7 +650,8 @@ class AuditPerformanceMonitor:
                     )
                     failed = int(
                         self.metrics.redis_client.hget(
-                            key, f"failed_{event_type.value}",
+                            key,
+                            f"failed_{event_type.value}",
                         )
                         or 0,
                     )
@@ -642,9 +669,11 @@ class AuditPerformanceMonitor:
                 trends["error_rate_trend"].append(
                     {
                         "timestamp": timestamp.isoformat(),
-                        "value": (total_errors / total_events * 100)
-                        if total_events > 0
-                        else 0,
+                        "value": (
+                            (total_errors / total_events * 100)
+                            if total_events > 0
+                            else 0
+                        ),
                     },
                 )
 

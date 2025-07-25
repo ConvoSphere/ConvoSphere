@@ -70,6 +70,14 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -97,7 +105,6 @@ select = [
     "FBT", # flake8-boolean-trap
     "BLE", # flake8-blind-except
     "A",   # flake8-builtins
-    "COM", # flake8-commas
     "C90", # mccabe
     "DTZ", # flake8-datetimez
     "ISC", # flake8-implicit-str-concat
@@ -121,12 +128,10 @@ ignore = [
     "PLR0912", # too many branches
     "PLR0911", # too many return statements
     "PLR2004", # magic value used in comparison
+    "COM812", # missing trailing comma, conflicts with formatter
 ]
 
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
-"tests/**/*" = ["S101", "PLR2004"]
-"**/migrations/**" = ["E501", "F401"]
+per-file-ignores = {"__init__.py" = ["F401"], "tests/**/*" = ["S101", "PLR2004"], "**/migrations/**" = ["E501", "F401"]}
 
 # Bandit Configuration
 [tool.bandit]

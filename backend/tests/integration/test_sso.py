@@ -57,10 +57,14 @@ class TestOAuthService:
         # Test with enabled provider (would need proper config)
         with patch.object(oauth_service.settings, "sso_google_enabled", True):
             with patch.object(
-                oauth_service.settings, "sso_google_client_id", "test-id",
+                oauth_service.settings,
+                "sso_google_client_id",
+                "test-id",
             ):
                 with patch.object(
-                    oauth_service.settings, "sso_google_client_secret", "test-secret",
+                    oauth_service.settings,
+                    "sso_google_client_secret",
+                    "test-secret",
                 ):
                     assert oauth_service._is_provider_enabled("google")
 
@@ -92,7 +96,8 @@ class TestOAuthService:
 
         with patch.object(oauth_service, "_is_provider_enabled", return_value=True):
             with patch.object(
-                oauth_service.oauth, "create_client",
+                oauth_service.oauth,
+                "create_client",
             ) as mock_create_client:
                 mock_client = AsyncMock()
                 mock_client.authorize_redirect = AsyncMock(
@@ -101,7 +106,8 @@ class TestOAuthService:
                 mock_create_client.return_value = mock_client
 
                 result = await oauth_service.get_authorization_url(
-                    "google", mock_request,
+                    "google",
+                    mock_request,
                 )
                 assert result == "http://google.com/auth"
 
@@ -123,12 +129,16 @@ class TestOAuthService:
 
         with patch.object(oauth_service, "_is_provider_enabled", return_value=True):
             with patch.object(
-                oauth_service.oauth, "create_client", return_value=mock_client,
+                oauth_service.oauth,
+                "create_client",
+                return_value=mock_client,
             ):
                 mock_client.authorize_access_token = AsyncMock(return_value=mock_token)
 
                 with patch.object(
-                    oauth_service, "_get_google_user_info", return_value=mock_user_info,
+                    oauth_service,
+                    "_get_google_user_info",
+                    return_value=mock_user_info,
                 ):
                     result = await oauth_service.handle_callback("google", mock_request)
 
@@ -200,14 +210,21 @@ class TestOAuthService:
 
     @pytest.mark.asyncio
     async def test_process_sso_user_new_user(
-        self, oauth_service, mock_user_info, db_session,
+        self,
+        oauth_service,
+        mock_user_info,
+        db_session,
     ):
         """Test processing new SSO user."""
         with patch.object(
-            oauth_service, "_get_auth_provider", return_value=AuthProvider.OAUTH_GOOGLE,
+            oauth_service,
+            "_get_auth_provider",
+            return_value=AuthProvider.OAUTH_GOOGLE,
         ):
             with patch.object(
-                UserService, "get_user_by_external_id", return_value=None,
+                UserService,
+                "get_user_by_external_id",
+                return_value=None,
             ):
                 with patch.object(UserService, "create_sso_user") as mock_create:
                     mock_user = MagicMock()
@@ -215,26 +232,37 @@ class TestOAuthService:
                     mock_create.return_value = mock_user
 
                     result = await oauth_service.process_sso_user(
-                        mock_user_info, "google", db_session,
+                        mock_user_info,
+                        "google",
+                        db_session,
                     )
                     assert result == mock_user
 
     @pytest.mark.asyncio
     async def test_process_sso_user_existing_user(
-        self, oauth_service, mock_user_info, db_session,
+        self,
+        oauth_service,
+        mock_user_info,
+        db_session,
     ):
         """Test processing existing SSO user."""
         mock_user = MagicMock()
         mock_user.id = "test-user-id"
 
         with patch.object(
-            oauth_service, "_get_auth_provider", return_value=AuthProvider.OAUTH_GOOGLE,
+            oauth_service,
+            "_get_auth_provider",
+            return_value=AuthProvider.OAUTH_GOOGLE,
         ):
             with patch.object(
-                UserService, "get_user_by_external_id", return_value=mock_user,
+                UserService,
+                "get_user_by_external_id",
+                return_value=mock_user,
             ):
                 result = await oauth_service.process_sso_user(
-                    mock_user_info, "google", db_session,
+                    mock_user_info,
+                    "google",
+                    db_session,
                 )
                 assert result == mock_user
 
@@ -245,7 +273,9 @@ class TestOAuthService:
         mock_user.id = "test-user-id"
 
         with patch.object(
-            oauth_service.settings, "jwt_access_token_expire_minutes", 30,
+            oauth_service.settings,
+            "jwt_access_token_expire_minutes",
+            30,
         ):
             result = await oauth_service.create_sso_tokens(mock_user)
 
@@ -400,7 +430,8 @@ class TestSSOUserService:
     def test_get_user_by_external_id_not_found(self, user_service, db_session):
         """Test getting user by external ID when not found."""
         user = user_service.get_user_by_external_id(
-            "nonexistent", AuthProvider.OAUTH_GOOGLE,
+            "nonexistent",
+            AuthProvider.OAUTH_GOOGLE,
         )
         assert user is None
 

@@ -365,7 +365,9 @@ class TestRAGService:
         ranked_results = await rag_service._rank_results(results, sample_config)
 
         assert len(ranked_results) == 2  # noqa: S101
-        assert ranked_results[0].ranking_score >= ranked_results[1].ranking_score  # noqa: S101
+        assert (
+            ranked_results[0].ranking_score >= ranked_results[1].ranking_score
+        )  # noqa: S101
 
     def test_calculate_relevance_score(self, rag_service, sample_request):
         """Test relevance score calculation."""
