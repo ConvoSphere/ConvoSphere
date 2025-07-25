@@ -1,0 +1,428 @@
+/* Hybrid Mode Components Styles */
+
+/* Hybrid Mode Selector */
+.hybrid-mode-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.hybrid-mode-selector .ant-select {
+  min-width: 140px;
+}
+
+.hybrid-mode-selector .ant-badge {
+  font-size: 12px;
+}
+
+.hybrid-mode-selector .ant-btn {
+  padding: 4px 8px;
+  height: auto;
+}
+
+/* Mode-specific colors */
+.hybrid-mode-selector .ant-badge-status-blue {
+  background-color: #1890ff;
+}
+
+.hybrid-mode-selector .ant-badge-status-green {
+  background-color: #52c41a;
+}
+
+.hybrid-mode-selector .ant-badge-status-purple {
+  background-color: #722ed1;
+}
+
+/* Agent Reasoning Display */
+.agent-reasoning-display {
+  margin: 16px 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.reasoning-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #ffffff;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visibility-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.visibility-toggle:hover {
+  background: #f5f5f5;
+  color: #1890ff;
+}
+
+.mode-decision-card {
+  margin: 12px;
+  border: 1px solid #e8f4fd;
+  background: #f6ffed;
+}
+
+.mode-decision-summary {
+  padding: 8px 0;
+}
+
+.decision-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.decision-metrics {
+  margin: 12px 0;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.decision-reason {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f0f9ff;
+  border-radius: 4px;
+  border-left: 3px solid #1890ff;
+}
+
+/* Reasoning Steps */
+.reasoning-step-panel {
+  margin: 4px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.reasoning-step-panel.ant-collapse-item-active {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+.reasoning-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.reasoning-step-content {
+  padding: 12px 0;
+}
+
+.thought-section,
+.evidence-section,
+.conclusion-section {
+  margin-bottom: 12px;
+}
+
+.step-metrics {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.reasoning-summary {
+  padding: 12px 16px;
+  background: #f6ffed;
+  border-top: 1px solid #f0f0f0;
+  border-radius: 0 0 8px 8px;
+  text-align: center;
+}
+
+/* Progress Visualization */
+.progress-visualization {
+  margin: 16px 0;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.progress-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mode-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.overall-progress-card {
+  margin-bottom: 16px;
+  border: 1px solid #e8f4fd;
+  background: #f6ffed;
+}
+
+.overall-progress {
+  padding: 8px 0;
+}
+
+.progress-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-stats {
+  margin-top: 8px;
+}
+
+.progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-step-card {
+  border: 1px solid #f0f0f0;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.progress-step-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+.progress-step-card.active {
+  border-color: #1890ff;
+  background: #f0f9ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+}
+
+.progress-step {
+  padding: 8px 0;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.step-progress {
+  margin-bottom: 8px;
+}
+
+.step-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.step-details-text {
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.tool-usage-indicator {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* Hybrid Mode Configuration */
+.hybrid-mode-config {
+  padding: 16px 0;
+}
+
+.config-section {
+  margin-bottom: 24px;
+}
+
+.config-section h4 {
+  margin-bottom: 12px;
+  color: #262626;
+  font-weight: 600;
+}
+
+.config-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.config-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.config-item input[type="range"] {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.config-item span {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.config-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Mode-specific styling */
+.mode-chat .hybrid-mode-selector {
+  border-color: #1890ff;
+  background: #f0f9ff;
+}
+
+.mode-agent .hybrid-mode-selector {
+  border-color: #52c41a;
+  background: #f6ffed;
+}
+
+.mode-auto .hybrid-mode-selector {
+  border-color: #722ed1;
+  background: #f9f0ff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .hybrid-mode-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .hybrid-mode-selector .ant-select {
+    min-width: 100%;
+  }
+  
+  .decision-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .decision-metrics {
+    flex-direction: column;
+  }
+  
+  .metric {
+    min-width: auto;
+  }
+  
+  .progress-step-card {
+    margin-bottom: 8px;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .hybrid-mode-selector {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  
+  .agent-reasoning-display {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  
+  .reasoning-header {
+    background: #262626;
+    border-color: #434343;
+  }
+  
+  .mode-decision-card {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  
+  .reasoning-step-panel {
+    background: #262626;
+    border-color: #434343;
+  }
+  
+  .progress-visualization {
+    background: #262626;
+    border-color: #434343;
+  }
+  
+  .config-item {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+} 

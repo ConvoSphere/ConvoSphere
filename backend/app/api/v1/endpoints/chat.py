@@ -1,545 +1,460 @@
 """
-Chat API endpoints for real-time conversations.
+Chat API endpoints with hybrid mode support.
 
-This module provides WebSocket endpoints for real-time chat functionality
-and REST endpoints for chat management.
+This module provides chat endpoints with integration to the hybrid mode
+management system for structured responses and mode switching.
 """
 
-import json
-from typing import Any
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
-from app.schemas.conversation import MessageCreate
-from app.services.ai_service import AIResponse, ai_service
-from app.services.conversation_service import ConversationService
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Query,
-    WebSocket,
-    WebSocketDisconnect,
-    status,
-)
-from loguru import logger
-from pydantic import BaseModel
+from app.schemas.hybrid_mode import ConversationMode, StructuredResponse
+from app.services.assistant_engine import assistant_engine
+from app.services.conversation_service import conversation_service
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
-# WebSocket connection manager
-class ConnectionManager:
-    """Manage WebSocket connections for real-time chat."""
+class ChatMessageRequest(BaseModel):
+    """Request model for chat messages with hybrid mode support."""
 
-    def __init__(self):
-        self.active_connections: dict[str, list[WebSocket]] = {}
-
-    async def connect(self, websocket: WebSocket, conversation_id: str):
-        """Connect a WebSocket to a conversation."""
-        await websocket.accept()
-
-        if conversation_id not in self.active_connections:
-            self.active_connections[conversation_id] = []
-
-        self.active_connections[conversation_id].append(websocket)
-        logger.info(f"WebSocket connected to conversation {conversation_id}")
-
-    def disconnect(self, websocket: WebSocket, conversation_id: str):
-        """Disconnect a WebSocket from a conversation."""
-        if conversation_id in self.active_connections:
-            self.active_connections[conversation_id].remove(websocket)
-            if not self.active_connections[conversation_id]:
-                del self.active_connections[conversation_id]
-        logger.info(f"WebSocket disconnected from conversation {conversation_id}")
-
-    async def send_message(self, conversation_id: str, message: dict[str, Any]):
-        """Send a message to all connections in a conversation."""
-        if conversation_id in self.active_connections:
-            disconnected = []
-            for connection in self.active_connections[conversation_id]:
-                try:
-                    await connection.send_text(json.dumps(message))
-                except Exception as e:
-                    logger.error(f"Error sending message to WebSocket: {e}")
-                    disconnected.append(connection)
-
-            # Remove disconnected connections
-            for connection in disconnected:
-                self.disconnect(connection, conversation_id)
+    message: str = Field(..., min_length=1, max_length=10000, description="User message")
+    assistant_id: Optional[str] = Field(None, description="Assistant ID")
+    use_knowledge_base: bool = Field(default=True, description="Use knowledge base context")
+    use_tools: bool = Field(default=True, description="Enable tool usage")
+    max_context_chunks: int = Field(default=5, ge=1, le=20, description="Maximum knowledge chunks")
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="AI temperature")
+    max_tokens: Optional[int] = Field(None, ge=1, le=100000, description="Maximum tokens")
+    model: Optional[str] = Field(None, description="AI model to use")
+    force_mode: Optional[ConversationMode] = Field(None, description="Force specific conversation mode")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
 
-# Global connection manager
-manager = ConnectionManager()
+class ChatMessageResponse(BaseModel):
+    """Response model for chat messages with structured output."""
+
+    success: bool = Field(..., description="Whether the request was successful")
+    content: str = Field(..., description="Assistant response content")
+    conversation_id: str = Field(..., description="Conversation ID")
+    message_id: str = Field(..., description="Message ID")
+    model_used: str = Field(..., description="Model used for response")
+    tokens_used: int = Field(..., description="Tokens used")
+    processing_time: float = Field(..., description="Processing time in seconds")
+    tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Tool calls made")
+    mode_decision: Optional[Dict[str, Any]] = Field(None, description="Mode decision information")
+    reasoning_process: Optional[List[Dict[str, Any]]] = Field(None, description="Reasoning process")
+    error_message: Optional[str] = Field(None, description="Error message if failed")
 
 
-# Pydantic models
+class ConversationListResponse(BaseModel):
+    """Response model for conversation list."""
 
-class ConversationCreateRequest(BaseModel):
-    """Create conversation request model for chat API."""
-    assistant_id: str
-    title: str | None = None
-
-class MessageResponse(BaseModel):
-    """Message response model."""
-
-    id: str
-    content: str
-    role: str
-    message_type: str
-    timestamp: str
-    metadata: dict[str, Any] | None = None
+    conversations: List[Dict[str, Any]] = Field(..., description="List of conversations")
+    total: int = Field(..., description="Total number of conversations")
+    page: int = Field(..., description="Current page")
+    per_page: int = Field(..., description="Items per page")
 
 
-class ConversationResponse(BaseModel):
-    """Conversation response model."""
-
-    id: str
-    title: str
-    assistant_id: str
-    assistant_name: str
-    created_at: str
-    updated_at: str
-    message_count: int
-
-
-@router.websocket("/ws/{conversation_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    conversation_id: str,
-    token: str = Query(None, description="Optional JWT token for authentication"),
-    db: Session = Depends(get_db),
-):
-    """
-    WebSocket endpoint for real-time chat.
-    - Optional JWT-Token-Authentifizierung (token-Query-Parameter)
-    - Sende nach erfolgreichem Connect eine Bestätigungsnachricht
-    - Unterstützt Nachrichten, Typing-Indikator, Fehlerbehandlung
-    """
-    # Optional: Authentifizierung via Token (Backward-compatible)
-    user_id = None
-    if token:
-        try:
-            # Echte JWT-Validierung
-            from app.core.security import verify_token
-
-            user_id = await verify_token(token)
-            if not user_id:
-                await websocket.close(code=4001, reason="Invalid token")
-                return
-        except Exception as e:
-            logger.error(f"JWT validation error: {e}")
-            await websocket.close(code=4001, reason="Token validation failed")
-            return
-
-    await manager.connect(websocket, conversation_id)
-    # Sende Connection-Confirmation
-    await websocket.send_text(
-        json.dumps(
-            {
-                "type": "connection_established",
-                "data": {
-                    "conversation_id": conversation_id,
-                    "message": "Connected to chat",
-                },
-            },
-        ),
-    )
-    try:
-        while True:
-            data = await websocket.receive_text()
-            message_data = json.loads(data)
-            await process_websocket_message(
-                websocket,
-                conversation_id,
-                message_data,
-                db,
-                user_id,
-            )
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, conversation_id)
-    except Exception as e:
-        logger.error(f"WebSocket error: {e}")
-        manager.disconnect(websocket, conversation_id)
-
-
-async def process_websocket_message(
-    websocket: WebSocket,
-    conversation_id: str,
-    message_data: dict[str, Any],
-    db: Session,
-    user_id: str = "",
-):
-    """
-    Process incoming WebSocket message.
-    Unterstützt:
-    - type: "message" (Chatnachricht)
-    - type: "typing" (Typing-Indikator)
-    - type: "join" (User joined)
-    """
-    try:
-        message_type = message_data.get("type")
-        if message_type == "message":
-            content = message_data.get("content", "").strip()
-            sender_id = message_data.get("user_id") or user_id or ""
-            
-            # Validate content
-            if not content:
-                await websocket.send_text(
-                    json.dumps(
-                        {
-                            "type": "error",
-                            "message": "Message content cannot be empty",
-                        },
-                    ),
-                )
-                return
-                
-            if not sender_id:
-                await websocket.send_text(
-                    json.dumps(
-                        {
-                            "type": "error",
-                            "message": "User ID required",
-                        },
-                    ),
-                )
-                return
-            conversation_service = ConversationService(db)
-            
-            # Create MessageCreate object for user message
-            user_message_data = MessageCreate(
-                conversation_id=conversation_id,
-                content=content,
-                role="user",
-                message_type="text"
-            )
-            user_message = conversation_service.add_message(user_message_data)
-            
-            await manager.send_message(
-                conversation_id,
-                {
-                    "type": "message",
-                    "message": {
-                        "id": str(user_message["id"]),
-                        "content": user_message["content"],
-                        "role": user_message["role"],
-                        "message_type": user_message.get("message_type", "text"),
-                        "timestamp": user_message["created_at"],
-                        "metadata": user_message.get("message_metadata"),
-                    },
-                },
-            )
-            ai_response: AIResponse = await ai_service.get_response(
-                conversation_id=conversation_id,
-                user_message=content,
-                user_id=sender_id,
-                db=db,
-                use_rag=True,
-                use_tools=True,
-                max_context_chunks=5,
-            )
-            
-            # Create MessageCreate object for assistant message
-            assistant_message_data = MessageCreate(
-                conversation_id=conversation_id,
-                content=ai_response.content,
-                role="assistant",
-                message_type=ai_response.message_type or "text",
-                message_metadata=ai_response.metadata
-            )
-            assistant_message = conversation_service.add_message(assistant_message_data)
-            
-            await manager.send_message(
-                conversation_id,
-                {
-                    "type": "message",
-                    "message": {
-                        "id": str(assistant_message["id"]),
-                        "content": assistant_message["content"],
-                        "role": assistant_message["role"],
-                        "message_type": assistant_message.get("message_type", "text"),
-                        "timestamp": assistant_message["created_at"],
-                        "metadata": assistant_message.get("message_metadata"),
-                        "tool_calls": await ai_response.tool_calls if hasattr(ai_response, 'tool_calls') and hasattr(ai_response.tool_calls, '__await__') else getattr(ai_response, 'tool_calls', None),
-                        "context_used": await ai_response.context_used if hasattr(ai_response, 'context_used') and hasattr(ai_response.context_used, '__await__') else getattr(ai_response, 'context_used', None),
-                    },
-                },
-            )
-        elif message_type == "typing":
-            sender_id = message_data.get("user_id") or user_id or ""
-            is_typing = message_data.get("typing", False)
-            await manager.send_message(
-                conversation_id,
-                {
-                    "type": "typing",
-                    "user_id": sender_id,
-                    "typing": is_typing,
-                },
-            )
-        elif message_type == "join":
-            sender_id = message_data.get("user_id") or user_id or ""
-            await manager.send_message(
-                conversation_id,
-                {
-                    "type": "user_joined",
-                    "user_id": sender_id,
-                },
-            )
-        else:
-            await websocket.send_text(
-                json.dumps(
-                    {
-                        "type": "error",
-                        "message": f"Unknown message type: {message_type}",
-                    },
-                ),
-            )
-    except Exception as e:
-        logger.error(f"Error processing WebSocket message: {e}")
-        await websocket.send_text(
-            json.dumps(
-                {
-                    "type": "error",
-                    "message": "Internal server error",
-                },
-            ),
-        )
-
-
-@router.get("/conversations", response_model=list[ConversationResponse])
-async def get_conversations(
-    current_user_id: str = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
-):
-    """
-    Get all conversations for the current user.
-
-    Args:
-        current_user_id: Current user ID
-        db: Database session
-
-    Returns:
-        List[ConversationResponse]: List of conversations
-    """
-    try:
-        conversation_service = ConversationService(db)
-        conversations = conversation_service.get_user_conversations(current_user_id)
-
-        return [
-            ConversationResponse(
-                id=str(conv["id"]),
-                title=conv["title"],
-                assistant_id=str(conv["assistant_id"]),
-                assistant_name=conv.get("assistant_name", "Unknown Assistant"),
-                created_at=conv["created_at"],
-                updated_at=conv["updated_at"],
-                message_count=conv.get("message_count", 0),
-            )
-            for conv in conversations
-        ]
-
-    except Exception as e:
-        logger.error(f"Error getting conversations: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get conversations",
-        )
-
-
-# REST endpoints (existing code)
-@router.post("/conversations", response_model=ConversationResponse)
+@router.post("/conversations", response_model=Dict[str, Any])
 async def create_conversation(
-    conversation_data: ConversationCreateRequest,
+    title: str = Field(..., min_length=1, max_length=500, description="Conversation title"),
+    assistant_id: Optional[str] = Field(None, description="Assistant ID"),
+    description: Optional[str] = Field(None, description="Conversation description"),
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """
-    Create a new conversation.
-
+    Create a new conversation with hybrid mode support.
+    
     Args:
-        conversation_data: Conversation data
+        title: Conversation title
+        assistant_id: Assistant ID
+        description: Conversation description
         current_user_id: Current user ID
         db: Database session
-
+        
     Returns:
-        ConversationResponse: Created conversation
+        Dict: Created conversation data
     """
     try:
-        conversation_service = ConversationService(db)
-        # Create ConversationCreate object with user_id
-        from app.schemas.conversation import ConversationCreate as SchemaConversationCreate
-        conversation_create = SchemaConversationCreate(
+        conversation = await conversation_service.create_conversation(
             user_id=current_user_id,
-            assistant_id=conversation_data.assistant_id,
-            title=conversation_data.title or "New Conversation",
+            title=title,
+            assistant_id=assistant_id,
+            description=description,
         )
-        conversation = conversation_service.create_conversation(conversation_create)
 
-        return ConversationResponse(
-            id=str(conversation["id"]),
-            title=conversation["title"],
-            assistant_id=str(conversation["assistant_id"]),
-            assistant_name=conversation.get("assistant_name", "Unknown Assistant"),
-            created_at=conversation["created_at"],
-            updated_at=conversation["updated_at"],
-            message_count=conversation.get("message_count", 0),
+        # Initialize hybrid mode for the new conversation
+        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        hybrid_mode_manager.initialize_conversation(
+            conversation_id=str(conversation.id),
+            user_id=current_user_id,
+            initial_mode=ConversationMode.AUTO,
         )
+
+        logger.info(f"Created conversation {conversation.id} with hybrid mode support")
+        
+        return {
+            "id": str(conversation.id),
+            "title": conversation.title,
+            "description": conversation.description,
+            "assistant_id": str(conversation.assistant_id) if conversation.assistant_id else None,
+            "created_at": conversation.created_at.isoformat(),
+            "hybrid_mode_initialized": True,
+        }
 
     except Exception as e:
         logger.error(f"Error creating conversation: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create conversation",
+            detail=f"Failed to create conversation: {str(e)}",
         )
 
 
-@router.get(
-    "/conversations/{conversation_id}/messages",
-    response_model=list[MessageResponse],
-)
-async def get_conversation_messages(
-    conversation_id: str,
+@router.get("/conversations", response_model=ConversationListResponse)
+async def get_conversations(
+    page: int = Query(default=1, ge=1, description="Page number"),
+    per_page: int = Query(default=20, ge=1, le=100, description="Items per page"),
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """
-    Get messages for a conversation.
-
+    Get user conversations with hybrid mode status.
+    
     Args:
-        conversation_id: Conversation ID
+        page: Page number
+        per_page: Items per page
         current_user_id: Current user ID
         db: Database session
-
+        
     Returns:
-        List[MessageResponse]: List of messages
+        ConversationListResponse: List of conversations with hybrid mode status
     """
     try:
-        conversation_service = ConversationService(db)
-        messages = conversation_service.get_conversation_messages(conversation_id)
+        conversations = await conversation_service.get_user_conversations(
+            user_id=current_user_id,
+            skip=(page - 1) * per_page,
+            limit=per_page,
+        )
 
-        return [
-            MessageResponse(
-                id=str(message["id"]),
-                content=message["content"],
-                role=message["role"],
-                message_type=message["message_type"],
-                timestamp=message["created_at"],
-                metadata=message.get("metadata"),
-            )
-            for message in messages
-        ]
+        # Add hybrid mode status to each conversation
+        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        enhanced_conversations = []
+        
+        for conv in conversations:
+            conv_data = {
+                "id": str(conv.id),
+                "title": conv.title,
+                "description": conv.description,
+                "assistant_id": str(conv.assistant_id) if conv.assistant_id else None,
+                "created_at": conv.created_at.isoformat(),
+                "updated_at": conv.updated_at.isoformat(),
+                "message_count": conv.message_count,
+                "is_active": conv.is_active,
+            }
+            
+            # Add hybrid mode status
+            hybrid_state = hybrid_mode_manager.get_state(str(conv.id))
+            if hybrid_state:
+                conv_data["hybrid_mode"] = {
+                    "current_mode": hybrid_state.current_mode.value,
+                    "last_mode_change": hybrid_state.last_mode_change.isoformat(),
+                    "auto_mode_enabled": hybrid_state.config.auto_mode_enabled,
+                }
+            else:
+                conv_data["hybrid_mode"] = None
+            
+            enhanced_conversations.append(conv_data)
+
+        total = await conversation_service.get_user_conversation_count(current_user_id)
+
+        return ConversationListResponse(
+            conversations=enhanced_conversations,
+            total=total,
+            page=page,
+            per_page=per_page,
+        )
 
     except Exception as e:
-        logger.error(f"Error getting conversation messages: {e}")
+        logger.error(f"Error getting conversations: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get conversation messages",
+            detail=f"Failed to get conversations: {str(e)}",
         )
 
 
-@router.post(
-    "/conversations/{conversation_id}/messages",
-    response_model=MessageResponse,
-)
+@router.post("/conversations/{conversation_id}/messages", response_model=ChatMessageResponse)
 async def send_message(
     conversation_id: str,
-    message_data: MessageCreate,
+    request: ChatMessageRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-    use_rag: bool = Query(True, description="Use RAG for enhanced responses"),
-    use_tools: bool = Query(True, description="Enable tool execution"),
-    max_context_chunks: int = Query(5, description="Maximum context chunks for RAG"),
 ):
     """
-    Send a message to a conversation with RAG and tool integration.
-
+    Send a message to a conversation with hybrid mode support.
+    
     Args:
         conversation_id: Conversation ID
-        message_data: Message data
+        request: Chat message request
         current_user_id: Current user ID
         db: Database session
-        use_rag: Whether to use RAG
-        use_tools: Whether to enable tools
-        max_context_chunks: Maximum context chunks
-
+        
     Returns:
-        MessageResponse: Created message with AI response
+        ChatMessageResponse: Response with structured output
     """
     try:
-        conversation_service = ConversationService(db)
+        # Verify conversation access
+        conversation = await conversation_service.get_conversation(conversation_id)
+        if not conversation or str(conversation.user_id) != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found or access denied",
+            )
 
-        # Create MessageCreate object for user message
-        user_message_data = MessageCreate(
+        # Add user message to conversation
+        user_message = await conversation_service.add_message(
             conversation_id=conversation_id,
-            content=message_data.content,
-            role="user",
-            message_type=message_data.message_type,
-        )
-        user_message = conversation_service.add_message(user_message_data)
-
-        # Get AI response with RAG and tools
-        ai_response: AIResponse = await ai_service.get_response(
-            conversation_id=conversation_id,
-            user_message=message_data.content,
             user_id=current_user_id,
-            db=db,
-            use_rag=use_rag,
-            use_tools=use_tools,
-            max_context_chunks=max_context_chunks,
+            content=request.message,
+            role="user",
+            metadata=request.metadata,
         )
 
-        # Create MessageCreate object for assistant message
-        assistant_message_data = MessageCreate(
+        # Process message with hybrid mode support
+        result = await assistant_engine.process_message(
+            user_id=current_user_id,
             conversation_id=conversation_id,
-            content=ai_response.content,
-            role="assistant",
-            message_type=ai_response.message_type or "text",
-            message_metadata=ai_response.metadata
-        )
-        assistant_message = conversation_service.add_message(assistant_message_data)
-
-        # Index messages in Weaviate for future RAG
-        try:
-            from app.services.weaviate_service import weaviate_service
-
-            weaviate_service.index_message(
-                conversation_id=conversation_id,
-                message_id=str(user_message["id"]),
-                content=message_data.content,
-                role="user",
-                metadata={"user_id": current_user_id},
-            )
-            weaviate_service.index_message(
-                conversation_id=conversation_id,
-                message_id=str(assistant_message["id"]),
-                content=ai_response.content,
-                role="assistant",
-                metadata={
-                    "user_id": current_user_id,
-                    "model_used": ai_response.metadata.get("model_used"),
-                },
-            )
-        except Exception as e:
-            logger.warning(f"Failed to index messages in Weaviate: {e}")
-
-        return MessageResponse(
-            id=str(assistant_message["id"]),
-            content=assistant_message["content"],
-            role=assistant_message["role"],
-            message_type=assistant_message.get("message_type", "text"),
-            timestamp=assistant_message["created_at"],
-            metadata={
-                **(assistant_message.get("message_metadata") or {}),
-                "tool_calls": await ai_response.tool_calls if hasattr(ai_response, 'tool_calls') and hasattr(ai_response.tool_calls, '__await__') else getattr(ai_response, 'tool_calls', None),
-                "context_used": await ai_response.context_used if hasattr(ai_response, 'context_used') and hasattr(ai_response.context_used, '__await__') else getattr(ai_response, 'context_used', None),
-            },
+            message=request.message,
+            assistant_id=request.assistant_id,
+            use_knowledge_base=request.use_knowledge_base,
+            use_tools=request.use_tools,
+            max_context_chunks=request.max_context_chunks,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+            model=request.model,
+            force_mode=request.force_mode,
+            metadata=request.metadata,
         )
 
+        if not result.success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.error_message or "Failed to process message",
+            )
+
+        # Extract structured response data
+        mode_decision = None
+        reasoning_process = None
+        
+        if result.structured_response:
+            mode_decision = result.structured_response.mode_decision.dict()
+            reasoning_process = [step.dict() for step in result.structured_response.reasoning_process]
+
+        return ChatMessageResponse(
+            success=True,
+            content=result.content,
+            conversation_id=conversation_id,
+            message_id=str(user_message.id),
+            model_used=result.model_used,
+            tokens_used=result.tokens_used,
+            processing_time=result.processing_time,
+            tool_calls=result.tool_calls,
+            mode_decision=mode_decision,
+            reasoning_process=reasoning_process,
+        )
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error sending message: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send message",
+            detail=f"Failed to send message: {str(e)}",
+        )
+
+
+@router.get("/conversations/{conversation_id}/messages")
+async def get_conversation_messages(
+    conversation_id: str,
+    page: int = Query(default=1, ge=1, description="Page number"),
+    per_page: int = Query(default=50, ge=1, le=200, description="Items per page"),
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """
+    Get conversation messages with hybrid mode metadata.
+    
+    Args:
+        conversation_id: Conversation ID
+        page: Page number
+        per_page: Items per page
+        current_user_id: Current user ID
+        db: Database session
+        
+    Returns:
+        List[Dict]: Messages with hybrid mode metadata
+    """
+    try:
+        # Verify conversation access
+        conversation = await conversation_service.get_conversation(conversation_id)
+        if not conversation or str(conversation.user_id) != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found or access denied",
+            )
+
+        messages = await conversation_service.get_conversation_messages(
+            conversation_id=conversation_id,
+            skip=(page - 1) * per_page,
+            limit=per_page,
+        )
+
+        # Enhance messages with hybrid mode metadata
+        enhanced_messages = []
+        for msg in messages:
+            msg_data = {
+                "id": str(msg.id),
+                "content": msg.content,
+                "role": msg.role.value,
+                "message_type": msg.message_type.value,
+                "created_at": msg.created_at.isoformat(),
+                "tokens_used": msg.tokens_used,
+                "model_used": msg.model_used,
+            }
+            
+            # Add hybrid mode metadata if available
+            if msg.message_metadata and msg.role.value == "assistant":
+                if "mode_decision" in msg.message_metadata:
+                    msg_data["mode_decision"] = msg.message_metadata["mode_decision"]
+                if "reasoning_process" in msg.message_metadata:
+                    msg_data["reasoning_process"] = msg.message_metadata["reasoning_process"]
+                if "tool_calls" in msg.message_metadata:
+                    msg_data["tool_calls"] = msg.message_metadata["tool_calls"]
+            
+            enhanced_messages.append(msg_data)
+
+        return {
+            "messages": enhanced_messages,
+            "total": len(enhanced_messages),
+            "page": page,
+            "per_page": per_page,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting conversation messages: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get conversation messages: {str(e)}",
+        )
+
+
+@router.delete("/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete a conversation and clean up hybrid mode state.
+    
+    Args:
+        conversation_id: Conversation ID
+        current_user_id: Current user ID
+        db: Database session
+        
+    Returns:
+        Dict: Deletion result
+    """
+    try:
+        # Verify conversation access
+        conversation = await conversation_service.get_conversation(conversation_id)
+        if not conversation or str(conversation.user_id) != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found or access denied",
+            )
+
+        # Delete conversation
+        await conversation_service.delete_conversation(conversation_id)
+
+        # Clean up hybrid mode state
+        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        hybrid_mode_manager.cleanup_conversation(conversation_id)
+
+        logger.info(f"Deleted conversation {conversation_id} and cleaned up hybrid mode state")
+        
+        return {"success": True, "message": "Conversation deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting conversation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete conversation: {str(e)}",
+        )
+
+
+@router.get("/conversations/{conversation_id}/mode/status")
+async def get_conversation_mode_status(
+    conversation_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """
+    Get the current hybrid mode status for a conversation.
+    
+    Args:
+        conversation_id: Conversation ID
+        current_user_id: Current user ID
+        db: Database session
+        
+    Returns:
+        Dict: Hybrid mode status
+    """
+    try:
+        # Verify conversation access
+        conversation = await conversation_service.get_conversation(conversation_id)
+        if not conversation or str(conversation.user_id) != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found or access denied",
+            )
+
+        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        state = hybrid_mode_manager.get_state(conversation_id)
+        
+        if not state:
+            return {
+                "hybrid_mode_initialized": False,
+                "current_mode": None,
+                "config": None,
+            }
+
+        return {
+            "hybrid_mode_initialized": True,
+            "current_mode": state.current_mode.value,
+            "last_mode_change": state.last_mode_change.isoformat(),
+            "config": {
+                "auto_mode_enabled": state.config.auto_mode_enabled,
+                "complexity_threshold": state.config.complexity_threshold,
+                "confidence_threshold": state.config.confidence_threshold,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting conversation mode status: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get conversation mode status: {str(e)}",
         )
