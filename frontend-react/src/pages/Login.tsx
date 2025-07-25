@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Alert, Modal, message, Divider } from 'antd';
+import { Alert, Modal, message, Divider, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { getSSOProviders, ssoLogin } from '../services/auth';
+import { useThemeStore } from '../store/themeStore';
+import ModernCard from '../components/ModernCard';
+import ModernButton from '../components/ModernButton';
+import ModernInput from '../components/ModernInput';
+import ModernForm, { ModernFormItem } from '../components/ModernForm';
+
+const { Title, Text } = Typography;
 
 interface SSOProvider {
   id: string;
@@ -18,6 +25,8 @@ const Login: React.FC = () => {
   const login = useAuthStore((s) => s.login);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [forgotVisible, setForgotVisible] = useState(false);
@@ -29,10 +38,10 @@ const Login: React.FC = () => {
       try {
         const providers = await getSSOProviders();
         setSsoProviders(providers || []); // immer ein Array setzen
-          } catch {
-      setSsoProviders([]); // auch im Fehlerfall ein Array
-      console.log('No SSO providers configured or error loading providers');
-    }
+      } catch {
+        setSsoProviders([]); // auch im Fehlerfall ein Array
+        console.log('No SSO providers configured or error loading providers');
+      }
     };
     loadSSOProviders();
   }, []);
@@ -87,60 +96,174 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', marginTop: 64 }}>
-      <h2>{t('auth.login.title')}</h2>
-      {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-      
-      {/* SSO Login Buttons */}
-      {ssoProviders.length > 0 && (
-        <>
-          <div style={{ marginBottom: 16 }}>
-            {ssoProviders.map((provider) => (
-              <Button
-                key={provider.id}
-                size="large"
-                block
-                style={{ marginBottom: 8 }}
-                onClick={() => handleSSOLogin(provider.id)}
-                icon={<span>{getProviderIcon(provider.id)}</span>}
-              >
-                {t('auth.login.button')} {provider.name}
-              </Button>
-            ))}
-          </div>
-          <Divider>{t('common.or')}</Divider>
-        </>
-      )}
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: colors.colorGradientPrimary,
+      padding: '24px'
+    }}>
+      <ModernCard 
+        variant="elevated" 
+        size="xl"
+        style={{ 
+          maxWidth: 480, 
+          width: '100%',
+          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)'
+        }}
+        className="stagger-children"
+      >
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <Title level={2} style={{ 
+            color: colors.colorTextBase, 
+            marginBottom: 8,
+            fontSize: '2.5rem',
+            fontWeight: 700
+          }}>
+            {t('auth.login.title')}
+          </Title>
+          <Text type="secondary" style={{ fontSize: '16px' }}>
+            {t('auth.login.subtitle')}
+          </Text>
+        </div>
 
-      {/* Local Login Form */}
-      <Form name="login" onFinish={onFinish} layout="vertical" aria-label={t('auth.login.title')}>
-        <Form.Item name="username" label={t('auth.login.username')} rules={[{ required: true, message: t('validation.required') }]}>
-          <Input autoFocus aria-label={t('auth.login.username')} />
-        </Form.Item>
-        <Form.Item name="password" label={t('auth.login.password')} rules={[{ required: true, message: t('validation.required') }]}>
-          <Input.Password aria-label={t('auth.login.password')} />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block aria-label={t('auth.login.button')}>
-            {t('auth.login.button')}
-          </Button>
-        </Form.Item>
-      </Form>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-        <a onClick={() => navigate('/register')} tabIndex={0} aria-label={t('auth.register.title')}>
-          {t('auth.register.link')}
-        </a>
-        <a onClick={() => setForgotVisible(true)} tabIndex={0} aria-label={t('auth.forgot_password')}>
-          {t('auth.forgot_password')}
-        </a>
-      </div>
+        {error && (
+          <Alert 
+            type="error" 
+            message={error} 
+            showIcon 
+            style={{ 
+              marginBottom: 24, 
+              borderRadius: '12px',
+              border: 'none'
+            }} 
+          />
+        )}
+        
+        {/* SSO Login Buttons */}
+        {ssoProviders.length > 0 && (
+          <>
+            <div style={{ marginBottom: 24 }}>
+              {ssoProviders.map((provider, index) => (
+                <ModernButton
+                  key={provider.id}
+                  variant="outlined"
+                  size="lg"
+                  icon={<span style={{ fontSize: '18px' }}>{getProviderIcon(provider.id)}</span>}
+                  onClick={() => handleSSOLogin(provider.id)}
+                  style={{ 
+                    width: '100%', 
+                    marginBottom: 12,
+                    justifyContent: 'flex-start',
+                    padding: '16px 20px',
+                    fontSize: '16px'
+                  }}
+                >
+                  {t('auth.login.button')} {provider.name}
+                </ModernButton>
+              ))}
+            </div>
+            <Divider style={{ margin: '24px 0' }}>
+              <Text type="secondary" style={{ fontSize: '14px' }}>
+                {t('common.or')}
+              </Text>
+            </Divider>
+          </>
+        )}
+
+        {/* Local Login Form */}
+        <ModernForm 
+          variant="minimal" 
+          size="lg"
+          onFinish={onFinish}
+          aria-label={t('auth.login.title')}
+        >
+          <ModernFormItem 
+            label={t('auth.login.username')} 
+            required
+          >
+            <ModernInput
+              name="username"
+              variant="filled"
+              size="lg"
+              autoFocus
+              aria-label={t('auth.login.username')}
+              placeholder={t('auth.login.username_placeholder')}
+            />
+          </ModernFormItem>
+          
+          <ModernFormItem 
+            label={t('auth.login.password')} 
+            required
+          >
+            <ModernInput
+              name="password"
+              type="password"
+              variant="filled"
+              size="lg"
+              showPasswordToggle
+              aria-label={t('auth.login.password')}
+              placeholder={t('auth.login.password_placeholder')}
+            />
+          </ModernFormItem>
+          
+          <ModernFormItem>
+            <ModernButton 
+              variant="gradient" 
+              size="lg" 
+              htmlType="submit" 
+              loading={loading} 
+              style={{ 
+                width: '100%',
+                height: '56px',
+                fontSize: '18px',
+                fontWeight: 600
+              }}
+              aria-label={t('auth.login.button')}
+            >
+              {t('auth.login.button')}
+            </ModernButton>
+          </ModernFormItem>
+        </ModernForm>
+        
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginTop: 24,
+          paddingTop: 24,
+          borderTop: '1px solid var(--colorBorder)'
+        }}>
+          <ModernButton
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/register')}
+            aria-label={t('auth.register.title')}
+          >
+            {t('auth.register.link')}
+          </ModernButton>
+          <ModernButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setForgotVisible(true)}
+            aria-label={t('auth.forgot_password')}
+          >
+            {t('auth.forgot_password')}
+          </ModernButton>
+        </div>
+      </ModernCard>
       
       <Modal
         open={forgotVisible}
         onCancel={() => setForgotVisible(false)}
         title={t('auth.forgot_password')}
-        footer={<Button onClick={() => setForgotVisible(false)}>{t('common.close')}</Button>}
+        footer={
+          <ModernButton onClick={() => setForgotVisible(false)}>
+            {t('common.close')}
+          </ModernButton>
+        }
+        style={{ borderRadius: '16px' }}
       >
         <p>{t('auth.forgot_password_message')}</p>
       </Modal>

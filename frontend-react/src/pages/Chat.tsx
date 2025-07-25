@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Input, Button, Card, Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
+import { Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
 import { SendOutlined, UserOutlined, RobotOutlined, BookOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { chatWebSocket } from '../services/chat';
@@ -11,6 +11,9 @@ import KnowledgeContextComponent from '../components/chat/KnowledgeContext';
 import type { Document } from '../services/knowledge';
 import type { InputRef } from 'antd';
 import { config } from '../config';
+import ModernCard from '../components/ModernCard';
+import ModernButton from '../components/ModernButton';
+import ModernInput from '../components/ModernInput';
 
 const { Title, Text } = Typography;
 
@@ -270,11 +273,12 @@ const Chat: React.FC = () => {
       display: 'flex',
       flexDirection: isUser ? 'row-reverse' : 'row',
       alignItems: 'flex-start',
-      gap: '12px',
-      marginBottom: '16px',
-      maxWidth: '80%',
+      gap: '16px',
+      marginBottom: '20px',
+      maxWidth: '85%',
       marginLeft: isUser ? 'auto' : '0',
       marginRight: isUser ? '0' : 'auto',
+      animation: 'fadeInUp 0.3s ease-out',
     };
 
     const bubbleStyle: React.CSSProperties = {
@@ -284,13 +288,14 @@ const Chat: React.FC = () => {
       color: isError ? '#fff' :
              isSystem ? '#666' :
              isUser ? colors.colorChatUserText : colors.colorChatAIText,
-      padding: '12px 16px',
-      borderRadius: '18px',
+      padding: '16px 20px',
+      borderRadius: '20px',
       boxShadow: colors.boxShadow,
       position: 'relative',
       wordWrap: 'break-word',
       maxWidth: '100%',
       border: isSystem ? '1px dashed #d9d9d9' : 'none',
+      transition: 'all 0.3s ease',
     };
 
     const avatarStyle: React.CSSProperties = {
@@ -298,26 +303,32 @@ const Chat: React.FC = () => {
                       isSystem ? '#d9d9d9' :
                       isUser ? colors.colorPrimary : colors.colorSecondary,
       flexShrink: 0,
+      width: '40px',
+      height: '40px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     };
 
     return (
-      <div key={index} style={messageStyle}>
-        <Avatar 
-          icon={isUser ? <UserOutlined /> : 
-                isSystem ? <SearchOutlined /> :
-                <RobotOutlined />} 
-          style={avatarStyle}
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={bubbleStyle}>
+      <div key={index} style={messageStyle} className="message-item">
+        <div style={avatarStyle}>
+          {isUser ? <UserOutlined style={{ color: '#fff' }} /> : 
+           isSystem ? <SearchOutlined style={{ color: '#666' }} /> :
+           <RobotOutlined style={{ color: '#fff' }} />}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+          <div style={bubbleStyle} className="message-bubble">
             {msg.text}
             {msg.metadata && (
               <div style={{ 
-                fontSize: '10px', 
-                marginTop: '8px', 
+                fontSize: '11px', 
+                marginTop: '12px', 
                 opacity: 0.7,
                 borderTop: '1px solid rgba(0,0,0,0.1)',
-                paddingTop: '4px'
+                paddingTop: '8px'
               }}>
                 {msg.metadata.contextChunks && `Context: ${msg.metadata.contextChunks} chunks`}
                 {msg.metadata.confidence && ` | Confidence: ${(msg.metadata.confidence * 100).toFixed(1)}%`}
@@ -327,37 +338,44 @@ const Chat: React.FC = () => {
           </div>
           
           {msg.documents && msg.documents.length > 0 && (
-            <div style={{ 
-              fontSize: '12px', 
-              color: colors.colorSecondary,
-              marginTop: '4px',
-              padding: '8px',
-              background: 'rgba(0,0,0,0.05)',
-              borderRadius: '8px',
-              maxWidth: '300px'
-            }}>
-              <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                {t('common.sources')} ({msg.documents.length}):
-              </Text>
-              <div style={{ marginTop: '4px' }}>
-                {msg.documents.slice(0, 3).map((doc, idx) => (
-                  <div key={idx} style={{ 
-                    fontSize: '11px', 
-                    marginBottom: '2px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    • {doc.title}
-                  </div>
-                ))}
-                {msg.documents.length > 3 && (
-                  <div style={{ fontSize: '11px', color: colors.colorSecondary }}>
-                    +{msg.documents.length - 3} more
-                  </div>
-                )}
+            <ModernCard 
+              variant="outlined" 
+              size="sm"
+              style={{ 
+                maxWidth: '400px',
+                marginTop: '8px'
+              }}
+            >
+              <div style={{ 
+                fontSize: '12px', 
+                color: colors.colorSecondary,
+              }}>
+                <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+                  {t('common.sources')} ({msg.documents.length}):
+                </Text>
+                <div style={{ marginTop: '8px' }}>
+                  {msg.documents.slice(0, 3).map((doc, idx) => (
+                    <div key={idx} style={{ 
+                      fontSize: '11px', 
+                      marginBottom: '4px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      padding: '4px 8px',
+                      background: 'rgba(0,0,0,0.05)',
+                      borderRadius: '6px'
+                    }}>
+                      • {doc.title}
+                    </div>
+                  ))}
+                  {msg.documents.length > 3 && (
+                    <div style={{ fontSize: '11px', color: colors.colorSecondary, textAlign: 'center', marginTop: '4px' }}>
+                      +{msg.documents.length - 3} more
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </ModernCard>
           )}
           
           <div style={{ 
@@ -365,6 +383,7 @@ const Chat: React.FC = () => {
             color: colors.colorSecondary,
             marginLeft: isUser ? 'auto' : '0',
             marginRight: isUser ? '0' : 'auto',
+            opacity: 0.8
           }}>
             {msg.timestamp && formatTime(msg.timestamp)}
           </div>
@@ -376,36 +395,41 @@ const Chat: React.FC = () => {
   return (
     <Row style={{ height: '100vh' }}>
       <Col span={showKnowledgeDrawer ? 18 : 24} style={{ height: '100%' }}>
-        <Card 
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>{t('chat.title')}</span>
-              {!chatWebSocket.isConnected() && (
-                <Badge status="error" text={t('errors.network')} />
-              )}
-              {isTyping && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <LoadingOutlined style={{ fontSize: '12px' }} />
-                  <span style={{ fontSize: '12px', color: colors.colorSecondary }}>{t('chat.typing')}</span>
-                </div>
-              )}
+        <ModernCard 
+          variant="default"
+          size="xl"
+          header={
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Title level={4} style={{ margin: 0, color: colors.colorTextBase }}>
+                  {t('chat.title')}
+                </Title>
+                {!chatWebSocket.isConnected() && (
+                  <Badge status="error" text={t('errors.network')} />
+                )}
+                {isTyping && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <LoadingOutlined style={{ fontSize: '14px', color: colors.colorPrimary }} />
+                    <span style={{ fontSize: '14px', color: colors.colorSecondary }}>{t('chat.typing')}</span>
+                  </div>
+                )}
+              </div>
+              <Tooltip title={knowledgeContextEnabled ? t('knowledge.processing') : t('knowledge.title')}>
+                <ModernButton
+                  variant={knowledgeContextEnabled ? 'primary' : 'secondary'}
+                  size="md"
+                  icon={<BookOutlined />}
+                  onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
+                >
+                  {t('knowledge.title')}
+                  {selectedDocuments.length > 0 && (
+                    <Badge count={selectedDocuments.length} style={{ marginLeft: '8px' }} />
+                  )}
+                </ModernButton>
+              </Tooltip>
             </div>
           }
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-          extra={
-            <Tooltip title={knowledgeContextEnabled ? t('knowledge.processing') : t('knowledge.title')}>
-              <Button
-                icon={<BookOutlined />}
-                type={knowledgeContextEnabled ? 'primary' : 'default'}
-                onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
-              >
-                {t('knowledge.title')}
-                {selectedDocuments.length > 0 && (
-                  <Badge count={selectedDocuments.length} style={{ marginLeft: '8px' }} />
-                )}
-              </Button>
-            </Tooltip>
-          }
         >
           {error && (
             <Alert
@@ -414,7 +438,7 @@ const Chat: React.FC = () => {
               type="error"
               showIcon
               closable
-              style={{ marginBottom: 16 }}
+              style={{ marginBottom: 16, borderRadius: '12px' }}
             />
           )}
 
@@ -423,69 +447,84 @@ const Chat: React.FC = () => {
             style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '16px',
-              marginBottom: '16px',
-              border: '1px solid #f0f0f0',
-              borderRadius: '8px',
-              background: colors.colorBackground
+              padding: '24px',
+              marginBottom: '20px',
+              border: '1px solid var(--colorBorder)',
+              borderRadius: '16px',
+              background: colors.colorBackground,
+              minHeight: '400px'
             }}
+            className="chat-messages-container"
           >
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div style={{ textAlign: 'center', padding: '60px' }}>
                 <Spin size="large" />
-                <div style={{ marginTop: 16 }}>{t('chat.loading')}</div>
+                <div style={{ marginTop: 20, fontSize: '16px', color: colors.colorSecondary }}>
+                  {t('chat.loading')}
+                </div>
               </div>
             ) : messages.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: colors.colorSecondary }}>
-                <RobotOutlined style={{ fontSize: '48px', marginBottom: 16 }} />
-                <Title level={4}>{t('chat.title')}</Title>
-                <Text type="secondary">
+              <div style={{ textAlign: 'center', padding: '60px', color: colors.colorSecondary }}>
+                <RobotOutlined style={{ fontSize: '64px', marginBottom: 24, color: colors.colorPrimary }} />
+                <Title level={3} style={{ color: colors.colorTextBase, marginBottom: 16 }}>
+                  {t('chat.title')}
+                </Title>
+                <Text type="secondary" style={{ fontSize: '16px' }}>
                   {t('chat.empty')}
                 </Text>
                 {knowledgeContextEnabled && (
-                  <div style={{ marginTop: '16px' }}>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                  <div style={{ marginTop: '20px' }}>
+                    <Text type="secondary" style={{ fontSize: '14px' }}>
                       {t('knowledge.processing')}
                     </Text>
                   </div>
                 )}
               </div>
             ) : (
-              messages.map(renderMessage)
+              <div className="stagger-children">
+                {messages.map(renderMessage)}
+              </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Input
-              ref={inputRef}
-              value={input}
-              onChange={handleInputChange}
-              onPressEnter={handleSend}
-              placeholder={knowledgeContextEnabled ? 
-                t('chat.placeholder') + ' (' + t('knowledge.title') + ')' : 
-                t('chat.placeholder')}
-              disabled={sending}
-              style={{ flex: 1 }}
-            />
-            <Button
-              type="primary"
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <ModernInput
+                variant="filled"
+                size="lg"
+                value={input}
+                onChange={handleInputChange}
+                onPressEnter={handleSend}
+                placeholder={knowledgeContextEnabled ? 
+                  t('chat.placeholder') + ' (' + t('knowledge.title') + ')' : 
+                  t('chat.placeholder')}
+                disabled={sending}
+                clearable
+                onClear={() => setInput('')}
+              />
+            </div>
+            <ModernButton
+              variant="primary"
+              size="lg"
               icon={<SendOutlined />}
               onClick={handleSend}
               loading={sending}
               disabled={!input.trim()}
+              style={{ minWidth: '120px' }}
             >
               {t('chat.send')}
-            </Button>
+            </ModernButton>
           </div>
-        </Card>
+        </ModernCard>
       </Col>
 
       {showKnowledgeDrawer && (
         <Col span={6} style={{ height: '100%' }}>
-          <Card 
-            title={t('knowledge.title')} 
+          <ModernCard 
+            variant="outlined"
+            size="lg"
+            header={<Title level={5} style={{ margin: 0 }}>{t('knowledge.title')}</Title>}
             style={{ height: '100%', overflowY: 'auto' }}
-            size="small"
           >
             <KnowledgeContextComponent
               onDocumentSelect={handleDocumentSelect}
@@ -495,7 +534,7 @@ const Chat: React.FC = () => {
               onToggleContext={handleToggleKnowledgeContext}
               contextEnabled={knowledgeContextEnabled}
             />
-          </Card>
+          </ModernCard>
         </Col>
       )}
     </Row>
