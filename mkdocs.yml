@@ -159,6 +159,7 @@ nav:
     - Security: architecture/security.md
   - Development:
     - Setup: development/setup.md
+    - Communication: development/communication.md
     - Testing: development/testing.md
     - Contributing: development/contributing.md
     - Code Style: development/code-style.md
@@ -195,6 +196,8 @@ nav:
     - FAQ: user-guide/faq.md
   - Project:
     - Status: project/status.md
+    - Requirements: project/requirements.md
+    - Branding: project/branding.md
     - Roadmap: project/roadmap.md
     - Changelog: project/changelog.md
     - Contributing: project/contributing.md 
