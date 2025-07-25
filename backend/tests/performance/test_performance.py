@@ -4,6 +4,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import psutil
+import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
@@ -11,6 +12,8 @@ from backend.main import app
 client = TestClient(app)
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestPerformance:
     """Performance tests for the application."""
 
@@ -436,6 +439,8 @@ class TestPerformance:
         assert total_time < 30.0
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestLoadTesting:
     """Load testing scenarios."""
 

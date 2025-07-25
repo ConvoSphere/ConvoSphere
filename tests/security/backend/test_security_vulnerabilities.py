@@ -1,8 +1,10 @@
 """
 Security tests for identifying vulnerabilities.
 """
+import pytest
 
 
+@pytest.mark.security
 class TestSQLInjection:
     """Test SQL injection vulnerabilities."""
 
@@ -40,6 +42,7 @@ class TestSQLInjection:
             assert response.status_code == 401
 
 
+@pytest.mark.security
 class TestXSS:
     """Test Cross-Site Scripting vulnerabilities."""
 
@@ -77,6 +80,7 @@ class TestXSS:
                 assert response.status_code in [400, 422]
 
 
+@pytest.mark.security
 class TestCSRF:
     """Test Cross-Site Request Forgery vulnerabilities."""
 
@@ -139,6 +143,7 @@ class TestAuthentication:
         assert response.status_code in [401, 429]
 
 
+@pytest.mark.security
 class TestAuthorization:
     """Test authorization vulnerabilities."""
 
@@ -164,6 +169,7 @@ class TestAuthorization:
             assert response.status_code in [403, 404]
 
 
+@pytest.mark.security
 class TestInputValidation:
     """Test input validation vulnerabilities."""
 
@@ -197,6 +203,7 @@ class TestInputValidation:
             assert response.status_code in [200, 400, 422]
 
 
+@pytest.mark.security
 class TestDataExposure:
     """Test data exposure vulnerabilities."""
 
@@ -231,6 +238,7 @@ class TestDataExposure:
                 assert info not in error_content
 
 
+@pytest.mark.security
 class TestSessionManagement:
     """Test session management vulnerabilities."""
 
@@ -249,6 +257,7 @@ class TestSessionManagement:
         assert response.status_code == 401
 
 
+@pytest.mark.security
 class TestFileUpload:
     """Test file upload vulnerabilities."""
 
@@ -273,6 +282,7 @@ class TestFileUpload:
             assert response.status_code in [400, 422]
 
 
+@pytest.mark.security
 class TestAPIEndpoints:
     """Test API endpoint security."""
 

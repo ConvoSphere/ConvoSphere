@@ -6,6 +6,8 @@ from backend.main import app
 client = TestClient(app)
 
 
+@pytest.mark.unit
+@pytest.mark.api
 def test_sso_providers_empty(monkeypatch):
     # Keine Provider konfiguriert
     monkeypatch.setenv("SSO_GOOGLE_ENABLED", "false")
@@ -18,6 +20,8 @@ def test_sso_providers_empty(monkeypatch):
     assert response.json()["providers"] == []  # noqa: S101
 
 
+@pytest.mark.unit
+@pytest.mark.api
 def test_sso_providers_google(monkeypatch):
     monkeypatch.setenv("SSO_GOOGLE_ENABLED", "true")
     monkeypatch.setenv("SSO_GOOGLE_CLIENT_ID", "test-google-client-id")
@@ -27,6 +31,8 @@ def test_sso_providers_google(monkeypatch):
     assert any(p["id"] == "google" for p in providers)  # noqa: S101
 
 
+@pytest.mark.unit
+@pytest.mark.api
 def test_sso_login_redirect(monkeypatch):
     monkeypatch.setenv("SSO_GOOGLE_ENABLED", "true")
     monkeypatch.setenv("SSO_GOOGLE_CLIENT_ID", "test-google-client-id")
@@ -35,6 +41,8 @@ def test_sso_login_redirect(monkeypatch):
     assert "redirect_url" in response.json()  # noqa: S101
 
 
+@pytest.mark.unit
+@pytest.mark.api
 def test_sso_login_not_configured(monkeypatch):
     monkeypatch.setenv("SSO_GOOGLE_ENABLED", "false")
     response = client.get("/api/v1/auth/sso/login/google")
@@ -42,6 +50,8 @@ def test_sso_login_not_configured(monkeypatch):
     assert "not configured" in response.json()["detail"].lower()  # noqa: S101
 
 
+@pytest.mark.unit
+@pytest.mark.api
 @pytest.mark.asyncio
 async def test_login_fail():
     client = TestClient(app)

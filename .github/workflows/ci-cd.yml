@@ -98,7 +98,7 @@ jobs:
         run: |
           mypy backend/ frontend/ --ignore-missing-imports
       
-      - name: Run tests
+      - name: Run unit tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379
@@ -106,7 +106,37 @@ jobs:
           SECRET_KEY: test-secret-key
           DEBUG: true
         run: |
-          pytest --cov=backend --cov=frontend --cov-report=xml --cov-report=html --cov-report=term-missing
+          pytest -m unit --cov=backend --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          WEAVIATE_URL: http://localhost:8080
+          SECRET_KEY: test-secret-key
+          DEBUG: true
+        run: |
+          pytest -m integration --cov=backend --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Run security tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          WEAVIATE_URL: http://localhost:8080
+          SECRET_KEY: test-secret-key
+          DEBUG: true
+        run: |
+          pytest -m security --cov=backend --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Run performance tests (fast only)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          WEAVIATE_URL: http://localhost:8080
+          SECRET_KEY: test-secret-key
+          DEBUG: true
+        run: |
+          pytest -m "performance and not slow" --cov=backend --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
