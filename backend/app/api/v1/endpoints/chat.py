@@ -128,7 +128,7 @@ async def websocket_endpoint(
             # Echte JWT-Validierung
             from app.core.security import verify_token
 
-            user_id = verify_token(token)
+            user_id = await verify_token(token)
             if not user_id:
                 await websocket.close(code=4001, reason="Invalid token")
                 return
@@ -266,8 +266,8 @@ async def process_websocket_message(
                         "message_type": assistant_message.get("message_type", "text"),
                         "timestamp": assistant_message["created_at"],
                         "metadata": assistant_message.get("message_metadata"),
-                        "tool_calls": getattr(ai_response, 'tool_calls', None) if not hasattr(getattr(ai_response, 'tool_calls', None), '__await__') else None,
-                        "context_used": getattr(ai_response, 'context_used', None) if not hasattr(getattr(ai_response, 'context_used', None), '__await__') else None,
+                        "tool_calls": await ai_response.tool_calls if hasattr(ai_response, 'tool_calls') and hasattr(ai_response.tool_calls, '__await__') else getattr(ai_response, 'tool_calls', None),
+                        "context_used": await ai_response.context_used if hasattr(ai_response, 'context_used') and hasattr(ai_response.context_used, '__await__') else getattr(ai_response, 'context_used', None),
                     },
                 },
             )
@@ -536,8 +536,8 @@ async def send_message(
             timestamp=assistant_message["created_at"],
             metadata={
                 **(assistant_message.get("message_metadata") or {}),
-                "tool_calls": getattr(ai_response, 'tool_calls', None) if not hasattr(getattr(ai_response, 'tool_calls', None), '__await__') else None,
-                "context_used": getattr(ai_response, 'context_used', None) if not hasattr(getattr(ai_response, 'context_used', None), '__await__') else None,
+                "tool_calls": await ai_response.tool_calls if hasattr(ai_response, 'tool_calls') and hasattr(ai_response.tool_calls, '__await__') else getattr(ai_response, 'tool_calls', None),
+                "context_used": await ai_response.context_used if hasattr(ai_response, 'context_used') and hasattr(ai_response.context_used, '__await__') else getattr(ai_response, 'context_used', None),
             },
         )
 
