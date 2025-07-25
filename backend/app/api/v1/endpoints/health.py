@@ -7,13 +7,12 @@ the AI Assistant Platform.
 
 from datetime import datetime
 
-from fastapi import APIRouter
-from loguru import logger
-
 from app.core.config import get_settings
 from app.core.database import check_db_connection, get_db_info
 from app.core.redis_client import check_redis_connection, get_redis_info
 from app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
+from fastapi import APIRouter
+from loguru import logger
 
 router = APIRouter()
 

@@ -43,19 +43,21 @@ const calculate = (data) => {
     case 'average':
       result = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;
       break;
-    case 'median':
+    case 'median': {
       const sorted = [...numbers].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
       result = sorted.length % 2 === 0 
         ? (sorted[mid - 1] + sorted[mid]) / 2 
         : sorted[mid];
       break;
-    case 'standardDeviation':
+    }
+    case 'standardDeviation': {
       const mean = numbers.reduce((acc, num) => acc + num, 0) / numbers.length;
       const variance = numbers.reduce((acc, num) => acc + Math.pow(num - mean, 2), 0) / numbers.length;
       result = Math.sqrt(variance);
       break;
-    case 'factorial':
+    }
+    case 'factorial': {
       result = numbers.reduce((acc, num) => {
         let fact = 1;
         for (let i = 2; i <= num; i++) {
@@ -64,13 +66,15 @@ const calculate = (data) => {
         return acc + fact;
       }, 0);
       break;
-    case 'fibonacci':
+    }
+    case 'fibonacci': {
       const fib = (n) => {
         if (n <= 1) return n;
         return fib(n - 1) + fib(n - 2);
       };
       result = numbers.map(num => fib(num));
       break;
+    }
     default:
       throw new Error(`Unknown operation: ${operation}`);
   }
@@ -86,7 +90,7 @@ const processData = (data) => {
   
   operations.forEach(op => {
     switch (op.type) {
-      case 'filter':
+      case 'filter': {
         results[op.name] = dataset.filter(item => {
           return op.conditions.every(condition => {
             const value = item[condition.field];
@@ -103,16 +107,18 @@ const processData = (data) => {
           });
         });
         break;
+      }
         
-      case 'sort':
+      case 'sort': {
         results[op.name] = [...dataset].sort((a, b) => {
           const aVal = a[op.field];
           const bVal = b[op.field];
           return op.direction === 'desc' ? bVal - aVal : aVal - bVal;
         });
         break;
+      }
         
-      case 'group':
+      case 'group': {
         results[op.name] = dataset.reduce((groups, item) => {
           const key = item[op.field];
           if (!groups[key]) groups[key] = [];
@@ -120,8 +126,9 @@ const processData = (data) => {
           return groups;
         }, {});
         break;
+      }
         
-      case 'aggregate':
+      case 'aggregate': {
         results[op.name] = dataset.reduce((acc, item) => {
           const value = item[op.field];
           switch (op.operation) {
@@ -138,6 +145,7 @@ const processData = (data) => {
           results[op.name] = results[op.name] / dataset.length;
         }
         break;
+      }
     }
   });
   
@@ -266,7 +274,7 @@ const validateData = (data) => {
   
   // Validate required fields
   schema.required?.forEach(field => {
-    if (!inputData.hasOwnProperty(field)) {
+    if (!Object.prototype.hasOwnProperty.call(inputData, field)) {
       errors.push(`Missing required field: ${field}`);
     }
   });
@@ -288,7 +296,7 @@ const validateData = (data) => {
           }
           break;
           
-        case 'number':
+        case 'number': {
           if (typeof value !== 'number' || isNaN(value)) {
             errors.push(`Field ${field.name} must be a number`);
           }
@@ -299,6 +307,7 @@ const validateData = (data) => {
             errors.push(`Field ${field.name} must be at most ${field.max}`);
           }
           break;
+        }
           
         case 'email':
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

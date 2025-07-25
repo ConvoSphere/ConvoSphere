@@ -3,9 +3,8 @@
 import html
 import re
 
-from fastapi import HTTPException, Request, status
-
 from app.core.redis_client import get_redis
+from fastapi import HTTPException, Request, status
 
 RATE_LIMIT = 100  # requests
 RATE_PERIOD = 60  # seconds
@@ -46,7 +45,10 @@ def sanitize_input(text: str) -> str:
     sanitized = html.escape(text)
     # Remove script tags
     sanitized = re.sub(
-        r"<script.*?</script>", "", sanitized, flags=re.IGNORECASE | re.DOTALL,
+        r"<script.*?</script>",
+        "",
+        sanitized,
+        flags=re.IGNORECASE | re.DOTALL,
     )
     # Remove other potentially dangerous tags
     return re.sub(
@@ -57,9 +59,9 @@ def sanitize_input(text: str) -> str:
     )
 
 
-
 def validate_permissions(
-    user_permissions: list[str], required_permissions: list[str],
+    user_permissions: list[str],
+    required_permissions: list[str],
 ) -> bool:
     """
     Validate if user has required permissions.
@@ -108,6 +110,7 @@ async def check_rate_limit(user_id: str, action: str, limit: int, window: int) -
 
     except Exception as e:
         import logging
+
         logging.exception(f"Rate limiting error: {e}")
         # Fallback to allow request if Redis is unavailable
         return True

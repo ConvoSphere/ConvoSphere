@@ -5,16 +5,20 @@ This module contains unit tests for the enhanced knowledge base models
 including Document, Tag, DocumentChunk, and DocumentProcessingJob.
 """
 
-import pytest
 import uuid
 from datetime import datetime
-from sqlalchemy.orm import Session
 
+import pytest
 from app.models.knowledge import (
-    Document, DocumentChunk, Tag, DocumentProcessingJob,
-    DocumentStatus, DocumentType, document_tag_association
+    Document,
+    DocumentChunk,
+    DocumentProcessingJob,
+    DocumentStatus,
+    Tag,
+    document_tag_association,
 )
 from app.models.user import User
+from sqlalchemy.orm import Session
 
 
 class TestTag:
@@ -23,10 +27,7 @@ class TestTag:
     def test_tag_creation(self, db_session: Session):
         """Test creating a new tag."""
         tag = Tag(
-            name="test-tag",
-            description="A test tag",
-            color="#FF0000",
-            is_system=False
+            name="test-tag", description="A test tag", color="#FF0000", is_system=False,
         )
         db_session.add(tag)
         db_session.commit()
@@ -49,7 +50,7 @@ class TestTag:
 
         tag2 = Tag(name="unique-tag")
         db_session.add(tag2)
-        
+
         with pytest.raises(Exception):  # Should raise integrity error
             db_session.commit()
 
@@ -90,7 +91,7 @@ class TestDocument:
             file_path="/path/to/test.pdf",
             file_type="pdf",
             file_size=1024,
-            mime_type="application/pdf"
+            mime_type="application/pdf",
         )
         db_session.add(document)
         db_session.commit()
@@ -119,7 +120,7 @@ class TestDocument:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -143,7 +144,7 @@ class TestDocument:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -168,7 +169,7 @@ class TestDocument:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -194,7 +195,7 @@ class TestDocument:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -209,14 +210,14 @@ class TestDocument:
             content="Test content 1",
             chunk_index=0,
             chunk_size=12,
-            token_count=3
+            token_count=3,
         )
         chunk2 = DocumentChunk(
             document_id=document.id,
             content="Test content 2",
             chunk_index=1,
             chunk_size=12,
-            token_count=3
+            token_count=3,
         )
         db_session.add_all([chunk1, chunk2])
         db_session.commit()
@@ -233,7 +234,7 @@ class TestDocument:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -267,7 +268,7 @@ class TestDocumentChunk:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -277,7 +278,7 @@ class TestDocumentChunk:
             content="This is a test chunk content",
             chunk_index=0,
             chunk_size=25,
-            token_count=6
+            token_count=6,
         )
         db_session.add(chunk)
         db_session.commit()
@@ -296,7 +297,7 @@ class TestDocumentChunk:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -307,7 +308,7 @@ class TestDocumentChunk:
             content="Short content",
             chunk_index=0,
             chunk_size=13,
-            token_count=2
+            token_count=2,
         )
         db_session.add(chunk1)
         db_session.commit()
@@ -315,13 +316,16 @@ class TestDocumentChunk:
         assert chunk1.content_preview == "Short content"
 
         # Long content
-        long_content = "This is a very long content that should be truncated for preview purposes. " * 10
+        long_content = (
+            "This is a very long content that should be truncated for preview purposes. "
+            * 10
+        )
         chunk2 = DocumentChunk(
             document_id=document.id,
             content=long_content,
             chunk_index=1,
             chunk_size=len(long_content),
-            token_count=20
+            token_count=20,
         )
         db_session.add(chunk2)
         db_session.commit()
@@ -337,7 +341,7 @@ class TestDocumentChunk:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -348,11 +352,7 @@ class TestDocumentChunk:
             chunk_index=0,
             chunk_size=11,
             token_count=2,
-            chunk_metadata={
-                "start_word": 0,
-                "end_word": 2,
-                "confidence": 0.95
-            }
+            chunk_metadata={"start_word": 0, "end_word": 2, "confidence": 0.95},
         )
         db_session.add(chunk)
         db_session.commit()
@@ -374,7 +374,7 @@ class TestDocumentProcessingJob:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -386,7 +386,7 @@ class TestDocumentProcessingJob:
             priority=5,
             processing_engine="traditional",
             processing_options={"chunk_size": 500},
-            total_steps=3
+            total_steps=3,
         )
         db_session.add(job)
         db_session.commit()
@@ -413,15 +413,13 @@ class TestDocumentProcessingJob:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
 
         job = DocumentProcessingJob(
-            document_id=document.id,
-            user_id=test_user.id,
-            job_type="process"
+            document_id=document.id, user_id=test_user.id, job_type="process",
         )
         db_session.add(job)
         db_session.commit()
@@ -459,7 +457,7 @@ class TestDocumentProcessingJob:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
@@ -468,7 +466,7 @@ class TestDocumentProcessingJob:
             document_id=document.id,
             user_id=test_user.id,
             job_type="process",
-            max_retries=3
+            max_retries=3,
         )
         db_session.add(job)
         db_session.commit()
@@ -498,15 +496,13 @@ class TestDocumentProcessingJob:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
 
         job = DocumentProcessingJob(
-            document_id=document.id,
-            user_id=test_user.id,
-            job_type="process"
+            document_id=document.id, user_id=test_user.id, job_type="process",
         )
         db_session.add(job)
         db_session.commit()
@@ -534,19 +530,17 @@ class TestDocumentTagAssociation:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add(document)
         db_session.commit()
 
         # Create associations
         association1 = document_tag_association.insert().values(
-            document_id=document.id,
-            tag_id=tag1.id
+            document_id=document.id, tag_id=tag1.id,
         )
         association2 = document_tag_association.insert().values(
-            document_id=document.id,
-            tag_id=tag2.id
+            document_id=document.id, tag_id=tag2.id,
         )
         db_session.execute(association1)
         db_session.execute(association2)
@@ -555,8 +549,8 @@ class TestDocumentTagAssociation:
         # Verify associations
         result = db_session.execute(
             document_tag_association.select().where(
-                document_tag_association.c.document_id == document.id
-            )
+                document_tag_association.c.document_id == document.id,
+            ),
         ).fetchall()
 
         assert len(result) == 2
@@ -573,23 +567,21 @@ class TestDocumentTagAssociation:
             file_name="test.pdf",
             file_path="/path/to/test.pdf",
             file_type="pdf",
-            file_size=1024
+            file_size=1024,
         )
         db_session.add_all([tag, document])
         db_session.commit()
 
         # Create first association
         association1 = document_tag_association.insert().values(
-            document_id=document.id,
-            tag_id=tag.id
+            document_id=document.id, tag_id=tag.id,
         )
         db_session.execute(association1)
         db_session.commit()
 
         # Try to create duplicate association
         association2 = document_tag_association.insert().values(
-            document_id=document.id,
-            tag_id=tag.id
+            document_id=document.id, tag_id=tag.id,
         )
         with pytest.raises(Exception):  # Should raise integrity error
             db_session.execute(association2)
@@ -601,9 +593,7 @@ class TestDocumentTagAssociation:
 def test_user(db_session: Session) -> User:
     """Create a test user."""
     user = User(
-        email="test@example.com",
-        username="testuser",
-        hashed_password="hashed_password"
+        email="test@example.com", username="testuser", hashed_password="hashed_password",
     )
     db_session.add(user)
     db_session.commit()

@@ -5,10 +5,6 @@ This module provides API endpoints for conversation intelligence features
 including summarization, topic detection, sentiment analysis, and analytics.
 """
 
-
-from fastapi import APIRouter, HTTPException, Query
-from loguru import logger
-
 from app.core.exceptions import AIError, ValidationError
 from app.schemas.conversation_intelligence import (
     ConversationAnalytics,
@@ -25,6 +21,8 @@ from app.schemas.conversation_intelligence import (
 from app.services.conversation_intelligence_service import (
     conversation_intelligence_service,
 )
+from fastapi import APIRouter, HTTPException, Query
+from loguru import logger
 
 router = APIRouter()
 
@@ -44,7 +42,9 @@ async def analyze_conversation(
     """
     try:
         response = await conversation_intelligence_service.analyze_conversation(request)
-        logger.info(f"Conversation intelligence analysis completed for conversation: {request.conversation_id}")
+        logger.info(
+            f"Conversation intelligence analysis completed for conversation: {request.conversation_id}",
+        )
         return response
     except (ValidationError, AIError) as e:
         logger.error(f"Conversation intelligence analysis failed: {e}")
@@ -132,7 +132,9 @@ async def analyze_sentiment(
 @router.get("/analytics/{conversation_id}", response_model=ConversationAnalytics)
 async def get_conversation_analytics(
     conversation_id: str,
-    include_temporal_analysis: bool = Query(True, description="Include temporal analysis"),
+    include_temporal_analysis: bool = Query(
+        True, description="Include temporal analysis",
+    ),
 ) -> ConversationAnalytics:
     """
     Get conversation analytics.
@@ -154,7 +156,9 @@ async def get_conversation_analytics(
         response = await conversation_intelligence_service.analyze_conversation(request)
 
         if not response.analytics:
-            raise HTTPException(status_code=404, detail="Analytics not available for this conversation")
+            raise HTTPException(
+                status_code=404, detail="Analytics not available for this conversation",
+            )
 
         logger.info(f"Analytics retrieved for conversation: {conversation_id}")
         return response.analytics
@@ -192,7 +196,9 @@ async def get_conversation_summary(
         try:
             summary_type_enum = SummaryType(summary_type.lower())
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid summary type: {summary_type}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid summary type: {summary_type}",
+            )
 
         request = SummaryRequest(
             conversation_id=conversation_id,
@@ -216,7 +222,9 @@ async def get_conversation_summary(
 @router.get("/topics/{conversation_id}", response_model=list[TopicInfo])
 async def get_conversation_topics(
     conversation_id: str,
-    min_confidence: float = Query(0.5, ge=0.0, le=1.0, description="Minimum confidence threshold"),
+    min_confidence: float = Query(
+        0.5, ge=0.0, le=1.0, description="Minimum confidence threshold",
+    ),
     max_topics: int = Query(10, ge=1, le=50, description="Maximum number of topics"),
 ) -> list[TopicInfo]:
     """
@@ -333,7 +341,9 @@ async def get_intelligence_metrics() -> IntelligenceMetrics:
         return await conversation_intelligence_service.get_metrics()
     except Exception as e:
         logger.error(f"Failed to get intelligence metrics: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get intelligence metrics")
+        raise HTTPException(
+            status_code=500, detail="Failed to get intelligence metrics",
+        )
 
 
 @router.post("/health")
@@ -352,7 +362,8 @@ async def intelligence_health_check() -> dict:
             "status": "healthy",
             "service": "conversation_intelligence",
             "total_requests": metrics.total_requests,
-            "success_rate": metrics.successful_requests / max(metrics.total_requests, 1),
+            "success_rate": metrics.successful_requests
+            / max(metrics.total_requests, 1),
             "avg_processing_time": metrics.avg_processing_time,
         }
     except Exception as e:
@@ -377,19 +388,36 @@ async def get_supported_features() -> dict:
             {
                 "name": "summarization",
                 "description": "Generate conversation summaries",
-                "types": ["executive", "detailed", "action_items", "key_points", "timeline"],
+                "types": [
+                    "executive",
+                    "detailed",
+                    "action_items",
+                    "key_points",
+                    "timeline",
+                ],
                 "supported": True,
             },
             {
                 "name": "topic_detection",
                 "description": "Detect conversation topics",
-                "categories": ["technical", "business", "personal", "support", "general", "custom"],
+                "categories": [
+                    "technical",
+                    "business",
+                    "personal",
+                    "support",
+                    "general",
+                    "custom",
+                ],
                 "supported": True,
             },
             {
                 "name": "sentiment_analysis",
                 "description": "Analyze conversation sentiment",
-                "features": ["overall_sentiment", "emotion_analysis", "sentiment_trends"],
+                "features": [
+                    "overall_sentiment",
+                    "emotion_analysis",
+                    "sentiment_trends",
+                ],
                 "supported": True,
             },
             {

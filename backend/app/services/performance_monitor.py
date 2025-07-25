@@ -16,14 +16,24 @@ from pydantic import BaseModel, Field, field_validator
 class PerformanceMetric(BaseModel):
     """Performance metric with validation."""
 
-    metric_id: str = Field(default_factory=lambda: str(uuid4()), description="Unique metric ID")
-    metric_name: str = Field(..., min_length=1, max_length=100, description="Metric name")
-    metric_type: str = Field(..., pattern="^(counter|gauge|histogram|timer)$", description="Metric type")
+    metric_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="Unique metric ID",
+    )
+    metric_name: str = Field(
+        ..., min_length=1, max_length=100, description="Metric name",
+    )
+    metric_type: str = Field(
+        ..., pattern="^(counter|gauge|histogram|timer)$", description="Metric type",
+    )
     value: int | float = Field(..., description="Metric value")
     unit: str = Field(default="", max_length=20, description="Metric unit")
     tags: dict[str, str] = Field(default_factory=dict, description="Metric tags")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Metric timestamp")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Metric timestamp",
+    )
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata",
+    )
 
     @field_validator("metric_name")
     @classmethod
@@ -37,7 +47,9 @@ class PerformanceMetric(BaseModel):
     @classmethod
     def validate_value(cls, v: float) -> int | float:
         """Validate metric value."""
-        if isinstance(v, int | float) and not (isinstance(v, float) and (v != v or v == float("inf") or v == float("-inf"))):
+        if isinstance(v, int | float) and not (
+            isinstance(v, float) and (v != v or v == float("inf") or v == float("-inf"))
+        ):
             return v
         raise ValueError("Metric value must be a valid number")
 
@@ -51,13 +63,21 @@ class DatabaseQueryMetric(BaseModel):
     """Database query performance metric."""
 
     query_id: str = Field(default_factory=lambda: str(uuid4()), description="Query ID")
-    query_type: str = Field(..., pattern="^(select|insert|update|delete|create|drop)$", description="Query type")
+    query_type: str = Field(
+        ...,
+        pattern="^(select|insert|update|delete|create|drop)$",
+        description="Query type",
+    )
     table_name: str = Field(..., min_length=1, max_length=100, description="Table name")
     execution_time: float = Field(..., ge=0, description="Execution time in seconds")
     rows_affected: int = Field(default=0, ge=0, description="Rows affected")
     query_size: int = Field(default=0, ge=0, description="Query size in bytes")
-    connection_pool_size: int = Field(default=0, ge=0, description="Connection pool size")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Query timestamp")
+    connection_pool_size: int = Field(
+        default=0, ge=0, description="Connection pool size",
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Query timestamp",
+    )
     error: str | None = Field(None, description="Query error")
 
     model_config = {
@@ -69,15 +89,21 @@ class DatabaseQueryMetric(BaseModel):
 class APIMetric(BaseModel):
     """API performance metric."""
 
-    request_id: str = Field(default_factory=lambda: str(uuid4()), description="Request ID")
+    request_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="Request ID",
+    )
     endpoint: str = Field(..., min_length=1, max_length=200, description="API endpoint")
-    method: str = Field(..., pattern="^(GET|POST|PUT|DELETE|PATCH)$", description="HTTP method")
+    method: str = Field(
+        ..., pattern="^(GET|POST|PUT|DELETE|PATCH)$", description="HTTP method",
+    )
     status_code: int = Field(..., ge=100, le=599, description="HTTP status code")
     response_time: float = Field(..., ge=0, description="Response time in seconds")
     request_size: int = Field(default=0, ge=0, description="Request size in bytes")
     response_size: int = Field(default=0, ge=0, description="Response size in bytes")
     user_id: str | None = Field(None, description="User ID")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Request timestamp")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Request timestamp",
+    )
     error: str | None = Field(None, description="Request error")
 
     model_config = {
@@ -89,14 +115,24 @@ class APIMetric(BaseModel):
 class CacheMetric(BaseModel):
     """Cache performance metric."""
 
-    cache_id: str = Field(default_factory=lambda: str(uuid4()), description="Cache operation ID")
-    operation: str = Field(..., pattern="^(get|set|delete|clear)$", description="Cache operation")
-    namespace: str = Field(..., min_length=1, max_length=50, description="Cache namespace")
+    cache_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="Cache operation ID",
+    )
+    operation: str = Field(
+        ..., pattern="^(get|set|delete|clear)$", description="Cache operation",
+    )
+    namespace: str = Field(
+        ..., min_length=1, max_length=50, description="Cache namespace",
+    )
     key: str = Field(..., min_length=1, max_length=200, description="Cache key")
     operation_time: float = Field(..., ge=0, description="Operation time in seconds")
-    cache_hit: bool = Field(default=False, description="Whether operation was a cache hit")
+    cache_hit: bool = Field(
+        default=False, description="Whether operation was a cache hit",
+    )
     data_size: int = Field(default=0, ge=0, description="Data size in bytes")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Operation timestamp")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Operation timestamp",
+    )
     error: str | None = Field(None, description="Operation error")
 
     model_config = {
@@ -109,13 +145,21 @@ class PerformanceAlert(BaseModel):
     """Performance alert with thresholds."""
 
     alert_id: str = Field(default_factory=lambda: str(uuid4()), description="Alert ID")
-    alert_type: str = Field(..., pattern="^(threshold|anomaly|trend)$", description="Alert type")
-    metric_name: str = Field(..., min_length=1, max_length=100, description="Metric name")
+    alert_type: str = Field(
+        ..., pattern="^(threshold|anomaly|trend)$", description="Alert type",
+    )
+    metric_name: str = Field(
+        ..., min_length=1, max_length=100, description="Metric name",
+    )
     threshold: int | float = Field(..., description="Alert threshold")
     current_value: int | float = Field(..., description="Current metric value")
-    severity: str = Field(..., pattern="^(low|medium|high|critical)$", description="Alert severity")
+    severity: str = Field(
+        ..., pattern="^(low|medium|high|critical)$", description="Alert severity",
+    )
     message: str = Field(..., min_length=1, max_length=500, description="Alert message")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Alert timestamp")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Alert timestamp",
+    )
     resolved: bool = Field(default=False, description="Whether alert is resolved")
 
     model_config = {
@@ -211,7 +255,9 @@ class PerformanceMonitor:
                 )
                 self._add_alert(alert)
 
-            logger.debug(f"Recorded database query: {query_metric.query_type} on {query_metric.table_name} in {query_metric.execution_time:.3f}s")
+            logger.debug(
+                f"Recorded database query: {query_metric.query_type} on {query_metric.table_name} in {query_metric.execution_time:.3f}s",
+            )
 
         except Exception as e:
             logger.error(f"Failed to record database query: {e}")
@@ -245,7 +291,9 @@ class PerformanceMonitor:
                 )
                 self._add_alert(alert)
 
-            logger.debug(f"Recorded API request: {api_metric.method} {api_metric.endpoint} - {api_metric.status_code} in {api_metric.response_time:.3f}s")
+            logger.debug(
+                f"Recorded API request: {api_metric.method} {api_metric.endpoint} - {api_metric.status_code} in {api_metric.response_time:.3f}s",
+            )
 
         except Exception as e:
             logger.error(f"Failed to record API request: {e}")
@@ -267,7 +315,9 @@ class PerformanceMonitor:
                 )
                 self._add_alert(alert)
 
-            logger.debug(f"Recorded cache operation: {cache_metric.operation} on {cache_metric.namespace}:{cache_metric.key} in {cache_metric.operation_time:.3f}s")
+            logger.debug(
+                f"Recorded cache operation: {cache_metric.operation} on {cache_metric.namespace}:{cache_metric.key} in {cache_metric.operation_time:.3f}s",
+            )
 
         except Exception as e:
             logger.error(f"Failed to record cache operation: {e}")
@@ -305,59 +355,46 @@ class PerformanceMonitor:
 
         # Cleanup metrics history
         self.metrics_history = [
-            m for m in self.metrics_history
-            if m.timestamp > cutoff_time
+            m for m in self.metrics_history if m.timestamp > cutoff_time
         ]
 
         # Cleanup database metrics
         self.database_metrics = [
-            m for m in self.database_metrics
-            if m.timestamp > cutoff_time
+            m for m in self.database_metrics if m.timestamp > cutoff_time
         ]
 
         # Cleanup API metrics
-        self.api_metrics = [
-            m for m in self.api_metrics
-            if m.timestamp > cutoff_time
-        ]
+        self.api_metrics = [m for m in self.api_metrics if m.timestamp > cutoff_time]
 
         # Cleanup cache metrics
         self.cache_metrics = [
-            m for m in self.cache_metrics
-            if m.timestamp > cutoff_time
+            m for m in self.cache_metrics if m.timestamp > cutoff_time
         ]
 
         # Cleanup resolved alerts
         self.alerts = [
-            a for a in self.alerts
-            if not a.resolved or a.timestamp > cutoff_time
+            a for a in self.alerts if not a.resolved or a.timestamp > cutoff_time
         ]
 
         self.stats["last_cleanup"] = datetime.now()
 
-    def get_metrics_summary(self, time_range: timedelta = timedelta(hours=1)) -> dict[str, Any]:
+    def get_metrics_summary(
+        self, time_range: timedelta = timedelta(hours=1),
+    ) -> dict[str, Any]:
         """Get metrics summary for the specified time range."""
         cutoff_time = datetime.now() - time_range
 
         # Filter metrics by time range
-        recent_metrics = [
-            m for m in self.metrics_history
-            if m.timestamp > cutoff_time
-        ]
+        recent_metrics = [m for m in self.metrics_history if m.timestamp > cutoff_time]
 
         recent_db_metrics = [
-            m for m in self.database_metrics
-            if m.timestamp > cutoff_time
+            m for m in self.database_metrics if m.timestamp > cutoff_time
         ]
 
-        recent_api_metrics = [
-            m for m in self.api_metrics
-            if m.timestamp > cutoff_time
-        ]
+        recent_api_metrics = [m for m in self.api_metrics if m.timestamp > cutoff_time]
 
         recent_cache_metrics = [
-            m for m in self.cache_metrics
-            if m.timestamp > cutoff_time
+            m for m in self.cache_metrics if m.timestamp > cutoff_time
         ]
 
         # Calculate statistics
@@ -366,27 +403,44 @@ class PerformanceMonitor:
             "total_metrics": len(recent_metrics),
             "database_queries": {
                 "total": len(recent_db_metrics),
-                "avg_execution_time": self._calculate_average([m.execution_time for m in recent_db_metrics]),
-                "slow_queries": len([m for m in recent_db_metrics if m.execution_time > self.thresholds["database_query_time"]]),
+                "avg_execution_time": self._calculate_average(
+                    [m.execution_time for m in recent_db_metrics],
+                ),
+                "slow_queries": len(
+                    [
+                        m
+                        for m in recent_db_metrics
+                        if m.execution_time > self.thresholds["database_query_time"]
+                    ],
+                ),
             },
             "api_requests": {
                 "total": len(recent_api_metrics),
-                "avg_response_time": self._calculate_average([m.response_time for m in recent_api_metrics]),
+                "avg_response_time": self._calculate_average(
+                    [m.response_time for m in recent_api_metrics],
+                ),
                 "error_rate": self._calculate_error_rate(recent_api_metrics),
                 "status_codes": self._count_status_codes(recent_api_metrics),
             },
             "cache_operations": {
                 "total": len(recent_cache_metrics),
-                "avg_operation_time": self._calculate_average([m.operation_time for m in recent_cache_metrics]),
+                "avg_operation_time": self._calculate_average(
+                    [m.operation_time for m in recent_cache_metrics],
+                ),
                 "hit_rate": self._calculate_cache_hit_rate(recent_cache_metrics),
             },
             "alerts": {
                 "total": len([a for a in self.alerts if a.timestamp > cutoff_time]),
-                "active": len([a for a in self.alerts if not a.resolved and a.timestamp > cutoff_time]),
+                "active": len(
+                    [
+                        a
+                        for a in self.alerts
+                        if not a.resolved and a.timestamp > cutoff_time
+                    ],
+                ),
                 "by_severity": self._count_alerts_by_severity(cutoff_time),
             },
         }
-
 
     def _calculate_average(self, values: list[float]) -> float:
         """Calculate average of values."""
@@ -412,7 +466,9 @@ class PerformanceMonitor:
         """Count API status codes."""
         status_counts = {}
         for metric in api_metrics:
-            status_counts[metric.status_code] = status_counts.get(metric.status_code, 0) + 1
+            status_counts[metric.status_code] = (
+                status_counts.get(metric.status_code, 0) + 1
+            )
         return status_counts
 
     def _count_alerts_by_severity(self, cutoff_time: datetime) -> dict[str, int]:
@@ -493,7 +549,8 @@ class DatabaseOptimizer:
     def analyze_query_performance(self) -> dict[str, Any]:
         """Analyze database query performance and suggest optimizations."""
         recent_queries = [
-            q for q in self.performance_monitor.database_metrics
+            q
+            for q in self.performance_monitor.database_metrics
             if q.timestamp > datetime.now() - timedelta(hours=1)
         ]
 
@@ -506,7 +563,8 @@ class DatabaseOptimizer:
 
         # Analyze slow queries
         slow_queries = [
-            q for q in recent_queries
+            q
+            for q in recent_queries
             if q.execution_time > self.optimization_rules["slow_queries"]["threshold"]
         ]
         analysis["slow_queries"] = slow_queries
@@ -529,23 +587,27 @@ class DatabaseOptimizer:
 
         # Suggest indexes for slow queries
         for query in slow_queries:
-            suggestions.append({
-                "type": "index",
-                "table": query.table_name,
-                "query_type": query.query_type,
-                "reason": f"Query took {query.execution_time:.3f}s",
-                "priority": "high" if query.execution_time > 1.0 else "medium",
-            })
+            suggestions.append(
+                {
+                    "type": "index",
+                    "table": query.table_name,
+                    "query_type": query.query_type,
+                    "reason": f"Query took {query.execution_time:.3f}s",
+                    "priority": "high" if query.execution_time > 1.0 else "medium",
+                },
+            )
 
         # Suggest caching for frequent queries
         for query_info in frequent_queries:
-            suggestions.append({
-                "type": "cache",
-                "query": query_info["query"],
-                "count": query_info["count"],
-                "reason": f"Query executed {query_info['count']} times in the last hour",
-                "priority": "medium",
-            })
+            suggestions.append(
+                {
+                    "type": "cache",
+                    "query": query_info["query"],
+                    "count": query_info["count"],
+                    "reason": f"Query executed {query_info['count']} times in the last hour",
+                    "priority": "medium",
+                },
+            )
 
         analysis["optimization_suggestions"] = suggestions
 
@@ -554,23 +616,24 @@ class DatabaseOptimizer:
     def get_connection_pool_stats(self) -> dict[str, Any]:
         """Get database connection pool statistics."""
         recent_queries = [
-            q for q in self.performance_monitor.database_metrics
+            q
+            for q in self.performance_monitor.database_metrics
             if q.timestamp > datetime.now() - timedelta(minutes=5)
         ]
 
         if not recent_queries:
             return {"error": "No recent database queries"}
 
-        avg_pool_size = self.performance_monitor._calculate_average([
-            q.connection_pool_size for q in recent_queries
-        ])
+        avg_pool_size = self.performance_monitor._calculate_average(
+            [q.connection_pool_size for q in recent_queries],
+        )
 
         return {
             "average_pool_size": avg_pool_size,
             "total_queries": len(recent_queries),
-            "avg_query_time": self.performance_monitor._calculate_average([
-                q.execution_time for q in recent_queries
-            ]),
+            "avg_query_time": self.performance_monitor._calculate_average(
+                [q.execution_time for q in recent_queries],
+            ),
         }
 
 

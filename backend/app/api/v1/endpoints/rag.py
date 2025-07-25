@@ -5,10 +5,6 @@ This module provides API endpoints for advanced RAG functionality including
 configuration management, retrieval, and metrics.
 """
 
-
-from fastapi import APIRouter, HTTPException, Query
-from loguru import logger
-
 from app.core.exceptions import AIError, ValidationError
 from app.schemas.rag import (
     RAGConfigCreate,
@@ -20,6 +16,8 @@ from app.schemas.rag import (
     RAGResponse,
 )
 from app.services.rag_service import rag_service
+from fastapi import APIRouter, HTTPException, Query
+from loguru import logger
 
 router = APIRouter()
 
@@ -75,13 +73,17 @@ async def create_rag_config(
         )
     except Exception as e:
         logger.error(f"Failed to create RAG config: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create RAG configuration")
+        raise HTTPException(
+            status_code=500, detail="Failed to create RAG configuration",
+        )
 
 
 @router.get("/configs", response_model=RAGConfigList)
 async def list_rag_configs(
     skip: int = Query(0, ge=0, description="Number of configurations to skip"),
-    limit: int = Query(10, ge=1, le=100, description="Maximum number of configurations to return"),
+    limit: int = Query(
+        10, ge=1, le=100, description="Maximum number of configurations to return",
+    ),
 ) -> RAGConfigList:
     """
     List RAG configurations.
@@ -98,7 +100,7 @@ async def list_rag_configs(
 
         # Apply pagination
         total = len(configs)
-        paginated_configs = configs[skip:skip + limit]
+        paginated_configs = configs[skip : skip + limit]
 
         config_responses = []
         for config_id, config in paginated_configs:
@@ -204,7 +206,9 @@ async def update_rag_config(
         # Save updated config
         success = await rag_service.update_config(config_id, existing_config)
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to update RAG configuration")
+            raise HTTPException(
+                status_code=500, detail="Failed to update RAG configuration",
+            )
 
         return RAGConfigResponse(
             id=config_id,
@@ -218,7 +222,9 @@ async def update_rag_config(
         raise
     except Exception as e:
         logger.error(f"Failed to update RAG config: {e}")
-        raise HTTPException(status_code=500, detail="Failed to update RAG configuration")
+        raise HTTPException(
+            status_code=500, detail="Failed to update RAG configuration",
+        )
 
 
 @router.delete("/configs/{config_id}")
@@ -244,7 +250,9 @@ async def delete_rag_config(
         raise
     except Exception as e:
         logger.error(f"Failed to delete RAG config: {e}")
-        raise HTTPException(status_code=500, detail="Failed to delete RAG configuration")
+        raise HTTPException(
+            status_code=500, detail="Failed to delete RAG configuration",
+        )
 
 
 @router.get("/metrics", response_model=RAGMetrics)
@@ -278,7 +286,8 @@ async def rag_health_check() -> dict:
             "status": "healthy",
             "service": "rag",
             "total_requests": metrics.total_requests,
-            "success_rate": metrics.successful_requests / max(metrics.total_requests, 1),
+            "success_rate": metrics.successful_requests
+            / max(metrics.total_requests, 1),
         }
     except Exception as e:
         logger.error(f"RAG health check failed: {e}")

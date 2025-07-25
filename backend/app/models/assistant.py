@@ -51,7 +51,9 @@ class Assistant(Base):
 
     # Status and visibility
     status = Column(
-        SQLEnum(AssistantStatus), default=AssistantStatus.DRAFT, nullable=False,
+        SQLEnum(AssistantStatus),
+        default=AssistantStatus.DRAFT,
+        nullable=False,
     )
     is_public = Column(Boolean, default=False, nullable=False)
     is_template = Column(Boolean, default=False, nullable=False)

@@ -8,14 +8,13 @@ This module provides endpoints for:
 
 from typing import Any
 
+from app.core.database import get_db
+from app.core.security import get_current_user_id
+from app.services.weaviate_service import weaviate_service
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.services.weaviate_service import weaviate_service
 
 router = APIRouter()
 

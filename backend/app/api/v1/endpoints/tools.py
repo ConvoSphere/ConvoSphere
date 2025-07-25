@@ -2,15 +2,14 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field, ConfigDict
-from sqlalchemy.orm import Session
-
 from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.tool import ToolCategory
 from app.services.tool_service import ToolService
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.orm import Session
 
 
 # Pydantic models for request/response
@@ -22,24 +21,31 @@ class ToolCreate(BaseModel):
     version: str = Field("1.0.0", description="Tool version")
     category: str = Field(..., description="Tool category")
     function_name: str = Field(
-        ..., min_length=1, max_length=200, description="Unique function name",
+        ...,
+        min_length=1,
+        max_length=200,
+        description="Unique function name",
     )
     parameters_schema: dict[str, Any] | None = Field(
-        None, description="JSON Schema for parameters",
+        None,
+        description="JSON Schema for parameters",
     )
     implementation_path: str | None = Field(None, description="Path to implementation")
     is_builtin: bool = Field(False, description="Whether tool is builtin")
     is_enabled: bool = Field(True, description="Whether tool is enabled")
     requires_auth: bool = Field(
-        False, description="Whether tool requires authentication",
+        False,
+        description="Whether tool requires authentication",
     )
     required_permissions: list[str] = Field(
-        default_factory=list, description="Required permissions",
+        default_factory=list,
+        description="Required permissions",
     )
     rate_limit: str | None = Field(None, description="Rate limiting configuration")
     tags: list[str] = Field(default_factory=list, description="Tool tags")
     tool_metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata",
+        default_factory=dict,
+        description="Additional metadata",
     )
 
 
@@ -47,26 +53,33 @@ class ToolUpdate(BaseModel):
     """Update tool request model."""
 
     name: str | None = Field(
-        None, min_length=1, max_length=200, description="Tool name",
+        None,
+        min_length=1,
+        max_length=200,
+        description="Tool name",
     )
     description: str | None = Field(None, description="Tool description")
     version: str | None = Field(None, description="Tool version")
     category: str | None = Field(None, description="Tool category")
     parameters_schema: dict[str, Any] | None = Field(
-        None, description="JSON Schema for parameters",
+        None,
+        description="JSON Schema for parameters",
     )
     implementation_path: str | None = Field(None, description="Path to implementation")
     is_enabled: bool | None = Field(None, description="Whether tool is enabled")
     requires_auth: bool | None = Field(
-        None, description="Whether tool requires authentication",
+        None,
+        description="Whether tool requires authentication",
     )
     required_permissions: list[str] | None = Field(
-        None, description="Required permissions",
+        None,
+        description="Required permissions",
     )
     rate_limit: str | None = Field(None, description="Rate limiting configuration")
     tags: list[str] | None = Field(None, description="Tool tags")
     tool_metadata: dict[str, Any] | None = Field(
-        None, description="Additional metadata",
+        None,
+        description="Additional metadata",
     )
 
 

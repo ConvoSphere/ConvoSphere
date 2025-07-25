@@ -5,21 +5,21 @@ This module tests the robust Redis client implementation including
 connection handling, graceful degradation, and error scenarios.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from app.core.redis_client import (
-    init_redis,
-    get_redis,
-    close_redis,
-    check_redis_connection,
-    get_redis_info,
-    is_redis_available,
-    set_cache,
-    get_cache,
-    delete_cache,
     add_to_blacklist,
+    check_redis_connection,
+    close_redis,
+    delete_cache,
+    get_cache,
+    get_redis,
+    get_redis_info,
+    init_redis,
+    is_redis_available,
     is_token_blacklisted,
-    RedisConnectionError,
+    set_cache,
 )
 
 
@@ -30,22 +30,20 @@ class TestRedisIntegration:
     def setup(self):
         """Setup test environment."""
         # Reset global state before each test
-        from app.core.redis_client import redis_client, redis_available, redis_connection_pool
-        redis_client = None
-        redis_available = False
-        redis_connection_pool = None
+
 
     @pytest.mark.asyncio
     async def test_init_redis_success(self):
         """Test successful Redis initialization."""
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url') as mock_pool:
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url") as mock_pool,
+        ):
             result = await init_redis()
-            
+
             assert result is not None
             assert is_redis_available() is True
             mock_pool.assert_called_once()
@@ -53,9 +51,12 @@ class TestRedisIntegration:
     @pytest.mark.asyncio
     async def test_init_redis_connection_failure(self):
         """Test Redis initialization with connection failure."""
-        with patch('app.core.redis_client.redis.ConnectionPool.from_url', side_effect=Exception("Connection failed")):
+        with patch(
+            "app.core.redis_client.redis.ConnectionPool.from_url",
+            side_effect=Exception("Connection failed"),
+        ):
             result = await init_redis()
-            
+
             assert result is None
             assert is_redis_available() is False
 
@@ -64,12 +65,13 @@ class TestRedisIntegration:
         """Test Redis initialization with ping timeout."""
         mock_redis = AsyncMock()
         mock_redis.ping.side_effect = Exception("Timeout")
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             result = await init_redis()
-            
+
             assert result is None
             assert is_redis_available() is False
 
@@ -78,13 +80,14 @@ class TestRedisIntegration:
         """Test getting Redis client when available."""
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await get_redis()
-            
+
             assert result is not None
 
     @pytest.mark.asyncio
@@ -98,13 +101,14 @@ class TestRedisIntegration:
         """Test getting Redis client when health check fails."""
         mock_redis = AsyncMock()
         mock_redis.ping.side_effect = Exception("Health check failed")
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await get_redis()
-            
+
             assert result is None
             assert is_redis_available() is False
 
@@ -113,13 +117,14 @@ class TestRedisIntegration:
         """Test Redis connection check success."""
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await check_redis_connection()
-            
+
             assert result is True
 
     @pytest.mark.asyncio
@@ -141,13 +146,14 @@ class TestRedisIntegration:
             "keyspace_hits": 100,
             "keyspace_misses": 10,
         }
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await get_redis_info()
-            
+
             assert result["status"] == "connected"
             assert result["version"] == "7.0.0"
 
@@ -163,13 +169,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.setex.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await set_cache("test_key", "test_value")
-            
+
             assert result is True
             mock_redis.setex.assert_called_once()
 
@@ -185,13 +192,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.get.return_value = "test_value"
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await get_cache("test_key")
-            
+
             assert result == "test_value"
 
     @pytest.mark.asyncio
@@ -206,13 +214,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.delete.return_value = 1
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await delete_cache("test_key")
-            
+
             assert result is True
 
     @pytest.mark.asyncio
@@ -227,13 +236,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.setex.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await add_to_blacklist("test_token", 3600)
-            
+
             assert result is True
             mock_redis.setex.assert_called_once_with("blacklist:test_token", 3600, "1")
 
@@ -243,13 +253,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.exists.return_value = 1
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await is_token_blacklisted("test_token")
-            
+
             assert result is True
             mock_redis.exists.assert_called_once_with("blacklist:test_token")
 
@@ -259,13 +270,14 @@ class TestRedisIntegration:
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
         mock_redis.exists.return_value = 0
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             result = await is_token_blacklisted("test_token")
-            
+
             assert result is False
 
     @pytest.mark.asyncio
@@ -273,13 +285,14 @@ class TestRedisIntegration:
         """Test closing Redis connection successfully."""
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             await init_redis()
             await close_redis()
-            
+
             assert is_redis_available() is False
 
     @pytest.mark.asyncio
@@ -287,17 +300,17 @@ class TestRedisIntegration:
         """Test graceful degradation pattern."""
         # Test that application continues to work without Redis
         assert is_redis_available() is False
-        
+
         # Cache operations should return False/None but not raise exceptions
         assert await set_cache("key", "value") is False
         assert await get_cache("key") is None
         assert await delete_cache("key") is False
         assert await add_to_blacklist("token", 3600) is False
         assert await is_token_blacklisted("token") is False
-        
+
         # Connection check should return False
         assert await check_redis_connection() is False
-        
+
         # Info should return unavailable status
         info = await get_redis_info()
         assert info["status"] == "unavailable"
@@ -307,20 +320,21 @@ class TestRedisIntegration:
         """Test Redis recovery pattern."""
         # Start with Redis unavailable
         assert is_redis_available() is False
-        
+
         # Simulate Redis becoming available
         mock_redis = AsyncMock()
         mock_redis.ping.return_value = True
-        
-        with patch('app.core.redis_client.redis.Redis', return_value=mock_redis), \
-             patch('app.core.redis_client.redis.ConnectionPool.from_url'):
-            
+
+        with (
+            patch("app.core.redis_client.redis.Redis", return_value=mock_redis),
+            patch("app.core.redis_client.redis.ConnectionPool.from_url"),
+        ):
             # Re-initialize Redis
             result = await init_redis()
-            
+
             assert result is not None
             assert is_redis_available() is True
-            
+
             # Operations should work again
             assert await set_cache("key", "value") is True
-            assert await get_cache("key") == "value" 
+            assert await get_cache("key") == "value"

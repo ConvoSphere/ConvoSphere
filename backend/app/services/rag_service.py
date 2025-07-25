@@ -12,8 +12,6 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from loguru import logger
-
 from app.core.exceptions import AIError, ConfigurationError
 from app.core.exceptions import ValidationError as AppValidationError
 from app.schemas.rag import (
@@ -28,6 +26,7 @@ from app.schemas.rag import (
 )
 from app.services.cache_service import cache_service
 from app.services.weaviate_service import WeaviateService
+from loguru import logger
 
 
 class RAGService:
@@ -76,7 +75,9 @@ class RAGService:
         try:
             # Test Weaviate connection
             if not self.weaviate_service.health():
-                logger.warning("Weaviate service not available, RAG features may be limited")
+                logger.warning(
+                    "Weaviate service not available, RAG features may be limited",
+                )
 
             # Initialize cache if available
             if hasattr(cache_service, "initialize"):
@@ -111,7 +112,9 @@ class RAGService:
 
         try:
             # Validate and prepare configuration
-            config = config or self._get_config(request.config_id) or self.default_config
+            config = (
+                config or self._get_config(request.config_id) or self.default_config
+            )
             self._validate_request(request, config)
 
             # Check cache first
@@ -155,7 +158,9 @@ class RAGService:
             total_time = time.time() - start_time
             self._update_metrics(True, total_time, response)
 
-            logger.info(f"RAG retrieval completed in {total_time:.2f}s for query: {request.query[:50]}...")
+            logger.info(
+                f"RAG retrieval completed in {total_time:.2f}s for query: {request.query[:50]}...",
+            )
             return response
 
         except Exception as e:
@@ -182,15 +187,25 @@ class RAGService:
 
         # Perform retrieval based on strategy
         if config.strategy == RAGStrategy.SEMANTIC:
-            results = await self._semantic_retrieval(request, config, conversation_history)
+            results = await self._semantic_retrieval(
+                request, config, conversation_history,
+            )
         elif config.strategy == RAGStrategy.HYBRID:
-            results = await self._hybrid_retrieval(request, config, conversation_history)
+            results = await self._hybrid_retrieval(
+                request, config, conversation_history,
+            )
         elif config.strategy == RAGStrategy.KEYWORD:
-            results = await self._keyword_retrieval(request, config, conversation_history)
+            results = await self._keyword_retrieval(
+                request, config, conversation_history,
+            )
         elif config.strategy == RAGStrategy.CONTEXTUAL:
-            results = await self._contextual_retrieval(request, config, conversation_history)
+            results = await self._contextual_retrieval(
+                request, config, conversation_history,
+            )
         elif config.strategy == RAGStrategy.ADAPTIVE:
-            results = await self._adaptive_retrieval(request, config, conversation_history)
+            results = await self._adaptive_retrieval(
+                request, config, conversation_history,
+            )
 
         return results
 
@@ -232,12 +247,15 @@ class RAGService:
         """Perform hybrid retrieval combining semantic and keyword search."""
 
         # Perform both semantic and keyword searches
-        semantic_results = await self._semantic_retrieval(request, config, conversation_history)
-        keyword_results = await self._keyword_retrieval(request, config, conversation_history)
+        semantic_results = await self._semantic_retrieval(
+            request, config, conversation_history,
+        )
+        keyword_results = await self._keyword_retrieval(
+            request, config, conversation_history,
+        )
 
         # Combine and deduplicate results
         return self._combine_results(semantic_results, keyword_results)
-
 
     async def _keyword_retrieval(
         self,
@@ -274,7 +292,9 @@ class RAGService:
             return await self._semantic_retrieval(request, config, conversation_history)
 
         # Build contextual query
-        context_query = self._build_contextual_query(request.query, conversation_history)
+        context_query = self._build_contextual_query(
+            request.query, conversation_history,
+        )
 
         # Perform semantic search with contextual query
         results = self.weaviate_service.semantic_search_knowledge(
@@ -301,7 +321,9 @@ class RAGService:
             return await self._semantic_retrieval(request, config, conversation_history)
         if query_analysis["is_conversational"]:
             # Use contextual retrieval for conversational queries
-            return await self._contextual_retrieval(request, config, conversation_history)
+            return await self._contextual_retrieval(
+                request, config, conversation_history,
+            )
         if query_analysis["has_specific_terms"]:
             # Use hybrid retrieval for specific term queries
             return await self._hybrid_retrieval(request, config, conversation_history)
@@ -340,7 +362,8 @@ class RAGService:
 
         # Apply similarity threshold
         rag_results = [
-            result for result in rag_results
+            result
+            for result in rag_results
             if result.similarity_score >= config.similarity_threshold
         ]
 
@@ -348,8 +371,7 @@ class RAGService:
         rag_results = await self._rank_results(rag_results, config)
 
         # Limit results
-        return rag_results[:config.max_results]
-
+        return rag_results[: config.max_results]
 
     async def _rank_results(
         self,
@@ -388,7 +410,9 @@ class RAGService:
 
         return results
 
-    def _calculate_relevance_score(self, result: dict[str, Any], request: RAGRequest) -> float:
+    def _calculate_relevance_score(
+        self, result: dict[str, Any], request: RAGRequest,
+    ) -> float:
         """Calculate relevance score for a result."""
         # Simple relevance calculation based on query overlap
         query_terms = set(request.query.lower().split())
@@ -427,7 +451,9 @@ class RAGService:
 
         return authority_sources.get(source.lower(), 0.5)
 
-    def _calculate_diversity_penalty(self, result: RAGResult, all_results: list[RAGResult]) -> float:
+    def _calculate_diversity_penalty(
+        self, result: RAGResult, all_results: list[RAGResult],
+    ) -> float:
         """Calculate diversity penalty for result."""
         # Simplified diversity penalty
         similar_results = 0
@@ -435,7 +461,8 @@ class RAGService:
             if other_result != result:
                 # Check for content similarity
                 content_similarity = self._calculate_content_similarity(
-                    result.content, other_result.content,
+                    result.content,
+                    other_result.content,
                 )
                 if content_similarity > 0.7:
                     similar_results += 1
@@ -456,7 +483,9 @@ class RAGService:
 
         return intersection / union if union > 0 else 0.0
 
-    def _format_knowledge_results(self, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _format_knowledge_results(
+        self, results: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Format knowledge base results."""
         formatted_results = []
         for result in results:
@@ -473,7 +502,9 @@ class RAGService:
             formatted_results.append(formatted_result)
         return formatted_results
 
-    def _format_conversation_results(self, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _format_conversation_results(
+        self, results: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Format conversation results."""
         formatted_results = []
         for result in results:
@@ -561,35 +592,45 @@ class RAGService:
             self.metrics.successful_requests += 1
             if response:
                 self.metrics.avg_total_time = (
-                    (self.metrics.avg_total_time * (self.metrics.successful_requests - 1) + processing_time) /
-                    self.metrics.successful_requests
-                )
+                    self.metrics.avg_total_time * (self.metrics.successful_requests - 1)
+                    + processing_time
+                ) / self.metrics.successful_requests
                 self.metrics.avg_retrieval_time = (
-                    (self.metrics.avg_retrieval_time * (self.metrics.successful_requests - 1) + response.retrieval_time) /
-                    self.metrics.successful_requests
-                )
+                    self.metrics.avg_retrieval_time
+                    * (self.metrics.successful_requests - 1)
+                    + response.retrieval_time
+                ) / self.metrics.successful_requests
                 self.metrics.avg_processing_time = (
-                    (self.metrics.avg_processing_time * (self.metrics.successful_requests - 1) + response.processing_time) /
-                    self.metrics.successful_requests
-                )
+                    self.metrics.avg_processing_time
+                    * (self.metrics.successful_requests - 1)
+                    + response.processing_time
+                ) / self.metrics.successful_requests
 
                 # Update quality metrics
                 if response.results:
-                    avg_similarity = sum(r.similarity_score for r in response.results) / len(response.results)
-                    avg_relevance = sum(r.relevance_score for r in response.results) / len(response.results)
+                    avg_similarity = sum(
+                        r.similarity_score for r in response.results
+                    ) / len(response.results)
+                    avg_relevance = sum(
+                        r.relevance_score for r in response.results
+                    ) / len(response.results)
 
                     self.metrics.avg_similarity_score = (
-                        (self.metrics.avg_similarity_score * (self.metrics.successful_requests - 1) + avg_similarity) /
-                        self.metrics.successful_requests
-                    )
+                        self.metrics.avg_similarity_score
+                        * (self.metrics.successful_requests - 1)
+                        + avg_similarity
+                    ) / self.metrics.successful_requests
                     self.metrics.avg_relevance_score = (
-                        (self.metrics.avg_relevance_score * (self.metrics.successful_requests - 1) + avg_relevance) /
-                        self.metrics.successful_requests
-                    )
+                        self.metrics.avg_relevance_score
+                        * (self.metrics.successful_requests - 1)
+                        + avg_relevance
+                    ) / self.metrics.successful_requests
         else:
             self.metrics.failed_requests += 1
             if error:
-                self.metrics.error_counts[error] = self.metrics.error_counts.get(error, 0) + 1
+                self.metrics.error_counts[error] = (
+                    self.metrics.error_counts.get(error, 0) + 1
+                )
 
     def _calculate_context_length(self, results: list[RAGResult]) -> int:
         """Calculate total context length in tokens."""
@@ -602,7 +643,22 @@ class RAGService:
     def _extract_keywords(self, query: str) -> list[str]:
         """Extract keywords from query."""
         # Simple keyword extraction (could be enhanced with NLP)
-        stop_words = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+        }
         words = query.lower().split()
         keywords = [word for word in words if word not in stop_words and len(word) > 2]
         return keywords[:10]  # Limit to top 10 keywords
@@ -623,11 +679,29 @@ class RAGService:
         query_lower = query.lower()
 
         # Technical terms
-        technical_terms = ["api", "function", "method", "class", "database", "server", "config", "error"]
+        technical_terms = [
+            "api",
+            "function",
+            "method",
+            "class",
+            "database",
+            "server",
+            "config",
+            "error",
+        ]
         is_technical = any(term in query_lower for term in technical_terms)
 
         # Conversational indicators
-        conversational_terms = ["how", "what", "why", "when", "where", "can you", "please", "help"]
+        conversational_terms = [
+            "how",
+            "what",
+            "why",
+            "when",
+            "where",
+            "can you",
+            "please",
+            "help",
+        ]
         is_conversational = any(term in query_lower for term in conversational_terms)
 
         # Specific terms
@@ -652,10 +726,13 @@ class RAGService:
         for result in combined:
             is_duplicate = False
             for existing in deduplicated:
-                if self._calculate_content_similarity(
-                    result.get("content", ""),
-                    existing.get("content", ""),
-                ) > 0.8:
+                if (
+                    self._calculate_content_similarity(
+                        result.get("content", ""),
+                        existing.get("content", ""),
+                    )
+                    > 0.8
+                ):
                     is_duplicate = True
                     break
 

@@ -9,7 +9,7 @@ from collections.abc import Generator
 
 from loguru import logger
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker, declarative_base
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from .config import get_settings

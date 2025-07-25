@@ -9,10 +9,8 @@ from datetime import datetime
 from typing import Any
 
 import weaviate
-import os
-from weaviate.classes.init import Auth
-from weaviate.config import AdditionalConfig, Timeout
 from loguru import logger
+from weaviate.classes.init import Auth
 
 from .config import get_settings
 
@@ -39,11 +37,11 @@ def init_weaviate() -> weaviate.Client:
             host = weaviate_url[8:]  # Remove "https://"
         else:
             host = weaviate_url
-            
+
         # Remove port if present
         if ":" in host:
             host = host.split(":")[0]
-        
+
         if get_settings().weaviate_api_key:
             weaviate_client = weaviate.connect_to_custom(
                 http_host=host,
@@ -52,7 +50,7 @@ def init_weaviate() -> weaviate.Client:
                 grpc_host=host,
                 grpc_port=50051,
                 grpc_secure=False,
-                auth_credentials=Auth.api_key(get_settings().weaviate_api_key)
+                auth_credentials=Auth.api_key(get_settings().weaviate_api_key),
             )
         else:
             # For local Weaviate without authentication
@@ -62,7 +60,7 @@ def init_weaviate() -> weaviate.Client:
                 http_secure=False,
                 grpc_host=host,
                 grpc_port=50051,
-                grpc_secure=False
+                grpc_secure=False,
             )
 
         # Test connection
@@ -144,32 +142,42 @@ def create_schema_if_not_exists() -> None:
     Create Weaviate schema if it doesn't exist.
     """
     try:
-        client = get_weaviate()
+        get_weaviate()
 
         # Define document schema for Weaviate v4
-        from weaviate.classes.config import Property, DataType
-        
-        properties = [
-            Property(name="content", data_type=DataType.TEXT, description="Document content"),
-            Property(name="title", data_type=DataType.TEXT, description="Document title"),
-            Property(name="file_type", data_type=DataType.TEXT, description="File type (pdf, docx, etc.)"),
-            Property(name="user_id", data_type=DataType.TEXT, description="User who uploaded the document"),
-            Property(name="upload_date", data_type=DataType.DATE, description="Upload date"),
-            Property(name="tags", data_type=DataType.TEXT_ARRAY, description="Document tags"),
+        from weaviate.classes.config import DataType, Property
+
+        [
+            Property(
+                name="content", data_type=DataType.TEXT, description="Document content",
+            ),
+            Property(
+                name="title", data_type=DataType.TEXT, description="Document title",
+            ),
+            Property(
+                name="file_type",
+                data_type=DataType.TEXT,
+                description="File type (pdf, docx, etc.)",
+            ),
+            Property(
+                name="user_id",
+                data_type=DataType.TEXT,
+                description="User who uploaded the document",
+            ),
+            Property(
+                name="upload_date", data_type=DataType.DATE, description="Upload date",
+            ),
+            Property(
+                name="tags", data_type=DataType.TEXT_ARRAY, description="Document tags",
+            ),
         ]
-        
+
         # Create collection directly
-        document_schema = {
-            "name": "Document",
-            "description": "A document in the knowledge base",
-            "properties": properties
-        }
 
         # Create schema if it doesn't exist
         try:
             # Temporarily skip schema creation to allow backend to start
             logger.info("Skipping Weaviate schema creation for now")
-            pass
         except Exception as e:
             if "already exists" not in str(e).lower():
                 raise

@@ -4,14 +4,6 @@ Authentication endpoints for user login, registration, and token management.
 This module provides the authentication API endpoints for the AI Assistant Platform.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-
-# Workaround gegen Import-Zyklen: security wird erst hier importiert
-from fastapi.security import HTTPAuthorizationCredentials
-from loguru import logger
-from pydantic import BaseModel, EmailStr
-from sqlalchemy.orm import Session
-
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.dependencies import get_security_dep, get_settings_dep
@@ -27,6 +19,13 @@ from app.core.security import (
 from app.models.user import User, UserRole
 from app.schemas.user import SSOUserCreate
 from app.services.user_service import UserService
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+# Workaround gegen Import-Zyklen: security wird erst hier importiert
+from fastapi.security import HTTPAuthorizationCredentials
+from loguru import logger
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -254,7 +253,7 @@ async def refresh_token(
 @router.post("/logout")
 async def logout(
     credentials: HTTPAuthorizationCredentials = Depends(get_security_dep),
-    settings = Depends(get_settings_dep),
+    settings=Depends(get_settings_dep),
 ):
     """
     Logout user (invalidate tokens).
@@ -276,7 +275,6 @@ async def logout(
 
         # Calculate token expiration time
         from jose import jwt
-
 
         try:
             payload = jwt.decode(
@@ -355,51 +353,62 @@ async def get_sso_providers():
     providers = []
 
     if settings.sso_google_enabled and settings.sso_google_client_id:
-        providers.append({
-            "id": "google",
-            "name": "Google",
-            "type": "oauth2",
-            "icon": "google",
-            "login_url": "/api/v1/auth/sso/login/google",
-        })
+        providers.append(
+            {
+                "id": "google",
+                "name": "Google",
+                "type": "oauth2",
+                "icon": "google",
+                "login_url": "/api/v1/auth/sso/login/google",
+            },
+        )
 
     if settings.sso_microsoft_enabled and settings.sso_microsoft_client_id:
-        providers.append({
-            "id": "microsoft",
-            "name": "Microsoft",
-            "type": "oauth2",
-            "icon": "microsoft",
-            "login_url": "/api/v1/auth/sso/login/microsoft",
-        })
+        providers.append(
+            {
+                "id": "microsoft",
+                "name": "Microsoft",
+                "type": "oauth2",
+                "icon": "microsoft",
+                "login_url": "/api/v1/auth/sso/login/microsoft",
+            },
+        )
 
     if settings.sso_github_enabled and settings.sso_github_client_id:
-        providers.append({
-            "id": "github",
-            "name": "GitHub",
-            "type": "oauth2",
-            "icon": "github",
-            "login_url": "/api/v1/auth/sso/login/github",
-        })
+        providers.append(
+            {
+                "id": "github",
+                "name": "GitHub",
+                "type": "oauth2",
+                "icon": "github",
+                "login_url": "/api/v1/auth/sso/login/github",
+            },
+        )
 
     if settings.sso_saml_enabled and settings.sso_saml_metadata_url:
-        providers.append({
-            "id": "saml",
-            "name": "SAML",
-            "type": "saml",
-            "icon": "saml",
-            "login_url": "/api/v1/auth/sso/login/saml",
-        })
+        providers.append(
+            {
+                "id": "saml",
+                "name": "SAML",
+                "type": "saml",
+                "icon": "saml",
+                "login_url": "/api/v1/auth/sso/login/saml",
+            },
+        )
 
     if settings.sso_oidc_enabled and settings.sso_oidc_issuer_url:
-        providers.append({
-            "id": "oidc",
-            "name": "OIDC",
-            "type": "oidc",
-            "icon": "oidc",
-            "login_url": "/api/v1/auth/sso/login/oidc",
-        })
+        providers.append(
+            {
+                "id": "oidc",
+                "name": "OIDC",
+                "type": "oidc",
+                "icon": "oidc",
+                "login_url": "/api/v1/auth/sso/login/oidc",
+            },
+        )
 
     return {"providers": providers}
+
 
 @router.get("/sso/login/{provider}")
 async def sso_login(provider: str, request: Request):
@@ -407,15 +416,25 @@ async def sso_login(provider: str, request: Request):
     settings = get_settings()
 
     # Check if provider is enabled and configured
-    if provider == "google" and not (settings.sso_google_enabled and settings.sso_google_client_id):
+    if provider == "google" and not (
+        settings.sso_google_enabled and settings.sso_google_client_id
+    ):
         raise HTTPException(status_code=400, detail="Google SSO not configured")
-    if provider == "microsoft" and not (settings.sso_microsoft_enabled and settings.sso_microsoft_client_id):
+    if provider == "microsoft" and not (
+        settings.sso_microsoft_enabled and settings.sso_microsoft_client_id
+    ):
         raise HTTPException(status_code=400, detail="Microsoft SSO not configured")
-    if provider == "github" and not (settings.sso_github_enabled and settings.sso_github_client_id):
+    if provider == "github" and not (
+        settings.sso_github_enabled and settings.sso_github_client_id
+    ):
         raise HTTPException(status_code=400, detail="GitHub SSO not configured")
-    if provider == "saml" and not (settings.sso_saml_enabled and settings.sso_saml_metadata_url):
+    if provider == "saml" and not (
+        settings.sso_saml_enabled and settings.sso_saml_metadata_url
+    ):
         raise HTTPException(status_code=400, detail="SAML SSO not configured")
-    if provider == "oidc" and not (settings.sso_oidc_enabled and settings.sso_oidc_issuer_url):
+    if provider == "oidc" and not (
+        settings.sso_oidc_enabled and settings.sso_oidc_issuer_url
+    ):
         raise HTTPException(status_code=400, detail="OIDC SSO not configured")
 
     # Redirect to provider's auth URL (implement with Authlib or fastapi-sso)
@@ -430,12 +449,17 @@ async def sso_login(provider: str, request: Request):
 
     return {"redirect_url": redirect_urls.get(provider, "")}
 
+
 @router.get("/sso/callback/{provider}")
 async def sso_callback(provider: str, request: Request, db: Session = Depends(get_db)):
     """Handle SSO callback and user provisioning/account-linking."""
     # Pseudo-code: Extract user info from provider
     # user_info = await oidc_client.get_user_info(request, provider)
-    user_info = {"email": "sso@example.com", "external_id": "123", "auth_provider": provider}
+    user_info = {
+        "email": "sso@example.com",
+        "external_id": "123",
+        "auth_provider": provider,
+    }
     user_service = UserService(db)
     user = user_service.get_user_by_external_id(user_info["external_id"], provider)
     if not user:
@@ -463,8 +487,14 @@ async def sso_callback(provider: str, request: Request, db: Session = Depends(ge
         expires_in=get_settings().jwt_access_token_expire_minutes * 60,
     )
 
+
 @router.post("/sso/link/{provider}")
-async def sso_link(provider: str, request: Request, current_user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+async def sso_link(
+    provider: str,
+    request: Request,
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
     """Link SSO account to existing user account."""
     # Pseudo-code: Extract SSO info and link to current user
     user_service = UserService(db)

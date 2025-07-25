@@ -102,7 +102,8 @@ class DoclingProcessor:
         try:
             # Create temporary file
             with tempfile.NamedTemporaryFile(
-                delete=False, suffix=Path(filename).suffix,
+                delete=False,
+                suffix=Path(filename).suffix,
             ) as temp_file:
                 temp_file.write(file_content)
                 temp_file_path = temp_file.name
@@ -138,7 +139,7 @@ class DoclingProcessor:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing document {filename} with Docling: {e}")
+            logger.exception(f"Error processing document {filename} with Docling: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -147,7 +148,9 @@ class DoclingProcessor:
             }
 
     def _extract_docling_content(
-        self, doc: "DoclingDocument", filename: str,
+        self,
+        doc: "DoclingDocument",
+        filename: str,
     ) -> dict[str, Any]:
         """
         Extract content and metadata from Docling document.
@@ -226,7 +229,7 @@ class DoclingProcessor:
             }
 
         except Exception as e:
-            logger.error(f"Error extracting Docling content: {e}")
+            logger.exception(f"Error extracting Docling content: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -235,7 +238,8 @@ class DoclingProcessor:
             }
 
     def _create_chunks_from_docling(
-        self, doc: "DoclingDocument",
+        self,
+        doc: "DoclingDocument",
     ) -> list[dict[str, Any]]:
         """
         Create chunks from Docling document with advanced features.
@@ -325,7 +329,7 @@ class DoclingProcessor:
             return chunks
 
         except Exception as e:
-            logger.error(f"Error creating chunks from Docling document: {e}")
+            logger.exception(f"Error creating chunks from Docling document: {e}")
             return []
 
     def process_audio(self, file_content: bytes, filename: str) -> dict[str, Any]:
@@ -350,7 +354,8 @@ class DoclingProcessor:
         try:
             # Create temporary file
             with tempfile.NamedTemporaryFile(
-                delete=False, suffix=Path(filename).suffix,
+                delete=False,
+                suffix=Path(filename).suffix,
             ) as temp_file:
                 temp_file.write(file_content)
                 temp_file_path = temp_file.name
@@ -388,7 +393,7 @@ class DoclingProcessor:
             }
 
         except Exception as e:
-            logger.error(f"Error processing audio {filename} with Docling: {e}")
+            logger.exception(f"Error processing audio {filename} with Docling: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -418,7 +423,8 @@ class DoclingProcessor:
         try:
             # Create temporary file
             with tempfile.NamedTemporaryFile(
-                delete=False, suffix=Path(filename).suffix,
+                delete=False,
+                suffix=Path(filename).suffix,
             ) as temp_file:
                 temp_file.write(file_content)
                 temp_file_path = temp_file.name
@@ -456,7 +462,7 @@ class DoclingProcessor:
             }
 
         except Exception as e:
-            logger.error(f"Error processing image {filename} with Docling: {e}")
+            logger.exception(f"Error processing image {filename} with Docling: {e}")
             return {
                 "success": False,
                 "error": str(e),

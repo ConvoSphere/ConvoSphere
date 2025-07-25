@@ -15,14 +15,17 @@ class Base:
     """Base class for all database models."""
 
     @declared_attr
-    def __tablename__(cls) -> str:
+    def __tablename__(self) -> str:
         """Generate table name from class name."""
-        return cls.__name__.lower()
+        return self.__name__.lower()
 
     # Common fields
     created_at = Column(DateTime, default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime, default=func.now(), onupdate=func.now(), nullable=False,
+        DateTime,
+        default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     def to_dict(self) -> dict[str, Any]:

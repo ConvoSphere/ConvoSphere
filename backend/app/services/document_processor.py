@@ -17,9 +17,8 @@ import magic
 import markdown
 import pypdf
 import tiktoken
-from docx import Document
-
 from app.core.config import get_settings
+from docx import Document
 
 from .docling_processor import docling_processor
 
@@ -140,7 +139,7 @@ class DocumentProcessor:
             return "unknown"
 
         except Exception as e:
-            logger.error(f"Error detecting file type: {e}")
+            logger.exception(f"Error detecting file type: {e}")
             return "unknown"
 
     def extract_text(self, file_content: bytes, filename: str) -> str:
@@ -185,7 +184,7 @@ class DocumentProcessor:
             return ""
 
         except Exception as e:
-            logger.error(f"Error extracting text from {filename}: {e}")
+            logger.exception(f"Error extracting text from {filename}: {e}")
             return ""
 
     def _extract_pdf_text(self, file_content: bytes) -> str:
@@ -201,7 +200,7 @@ class DocumentProcessor:
             return text.strip()
 
         except Exception as e:
-            logger.error(f"Error extracting PDF text: {e}")
+            logger.exception(f"Error extracting PDF text: {e}")
             return ""
 
     def _extract_docx_text(self, file_content: bytes) -> str:
@@ -217,7 +216,7 @@ class DocumentProcessor:
             return text.strip()
 
         except Exception as e:
-            logger.error(f"Error extracting DOCX text: {e}")
+            logger.exception(f"Error extracting DOCX text: {e}")
             return ""
 
     def _extract_txt_text(self, file_content: bytes) -> str:
@@ -236,7 +235,7 @@ class DocumentProcessor:
             return file_content.decode("latin-1", errors="ignore")
 
         except Exception as e:
-            logger.error(f"Error extracting text file content: {e}")
+            logger.exception(f"Error extracting text file content: {e}")
             return ""
 
     def _extract_markdown_text(self, file_content: bytes) -> str:
@@ -257,7 +256,7 @@ class DocumentProcessor:
             return text.strip()
 
         except Exception as e:
-            logger.error(f"Error extracting markdown text: {e}")
+            logger.exception(f"Error extracting markdown text: {e}")
             return ""
 
     def _extract_html_text(self, file_content: bytes) -> str:
@@ -280,9 +279,8 @@ class DocumentProcessor:
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
             return " ".join(chunk for chunk in chunks if chunk)
 
-
         except Exception as e:
-            logger.error(f"Error extracting HTML text: {e}")
+            logger.exception(f"Error extracting HTML text: {e}")
             return ""
 
     def _extract_image_text(self, file_content: bytes) -> str:
@@ -295,7 +293,7 @@ class DocumentProcessor:
             return ""
 
         except Exception as e:
-            logger.error(f"Error extracting image text: {e}")
+            logger.exception(f"Error extracting image text: {e}")
             return ""
 
     def chunk_text(
@@ -571,7 +569,8 @@ class DocumentProcessor:
 
         # Extract email addresses
         emails = re.findall(
-            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", text,
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            text,
         )
         entities.extend(emails)
 
@@ -626,7 +625,8 @@ class DocumentProcessor:
         # Calculate complexity score
         avg_sentence_length = self._calculate_avg_sentence_length(text)
         metadata["complexity_score"] = min(
-            avg_sentence_length / 20, 1.0,
+            avg_sentence_length / 20,
+            1.0,
         )  # Normalize to 0-1
 
         # Extract topics from chunks
@@ -769,31 +769,31 @@ class DocumentProcessor:
     def process_pdf(self, file_path: str) -> str:
         """Process PDF document and extract text."""
         try:
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 file_content = file.read()
             return self._extract_pdf_text(file_content)
         except Exception as e:
-            logger.error(f"Error processing PDF {file_path}: {e}")
+            logger.exception(f"Error processing PDF {file_path}: {e}")
             return ""
 
     def process_docx(self, file_path: str) -> str:
         """Process DOCX document and extract text."""
         try:
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 file_content = file.read()
             return self._extract_docx_text(file_content)
         except Exception as e:
-            logger.error(f"Error processing DOCX {file_path}: {e}")
+            logger.exception(f"Error processing DOCX {file_path}: {e}")
             return ""
 
     def process_txt(self, file_path: str) -> str:
         """Process TXT document and extract text."""
         try:
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 file_content = file.read()
             return self._extract_txt_text(file_content)
         except Exception as e:
-            logger.error(f"Error processing TXT {file_path}: {e}")
+            logger.exception(f"Error processing TXT {file_path}: {e}")
             return ""
 
     def process_document(self, file_content: bytes, filename: str) -> dict[str, Any]:
@@ -886,7 +886,7 @@ class DocumentProcessor:
             }
 
         except Exception as e:
-            logger.error(f"Error processing document {filename}: {e}")
+            logger.exception(f"Error processing document {filename}: {e}")
             return {
                 "success": False,
                 "error": str(e),

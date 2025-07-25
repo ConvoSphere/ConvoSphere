@@ -4,9 +4,9 @@ AI service endpoints.
 This module provides endpoints for AI model management and configuration.
 """
 
-from fastapi import APIRouter, Depends
-from app.services.ai_service import ai_service
 from app.core.security import get_current_user_id
+from app.services.ai_service import ai_service
+from fastapi import APIRouter, Depends
 
 router = APIRouter()
 
@@ -35,8 +35,7 @@ async def get_available_providers():
 async def ai_health_check():
     """Check AI service health."""
     try:
-        health = ai_service.health_check()
-        return health
+        return ai_service.health_check()
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 
@@ -45,7 +44,6 @@ async def ai_health_check():
 async def get_cost_summary(current_user_id: str = Depends(get_current_user_id)):
     """Get cost summary for AI usage."""
     try:
-        costs = ai_service.get_cost_summary()
-        return costs
+        return ai_service.get_cost_summary()
     except Exception as e:
-        return {"error": str(e), "costs": {}} 
+        return {"error": str(e), "costs": {}}

@@ -1,16 +1,22 @@
 """
 Processing-related API endpoints (jobs, engines, supported formats, bulk import).
 """
-from fastapi import APIRouter, Depends, HTTPException, Form, Query
-from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.schemas.knowledge import DocumentProcessingJobResponse, DocumentProcessingJobList, BulkImportRequest, BulkImportResponse
+from app.schemas.knowledge import (
+    BulkImportRequest,
+    BulkImportResponse,
+    DocumentProcessingJobList,
+)
 from app.services.docling_processor import docling_processor
 from app.services.knowledge_service import KnowledgeService
+from fastapi import APIRouter, Depends, Form, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter()
+
 
 # Get processing jobs
 @router.get("/processing/jobs", response_model=DocumentProcessingJobList)
@@ -23,6 +29,7 @@ async def get_processing_jobs(
     """Get processing jobs for the current user."""
     service = KnowledgeService(db)
     return await service.get_processing_jobs(current_user, status, limit)
+
 
 # Create processing job
 @router.post("/processing/jobs")
@@ -37,8 +44,9 @@ async def create_processing_job(
     """Create a new processing job."""
     service = KnowledgeService(db)
     return await service.create_processing_job(
-        document_id, job_type, priority, processing_options, current_user
+        document_id, job_type, priority, processing_options, current_user,
     )
+
 
 # Bulk import
 @router.post("/bulk-import", response_model=BulkImportResponse)
@@ -51,11 +59,13 @@ async def bulk_import_documents(
     service = KnowledgeService(db)
     return await service.bulk_import_documents(request, current_user)
 
+
 # Get processing engines
 @router.get("/processing/engines")
 async def get_processing_engines():
     """Get available processing engines."""
     return docling_processor.get_engines()
+
 
 # Get supported formats
 @router.get("/processing/supported-formats")

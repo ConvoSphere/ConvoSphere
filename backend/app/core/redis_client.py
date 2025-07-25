@@ -6,7 +6,7 @@ and utility functions for the AI Assistant Platform with graceful degradation.
 """
 
 import asyncio
-from typing import Any, Optional
+from typing import Any
 
 import redis.asyncio as redis
 from loguru import logger
@@ -14,17 +14,17 @@ from loguru import logger
 from .config import get_settings
 
 # Global Redis client instance
-redis_client: Optional[redis.Redis] = None
+redis_client: redis.Redis | None = None
 redis_available: bool = False
-redis_connection_pool: Optional[redis.ConnectionPool] = None
+redis_connection_pool: redis.ConnectionPool | None = None
 
 
 class RedisConnectionError(Exception):
     """Custom exception for Redis connection errors."""
-    pass
 
 
-async def init_redis() -> Optional[redis.Redis]:
+
+async def init_redis() -> redis.Redis | None:
     """
     Initialize Redis connection with connection pooling and graceful degradation.
 
@@ -35,7 +35,7 @@ async def init_redis() -> Optional[redis.Redis]:
 
     try:
         settings = get_settings()
-        
+
         # Create connection pool with robust configuration
         redis_connection_pool = redis.ConnectionPool.from_url(
             settings.redis_url,
@@ -58,7 +58,7 @@ async def init_redis() -> Optional[redis.Redis]:
             redis_available = True
             logger.info("Redis connection established successfully")
             return redis_client
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Redis connection timeout during ping test")
             redis_available = False
             return None
@@ -73,7 +73,7 @@ async def init_redis() -> Optional[redis.Redis]:
         return None
 
 
-async def get_redis() -> Optional[redis.Redis]:
+async def get_redis() -> redis.Redis | None:
     """
     Get Redis client instance with graceful degradation.
 
@@ -81,10 +81,10 @@ async def get_redis() -> Optional[redis.Redis]:
         Optional[redis.Redis]: Redis client instance or None if unavailable
     """
     global redis_client
-    
+
     if redis_client is None:
         return None
-    
+
     try:
         # Quick health check
         await asyncio.wait_for(redis_client.ping(), timeout=1.0)
@@ -127,7 +127,7 @@ async def check_redis_connection() -> bool:
             socket_connect_timeout=2,
             socket_timeout=2,
         )
-        
+
         await asyncio.wait_for(test_client.ping(), timeout=2.0)
         await test_client.close()
         return True
@@ -154,7 +154,7 @@ async def get_redis_info() -> dict[str, Any]:
             socket_connect_timeout=5,
             socket_timeout=5,
         )
-        
+
         info = await asyncio.wait_for(test_client.info(), timeout=5.0)
         await test_client.close()
 
@@ -175,7 +175,7 @@ async def get_redis_info() -> dict[str, Any]:
 def is_redis_available() -> bool:
     """
     Check if Redis is available without async call.
-    
+
     Returns:
         bool: True if Redis is available, False otherwise
     """
@@ -199,7 +199,7 @@ async def set_cache(key: str, value: Any, expire: int = 3600) -> bool:
         client = await get_redis()
         if client is None:
             return False
-            
+
         await asyncio.wait_for(client.setex(key, expire, str(value)), timeout=5.0)
         return True
     except Exception as e:
@@ -207,7 +207,7 @@ async def set_cache(key: str, value: Any, expire: int = 3600) -> bool:
         return False
 
 
-async def get_cache(key: str) -> Optional[str]:
+async def get_cache(key: str) -> str | None:
     """
     Get cache value with graceful degradation.
 
@@ -221,7 +221,7 @@ async def get_cache(key: str) -> Optional[str]:
         client = await get_redis()
         if client is None:
             return None
-            
+
         return await asyncio.wait_for(client.get(key), timeout=5.0)
     except Exception as e:
         logger.debug(f"Failed to get cache: {e}")
@@ -242,7 +242,7 @@ async def delete_cache(key: str) -> bool:
         client = await get_redis()
         if client is None:
             return False
-            
+
         await asyncio.wait_for(client.delete(key), timeout=5.0)
         return True
     except Exception as e:
@@ -264,7 +264,7 @@ async def clear_cache_pattern(pattern: str) -> int:
         client = await get_redis()
         if client is None:
             return 0
-            
+
         keys = await asyncio.wait_for(client.keys(pattern), timeout=10.0)
         if keys:
             await asyncio.wait_for(client.delete(*keys), timeout=10.0)
@@ -290,10 +290,9 @@ async def add_to_blacklist(token: str, expires_at: int) -> bool:
         client = await get_redis()
         if client is None:
             return False
-            
+
         await asyncio.wait_for(
-            client.setex(f"blacklist:{token}", expires_at, "1"), 
-            timeout=5.0
+            client.setex(f"blacklist:{token}", expires_at, "1"), timeout=5.0,
         )
         return True
     except Exception as e:
@@ -315,10 +314,9 @@ async def is_token_blacklisted(token: str) -> bool:
         client = await get_redis()
         if client is None:
             return False
-            
+
         result = await asyncio.wait_for(
-            client.exists(f"blacklist:{token}"), 
-            timeout=2.0
+            client.exists(f"blacklist:{token}"), timeout=2.0,
         )
         return bool(result)
     except Exception as e:

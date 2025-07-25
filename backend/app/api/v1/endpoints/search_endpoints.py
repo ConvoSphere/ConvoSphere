@@ -1,16 +1,22 @@
 """
 Search-related API endpoints (search, advanced search, search history).
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.schemas.knowledge import SearchRequest, SearchResponse, AdvancedSearchRequest, AdvancedSearchResponse
+from app.schemas.knowledge import (
+    AdvancedSearchRequest,
+    AdvancedSearchResponse,
+    SearchRequest,
+    SearchResponse,
+)
 from app.services.knowledge_service import KnowledgeService
-from fastapi import Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter()
+
 
 # Search documents
 @router.post("/search", response_model=SearchResponse)
@@ -23,6 +29,7 @@ async def search_documents(
     service = KnowledgeService(db)
     return await service.search_documents(request, current_user)
 
+
 # Advanced search
 @router.post("/search/advanced", response_model=AdvancedSearchResponse)
 async def advanced_search(
@@ -33,6 +40,7 @@ async def advanced_search(
     """Advanced search with filters."""
     service = KnowledgeService(db)
     return await service.advanced_search(request, current_user)
+
 
 # Search history
 @router.get("/search/history")

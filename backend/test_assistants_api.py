@@ -13,44 +13,32 @@ sys.path.insert(0, str(Path(__file__).parent / "app"))
 
 def test_assistant_service():
     """Test the AssistantService implementation."""
-    print("Testing AssistantService implementation...")
 
     try:
         # Test imports
         from app.models.assistant import Assistant, AssistantStatus
 
-        print("✅ AssistantService import successful")
-        print("✅ Assistant model import successful")
-        print("✅ AssistantStatus enum import successful")
 
         # Test AssistantStatus enum
-        statuses = [status.value for status in AssistantStatus]
-        print(f"✅ Assistant statuses: {statuses}")
+        [status.value for status in AssistantStatus]
 
         # Test Assistant model
-        assistant = Assistant(
+        Assistant(
             name="Test Assistant",
             system_prompt="You are a helpful assistant.",
             creator_id="test-user-id",
         )
-        print(f"✅ Assistant model creation successful: {assistant.name}")
-        print(f"✅ Assistant status: {assistant.status}")
-        print(f"✅ Assistant is_active: {assistant.is_active}")
-        print(f"✅ Assistant tool_count: {assistant.tool_count}")
 
         # Test AssistantService methods (without database)
-        print("✅ AssistantService class structure validated")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Error testing AssistantService: {e}")
+    except Exception:
         return False
 
 
 def test_api_endpoints():
     """Test the API endpoints implementation."""
-    print("\nTesting API endpoints implementation...")
 
     try:
         # Test imports
@@ -60,12 +48,9 @@ def test_api_endpoints():
             ToolAssignmentRequest,
         )
 
-        print("✅ API router import successful")
-        print("✅ Pydantic models import successful")
-        print("✅ API endpoint functions import successful")
 
         # Test Pydantic models
-        assistant_create = AssistantCreate(
+        AssistantCreate(
             name="Test API Assistant",
             system_prompt="You are a helpful assistant created via API.",
             description="A test assistant",
@@ -77,32 +62,25 @@ def test_api_endpoints():
             is_public=False,
             is_template=False,
         )
-        print(
-            f"✅ AssistantCreate model validation successful: {assistant_create.name}",
-        )
 
         AssistantUpdate(
             description="Updated description",
             status="active",
         )
-        print("✅ AssistantUpdate model validation successful")
 
         ToolAssignmentRequest(
             tool_id="test-tool-id",
             config={"enabled": True},
         )
-        print("✅ ToolAssignmentRequest model validation successful")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Error testing API endpoints: {e}")
+    except Exception:
         return False
 
 
 def test_assistant_features():
     """Test assistant-specific features."""
-    print("\nTesting assistant-specific features...")
 
     try:
         from app.models.assistant import Assistant, AssistantStatus
@@ -114,35 +92,28 @@ def test_assistant_features():
             creator_id="test-user-id",
             status=AssistantStatus.DRAFT,
         )
-        print(f"✅ Assistant creation with DRAFT status: {assistant.status}")
 
         # Test status changes
         assistant.status = AssistantStatus.ACTIVE
-        print(f"✅ Assistant status change to ACTIVE: {assistant.is_active}")
 
         # Test tool management
         assistant.add_tool("tool-1", {"enabled": True})
         assistant.add_tool("tool-2", {"enabled": False})
-        print(f"✅ Assistant tool management: {assistant.tool_count} tools")
 
         # Test tool removal
         assistant.remove_tool("tool-1")
-        print(f"✅ Assistant tool removal: {assistant.tool_count} tools remaining")
 
         # Test tool configuration
-        tool_config = assistant.get_tool_config("tool-2")
-        print(f"✅ Assistant tool configuration: {tool_config}")
+        assistant.get_tool_config("tool-2")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Error testing assistant features: {e}")
+    except Exception:
         return False
 
 
 def test_permissions():
     """Test permission checking logic."""
-    print("\nTesting permission logic...")
 
     try:
         from app.models.user import User, UserRole
@@ -153,27 +124,21 @@ def test_permissions():
             email="test@example.com",
             role=UserRole.USER,
         )
-        print(f"✅ User model creation successful: {user.username}")
 
         # Test permission checking
-        has_permission = user.has_permission("assistant:read")
-        print(f"✅ Permission check successful: {has_permission}")
+        user.has_permission("assistant:read")
 
         # Test assistant access
-        can_access = user.can_access_assistant("test-assistant-id")
-        print(f"✅ Assistant access check successful: {can_access}")
+        user.can_access_assistant("test-assistant-id")
 
         return True
 
-    except Exception as e:
-        print(f"❌ Error testing permissions: {e}")
+    except Exception:
         return False
 
 
 def main():
     """Run all tests."""
-    print("🧪 Testing Assistants API Implementation")
-    print("=" * 50)
 
     tests = [
         ("AssistantService", test_assistant_service),
@@ -185,22 +150,14 @@ def main():
     passed = 0
     total = len(tests)
 
-    for test_name, test_func in tests:
-        print(f"\n📋 Running {test_name} test...")
+    for _test_name, test_func in tests:
         if test_func():
             passed += 1
-            print(f"✅ {test_name} test PASSED")
         else:
-            print(f"❌ {test_name} test FAILED")
+            pass
 
-    print("\n" + "=" * 50)
-    print(f"📊 Test Results: {passed}/{total} tests passed")
 
-    if passed == total:
-        print("🎉 All tests passed! Assistants API implementation is ready.")
-        return True
-    print("⚠️  Some tests failed. Please check the implementation.")
-    return False
+    return passed == total
 
 
 if __name__ == "__main__":

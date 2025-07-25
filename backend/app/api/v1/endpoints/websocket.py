@@ -9,7 +9,6 @@ import asyncio
 import contextlib
 import json
 from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
@@ -17,13 +16,13 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 from app.core.database import get_db
+
 # get_current_user_ws is defined in this file
 from app.models.conversation import Conversation
 from app.models.user import User
 from app.services.ai_service import AIService
 from app.services.conversation_service import ConversationService
 from app.services.knowledge_service import KnowledgeService
-from app.services.weaviate_service import weaviate_service
 from loguru import logger
 
 
@@ -87,7 +86,10 @@ class ConnectionManager:
                 del self.user_connections[user_id]
 
     async def send_personal_message(
-        self, message: str, user_id: str, conversation_id: str,
+        self,
+        message: str,
+        user_id: str,
+        conversation_id: str,
     ):
         """Send a message to a specific user in a conversation."""
         connection_id = f"{user_id}_{conversation_id}"
@@ -95,7 +97,10 @@ class ConnectionManager:
             await self.active_connections[connection_id].send_text(message)
 
     async def broadcast_to_conversation(
-        self, message: str, conversation_id: str, exclude_user: str | None = None,
+        self,
+        message: str,
+        conversation_id: str,
+        exclude_user: str | None = None,
     ):
         """Broadcast a message to all users in a conversation."""
         if conversation_id in self.conversation_connections:
@@ -115,7 +120,10 @@ class ConnectionManager:
                         )
 
     async def send_typing_indicator(
-        self, conversation_id: str, user_id: str, is_typing: bool,
+        self,
+        conversation_id: str,
+        user_id: str,
+        is_typing: bool,
     ):
         """Send typing indicator to conversation participants."""
         message = json.dumps(
@@ -130,11 +138,13 @@ class ConnectionManager:
         )
 
         await self.broadcast_to_conversation(
-            message, conversation_id, exclude_user=user_id,
+            message,
+            conversation_id,
+            exclude_user=user_id,
         )
 
     async def send_knowledge_update(
-        self, user_id: str, conversation_id: str, documents: list, search_query: str
+        self, user_id: str, conversation_id: str, documents: list, search_query: str,
     ):
         """Send knowledge base search results to user."""
         message = json.dumps(
@@ -150,7 +160,12 @@ class ConnectionManager:
         await self.send_personal_message(message, user_id, conversation_id)
 
     async def send_processing_job_update(
-        self, user_id: str, conversation_id: str, job_id: str, status: str, progress: int
+        self,
+        user_id: str,
+        conversation_id: str,
+        job_id: str,
+        status: str,
+        progress: int,
     ):
         """Send processing job status update to user."""
         message = json.dumps(
@@ -187,7 +202,7 @@ async def websocket_general_endpoint(
 
         # Accept connection
         await websocket.accept()
-        
+
         # Send connection confirmation
         await websocket.send_text(
             json.dumps(
@@ -206,7 +221,7 @@ async def websocket_general_endpoint(
                 # Keep connection alive
                 data = await websocket.receive_text()
                 message_data = json.loads(data)
-                
+
                 if message_data.get("type") == "ping":
                     await websocket.send_text(
                         json.dumps(
@@ -253,7 +268,8 @@ async def websocket_endpoint(
 
         if not conversation:
             await websocket.close(
-                code=4002, reason="Conversation not found or access denied",
+                code=4002,
+                reason="Conversation not found or access denied",
             )
             return
 
@@ -276,13 +292,16 @@ async def websocket_endpoint(
                 if message_type == "message":
                     # Handle new message with knowledge base integration
                     content = message_data.get("data", {}).get("content", "")
-                    knowledge_context = message_data.get("data", {}).get("knowledgeContext")
+                    knowledge_context = message_data.get("data", {}).get(
+                        "knowledgeContext",
+                    )
 
                     if not content.strip():
                         continue
 
                     # Save message to database
                     from app.schemas.conversation import MessageCreate
+
                     message_data = MessageCreate(
                         conversation_id=conversation_id,
                         content=content,
@@ -306,14 +325,16 @@ async def websocket_endpoint(
                     )
 
                     await manager.broadcast_to_conversation(
-                        broadcast_message, conversation_id,
+                        broadcast_message,
+                        conversation_id,
                     )
 
                     # Generate AI response with knowledge base integration
                     try:
                         # Get conversation context
                         messages = conversation_service.get_messages(
-                            conversation_id, limit=10,
+                            conversation_id,
+                            limit=10,
                         )
 
                         # Prepare knowledge context for AI
@@ -322,21 +343,24 @@ async def websocket_endpoint(
                             # Search knowledge base for relevant documents
                             search_query = knowledge_context.get("searchQuery", content)
                             max_chunks = knowledge_context.get("maxChunks", 5)
-                            
+
                             # Perform knowledge search
                             search_results = await knowledge_service.search_documents(
                                 query=search_query,
                                 user_id=str(user.id),
                                 limit=max_chunks,
-                                filters=knowledge_context.get("filters", {})
+                                filters=knowledge_context.get("filters", {}),
                             )
-                            
+
                             knowledge_documents = search_results.get("documents", [])
-                            
+
                             # Send knowledge update to client
                             if knowledge_documents:
                                 await manager.send_knowledge_update(
-                                    str(user.id), conversation_id, knowledge_documents, search_query
+                                    str(user.id),
+                                    conversation_id,
+                                    knowledge_documents,
+                                    search_query,
                                 )
 
                         # Generate AI response with RAG
@@ -346,17 +370,23 @@ async def websocket_endpoint(
                             conversation_id=conversation_id,
                             use_knowledge_base=bool(knowledge_documents),
                             max_context_chunks=len(knowledge_documents),
-                            model=str(conversation.assistant_id) if conversation.assistant_id else None,
+                            model=str(conversation.assistant_id)
+                            if conversation.assistant_id
+                            else None,
                         )
 
                         if ai_response and ai_response.get("choices"):
-                            response_content = ai_response["choices"][0]["message"]["content"]
-                            
+                            response_content = ai_response["choices"][0]["message"][
+                                "content"
+                            ]
+
                             # Extract metadata from response
                             metadata = {}
                             if "usage" in ai_response:
-                                metadata["tokens_used"] = ai_response["usage"].get("total_tokens", 0)
-                            
+                                metadata["tokens_used"] = ai_response["usage"].get(
+                                    "total_tokens", 0,
+                                )
+
                             # Add knowledge base metadata
                             if knowledge_documents:
                                 metadata["contextChunks"] = len(knowledge_documents)
@@ -368,7 +398,9 @@ async def websocket_endpoint(
                                 content=response_content,
                                 role="assistant",
                             )
-                            ai_message_dict = conversation_service.add_message(ai_message_data)
+                            ai_message_dict = conversation_service.add_message(
+                                ai_message_data,
+                            )
 
                             # Broadcast AI response with knowledge context
                             ai_broadcast = json.dumps(
@@ -381,7 +413,9 @@ async def websocket_endpoint(
                                         "content": response_content,
                                         "role": "assistant",
                                         "timestamp": ai_message.timestamp.isoformat(),
-                                        "messageType": "knowledge" if knowledge_documents else "text",
+                                        "messageType": "knowledge"
+                                        if knowledge_documents
+                                        else "text",
                                         "documents": knowledge_documents,
                                         "metadata": metadata,
                                     },
@@ -389,7 +423,8 @@ async def websocket_endpoint(
                             )
 
                             await manager.broadcast_to_conversation(
-                                ai_broadcast, conversation_id,
+                                ai_broadcast,
+                                conversation_id,
                             )
 
                     except Exception as e:
@@ -405,31 +440,39 @@ async def websocket_endpoint(
                             },
                         )
                         await manager.send_personal_message(
-                            error_message, str(user.id), conversation_id,
+                            error_message,
+                            str(user.id),
+                            conversation_id,
                         )
 
                 elif message_type == "knowledge_search":
                     # Handle knowledge base search request
                     try:
-                        search_query = message_data.get("data", {}).get("searchQuery", "")
-                        filters = message_data.get("data", {}).get("knowledgeContext", {}).get("filters", {})
-                        
+                        search_query = message_data.get("data", {}).get(
+                            "searchQuery", "",
+                        )
+                        filters = (
+                            message_data.get("data", {})
+                            .get("knowledgeContext", {})
+                            .get("filters", {})
+                        )
+
                         if search_query.strip():
                             # Perform knowledge search
                             search_results = await knowledge_service.search_documents(
                                 query=search_query,
                                 user_id=str(user.id),
                                 limit=10,
-                                filters=filters
+                                filters=filters,
                             )
-                            
+
                             documents = search_results.get("documents", [])
-                            
+
                             # Send search results to client
                             await manager.send_knowledge_update(
-                                str(user.id), conversation_id, documents, search_query
+                                str(user.id), conversation_id, documents, search_query,
                             )
-                            
+
                     except Exception as e:
                         logger.error(f"Knowledge search error: {e}")
                         error_message = json.dumps(
@@ -442,14 +485,18 @@ async def websocket_endpoint(
                             },
                         )
                         await manager.send_personal_message(
-                            error_message, str(user.id), conversation_id,
+                            error_message,
+                            str(user.id),
+                            conversation_id,
                         )
 
                 elif message_type == "typing":
                     # Handle typing indicator
                     is_typing = message_data.get("data", {}).get("is_typing", False)
                     await manager.send_typing_indicator(
-                        conversation_id, str(user.id), is_typing,
+                        conversation_id,
+                        str(user.id),
+                        is_typing,
                     )
 
                 elif message_type == "ping":
@@ -461,7 +508,9 @@ async def websocket_endpoint(
                         },
                     )
                     await manager.send_personal_message(
-                        pong_message, str(user.id), conversation_id,
+                        pong_message,
+                        str(user.id),
+                        conversation_id,
                     )
 
         except WebSocketDisconnect:
@@ -481,7 +530,9 @@ async def websocket_endpoint(
             )
             with contextlib.suppress(Exception):
                 await manager.send_personal_message(
-                    error_message, str(user.id), conversation_id,
+                    error_message,
+                    str(user.id),
+                    conversation_id,
                 )
             manager.disconnect(str(user.id), conversation_id)
 

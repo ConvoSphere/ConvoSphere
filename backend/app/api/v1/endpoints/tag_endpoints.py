@@ -1,15 +1,17 @@
 """
 Tag-related API endpoints (get tags, search tags).
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.schemas.knowledge import TagList, TagResponse
+from app.schemas.knowledge import TagList
 from app.services.knowledge_service import KnowledgeService
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter()
+
 
 # Get tags
 @router.get("/tags", response_model=TagList)
@@ -21,6 +23,7 @@ async def get_tags(
     """Get all tags."""
     service = KnowledgeService(db)
     return await service.get_tags(current_user, limit)
+
 
 # Search tags
 @router.get("/tags/search", response_model=TagList)

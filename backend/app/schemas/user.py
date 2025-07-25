@@ -16,13 +16,17 @@ class UserGroupBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=200, description="Group name")
     description: str | None = Field(
-        None, max_length=1000, description="Group description",
+        None,
+        max_length=1000,
+        description="Group description",
     )
     organization_id: UUID | None = Field(
-        None, description="Organization ID for multi-tenant support",
+        None,
+        description="Organization ID for multi-tenant support",
     )
     permissions: list[str] | None = Field(
-        None, description="Custom permissions for the group",
+        None,
+        description="Custom permissions for the group",
     )
     settings: dict[str, Any] | None = Field(None, description="Group-specific settings")
 
@@ -73,10 +77,13 @@ class UserBase(BaseModel):
 
     # Authentication
     auth_provider: AuthProvider = Field(
-        AuthProvider.LOCAL, description="Authentication provider",
+        AuthProvider.LOCAL,
+        description="Authentication provider",
     )
     external_id: str | None = Field(
-        None, max_length=255, description="External provider ID",
+        None,
+        max_length=255,
+        description="External provider ID",
     )
 
     # Status and role
@@ -93,7 +100,9 @@ class UserCreate(UserBase):
     """Schema for creating a user."""
 
     password: str | None = Field(
-        None, min_length=8, description="Password (required for local auth)",
+        None,
+        min_length=8,
+        description="Password (required for local auth)",
     )
     sso_attributes: dict[str, Any] | None = Field(None, description="SSO attributes")
     group_ids: list[UUID] | None = Field(None, description="Group IDs to assign")
@@ -207,7 +216,9 @@ class UserGroupAssignment(BaseModel):
     user_ids: list[UUID] = Field(..., description="User IDs to assign")
     group_ids: list[UUID] = Field(..., description="Group IDs to assign users to")
     operation: str = Field(
-        "add", pattern="^(add|remove)$", description="Operation: add or remove",
+        "add",
+        pattern="^(add|remove)$",
+        description="Operation: add or remove",
     )
 
 

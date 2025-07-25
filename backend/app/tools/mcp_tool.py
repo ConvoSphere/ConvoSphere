@@ -188,7 +188,9 @@ class MCPClient:
             logger.error(f"Error loading resources from MCP server: {e}")
 
     async def call_tool(
-        self, tool_name: str, arguments: dict[str, Any],
+        self,
+        tool_name: str,
+        arguments: dict[str, Any],
     ) -> dict[str, Any]:
         """
         Call a tool on the MCP server.
@@ -339,7 +341,8 @@ class MCPToolWrapper(BaseTool):
             )
 
     def _convert_schema_to_parameters(
-        self, schema: dict[str, Any],
+        self,
+        schema: dict[str, Any],
     ) -> list[ToolParameter]:
         """
         Convert MCP JSON schema to tool parameters.
@@ -417,7 +420,10 @@ class MCPServerManager:
         self.tools: dict[str, MCPToolWrapper] = {}
 
     async def add_server(
-        self, server_id: str, server_url: str, server_name: str = None,
+        self,
+        server_id: str,
+        server_url: str,
+        server_name: str = None,
     ) -> bool:
         """
         Add and connect to MCP server.

@@ -34,16 +34,19 @@ async def chat_error_handler(request: Request, exc: ChatError) -> JSONResponse:
 
 
 async def validation_error_handler(
-    request: Request, exc: PydanticValidationError,
+    request: Request,
+    exc: PydanticValidationError,
 ) -> JSONResponse:
     """Handle Pydantic validation errors."""
     errors = []
     for error in exc.errors():
-        errors.append({
-            "field": " -> ".join(str(loc) for loc in error["loc"]),
-            "message": error["msg"],
-            "type": error["type"],
-        })
+        errors.append(
+            {
+                "field": " -> ".join(str(loc) for loc in error["loc"]),
+                "message": error["msg"],
+                "type": error["type"],
+            },
+        )
 
     logger.warning(
         f"ValidationError: {len(errors)} validation errors",
@@ -67,7 +70,8 @@ async def validation_error_handler(
 
 
 async def general_exception_handler(
-    request: Request, exc: Exception,
+    request: Request,
+    exc: Exception,
 ) -> JSONResponse:
     """Handle general exceptions."""
     logger.exception(

@@ -23,7 +23,7 @@ def test_password_hashing():
     assert verify_password("wrong_password", hashed) is False  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_jwt_token_creation():
     """Test JWT token creation and verification."""
     user_id = "test_user_123"
@@ -43,7 +43,7 @@ async def test_jwt_token_creation():
     assert decoded_refresh_user_id == user_id  # noqa: S101
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_jwt_token_verification_invalid():
     """Test JWT token verification with invalid token."""
     invalid_token = "invalid.jwt.token"  # nosec # noqa: S105

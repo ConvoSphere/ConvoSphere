@@ -2,9 +2,7 @@
 
 from typing import Any
 
-from sqlalchemy import and_, desc
-from sqlalchemy.orm import Session
-
+from app.core.database import get_db
 from app.core.exceptions import (
     ConversationError,
     DatabaseError,
@@ -16,7 +14,7 @@ from app.schemas.conversation import (
     ConversationCreate,
     MessageCreate,
 )
-from app.core.database import get_db
+from sqlalchemy import and_, desc
 
 
 class ConversationService:

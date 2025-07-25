@@ -11,23 +11,26 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
-from loguru import logger
-from pydantic import BaseModel, Field
-
 from app.core.exceptions import ToolError
 from app.services.tool_service import tool_service
 from app.tools.mcp_tool import mcp_manager
+from loguru import logger
+from pydantic import BaseModel, Field
 
 
 class ToolExecutionRequest(BaseModel):
     """Request for tool execution with validation."""
 
     tool_name: str = Field(..., min_length=1, max_length=200, description="Tool name")
-    arguments: dict[str, Any] = Field(default_factory=dict, description="Tool arguments")
+    arguments: dict[str, Any] = Field(
+        default_factory=dict, description="Tool arguments",
+    )
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
     priority: int = Field(default=1, ge=1, le=10, description="Execution priority")
-    timeout: float = Field(default=30.0, ge=1.0, le=300.0, description="Timeout in seconds")
+    timeout: float = Field(
+        default=30.0, ge=1.0, le=300.0, description="Timeout in seconds",
+    )
     cache_result: bool = Field(default=True, description="Whether to cache the result")
     retry_count: int = Field(default=0, ge=0, le=3, description="Retry count")
 
@@ -49,7 +52,9 @@ class ToolExecutionResult(BaseModel):
 
     execution_id: str = Field(..., description="Unique execution ID")
     tool_name: str = Field(..., description="Tool name")
-    arguments: dict[str, Any] = Field(default_factory=dict, description="Input arguments")
+    arguments: dict[str, Any] = Field(
+        default_factory=dict, description="Input arguments",
+    )
     result: Any = Field(None, description="Execution result")
     error: str | None = Field(None, description="Error message")
     status: str = Field(
@@ -59,12 +64,16 @@ class ToolExecutionResult(BaseModel):
     )
     start_time: datetime | None = Field(None, description="Start time")
     end_time: datetime | None = Field(None, description="End time")
-    execution_time: float | None = Field(None, ge=0, description="Execution time in seconds")
+    execution_time: float | None = Field(
+        None, ge=0, description="Execution time in seconds",
+    )
     tokens_used: int | None = Field(None, ge=0, description="Tokens used")
     cache_hit: bool = Field(default=False, description="Whether result was from cache")
     user_id: str = Field(..., description="User ID")
     conversation_id: str = Field(..., description="Conversation ID")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata",
+    )
 
     model_config = {
         "validate_assignment": True,
@@ -98,7 +107,9 @@ class ToolCache:
         cached_time = cached_data.get("cached_at")
 
         # Check if cache is expired
-        if cached_time and datetime.now() - cached_time > timedelta(hours=self.ttl_hours):
+        if cached_time and datetime.now() - cached_time > timedelta(
+            hours=self.ttl_hours,
+        ):
             del self.cache[cache_key]
             del self.access_times[cache_key]
             return None
@@ -200,7 +211,9 @@ class ToolDependencyManager:
             deps = self.dependencies.get(tool, [])
             for dep in deps:
                 if dep not in tools:
-                    logger.warning(f"Tool {tool} depends on {dep} which is not available")
+                    logger.warning(
+                        f"Tool {tool} depends on {dep} which is not available",
+                    )
                     return False
         return True
 
@@ -225,7 +238,9 @@ class EnhancedToolExecutor:
         self.dependency_manager.add_dependency("web_search", [])
         self.dependency_manager.add_dependency("file_reader", [])
         self.dependency_manager.add_dependency("data_analyzer", ["file_reader"])
-        self.dependency_manager.add_dependency("report_generator", ["data_analyzer", "web_search"])
+        self.dependency_manager.add_dependency(
+            "report_generator", ["data_analyzer", "web_search"],
+        )
 
     async def execute_tool(
         self,
@@ -278,10 +293,14 @@ class EnhancedToolExecutor:
             result.error = str(e)
             result.end_time = datetime.now()
             if result.start_time:
-                result.execution_time = (result.end_time - result.start_time).total_seconds()
+                result.execution_time = (
+                    result.end_time - result.start_time
+                ).total_seconds()
 
             logger.error(f"Tool execution failed: {e}")
-            raise ToolError(f"Tool execution failed: {str(e)}", request.tool_name, request.arguments)
+            raise ToolError(
+                f"Tool execution failed: {str(e)}", request.tool_name, request.arguments,
+            )
 
         finally:
             # Store execution history
@@ -311,25 +330,33 @@ class EnhancedToolExecutor:
                 result.result = tool_result
                 result.status = "completed"
                 result.end_time = datetime.now()
-                result.execution_time = (result.end_time - result.start_time).total_seconds()
+                result.execution_time = (
+                    result.end_time - result.start_time
+                ).total_seconds()
 
                 # Cache result if requested
                 if request.cache_result:
                     self.cache.set(request.tool_name, request.arguments, tool_result)
 
-                logger.info(f"Tool {request.tool_name} executed successfully in {result.execution_time:.2f}s")
+                logger.info(
+                    f"Tool {request.tool_name} executed successfully in {result.execution_time:.2f}s",
+                )
                 return result
 
             except TimeoutError:
                 last_error = f"Tool execution timed out after {request.timeout}s"
-                logger.warning(f"Tool {request.tool_name} timed out on attempt {attempt + 1}")
+                logger.warning(
+                    f"Tool {request.tool_name} timed out on attempt {attempt + 1}",
+                )
 
             except Exception as e:
                 last_error = str(e)
-                logger.warning(f"Tool {request.tool_name} failed on attempt {attempt + 1}: {e}")
+                logger.warning(
+                    f"Tool {request.tool_name} failed on attempt {attempt + 1}: {e}",
+                )
 
                 if attempt < request.retry_count:
-                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    await asyncio.sleep(2**attempt)  # Exponential backoff
 
         # All attempts failed
         result.status = "failed"
@@ -337,7 +364,9 @@ class EnhancedToolExecutor:
         result.end_time = datetime.now()
         result.execution_time = (result.end_time - result.start_time).total_seconds()
 
-        raise ToolError(f"Tool execution failed after {request.retry_count + 1} attempts: {last_error}")
+        raise ToolError(
+            f"Tool execution failed after {request.retry_count + 1} attempts: {last_error}",
+        )
 
     async def _execute_single_tool(self, request: ToolExecutionRequest) -> Any:
         """Execute a single tool (regular or MCP)."""
@@ -346,7 +375,9 @@ class EnhancedToolExecutor:
 
         # Try regular tool first
         try:
-            return await tool_service.execute_tool(tool_name, request.user_id, **arguments)
+            return await tool_service.execute_tool(
+                tool_name, request.user_id, **arguments,
+            )
         except Exception as e:
             logger.debug(f"Regular tool {tool_name} failed: {e}")
 
@@ -415,36 +446,50 @@ class EnhancedToolExecutor:
         # Get regular tools
         regular_tools = tool_service.get_all_tools()
         for tool in regular_tools:
-            tools.append({
-                "name": tool.get("name"),
-                "description": tool.get("description", ""),
-                "category": tool.get("category", "general"),
-                "type": "regular",
-                "dependencies": self.dependency_manager.dependencies.get(tool.get("name"), []),
-            })
+            tools.append(
+                {
+                    "name": tool.get("name"),
+                    "description": tool.get("description", ""),
+                    "category": tool.get("category", "general"),
+                    "type": "regular",
+                    "dependencies": self.dependency_manager.dependencies.get(
+                        tool.get("name"), [],
+                    ),
+                },
+            )
 
         # Get MCP tools
         mcp_tools = mcp_manager.get_all_tools()
         for tool in mcp_tools:
-            tools.append({
-                "name": tool.get("name"),
-                "description": tool.get("description", ""),
-                "category": tool.get("category", "mcp"),
-                "type": "mcp",
-                "dependencies": self.dependency_manager.dependencies.get(tool.get("name"), []),
-            })
+            tools.append(
+                {
+                    "name": tool.get("name"),
+                    "description": tool.get("description", ""),
+                    "category": tool.get("category", "mcp"),
+                    "type": "mcp",
+                    "dependencies": self.dependency_manager.dependencies.get(
+                        tool.get("name"), [],
+                    ),
+                },
+            )
 
         return tools
 
     def get_execution_stats(self) -> dict[str, Any]:
         """Get tool execution statistics."""
         total_executions = len(self.execution_history)
-        successful_executions = len([r for r in self.execution_history if r.status == "completed"])
-        failed_executions = len([r for r in self.execution_history if r.status == "failed"])
+        successful_executions = len(
+            [r for r in self.execution_history if r.status == "completed"],
+        )
+        failed_executions = len(
+            [r for r in self.execution_history if r.status == "failed"],
+        )
 
         avg_execution_time = 0.0
         if successful_executions > 0:
-            execution_times = [r.execution_time for r in self.execution_history if r.execution_time]
+            execution_times = [
+                r.execution_time for r in self.execution_history if r.execution_time
+            ]
             if execution_times:
                 avg_execution_time = sum(execution_times) / len(execution_times)
 
@@ -454,7 +499,9 @@ class EnhancedToolExecutor:
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": (successful_executions / total_executions * 100) if total_executions > 0 else 0,
+            "success_rate": (successful_executions / total_executions * 100)
+            if total_executions > 0
+            else 0,
             "average_execution_time": avg_execution_time,
             "cache_stats": cache_stats,
             "active_executions": len(self.active_executions),

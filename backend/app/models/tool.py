@@ -88,15 +88,15 @@ class Tool(Base):
             return True
 
         except ImportError:
-            logger.error(
+            logger.exception(
                 "jsonschema not installed. Install with: pip install jsonschema",
             )
             return False
         except ValidationError as e:
-            logger.error(f"Parameter validation failed: {e}")
+            logger.exception(f"Parameter validation failed: {e}")
             return False
         except Exception as e:
-            logger.error(f"Schema validation error: {e}")
+            logger.exception(f"Schema validation error: {e}")
             return False
 
     def get_parameter_description(self, param_name: str) -> str | None:

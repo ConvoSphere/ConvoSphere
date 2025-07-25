@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from backend.main import app
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_health_check():
     client = TestClient(app)
     response = client.get("/health")

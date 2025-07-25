@@ -9,7 +9,19 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String, Text, Table, Boolean, Index
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -18,6 +30,7 @@ from .base import Base
 
 class DocumentStatus(str, Enum):
     """Document processing status."""
+
     UPLOADED = "uploaded"
     PROCESSING = "processing"
     PROCESSED = "processed"
@@ -27,6 +40,7 @@ class DocumentStatus(str, Enum):
 
 class DocumentType(str, Enum):
     """Document types for categorization."""
+
     PDF = "pdf"
     DOCUMENT = "document"  # Word, OpenOffice
     TEXT = "text"  # txt, md
@@ -43,32 +57,38 @@ class DocumentType(str, Enum):
 document_tag_association = Table(
     "document_tag_association",
     Base.metadata,
-    Column("document_id", UUID(as_uuid=True), ForeignKey("documents.id"), primary_key=True),
+    Column(
+        "document_id", UUID(as_uuid=True), ForeignKey("documents.id"), primary_key=True,
+    ),
     Column("tag_id", UUID(as_uuid=True), ForeignKey("tags.id"), primary_key=True),
 )
 
 
 class Tag(Base):
     """Tag model for document categorization."""
-    
+
     __tablename__ = "tags"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
     color = Column(String(7), nullable=True)  # Hex color code
-    is_system = Column(Boolean, default=False, nullable=False)  # System tags cannot be deleted
-    
+    is_system = Column(
+        Boolean, default=False, nullable=False,
+    )  # System tags cannot be deleted
+
     # Usage statistics
     usage_count = Column(Integer, default=0, nullable=False)
-    
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
-    documents = relationship("Document", secondary=document_tag_association, back_populates="tags")
-    
+    documents = relationship(
+        "Document", secondary=document_tag_association, back_populates="tags",
+    )
+
     def __repr__(self):
         return f"<Tag(id={self.id}, name='{self.name}')>"
 
@@ -98,19 +118,21 @@ class Document(Base):
     year = Column(Integer, nullable=True, index=True)
     version = Column(String(50), nullable=True)
     keywords = Column(JSON, default=list)  # List of keywords
-    
+
     # Document type categorization
-    document_type = Column(String(50), nullable=True, index=True)  # From DocumentType enum
-    
+    document_type = Column(
+        String(50), nullable=True, index=True,
+    )  # From DocumentType enum
+
     # Processing metadata
     processing_engine = Column(String(100), nullable=True)  # traditional, docling, etc.
     processing_options = Column(JSON, default=dict)
-    
+
     # Content statistics
     page_count = Column(Integer, nullable=True)
     word_count = Column(Integer, nullable=True)
     character_count = Column(Integer, nullable=True)
-    
+
     # Legacy fields (for backward compatibility)
     tags = Column(JSON, default=list)  # List of tags (deprecated, use Tag model)
     knowledge_metadata = Column(JSON, default=dict)  # Additional metadata
@@ -123,17 +145,18 @@ class Document(Base):
 
     # Relationships
     user = relationship("User", back_populates="documents")
-    tags = relationship("Tag", secondary=document_tag_association, back_populates="documents")
     chunks = relationship(
-        "DocumentChunk", back_populates="document", cascade="all, delete-orphan",
+        "DocumentChunk",
+        back_populates="document",
+        cascade="all, delete-orphan",
     )
 
     # Indexes for better query performance
     __table_args__ = (
-        Index('idx_documents_user_status', 'user_id', 'status'),
-        Index('idx_documents_type_year', 'document_type', 'year'),
-        Index('idx_documents_author_year', 'author', 'year'),
-        Index('idx_documents_language', 'language'),
+        Index("idx_documents_user_status", "user_id", "status"),
+        Index("idx_documents_type_year", "document_type", "year"),
+        Index("idx_documents_author_year", "author", "year"),
+        Index("idx_documents_language", "language"),
     )
 
     def __repr__(self):
@@ -148,35 +171,35 @@ class Document(Base):
     def total_tokens(self) -> int:
         """Get the total number of tokens across all chunks."""
         return sum(chunk.token_count for chunk in self.chunks)
-    
+
     @property
     def tag_names(self) -> list[str]:
         """Get list of tag names."""
         return [tag.name for tag in self.tags]
-    
+
     def add_tag(self, tag_name: str, db_session) -> bool:
         """Add a tag to the document."""
         try:
             # Normalize tag name
             tag_name = tag_name.lower().strip()
-            
+
             # Find or create tag
             tag = db_session.query(Tag).filter(Tag.name == tag_name).first()
             if not tag:
                 tag = Tag(name=tag_name)
                 db_session.add(tag)
                 db_session.flush()  # Get the ID
-            
+
             if tag not in self.tags:
                 self.tags.append(tag)
                 tag.usage_count += 1
                 db_session.commit()
                 return True
             return False
-        except Exception as e:
+        except Exception:
             db_session.rollback()
-            raise e
-    
+            raise
+
     def remove_tag(self, tag_name: str, db_session) -> bool:
         """Remove a tag from the document."""
         try:
@@ -188,9 +211,9 @@ class Document(Base):
                 db_session.commit()
                 return True
             return False
-        except Exception as e:
+        except Exception:
             db_session.rollback()
-            raise e
+            raise
 
 
 class DocumentChunk(Base):
@@ -221,7 +244,7 @@ class DocumentChunk(Base):
     section_title = Column(String(255), nullable=True)
     table_id = Column(String(100), nullable=True)
     figure_id = Column(String(100), nullable=True)
-    
+
     # Legacy field
     chunk_metadata = Column(JSON, default=dict)  # Additional chunk metadata
 
@@ -234,9 +257,9 @@ class DocumentChunk(Base):
 
     # Indexes for better query performance
     __table_args__ = (
-        Index('idx_chunks_document_index', 'document_id', 'chunk_index'),
-        Index('idx_chunks_type', 'chunk_type'),
-        Index('idx_chunks_page', 'page_number'),
+        Index("idx_chunks_document_index", "document_id", "chunk_index"),
+        Index("idx_chunks_type", "chunk_type"),
+        Index("idx_chunks_page", "page_number"),
     )
 
     def __repr__(self):
@@ -277,40 +300,44 @@ class SearchQuery(Base):
 
 class DocumentProcessingJob(Base):
     """Model for tracking document processing jobs."""
-    
+
     __tablename__ = "document_processing_jobs"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    
+
     # Job information
     job_type = Column(String(50), nullable=False)  # process, reprocess, bulk_import
-    status = Column(String(50), default="pending", nullable=False)  # pending, running, completed, failed
-    priority = Column(Integer, default=0, nullable=False)  # Higher number = higher priority
-    
+    status = Column(
+        String(50), default="pending", nullable=False,
+    )  # pending, running, completed, failed
+    priority = Column(
+        Integer, default=0, nullable=False,
+    )  # Higher number = higher priority
+
     # Processing details
     processing_engine = Column(String(100), nullable=True)
     processing_options = Column(JSON, default=dict)
-    
+
     # Progress tracking
     progress = Column(Float, default=0.0, nullable=False)  # 0.0 to 1.0
     current_step = Column(String(100), nullable=True)
     total_steps = Column(Integer, nullable=True)
-    
+
     # Error handling
     error_message = Column(Text, nullable=True)
     retry_count = Column(Integer, default=0, nullable=False)
     max_retries = Column(Integer, default=3, nullable=False)
-    
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    
+
     # Relationships
     document = relationship("Document")
     user = relationship("User")
-    
+
     def __repr__(self):
         return f"<DocumentProcessingJob(id={self.id}, document_id={self.document_id}, status='{self.status}')>"

@@ -5,7 +5,7 @@ This module provides comprehensive schemas for conversation and message manageme
 with full Pydantic v2 validation and type safety.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -95,9 +95,9 @@ class MessageBase(BaseModel):
 
 class MessageCreate(MessageBase):
     """Message creation schema with relaxed validation."""
-    
+
     conversation_id: UUID = Field(..., description="Conversation ID")
-    
+
     model_config = ConfigDict(
         from_attributes=True,
         validate_assignment=True,
@@ -343,7 +343,7 @@ class ConversationSearchParams(BaseModel):
         if v is not None:
             # Make timezone-aware if it's naive
             if v.tzinfo is None:
-                v = v.replace(tzinfo=timezone.utc)
+                v = v.replace(tzinfo=UTC)
             # Compare with current time in the same timezone
             now = datetime.now(v.tzinfo)
             if v > now:

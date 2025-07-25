@@ -26,12 +26,12 @@ from app.services.rag_service import RAGService
 class TestRAGService:
     """Test cases for RAG service."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def rag_service(self):
         """Create RAG service instance for testing."""
         return RAGService()
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_config(self):
         """Create sample RAG configuration."""
         return RAGConfig(
@@ -45,7 +45,7 @@ class TestRAGService:
             ranking_method=ContextRankingMethod.RELEVANCE,
         )
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_request(self):
         """Create sample RAG request."""
         return RAGRequest(
@@ -56,34 +56,43 @@ class TestRAGService:
             similarity_threshold=0.7,
         )
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_initialize_success(self, rag_service):
         """Test successful service initialization."""
-        with patch.object(rag_service.weaviate_service, "health", return_value=True), \
-             patch.object(rag_service, "_cache_enabled", new=True):
+        with (
+            patch.object(rag_service.weaviate_service, "health", return_value=True),
+            patch.object(rag_service, "_cache_enabled", new=True),
+        ):
             await rag_service.initialize()
             assert rag_service._initialized is True  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_initialize_weaviate_unavailable(self, rag_service):
         """Test initialization when Weaviate is unavailable."""
         with patch.object(rag_service.weaviate_service, "health", return_value=False):
             await rag_service.initialize()
             # Should not raise exception, just log warning
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_initialize_cache_failure(self, rag_service):
         """Test initialization when cache fails."""
-        with patch.object(rag_service.weaviate_service, "health", return_value=True), \
-             patch("app.services.rag_service.cache_service.initialize", side_effect=Exception("Cache error")):
+        with (
+            patch.object(rag_service.weaviate_service, "health", return_value=True),
+            patch(
+                "app.services.rag_service.cache_service.initialize",
+                side_effect=Exception("Cache error"),
+            ),
+        ):
             await rag_service.initialize()
             assert rag_service._cache_enabled is False  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_retrieve_success(self, rag_service, sample_request, sample_config):
         """Test successful RAG retrieval."""
-        with patch.object(rag_service, "_perform_retrieval", return_value=[]), \
-             patch.object(rag_service, "_process_results", return_value=[]):
+        with (
+            patch.object(rag_service, "_perform_retrieval", return_value=[]),
+            patch.object(rag_service, "_process_results", return_value=[]),
+        ):
             response = await rag_service.retrieve(sample_request, sample_config)
 
             assert isinstance(response, RAGResponse)  # noqa: S101
@@ -93,8 +102,10 @@ class TestRAGService:
             assert response.retrieval_time >= 0  # noqa: S101
             assert response.processing_time >= 0  # noqa: S101
 
-    @pytest.mark.asyncio()
-    async def test_retrieve_with_cache_hit(self, rag_service, sample_request, sample_config):
+    @pytest.mark.asyncio
+    async def test_retrieve_with_cache_hit(
+        self, rag_service, sample_request, sample_config,
+    ):
         """Test RAG retrieval with cache hit."""
         cached_response = RAGResponse(
             query=sample_request.query,
@@ -109,13 +120,15 @@ class TestRAGService:
             cache_hit=True,
         )
 
-        with patch.object(rag_service, "_get_cached_result", return_value=cached_response):
+        with patch.object(
+            rag_service, "_get_cached_result", return_value=cached_response,
+        ):
             response = await rag_service.retrieve(sample_request, sample_config)
 
             assert response.cached is True  # noqa: S101
             assert response.cache_hit is True  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_retrieve_validation_error(self, rag_service, sample_config):
         """Test RAG retrieval with validation error."""
         invalid_request = RAGRequest(query="", conversation_id="test")
@@ -123,85 +136,143 @@ class TestRAGService:
         with pytest.raises(ValidationError):
             await rag_service.retrieve(invalid_request, sample_config)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_retrieve_ai_error(self, rag_service, sample_request, sample_config):
         """Test RAG retrieval with AI error."""
-        with patch.object(rag_service, "_perform_retrieval", side_effect=AIError("AI service error")), \
-             pytest.raises(AIError):
+        with (
+            patch.object(
+                rag_service,
+                "_perform_retrieval",
+                side_effect=AIError("AI service error"),
+            ),
+            pytest.raises(AIError),
+        ):
             await rag_service.retrieve(sample_request, sample_config)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_semantic_retrieval(self, rag_service, sample_request, sample_config):
         """Test semantic retrieval strategy."""
         mock_knowledge_results = [
             {"content": "test content", "id": "1", "score": 0.8},
         ]
 
-        with patch.object(rag_service.weaviate_service, "semantic_search_knowledge", return_value=mock_knowledge_results), \
-             patch.object(rag_service.weaviate_service, "semantic_search_messages", return_value=[]):
-            results = await rag_service._semantic_retrieval(sample_request, sample_config, [])
+        with (
+            patch.object(
+                rag_service.weaviate_service,
+                "semantic_search_knowledge",
+                return_value=mock_knowledge_results,
+            ),
+            patch.object(
+                rag_service.weaviate_service,
+                "semantic_search_messages",
+                return_value=[],
+            ),
+        ):
+            results = await rag_service._semantic_retrieval(
+                sample_request, sample_config, [],
+            )
 
             assert len(results) == 1  # noqa: S101
             assert results[0]["content"] == "test content"  # noqa: S101
             assert results[0]["source"] == "knowledge_base"  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_hybrid_retrieval(self, rag_service, sample_request, sample_config):
         """Test hybrid retrieval strategy."""
-        with patch.object(rag_service, "_semantic_retrieval", return_value=[{"content": "semantic"}]), \
-             patch.object(rag_service, "_keyword_retrieval", return_value=[{"content": "keyword"}]):
-            results = await rag_service._hybrid_retrieval(sample_request, sample_config, [])
+        with (
+            patch.object(
+                rag_service,
+                "_semantic_retrieval",
+                return_value=[{"content": "semantic"}],
+            ),
+            patch.object(
+                rag_service, "_keyword_retrieval", return_value=[{"content": "keyword"}],
+            ),
+        ):
+            results = await rag_service._hybrid_retrieval(
+                sample_request, sample_config, [],
+            )
 
             assert len(results) == 2  # noqa: S101
             assert any(r["content"] == "semantic" for r in results)  # noqa: S101
             assert any(r["content"] == "keyword" for r in results)  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_keyword_retrieval(self, rag_service, sample_request, sample_config):
         """Test keyword retrieval strategy."""
         mock_results = [{"content": "keyword result", "id": "1", "score": 0.6}]
 
-        with patch.object(rag_service.weaviate_service, "semantic_search_knowledge", return_value=mock_results):
-            results = await rag_service._keyword_retrieval(sample_request, sample_config, [])
+        with patch.object(
+            rag_service.weaviate_service,
+            "semantic_search_knowledge",
+            return_value=mock_results,
+        ):
+            results = await rag_service._keyword_retrieval(
+                sample_request, sample_config, [],
+            )
 
             assert len(results) > 0  # noqa: S101
             assert all(r["source"] == "knowledge_base" for r in results)  # noqa: S101
 
-    @pytest.mark.asyncio()
-    async def test_contextual_retrieval(self, rag_service, sample_request, sample_config):
+    @pytest.mark.asyncio
+    async def test_contextual_retrieval(
+        self, rag_service, sample_request, sample_config,
+    ):
         """Test contextual retrieval strategy."""
         conversation_history = [{"content": "previous message"}]
         mock_results = [{"content": "contextual result", "id": "1", "score": 0.7}]
 
-        with patch.object(rag_service.weaviate_service, "semantic_search_knowledge", return_value=mock_results):
-            results = await rag_service._contextual_retrieval(sample_request, sample_config, conversation_history)
+        with patch.object(
+            rag_service.weaviate_service,
+            "semantic_search_knowledge",
+            return_value=mock_results,
+        ):
+            results = await rag_service._contextual_retrieval(
+                sample_request, sample_config, conversation_history,
+            )
 
             assert len(results) == 1  # noqa: S101
             assert results[0]["content"] == "contextual result"  # noqa: S101
 
-    @pytest.mark.asyncio()
-    async def test_adaptive_retrieval_technical(self, rag_service, sample_request, sample_config):
+    @pytest.mark.asyncio
+    async def test_adaptive_retrieval_technical(
+        self, rag_service, sample_request, sample_config,
+    ):
         """Test adaptive retrieval for technical queries."""
         sample_request.query = "API function method class"
 
-        with patch.object(rag_service, "_semantic_retrieval", return_value=[{"content": "technical result"}]):
-            results = await rag_service._adaptive_retrieval(sample_request, sample_config, [])
+        with patch.object(
+            rag_service,
+            "_semantic_retrieval",
+            return_value=[{"content": "technical result"}],
+        ):
+            results = await rag_service._adaptive_retrieval(
+                sample_request, sample_config, [],
+            )
 
             assert len(results) == 1  # noqa: S101
             assert results[0]["content"] == "technical result"  # noqa: S101
 
-    @pytest.mark.asyncio()
-    async def test_adaptive_retrieval_conversational(self, rag_service, sample_request, sample_config):
+    @pytest.mark.asyncio
+    async def test_adaptive_retrieval_conversational(
+        self, rag_service, sample_request, sample_config,
+    ):
         """Test adaptive retrieval for conversational queries."""
         sample_request.query = "how can you help me please"
 
-        with patch.object(rag_service, "_contextual_retrieval", return_value=[{"content": "conversational result"}]):
-            results = await rag_service._adaptive_retrieval(sample_request, sample_config, [])
+        with patch.object(
+            rag_service,
+            "_contextual_retrieval",
+            return_value=[{"content": "conversational result"}],
+        ):
+            results = await rag_service._adaptive_retrieval(
+                sample_request, sample_config, [],
+            )
 
             assert len(results) == 1  # noqa: S101
             assert results[0]["content"] == "conversational result"  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_process_results(self, rag_service, sample_request, sample_config):
         """Test result processing and ranking."""
         raw_results = [
@@ -227,13 +298,15 @@ class TestRAGService:
             },
         ]
 
-        results = await rag_service._process_results(raw_results, sample_request, sample_config)
+        results = await rag_service._process_results(
+            raw_results, sample_request, sample_config,
+        )
 
         assert len(results) == 2  # noqa: S101
         assert all(isinstance(r, RAGResult) for r in results)  # noqa: S101
         assert results[0].ranking_score >= results[1].ranking_score  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_rank_results(self, rag_service, sample_config):
         """Test result ranking."""
         results = [
@@ -286,7 +359,9 @@ class TestRAGService:
 
     def test_calculate_authority_score(self, rag_service):
         """Test authority score calculation."""
-        official_score = rag_service._calculate_authority_score("official_documentation")
+        official_score = rag_service._calculate_authority_score(
+            "official_documentation",
+        )
         unknown_score = rag_service._calculate_authority_score("unknown_source")
 
         assert official_score > unknown_score  # noqa: S101
@@ -345,7 +420,7 @@ class TestRAGService:
         assert any(r["content"] == "unique content 1" for r in combined)  # noqa: S101
         assert any(r["content"] == "unique content 2" for r in combined)  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_create_config(self, rag_service, sample_config):
         """Test configuration creation."""
         config_id = await rag_service.create_config(sample_config)
@@ -356,7 +431,7 @@ class TestRAGService:
         configs = await rag_service.list_configs()
         assert any(cid == config_id for cid, _ in configs)  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_update_config(self, rag_service, sample_config):
         """Test configuration update."""
         config_id = await rag_service.create_config(sample_config)
@@ -375,7 +450,7 @@ class TestRAGService:
         success = await rag_service.update_config(config_id, updated_config)
         assert success is True  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_delete_config(self, rag_service, sample_config):
         """Test configuration deletion."""
         config_id = await rag_service.create_config(sample_config)
@@ -386,7 +461,7 @@ class TestRAGService:
         configs = await rag_service.list_configs()
         assert not any(cid == config_id for cid, _ in configs)  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_get_metrics(self, rag_service):
         """Test metrics retrieval."""
         metrics = await rag_service.get_metrics()
@@ -422,20 +497,24 @@ class TestRAGService:
         assert isinstance(cache_key, str)  # noqa: S101
         assert len(cache_key) == 32  # noqa: S101
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_cache_operations(self, rag_service):
         """Test cache operations."""
         cache_key = "test_key"
         test_data = {"test": "data"}
 
         # Test cache set
-        with patch.object(rag_service, "_cache_enabled", new=True), \
-             patch("app.services.rag_service.cache_service.set", return_value=True):
+        with (
+            patch.object(rag_service, "_cache_enabled", new=True),
+            patch("app.services.rag_service.cache_service.set", return_value=True),
+        ):
             await rag_service._cache_result(cache_key, test_data)
 
         # Test cache get
-        with patch.object(rag_service, "_cache_enabled", new=True), \
-             patch("app.services.rag_service.cache_service.get", return_value=test_data):
+        with (
+            patch.object(rag_service, "_cache_enabled", new=True),
+            patch("app.services.rag_service.cache_service.get", return_value=test_data),
+        ):
             result = await rag_service._get_cached_result(cache_key)
             assert result == test_data  # noqa: S101
 

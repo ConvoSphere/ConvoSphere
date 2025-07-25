@@ -8,19 +8,18 @@ and security utilities for the AI Assistant Platform.
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from app.core.config import get_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
 
-from app.core.config import get_settings
-
 # Password hashing context with optimized bcrypt settings
 pwd_context = CryptContext(
-    schemes=["bcrypt"], 
+    schemes=["bcrypt"],
     deprecated="auto",
-    bcrypt__rounds=12  # Increased rounds for better security
+    bcrypt__rounds=12,  # Increased rounds for better security
 )
 
 security = HTTPBearer()
@@ -129,6 +128,7 @@ async def verify_token(token: str) -> str | None:
         # Check if token is blacklisted (only if Redis is available)
         try:
             from app.core.redis_client import is_token_blacklisted
+
             is_blacklisted = await is_token_blacklisted(token)
             if is_blacklisted:
                 logger.warning("JWT token is blacklisted")
@@ -137,7 +137,6 @@ async def verify_token(token: str) -> str | None:
             # If Redis is not available, skip blacklist check but continue with token verification
             logger.debug(f"Redis not available for token blacklist check: {e}")
             # Continue without blacklist check - this is normal during startup
-            pass
 
         settings = get_settings()
         payload = jwt.decode(

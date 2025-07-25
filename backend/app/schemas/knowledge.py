@@ -6,14 +6,15 @@ and responses, including document management and search functionality.
 """
 
 from datetime import datetime
-from typing import Any, List, Optional
 from enum import Enum
+from typing import Any
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DocumentStatus(str, Enum):
     """Document processing status."""
+
     UPLOADED = "uploaded"
     PROCESSING = "processing"
     PROCESSED = "processed"
@@ -23,6 +24,7 @@ class DocumentStatus(str, Enum):
 
 class DocumentType(str, Enum):
     """Document types for categorization."""
+
     PDF = "pdf"
     DOCUMENT = "document"
     TEXT = "text"
@@ -37,33 +39,33 @@ class DocumentType(str, Enum):
 
 class TagBase(BaseModel):
     """Base tag model."""
-    
+
     name: str = Field(..., min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
-    color: str | None = Field(None, pattern=r'^#[0-9A-Fa-f]{6}$')
+    color: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
 
 
 class TagCreate(TagBase):
     """Tag creation model."""
-    pass
+
 
 
 class TagResponse(TagBase):
     """Tag response model."""
-    
+
     id: str
     usage_count: int
     is_system: bool
     created_at: datetime
     updated_at: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class TagList(BaseModel):
     """Tag list response model."""
-    
-    tags: List[TagResponse]
+
+    tags: list[TagResponse]
     total: int
 
 
@@ -76,7 +78,7 @@ class DocumentBase(BaseModel):
     source: str | None = Field(None, max_length=500)
     language: str | None = Field(None, max_length=10)
     year: int | None = Field(None, ge=1900, le=2100)
-    keywords: List[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
 
 
@@ -90,15 +92,15 @@ class DocumentCreate(DocumentBase):
 
 class DocumentUpdate(BaseModel):
     """Document update model."""
-    
+
     title: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=1000)
     author: str | None = Field(None, max_length=255)
     source: str | None = Field(None, max_length=500)
     language: str | None = Field(None, max_length=10)
     year: int | None = Field(None, ge=1900, le=2100)
-    keywords: List[str] | None = None
-    tags: List[str] | None = None
+    keywords: list[str] | None = None
+    tags: list[str] | None = None
 
 
 class DocumentResponse(DocumentBase):
@@ -120,7 +122,7 @@ class DocumentResponse(DocumentBase):
     updated_at: datetime
     processed_at: datetime | None = None
     error_message: str | None = None
-    tag_names: List[str] = Field(default_factory=list)
+    tag_names: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
@@ -144,18 +146,23 @@ class DocumentChunkResponse(BaseModel):
     chunk_index: int = Field(..., description="Chunk position in document")
     chunk_size: int = Field(..., description="Chunk size in characters")
     token_count: int = Field(..., description="Number of tokens in chunk")
-    chunk_type: str | None = Field(None, description="Type of chunk (text, table, figure, etc.)")
+    chunk_type: str | None = Field(
+        None, description="Type of chunk (text, table, figure, etc.)",
+    )
     page_number: int | None = Field(None, description="Page number")
     section_title: str | None = Field(None, description="Section title")
     table_id: str | None = Field(None, description="Table ID if chunk is a table")
     figure_id: str | None = Field(None, description="Figure ID if chunk is a figure")
     embedding_model: str | None = Field(None, description="Embedding model used")
     embedding_created_at: str | None = Field(
-        None, description="Embedding creation timestamp",
+        None,
+        description="Embedding creation timestamp",
     )
-    chunk_metadata: dict[str, Any] = Field(default_factory=dict, description="Chunk metadata")
+    chunk_metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Chunk metadata",
+    )
     created_at: str = Field(..., description="Creation timestamp")
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -163,7 +170,9 @@ class SearchRequest(BaseModel):
     """Search request model."""
 
     query: str = Field(..., min_length=1)
-    search_type: str = Field("knowledge", description="Type of search: knowledge, conversation, hybrid")
+    search_type: str = Field(
+        "knowledge", description="Type of search: knowledge, conversation, hybrid",
+    )
     limit: int = Field(10, ge=1, le=100)
     filters: dict[str, Any] | None = None
     conversation_id: str | None = None
@@ -174,13 +183,13 @@ class SearchResponse(BaseModel):
 
     query: str
     search_type: str
-    results: List[dict[str, Any]]
+    results: list[dict[str, Any]]
     total: int
 
 
 class SearchResult(BaseModel):
     """Individual search result model."""
-    
+
     id: str
     content: str
     score: float
@@ -207,10 +216,12 @@ class ProcessingOptions(BaseModel):
     """Advanced processing options model."""
 
     engine: str = Field(
-        "auto", description="Processing engine: auto, traditional, docling",
+        "auto",
+        description="Processing engine: auto, traditional, docling",
     )
     options: dict[str, Any] = Field(
-        default_factory=dict, description="Engine-specific options",
+        default_factory=dict,
+        description="Engine-specific options",
     )
 
 
@@ -250,7 +261,8 @@ class DocumentUploadAdvanced(BaseModel):
     description: str | None = Field(None, max_length=1000)
     tags: list[str] = Field(default_factory=list)
     engine: str = Field(
-        "auto", description="Processing engine: auto, traditional, docling",
+        "auto",
+        description="Processing engine: auto, traditional, docling",
     )
     processing_options: dict[str, Any] | None = Field(default_factory=dict)
 
@@ -306,7 +318,7 @@ class SearchHistoryItem(BaseModel):
     result_count: int = Field(..., description="Number of results")
     execution_time: float | None = Field(None, description="Execution time in seconds")
     created_at: str = Field(..., description="Search timestamp")
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -326,34 +338,41 @@ class KnowledgeBaseStats(BaseModel):
     total_chunks: int = Field(..., description="Total number of chunks")
     total_tokens: int = Field(..., description="Total number of tokens")
     documents_by_status: dict[str, int] = Field(
-        ..., description="Documents count by status",
+        ...,
+        description="Documents count by status",
     )
     documents_by_type: dict[str, int] = Field(
-        ..., description="Documents count by file type",
+        ...,
+        description="Documents count by file type",
     )
     storage_used: int = Field(..., description="Storage used in bytes")
     last_processed: str | None = Field(
-        None, description="Last document processing timestamp",
+        None,
+        description="Last document processing timestamp",
     )
 
 
 class DocumentProcessingJobBase(BaseModel):
     """Base document processing job model."""
-    
-    job_type: str = Field(..., description="Type of job: process, reprocess, bulk_import")
+
+    job_type: str = Field(
+        ..., description="Type of job: process, reprocess, bulk_import",
+    )
     priority: int = Field(0, ge=0, le=10, description="Job priority (0-10)")
     processing_engine: str | None = Field(None, description="Processing engine to use")
-    processing_options: dict[str, Any] = Field(default_factory=dict, description="Processing options")
+    processing_options: dict[str, Any] = Field(
+        default_factory=dict, description="Processing options",
+    )
 
 
 class DocumentProcessingJobCreate(DocumentProcessingJobBase):
     """Document processing job creation model."""
-    pass
+
 
 
 class DocumentProcessingJobResponse(DocumentProcessingJobBase):
     """Document processing job response model."""
-    
+
     id: str
     document_id: str
     user_id: str
@@ -367,14 +386,14 @@ class DocumentProcessingJobResponse(DocumentProcessingJobBase):
     created_at: datetime
     started_at: datetime | None = None
     completed_at: datetime | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentProcessingJobList(BaseModel):
     """Document processing job list response model."""
-    
-    jobs: List[DocumentProcessingJobResponse]
+
+    jobs: list[DocumentProcessingJobResponse]
     total: int
     skip: int
     limit: int
@@ -382,15 +401,17 @@ class DocumentProcessingJobList(BaseModel):
 
 class BulkImportRequest(BaseModel):
     """Bulk import request model."""
-    
-    files: List[dict[str, Any]] = Field(..., description="List of file information")
+
+    files: list[dict[str, Any]] = Field(..., description="List of file information")
     processing_options: ProcessingOptions | None = None
-    tags: List[str] = Field(default_factory=list, description="Default tags for all documents")
+    tags: list[str] = Field(
+        default_factory=list, description="Default tags for all documents",
+    )
 
 
 class BulkImportResponse(BaseModel):
     """Bulk import response model."""
-    
+
     job_id: str
     total_files: int
     message: str
@@ -398,13 +419,13 @@ class BulkImportResponse(BaseModel):
 
 class DocumentFilter(BaseModel):
     """Document filter model for advanced search."""
-    
+
     status: DocumentStatus | None = None
     document_type: DocumentType | None = None
     author: str | None = None
     year: int | None = None
     language: str | None = None
-    tag_names: List[str] | None = None
+    tag_names: list[str] | None = None
     date_from: datetime | None = None
     date_to: datetime | None = None
     min_file_size: int | None = None
@@ -413,20 +434,22 @@ class DocumentFilter(BaseModel):
 
 class AdvancedSearchRequest(BaseModel):
     """Advanced search request model."""
-    
+
     query: str = Field(..., min_length=1)
     filters: DocumentFilter | None = None
     limit: int = Field(10, ge=1, le=100)
     offset: int = Field(0, ge=0)
-    sort_by: str = Field("relevance", description="Sort by: relevance, date, title, author")
+    sort_by: str = Field(
+        "relevance", description="Sort by: relevance, date, title, author",
+    )
     sort_order: str = Field("desc", description="Sort order: asc, desc")
 
 
 class AdvancedSearchResponse(BaseModel):
     """Advanced search response model."""
-    
+
     query: str
-    results: List[SearchResult]
+    results: list[SearchResult]
     total: int
     offset: int
     limit: int

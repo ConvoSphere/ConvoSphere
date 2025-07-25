@@ -3,13 +3,11 @@
 import uuid
 from typing import Any
 
-from loguru import logger
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
+from app.core.database import get_db
 from app.models.tool import Tool, ToolCategory
 from app.models.user import User
-from app.core.database import get_db
+from loguru import logger
+from sqlalchemy import and_
 
 
 class ToolService:
@@ -19,7 +17,9 @@ class ToolService:
         self.db = db or get_db()
 
     def get_available_tools(
-        self, user_id: str | None = None, category: str | None = None,
+        self,
+        user_id: str | None = None,
+        category: str | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all available tools with optional filtering.
@@ -67,7 +67,9 @@ class ToolService:
             return []
 
     def get_tool_by_id(
-        self, tool_id: str, user_id: str | None = None,
+        self,
+        tool_id: str,
+        user_id: str | None = None,
     ) -> dict[str, Any] | None:
         """
         Get tool by ID.
@@ -111,7 +113,9 @@ class ToolService:
             return None
 
     def create_tool(
-        self, tool_data: dict[str, Any], creator_id: str,
+        self,
+        tool_data: dict[str, Any],
+        creator_id: str,
     ) -> dict[str, Any] | None:
         """
         Create a new tool.
@@ -182,7 +186,10 @@ class ToolService:
             return None
 
     def update_tool(
-        self, tool_id: str, tool_data: dict[str, Any], user_id: str,
+        self,
+        tool_id: str,
+        tool_data: dict[str, Any],
+        user_id: str,
     ) -> dict[str, Any] | None:
         """
         Update an existing tool.
@@ -305,7 +312,9 @@ class ToolService:
             return False
 
     def get_tools_by_category(
-        self, category: str, user_id: str | None = None,
+        self,
+        category: str,
+        user_id: str | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get tools by category.
@@ -326,7 +335,9 @@ class ToolService:
             return []
 
     def search_tools(
-        self, query: str, user_id: str | None = None,
+        self,
+        query: str,
+        user_id: str | None = None,
     ) -> list[dict[str, Any]]:
         """
         Search tools by name or description.
@@ -433,10 +444,7 @@ class ToolService:
                 return True
 
             # Manager can edit non-builtin tools
-            if user.role.value == "manager" and not tool.is_builtin:
-                return True
-
-            return False
+            return bool(user.role.value == "manager" and not tool.is_builtin)
         except Exception as e:
             logger.error(f"Error checking edit permission for tool: {e}")
             return False
