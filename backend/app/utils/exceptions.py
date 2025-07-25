@@ -117,3 +117,23 @@ class SessionError(ChatAssistantError):
 
 class SecurityError(ChatAssistantError):
     """Raised when security check fails."""
+
+
+class AuditError(ChatAssistantError):
+    """Raised when audit operation fails."""
+
+
+class ComplianceError(ChatAssistantError):
+    """Raised when compliance operation fails."""
+
+
+class RetentionError(ChatAssistantError):
+    """Raised when retention operation fails."""
+
+
+class ArchiveError(ChatAssistantError):
+    """Raised when archive operation fails."""
+
+
+class AlertError(ChatAssistantError):
+    """Raised when alert operation fails."""
