@@ -263,6 +263,20 @@ python3 -m pytest tests/test_sso.py -v
 python3 -m pytest tests/test_saml.py -v
 ```
 
+### Performance Tests
+
+```bash
+cd backend
+python3 -m pytest tests/test_sso_performance.py -v
+```
+
+### Security Tests
+
+```bash
+cd backend
+python3 -m pytest tests/test_sso.py::TestSSOSecurity -v
+```
+
 ### Integration Tests
 
 ```bash
@@ -331,6 +345,8 @@ tail -f logs/app.log | grep -i sso
 2. **Domain konfigurieren**: Aktualisieren Sie Redirect URIs für Ihre Domain
 3. **Secrets sichern**: Verwenden Sie sichere Secret Management
 4. **Monitoring**: Überwachen Sie SSO-Logins und Fehler
+5. **Security Hardening**: Zusätzliche Sicherheitsmaßnahmen aktivieren
+6. **Performance Monitoring**: SSO-Performance überwachen
 
 ### Environment Variables (Production)
 
@@ -353,14 +369,89 @@ SSO_GITHUB_ENABLED=true
 SSO_GITHUB_CLIENT_ID=your-production-client-id
 SSO_GITHUB_CLIENT_SECRET=your-production-client-secret
 SSO_GITHUB_REDIRECT_URI=https://yourdomain.com/api/v1/auth/sso/callback/github
+
+# SAML Configuration
+SSO_SAML_ENABLED=true
+SSO_SAML_METADATA_URL=https://your-idp.com/metadata
+SSO_SAML_ENTITY_ID=https://yourdomain.com
+SSO_SAML_ACS_URL=https://yourdomain.com/api/v1/auth/sso/callback/saml
+SSO_SAML_CERT_FILE=/path/to/production/certificate.crt
+SSO_SAML_KEY_FILE=/path/to/production/private.key
+
+# Security Settings
+SECRET_KEY=your-super-secure-secret-key
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+```
+
+## 🔒 Security Features
+
+### Security Hardening
+
+Die SSO-Integration enthält umfassende Sicherheitsmaßnahmen:
+
+#### Rate Limiting
+- **IP-basierte Rate Limiting** für SSO-Endpoints
+- **Konfigurierbare Limits** (Standard: 10 Requests/Minute)
+- **Automatische Blockierung** bei Überschreitung
+
+#### Input Validation
+- **URL-Validierung** für Redirect-URLs
+- **SAML Response Validierung** gegen XSS-Angriffe
+- **User-Attribute Sanitization** vor Speicherung
+
+#### CSRF Protection
+- **State-Parameter Validierung** für OAuth2
+- **Sichere State-Generierung** mit `secrets.token_urlsafe()`
+- **Session-basierte Validierung**
+
+#### Audit Logging
+- **Detaillierte Security Events** für alle SSO-Operationen
+- **IP-Adress Tracking** für verdächtige Aktivitäten
+- **Suspicious Pattern Detection**
+
+### Monitoring & Alerting
+
+```python
+# Security Events abrufen
+from app.core.security_hardening import sso_audit_logger
+
+# Alle Events der letzten 24 Stunden
+events = sso_audit_logger.get_security_events(hours=24)
+
+# Verdächtige Events
+suspicious = sso_audit_logger.get_suspicious_events(hours=24)
+```
+
+## 📊 Performance Monitoring
+
+### Performance Metrics
+
+Die SSO-Integration überwacht folgende Metriken:
+
+- **Response Times**: Durchschnittliche Antwortzeiten
+- **Throughput**: Requests pro Sekunde
+- **Error Rates**: Fehlerquoten pro Provider
+- **Memory Usage**: Speicherverbrauch unter Last
+- **Concurrency**: Gleichzeitige Verbindungen
+
+### Load Testing
+
+```bash
+# Performance Tests ausführen
+python3 -m pytest tests/test_sso_performance.py::TestSSOPerformance -v
+
+# Load Tests ausführen
+python3 -m pytest tests/test_sso_performance.py::TestSSOLoadTesting -v
 ```
 
 ## 📚 Weitere Ressourcen
 
 - [OAuth 2.0 Specification](https://tools.ietf.org/html/rfc6749)
-- [Google OAuth2 Documentation](https://developers.google.com/identity/protocols/oauth2)
-- [Microsoft OAuth2 Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
-- [GitHub OAuth2 Documentation](https://docs.github.com/en/developers/apps/building-oauth-apps)
+- [SAML 2.0 Specification](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Authlib Documentation](https://authlib.org/)
+- [OWASP SSO Security Guidelines](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/10-Testing_Single_Sign-On)
 
 ## 🤝 Support
 

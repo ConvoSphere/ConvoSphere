@@ -16,45 +16,18 @@ from loguru import logger
 from starlette.config import Config
 from starlette.responses import RedirectResponse
 
-# Temporarily comment out problematic imports for testing
-# from app.core.config import get_settings
-# from app.core.security import create_access_token, create_refresh_token
-# from app.models.user import AuthProvider, User
-# from app.schemas.user import SSOUserCreate
-# from app.services.user_service import UserService
+from app.core.config import get_settings
+from app.core.security import create_access_token, create_refresh_token
+from app.models.user import AuthProvider, User
+from app.schemas.user import SSOUserCreate
+from app.services.user_service import UserService
 from datetime import datetime, UTC
-
-# Mock settings for testing
-class MockSettings:
-    def __init__(self):
-        self.sso_google_enabled = False
-        self.sso_google_client_id = None
-        self.sso_google_client_secret = None
-        self.sso_google_redirect_uri = "http://localhost:8000/api/v1/auth/sso/callback/google"
-        self.sso_microsoft_enabled = False
-        self.sso_microsoft_client_id = None
-        self.sso_microsoft_client_secret = None
-        self.sso_microsoft_redirect_uri = "http://localhost:8000/api/v1/auth/sso/callback/microsoft"
-        self.sso_microsoft_tenant_id = None
-        self.sso_github_enabled = False
-        self.sso_github_client_id = None
-        self.sso_github_client_secret = None
-        self.sso_github_redirect_uri = "http://localhost:8000/api/v1/auth/sso/callback/github"
-        self.jwt_access_token_expire_minutes = 30
-
-# Mock enums for testing
-class MockAuthProvider:
-    LOCAL = "local"
-    OAUTH_GOOGLE = "oauth_google"
-    OAUTH_MICROSOFT = "oauth_microsoft"
-    OAUTH_GITHUB = "oauth_github"
 
 class OAuthService:
     """Service for handling OAuth2 authentication flows."""
 
     def __init__(self):
-        # self.settings = get_settings()
-        self.settings = MockSettings()
+        self.settings = get_settings()
         self.oauth = OAuth()
         self._setup_oauth_clients()
 
@@ -268,16 +241,16 @@ class OAuthService:
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
-    def _get_auth_provider(self, provider: str) -> str:
+    def _get_auth_provider(self, provider: str) -> AuthProvider:
         """Convert provider string to AuthProvider enum."""
         provider_mapping = {
-            'google': MockAuthProvider.OAUTH_GOOGLE,
-            'microsoft': MockAuthProvider.OAUTH_MICROSOFT,
-            'github': MockAuthProvider.OAUTH_GITHUB
+            'google': AuthProvider.OAUTH_GOOGLE,
+            'microsoft': AuthProvider.OAUTH_MICROSOFT,
+            'github': AuthProvider.OAUTH_GITHUB
         }
-        return provider_mapping.get(provider, MockAuthProvider.LOCAL)
+        return provider_mapping.get(provider, AuthProvider.LOCAL)
 
-    async def process_sso_user(self, user_info: Dict[str, Any], provider: str, db) -> Any:
+    async def process_sso_user(self, user_info: Dict[str, Any], provider: str, db) -> User:
         """
         Process SSO user and create/update user account.
 
@@ -289,15 +262,38 @@ class OAuthService:
         Returns:
             User: Created or existing user
         """
-        # Mock implementation for testing
-        logger.info(f"Processing SSO user: {user_info['email']} via {provider}")
-        return {
-            'id': 'mock-user-id',
-            'email': user_info['email'],
-            'auth_provider': self._get_auth_provider(provider)
-        }
+        user_service = UserService(db)
+        auth_provider = self._get_auth_provider(provider)
+        
+        # Check if user already exists by external ID
+        existing_user = user_service.get_user_by_external_id(
+            user_info['external_id'], 
+            auth_provider
+        )
+        
+        if existing_user:
+            # Update existing user with latest SSO info
+            logger.info(f"Updating existing SSO user: {existing_user.email}")
+            existing_user.sso_attributes = user_info.get('sso_attributes', {})
+            db.commit()
+            return existing_user
+        
+        # Create new SSO user
+        logger.info(f"Creating new SSO user: {user_info['email']}")
+        sso_user_data = SSOUserCreate(
+            email=user_info['email'],
+            username=user_info.get('username') or user_info['email'].split('@')[0],
+            first_name=user_info.get('first_name'),
+            last_name=user_info.get('last_name'),
+            display_name=user_info.get('display_name'),
+            auth_provider=auth_provider,
+            external_id=user_info['external_id'],
+            sso_attributes=user_info.get('sso_attributes', {})
+        )
+        
+        return user_service.create_sso_user(sso_user_data)
 
-    async def create_sso_tokens(self, user: Any) -> Dict[str, Any]:
+    async def create_sso_tokens(self, user: User) -> Dict[str, Any]:
         """
         Create JWT tokens for SSO user.
 
@@ -307,10 +303,20 @@ class OAuthService:
         Returns:
             Dict containing access and refresh tokens
         """
-        # Mock implementation for testing
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=datetime.timedelta(minutes=self.settings.jwt_access_token_expire_minutes)
+        )
+        
+        # Create refresh token
+        refresh_token = create_refresh_token(
+            data={"sub": str(user.id)}
+        )
+        
         return {
-            'access_token': 'mock-access-token',
-            'refresh_token': 'mock-refresh-token',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
             'token_type': 'bearer',
             'expires_in': self.settings.jwt_access_token_expire_minutes * 60
         }

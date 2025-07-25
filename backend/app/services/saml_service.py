@@ -8,6 +8,7 @@ and assertion processing for enterprise SSO integration.
 import base64
 import os
 import tempfile
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from urllib.parse import urlencode
 
@@ -23,22 +24,18 @@ from saml2.saml import NAMEID_FORMAT_EMAILADDRESS, NAMEID_FORMAT_UNSPECIFIED
 from saml2.sigver import get_xmlsec_binary
 from saml2.validate import valid_instance
 
-# Mock settings for testing (will be replaced with real config)
-class MockSamlSettings:
-    def __init__(self):
-        self.sso_saml_enabled = False
-        self.sso_saml_metadata_url = None
-        self.sso_saml_entity_id = "http://localhost:8000"
-        self.sso_saml_acs_url = "http://localhost:8000/api/v1/auth/sso/callback/saml"
-        self.sso_saml_cert_file = None
-        self.sso_saml_key_file = None
+from app.core.config import get_settings
+from app.core.security import create_access_token, create_refresh_token
+from app.models.user import AuthProvider, User
+from app.schemas.user import SSOUserCreate
+from app.services.user_service import UserService
 
 
 class SAMLService:
     """Service for handling SAML authentication flows."""
 
     def __init__(self):
-        self.settings = MockSamlSettings()
+        self.settings = get_settings()
         self.saml_client = None
         self._setup_saml_client()
 
@@ -398,7 +395,7 @@ class SAMLService:
                 detail="Failed to generate SAML metadata"
             )
 
-    async def process_saml_user(self, user_info: Dict[str, Any], db) -> Any:
+    async def process_saml_user(self, user_info: Dict[str, Any], db) -> User:
         """
         Process SAML user and create/update user account.
 
@@ -409,16 +406,38 @@ class SAMLService:
         Returns:
             User: Created or existing user
         """
-        # Mock implementation for testing
-        logger.info(f"Processing SAML user: {user_info.get('email', user_info.get('external_id'))}")
-        return {
-            'id': 'mock-saml-user-id',
-            'email': user_info.get('email'),
-            'external_id': user_info.get('external_id'),
-            'auth_provider': 'saml'
-        }
+        user_service = UserService(db)
+        auth_provider = AuthProvider.SAML
+        
+        # Check if user already exists by external ID
+        existing_user = user_service.get_user_by_external_id(
+            user_info['external_id'], 
+            auth_provider
+        )
+        
+        if existing_user:
+            # Update existing user with latest SAML info
+            logger.info(f"Updating existing SAML user: {existing_user.email}")
+            existing_user.sso_attributes = user_info.get('sso_attributes', {})
+            db.commit()
+            return existing_user
+        
+        # Create new SAML user
+        logger.info(f"Creating new SAML user: {user_info['email']}")
+        sso_user_data = SSOUserCreate(
+            email=user_info['email'],
+            username=user_info.get('username') or user_info['email'].split('@')[0],
+            first_name=user_info.get('first_name'),
+            last_name=user_info.get('last_name'),
+            display_name=user_info.get('display_name'),
+            auth_provider=auth_provider,
+            external_id=user_info['external_id'],
+            sso_attributes=user_info.get('sso_attributes', {})
+        )
+        
+        return user_service.create_sso_user(sso_user_data)
 
-    async def create_saml_tokens(self, user: Any) -> Dict[str, Any]:
+    async def create_saml_tokens(self, user: User) -> Dict[str, Any]:
         """
         Create JWT tokens for SAML user.
 
@@ -428,12 +447,22 @@ class SAMLService:
         Returns:
             Dict containing access and refresh tokens
         """
-        # Mock implementation for testing
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=datetime.timedelta(minutes=self.settings.jwt_access_token_expire_minutes)
+        )
+        
+        # Create refresh token
+        refresh_token = create_refresh_token(
+            data={"sub": str(user.id)}
+        )
+        
         return {
-            'access_token': 'mock-saml-access-token',
-            'refresh_token': 'mock-saml-refresh-token',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
             'token_type': 'bearer',
-            'expires_in': 1800  # 30 minutes
+            'expires_in': self.settings.jwt_access_token_expire_minutes * 60
         }
 
 
