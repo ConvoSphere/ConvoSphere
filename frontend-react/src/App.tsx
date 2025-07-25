@@ -10,6 +10,11 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import performanceMonitor from './utils/performance';
+
+// Import modern UI styles
+import './styles/animations.css';
+import './styles/chat.css';
+
 import {
   LazyChatPage,
   LazyDashboardPage,

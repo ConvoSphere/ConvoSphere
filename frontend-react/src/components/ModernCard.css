@@ -1,0 +1,346 @@
+/* Modern Card Component Styles */
+
+.modern-card {
+  background: var(--colorBgContainer);
+  border: 1px solid var(--colorBorder);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Card Variants */
+.modern-card--default {
+  background: var(--colorBgContainer);
+  border: 1px solid var(--colorBorder);
+}
+
+.modern-card--elevated {
+  background: var(--colorBgContainer);
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.modern-card--elevated:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-6px);
+}
+
+.modern-card--interactive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.modern-card--interactive:hover {
+  background: var(--colorBgElevated);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.modern-card--interactive:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.modern-card--gradient {
+  background: var(--colorGradientPrimary);
+  color: #FFFFFF;
+  border: none;
+  position: relative;
+}
+
+.modern-card--gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--colorGradientSecondary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.modern-card--gradient:hover::before {
+  opacity: 1;
+}
+
+.modern-card--gradient:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+}
+
+.modern-card--outlined {
+  background: transparent;
+  border: 2px solid var(--colorBorder);
+}
+
+.modern-card--outlined:hover {
+  border-color: var(--colorPrimary);
+  background: var(--colorBgElevated);
+  transform: translateY(-2px);
+}
+
+/* Card Sizes */
+.modern-card--sm {
+  padding: 16px;
+}
+
+.modern-card--md {
+  padding: 24px;
+}
+
+.modern-card--lg {
+  padding: 32px;
+}
+
+.modern-card--xl {
+  padding: 40px;
+}
+
+/* Hoverable Cards */
+.modern-card--hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--colorPrimary);
+}
+
+/* Card Header */
+.modern-card__header {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--colorBorder);
+}
+
+.modern-card__header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--colorTextBase);
+}
+
+.modern-card__header p {
+  margin: 4px 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--colorTextSecondary);
+}
+
+/* Card Content */
+.modern-card__content {
+  flex: 1;
+  line-height: var(--line-height-relaxed);
+}
+
+/* Card Footer */
+.modern-card__footer {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--colorBorder);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Card Actions */
+.modern-card__actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--colorBorder);
+}
+
+.modern-card__action {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.modern-card__action:hover {
+  background: var(--colorBgElevated);
+  transform: scale(1.05);
+}
+
+/* Card Cover */
+.modern-card .ant-card-cover {
+  margin: -24px -24px 24px -24px;
+  overflow: hidden;
+}
+
+.modern-card--sm .ant-card-cover {
+  margin: -16px -16px 16px -16px;
+}
+
+.modern-card--lg .ant-card-cover {
+  margin: -32px -32px 32px -32px;
+}
+
+.modern-card--xl .ant-card-cover {
+  margin: -40px -40px 40px -40px;
+}
+
+.modern-card .ant-card-cover img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.modern-card:hover .ant-card-cover img {
+  transform: scale(1.05);
+}
+
+/* Loading State */
+.modern-card--loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-card--loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Card Grid */
+.modern-card-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.modern-card-grid--compact {
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.modern-card-grid--wide {
+  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+/* Card Stack */
+.modern-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modern-card-stack .modern-card {
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-card--xl {
+    padding: 24px;
+  }
+  
+  .modern-card--lg {
+    padding: 20px;
+  }
+  
+  .modern-card-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .modern-card-grid--wide {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .modern-card--outlined {
+    border-color: var(--colorBorder);
+  }
+  
+  .modern-card--outlined:hover {
+    border-color: var(--colorPrimary);
+    background: var(--colorBgElevated);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .modern-card,
+  .modern-card .ant-card-cover img,
+  .modern-card__action {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .modern-card:hover {
+    transform: none !important;
+  }
+  
+  .modern-card--loading::before {
+    animation: none !important;
+  }
+}
+
+/* Focus States */
+.modern-card:focus-visible {
+  outline: 2px solid var(--colorPrimary);
+  outline-offset: 2px;
+}
+
+/* Card with Badge */
+.modern-card--with-badge {
+  position: relative;
+}
+
+.modern-card--with-badge::after {
+  content: attr(data-badge);
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--colorAccent);
+  color: var(--colorTextBase);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  z-index: 2;
+}
+
+/* Card with Status */
+.modern-card--status-success {
+  border-left: 4px solid var(--colorSuccess);
+}
+
+.modern-card--status-warning {
+  border-left: 4px solid var(--colorWarning);
+}
+
+.modern-card--status-error {
+  border-left: 4px solid var(--colorError);
+}
+
+.modern-card--status-info {
+  border-left: 4px solid var(--colorInfo);
+}

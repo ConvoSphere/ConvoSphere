@@ -1,0 +1,491 @@
+/* Loading States Component Styles */
+
+/* Skeleton Card */
+.skeleton-card {
+  background: var(--colorBgContainer);
+  border: 1px solid var(--colorBorder);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skeleton-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.skeleton-card__content {
+  width: 100%;
+}
+
+.skeleton-card__content .ant-skeleton-title {
+  background: linear-gradient(90deg, var(--colorBorder) 25%, var(--colorBgElevated) 50%, var(--colorBorder) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card__content .ant-skeleton-paragraph li {
+  background: linear-gradient(90deg, var(--colorBorder) 25%, var(--colorBgElevated) 50%, var(--colorBorder) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card__content .ant-skeleton-avatar {
+  background: linear-gradient(90deg, var(--colorBorder) 25%, var(--colorBgElevated) 50%, var(--colorBorder) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.loading-spinner--small {
+  padding: 16px;
+  gap: 8px;
+}
+
+.loading-spinner--large {
+  padding: 32px;
+  gap: 24px;
+}
+
+.loading-spinner__text {
+  font-size: var(--font-size-sm);
+  color: var(--colorTextSecondary);
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  width: 100%;
+  padding: 16px;
+}
+
+.progress-indicator--small {
+  padding: 8px;
+}
+
+.progress-indicator--large {
+  padding: 24px;
+}
+
+.progress-indicator__bar {
+  width: 100%;
+}
+
+.progress-indicator__bar .ant-progress-bg {
+  background: linear-gradient(90deg, var(--colorPrimary) 0%, var(--colorSecondary) 100%);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.progress-indicator__bar .ant-progress-text {
+  color: var(--colorTextBase);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Skeleton List */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-list__item {
+  margin-bottom: 0;
+}
+
+/* Skeleton Grid */
+.skeleton-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.skeleton-grid__item {
+  margin-bottom: 0;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.loading-overlay--visible {
+  pointer-events: none;
+}
+
+.loading-overlay--visible > *:not(.loading-overlay__content) {
+  opacity: 0.3;
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}
+
+.loading-overlay__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: var(--colorBgContainer);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--colorBorder);
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* Pulse Loading */
+.pulse-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pulse-loading--small {
+  gap: 4px;
+}
+
+.pulse-loading--large {
+  gap: 12px;
+}
+
+.pulse-loading__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--colorPrimary);
+  animation: pulse 1.4s ease-in-out infinite both;
+}
+
+.pulse-loading--small .pulse-loading__dot {
+  width: 6px;
+  height: 6px;
+}
+
+.pulse-loading--large .pulse-loading__dot {
+  width: 12px;
+  height: 12px;
+}
+
+.pulse-loading__dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.pulse-loading__dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.pulse-loading__dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+/* Wave Loading */
+.wave-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 40px;
+}
+
+.wave-loading__bar {
+  width: 4px;
+  height: 100%;
+  background: var(--colorPrimary);
+  border-radius: 2px;
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.wave-loading__bar:nth-child(1) { animation-delay: 0s; }
+.wave-loading__bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-loading__bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-loading__bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-loading__bar:nth-child(5) { animation-delay: 0.4s; }
+
+/* Shimmer Loading */
+.shimmer-loading {
+  position: relative;
+  overflow: hidden;
+  background: var(--colorBorder);
+  border-radius: 8px;
+}
+
+.shimmer-loading__content {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes pulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Loading States for Different Components */
+.loading-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.loading-input {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-input::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* Skeleton Text */
+.skeleton-text {
+  height: 16px;
+  background: var(--colorBorder);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text--title {
+  height: 24px;
+  width: 60%;
+}
+
+.skeleton-text--paragraph {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-text--paragraph:nth-child(2) {
+  width: 80%;
+}
+
+.skeleton-text--paragraph:nth-child(3) {
+  width: 90%;
+}
+
+/* Loading States for Cards */
+.loading-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .loading-overlay__content {
+    padding: 24px;
+  }
+  
+  .wave-loading {
+    height: 32px;
+  }
+  
+  .wave-loading__bar {
+    width: 3px;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .skeleton-card {
+    background: var(--colorBgContainer);
+    border-color: var(--colorBorder);
+  }
+  
+  .shimmer-loading {
+    background: var(--colorBorder);
+  }
+  
+  .skeleton-text {
+    background: var(--colorBorder);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card__content .ant-skeleton-title,
+  .skeleton-card__content .ant-skeleton-paragraph li,
+  .skeleton-card__content .ant-skeleton-avatar,
+  .shimmer-loading__content,
+  .loading-button::after,
+  .loading-input::after,
+  .loading-card::before,
+  .pulse-loading__dot,
+  .wave-loading__bar,
+  .skeleton-text {
+    animation: none !important;
+  }
+  
+  .loading-overlay__content {
+    animation: none !important;
+  }
+  
+  .loading-spinner__text {
+    animation: none !important;
+  }
+}
+
+/* Loading States for Tables */
+.loading-table {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-table::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+}
+
+/* Loading States for Images */
+.loading-image {
+  position: relative;
+  overflow: hidden;
+  background: var(--colorBorder);
+  border-radius: 8px;
+}
+
+.loading-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}

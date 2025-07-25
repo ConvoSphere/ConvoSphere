@@ -23,6 +23,10 @@ const HeaderBar: React.FC = () => {
     backgroundColor: colors.colorBgContainer,
     borderBottom: `1px solid ${colors.colorBorder}`,
     boxShadow: colors.boxShadow,
+    backdropFilter: 'blur(10px)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
   };
 
   const logoStyle: React.CSSProperties = {
@@ -41,10 +45,12 @@ const HeaderBar: React.FC = () => {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '8px 12px',
+    padding: '8px 16px',
     backgroundColor: colors.colorBgElevated,
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `1px solid ${colors.colorBorder}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
   };
 
   return (

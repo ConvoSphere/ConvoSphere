@@ -1,0 +1,285 @@
+/* Modern Button Component Styles */
+
+.modern-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Button Variants */
+.modern-button--primary {
+  background: var(--colorPrimary);
+  color: var(--colorTextBase);
+  box-shadow: var(--shadow-sm);
+}
+
+.modern-button--primary:hover {
+  background: var(--colorPrimaryHover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.modern-button--primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.modern-button--secondary {
+  background: var(--colorSecondary);
+  color: var(--colorTextBase);
+  border: 1px solid var(--colorSecondary);
+}
+
+.modern-button--secondary:hover {
+  background: var(--colorSecondaryHover);
+  border-color: var(--colorSecondaryHover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.modern-button--accent {
+  background: var(--colorAccent);
+  color: var(--colorTextBase);
+  border: 1px solid var(--colorAccent);
+}
+
+.modern-button--accent:hover {
+  background: var(--colorAccentHover);
+  border-color: var(--colorAccentHover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.modern-button--ghost {
+  background: transparent;
+  color: var(--colorPrimary);
+  border: 1px solid transparent;
+}
+
+.modern-button--ghost:hover {
+  background: var(--colorBgElevated);
+  border-color: var(--colorPrimary);
+  transform: translateY(-1px);
+}
+
+.modern-button--dashed {
+  background: transparent;
+  color: var(--colorTextBase);
+  border: 2px dashed var(--colorBorder);
+}
+
+.modern-button--dashed:hover {
+  border-color: var(--colorPrimary);
+  background: var(--colorBgElevated);
+  transform: translateY(-1px);
+}
+
+.modern-button--gradient {
+  background: var(--colorGradientPrimary);
+  color: #FFFFFF;
+  border: none;
+  position: relative;
+}
+
+.modern-button--gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--colorGradientSecondary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.modern-button--gradient:hover::before {
+  opacity: 1;
+}
+
+.modern-button--gradient:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.modern-button--gradient .modern-button__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Button Sizes */
+.modern-button--xs {
+  padding: 6px 12px;
+  font-size: var(--font-size-xs);
+  min-height: 28px;
+}
+
+.modern-button--sm {
+  padding: 8px 16px;
+  font-size: var(--font-size-sm);
+  min-height: 32px;
+}
+
+.modern-button--md {
+  padding: 12px 20px;
+  font-size: var(--font-size-base);
+  min-height: 40px;
+}
+
+.modern-button--lg {
+  padding: 16px 24px;
+  font-size: var(--font-size-lg);
+  min-height: 48px;
+}
+
+.modern-button--xl {
+  padding: 20px 32px;
+  font-size: var(--font-size-xl);
+  min-height: 56px;
+}
+
+/* Icon Styles */
+.modern-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.modern-button:hover .modern-button__icon {
+  transform: scale(1.1);
+}
+
+/* Content Styles */
+.modern-button__content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Loading State */
+.modern-button.ant-btn-loading {
+  pointer-events: none;
+}
+
+.modern-button.ant-btn-loading .modern-button__icon {
+  animation: spin 1s linear infinite;
+}
+
+/* Disabled State */
+.modern-button:disabled,
+.modern-button.ant-btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.modern-button:disabled:hover,
+.modern-button.ant-btn-disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Focus States */
+.modern-button:focus-visible {
+  outline: 2px solid var(--colorPrimary);
+  outline-offset: 2px;
+}
+
+/* Ripple Effect */
+.modern-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.modern-button:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Group Button Styles */
+.modern-button-group {
+  display: inline-flex;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.modern-button-group .modern-button {
+  border-radius: 0;
+  border-right: 1px solid var(--colorBorder);
+}
+
+.modern-button-group .modern-button:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.modern-button-group .modern-button:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border-right: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-button--xl {
+    padding: 16px 24px;
+    font-size: var(--font-size-lg);
+    min-height: 48px;
+  }
+  
+  .modern-button--lg {
+    padding: 12px 20px;
+    font-size: var(--font-size-base);
+    min-height: 40px;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .modern-button--ghost {
+    color: var(--colorPrimary);
+  }
+  
+  .modern-button--ghost:hover {
+    background: var(--colorBgElevated);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .modern-button,
+  .modern-button__icon,
+  .modern-button::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .modern-button:hover {
+    transform: none !important;
+  }
+}
