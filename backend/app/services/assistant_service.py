@@ -180,6 +180,7 @@ class AssistantService:
     def get_user_default_assistant_id(self, user_id: str) -> str | None:
         """
         Get the default assistant ID for a user from their preferences.
+        If no default is configured, returns the first available assistant.
 
         Args:
             user_id: User ID
@@ -190,10 +191,24 @@ class AssistantService:
         from app.models.user import User
         
         user = self.db.query(User).filter(User.id == user_id).first()
-        if not user or not user.preferences:
+        if not user:
             return None
         
-        return user.preferences.get("default_assistant_id")
+        # Check user preferences first
+        if user.preferences and user.preferences.get("default_assistant_id"):
+            return user.preferences.get("default_assistant_id")
+        
+        # Fallback: get first available assistant for user
+        user_assistants = self.get_user_assistants(user_id, include_public=True)
+        if user_assistants:
+            return str(user_assistants[0].id)
+        
+        # Final fallback: get first public assistant
+        public_assistants = self.get_public_assistants(limit=1)
+        if public_assistants:
+            return str(public_assistants[0].id)
+        
+        return None
 
     def set_user_default_assistant(self, user_id: str, assistant_id: str) -> bool:
         """

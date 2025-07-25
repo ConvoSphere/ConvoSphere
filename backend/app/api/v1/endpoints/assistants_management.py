@@ -166,15 +166,19 @@ async def get_default_assistant_id(
     return {"assistant_id": default_assistant_id}
 
 
+class DefaultAssistantRequest(BaseModel):
+    """Request model for setting default assistant."""
+    assistant_id: str = Field(..., description="Assistant ID to set as default")
+
 @router.post("/default/set")
 async def set_default_assistant(
-    assistant_id: str,
+    request: DefaultAssistantRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
     """Set the default assistant for the current user."""
     service = AssistantService(db)
-    success = service.set_user_default_assistant(current_user_id, assistant_id)
+    success = service.set_user_default_assistant(current_user_id, request.assistant_id)
     if not success:
         raise HTTPException(
             status_code=400,
