@@ -13,7 +13,7 @@ from typing import Any
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.services.audit_service import get_audit_service
+from app.services.audit import get_audit_service
 from app.utils.exceptions import AuditError
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session

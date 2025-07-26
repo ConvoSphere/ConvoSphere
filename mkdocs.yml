@@ -196,10 +196,14 @@ nav:
   - User Guide: user-guide.md
   - FAQ: faq.md
   - Developer Guide: developer-guide.md
+  - Development:
+    - Refactoring Guide: development/refactoring-guide.md
   - API: api.md
   - Architecture: architecture.md
   - Project:
     - Status: project/status.md
+    - Refactoring Status: project/refactoring-status.md
+    - Documentation Cleanup: project/documentation-cleanup.md
     - Changelog: project/changelog.md
     - Contributing: project/contributing.md
   - Features:
