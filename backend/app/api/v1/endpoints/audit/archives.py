@@ -17,7 +17,7 @@ from app.schemas.audit_extended import (
     AuditArchiveResponse,
     AuditArchiveUpdate,
 )
-from app.services.audit_service import get_audit_service
+from app.services.audit import get_audit_service
 from app.utils.exceptions import AuditError
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
