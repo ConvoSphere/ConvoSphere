@@ -7,7 +7,6 @@ This module configures the main API v1 router and includes all endpoint routers.
 from app.api.v1.endpoints import (
     ai,
     assistants_management,
-    audit,
     auth,
     chat,
     conversations,
@@ -23,6 +22,7 @@ from app.api.v1.endpoints import (
     users,
     websocket,
 )
+from app.api.v1.endpoints.audit import router as audit_router
 from fastapi import APIRouter
 
 # Main API v1 router
@@ -53,7 +53,7 @@ api_router.include_router(
 api_router.include_router(
     domain_groups.router, prefix="/domain-groups", tags=["Domain Groups"]
 )
-api_router.include_router(audit.router, prefix="/audit", tags=["Audit"])
+api_router.include_router(audit_router, prefix="/audit", tags=["Audit"])
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(
     hybrid_mode.router, prefix="/hybrid-mode", tags=["Hybrid Mode"]
