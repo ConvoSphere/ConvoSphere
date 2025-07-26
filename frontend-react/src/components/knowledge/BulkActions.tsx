@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
-import { 
-  Modal, 
-  Form, 
-  Select, 
-  Button, 
-  Space, 
-  Typography, 
-  Alert, 
+import React, { useState } from "react";
+import {
+  Modal,
+  Form,
+  Select,
+  Button,
+  Space,
+  Typography,
+  Alert,
   Progress,
   List,
   Tag,
-  message
-} from 'antd';
-import { 
-  DeleteOutlined, 
-  TagOutlined, 
+  message,
+} from "antd";
+import {
+  DeleteOutlined,
+  TagOutlined,
   ReloadOutlined,
   DownloadOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
-import type { Document } from '../../services/knowledge';
-import { useTags } from '../../store/knowledgeStore';
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
+import type { Document } from "../../services/knowledge";
+import { useTags } from "../../store/knowledgeStore";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -42,10 +42,12 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   onBulkDelete,
   onBulkTag,
   onBulkReprocess,
-  onBulkDownload
+  onBulkDownload,
 }) => {
   const { tags } = useTags();
-  const [actionType, setActionType] = useState<'delete' | 'tag' | 'reprocess' | 'download'>('tag');
+  const [actionType, setActionType] = useState<
+    "delete" | "tag" | "reprocess" | "download"
+  >("tag");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [form] = Form.useForm();
@@ -53,44 +55,52 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   const handleAction = async (values: any) => {
     setLoading(true);
     setProgress(0);
-    
-    const documentIds = selectedDocuments.map(doc => doc.id);
-    
+
+    const documentIds = selectedDocuments.map((doc) => doc.id);
+
     try {
       switch (actionType) {
-        case 'delete':
+        case "delete":
           if (onBulkDelete) {
             await onBulkDelete(documentIds);
-            message.success(`${selectedDocuments.length} documents deleted successfully`);
+            message.success(
+              `${selectedDocuments.length} documents deleted successfully`,
+            );
           }
           break;
-          
-        case 'tag':
+
+        case "tag":
           if (onBulkTag && values.tagNames) {
             await onBulkTag(documentIds, values.tagNames);
-            message.success(`Tags applied to ${selectedDocuments.length} documents`);
+            message.success(
+              `Tags applied to ${selectedDocuments.length} documents`,
+            );
           }
           break;
-          
-        case 'reprocess':
+
+        case "reprocess":
           if (onBulkReprocess) {
             await onBulkReprocess(documentIds);
-            message.success(`${selectedDocuments.length} documents queued for reprocessing`);
+            message.success(
+              `${selectedDocuments.length} documents queued for reprocessing`,
+            );
           }
           break;
-          
-        case 'download':
+
+        case "download":
           if (onBulkDownload) {
             await onBulkDownload(documentIds);
-            message.success(`Download started for ${selectedDocuments.length} documents`);
+            message.success(
+              `Download started for ${selectedDocuments.length} documents`,
+            );
           }
           break;
       }
-      
+
       onCancel();
       form.resetFields();
-    } catch (error) {
-      message.error('Failed to perform bulk action');
+    } catch (_error) {
+      message.error("Failed to perform bulk action");
     } finally {
       setLoading(false);
       setProgress(0);
@@ -99,82 +109,104 @@ const BulkActions: React.FC<BulkActionsProps> = ({
 
   const getActionTitle = () => {
     switch (actionType) {
-      case 'delete': return 'Delete Documents';
-      case 'tag': return 'Apply Tags';
-      case 'reprocess': return 'Reprocess Documents';
-      case 'download': return 'Download Documents';
-      default: return 'Bulk Actions';
+      case "delete":
+        return "Delete Documents";
+      case "tag":
+        return "Apply Tags";
+      case "reprocess":
+        return "Reprocess Documents";
+      case "download":
+        return "Download Documents";
+      default:
+        return "Bulk Actions";
     }
   };
 
   const getActionDescription = () => {
     switch (actionType) {
-      case 'delete': 
+      case "delete":
         return `This will permanently delete ${selectedDocuments.length} selected documents. This action cannot be undone.`;
-      case 'tag': 
+      case "tag":
         return `Apply tags to ${selectedDocuments.length} selected documents.`;
-      case 'reprocess': 
+      case "reprocess":
         return `Queue ${selectedDocuments.length} selected documents for reprocessing.`;
-      case 'download': 
+      case "download":
         return `Download ${selectedDocuments.length} selected documents.`;
-      default: 
-        return '';
+      default:
+        return "";
     }
   };
 
   const getActionIcon = () => {
     switch (actionType) {
-      case 'delete': return <DeleteOutlined />;
-      case 'tag': return <TagOutlined />;
-      case 'reprocess': return <ReloadOutlined />;
-      case 'download': return <DownloadOutlined />;
-      default: return null;
+      case "delete":
+        return <DeleteOutlined />;
+      case "tag":
+        return <TagOutlined />;
+      case "reprocess":
+        return <ReloadOutlined />;
+      case "download":
+        return <DownloadOutlined />;
+      default:
+        return null;
     }
   };
 
   const getActionButtonText = () => {
     switch (actionType) {
-      case 'delete': return 'Delete Documents';
-      case 'tag': return 'Apply Tags';
-      case 'reprocess': return 'Queue for Reprocessing';
-      case 'download': return 'Start Download';
-      default: return 'Execute';
+      case "delete":
+        return "Delete Documents";
+      case "tag":
+        return "Apply Tags";
+      case "reprocess":
+        return "Queue for Reprocessing";
+      case "download":
+        return "Start Download";
+      default:
+        return "Execute";
     }
   };
 
   const getActionButtonType = () => {
     switch (actionType) {
-      case 'delete': return 'primary' as const;
-      case 'tag': return 'primary' as const;
-      case 'reprocess': return 'default' as const;
-      case 'download': return 'default' as const;
-      default: return 'primary' as const;
+      case "delete":
+        return "primary" as const;
+      case "tag":
+        return "primary" as const;
+      case "reprocess":
+        return "default" as const;
+      case "download":
+        return "default" as const;
+      default:
+        return "primary" as const;
     }
   };
 
   const getActionButtonDanger = () => {
-    return actionType === 'delete';
+    return actionType === "delete";
   };
 
   const renderActionForm = () => {
     switch (actionType) {
-      case 'tag':
+      case "tag":
         return (
           <Form.Item
             name="tagNames"
             label="Select Tags"
-            rules={[{ required: true, message: 'Please select at least one tag' }]}
+            rules={[
+              { required: true, message: "Please select at least one tag" },
+            ]}
           >
             <Select
               mode="multiple"
               placeholder="Select tags to apply"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               maxTagCount={5}
             >
-              {tags.map(tag => (
+              {tags.map((tag) => (
                 <Option key={tag.id} value={tag.name}>
                   <Space>
-                    <Tag color={tag.color || '#1890ff'}>{tag.name}</Tag>
+                    <Tag color={tag.color || "#1890ff"}>{tag.name}</Tag>
                     <Text type="secondary">({tag.usage_count})</Text>
                   </Space>
                 </Option>
@@ -182,17 +214,14 @@ const BulkActions: React.FC<BulkActionsProps> = ({
             </Select>
           </Form.Item>
         );
-        
-      case 'reprocess':
+
+      case "reprocess":
         return (
-          <Form.Item
-            name="processingOptions"
-            label="Processing Options"
-          >
+          <Form.Item name="processingOptions" label="Processing Options">
             <Select
               mode="multiple"
               placeholder="Select processing options (optional)"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             >
               <Option value="extract_metadata">Extract Metadata</Option>
               <Option value="detect_language">Detect Language</Option>
@@ -201,15 +230,15 @@ const BulkActions: React.FC<BulkActionsProps> = ({
             </Select>
           </Form.Item>
         );
-        
-      case 'download':
+
+      case "download":
         return (
           <Form.Item
             name="downloadFormat"
             label="Download Format"
             initialValue="original"
           >
-            <Select style={{ width: '100%' }}>
+            <Select style={{ width: "100%" }}>
               <Option value="original">Original Files</Option>
               <Option value="pdf">Convert to PDF</Option>
               <Option value="text">Extract Text Only</Option>
@@ -217,14 +246,14 @@ const BulkActions: React.FC<BulkActionsProps> = ({
             </Select>
           </Form.Item>
         );
-        
+
       default:
         return null;
     }
   };
 
   const renderDocumentList = () => (
-    <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
+    <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 16 }}>
       <List
         size="small"
         dataSource={selectedDocuments}
@@ -234,11 +263,9 @@ const BulkActions: React.FC<BulkActionsProps> = ({
               title={doc.title}
               description={
                 <Space size="small">
-                  <Tag>{doc.document_type || 'Unknown'}</Tag>
+                  <Tag>{doc.document_type || "Unknown"}</Tag>
                   <Text type="secondary">{doc.file_name}</Text>
-                  {doc.author && (
-                    <Text type="secondary">by {doc.author}</Text>
-                  )}
+                  {doc.author && <Text type="secondary">by {doc.author}</Text>}
                 </Space>
               }
             />
@@ -265,7 +292,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         <Text type="secondary">{getActionDescription()}</Text>
       </div>
 
-      {actionType === 'delete' && (
+      {actionType === "delete" && (
         <Alert
           message="Warning"
           description="This action will permanently delete the selected documents and cannot be undone."
@@ -281,20 +308,13 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         {renderDocumentList()}
       </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleAction}
-      >
+      <Form form={form} layout="vertical" onFinish={handleAction}>
         <Form.Item
           name="actionType"
           label="Action Type"
           initialValue={actionType}
         >
-          <Select
-            onChange={setActionType}
-            style={{ width: '100%' }}
-          >
+          <Select onChange={setActionType} style={{ width: "100%" }}>
             <Option value="tag">Apply Tags</Option>
             <Option value="reprocess">Reprocess Documents</Option>
             <Option value="download">Download Documents</Option>

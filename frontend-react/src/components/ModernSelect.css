@@ -326,7 +326,7 @@
     font-size: var(--font-size-lg) !important;
     min-height: 48px !important;
   }
-  
+
   .modern-select--lg .ant-select-selector {
     padding: 12px 16px !important;
     font-size: var(--font-size-base) !important;
@@ -339,7 +339,7 @@
   .modern-select--filled {
     background: var(--colorBgElevated);
   }
-  
+
   .modern-select--filled:hover {
     background: var(--colorSurface);
   }
@@ -354,11 +354,11 @@
     transition: none !important;
     animation: none !important;
   }
-  
+
   .modern-select--open {
     transform: none !important;
   }
-  
+
   .modern-select--open .modern-select__arrow {
     transform: rotate(180deg) !important;
   }
@@ -377,7 +377,7 @@
 }
 
 .modern-select--loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -393,6 +393,10 @@
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }

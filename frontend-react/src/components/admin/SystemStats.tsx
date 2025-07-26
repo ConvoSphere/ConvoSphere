@@ -1,28 +1,28 @@
-import React, { useEffect } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Statistic, 
-  Typography, 
-  Table, 
-  Progress, 
-  Space, 
-  Button, 
+import React, { useEffect } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Typography,
+  Table,
+  Progress,
+  Space,
+  Button,
   Select,
   Alert,
-  Tag
-} from 'antd';
-import { 
-  FileTextOutlined, 
+  Tag,
+} from "antd";
+import {
+  FileTextOutlined,
   DatabaseOutlined,
   CloudOutlined,
   ClockCircleOutlined,
-  ReloadOutlined
-} from '@ant-design/icons';
-import { useKnowledgeStore, useStats } from '../../store/knowledgeStore';
-import type { DocumentProcessingJob } from '../../services/knowledge';
-import { formatFileSize, formatRelativeTime } from '../../utils/formatters';
+  ReloadOutlined,
+} from "@ant-design/icons";
+import { useKnowledgeStore, useStats } from "../../store/knowledgeStore";
+import type { DocumentProcessingJob } from "../../services/knowledge";
+import { formatFileSize, formatRelativeTime } from "../../utils/formatters";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -34,12 +34,12 @@ const SystemStats: React.FC = () => {
   useEffect(() => {
     fetchStats();
     fetchProcessingJobs();
-    
+
     const interval = setInterval(() => {
       fetchStats();
       fetchProcessingJobs();
     }, 30 * 1000);
-    
+
     return () => clearInterval(interval);
   }, [fetchStats, fetchProcessingJobs]);
 
@@ -51,44 +51,48 @@ const SystemStats: React.FC = () => {
   };
 
   const getProcessingStatus = () => {
-    if (!processingJobs.length) return { pending: 0, running: 0, completed: 0, failed: 0 };
-    
-    return processingJobs.reduce((acc, job) => {
-      switch (job.status) {
-        case 'pending':
-          acc.pending++;
-          break;
-        case 'running':
-          acc.running++;
-          break;
-        case 'completed':
-          acc.completed++;
-          break;
-        case 'failed':
-          acc.failed++;
-          break;
-      }
-      return acc;
-    }, { pending: 0, running: 0, completed: 0, failed: 0 });
+    if (!processingJobs.length)
+      return { pending: 0, running: 0, completed: 0, failed: 0 };
+
+    return processingJobs.reduce(
+      (acc, job) => {
+        switch (job.status) {
+          case "pending":
+            acc.pending++;
+            break;
+          case "running":
+            acc.running++;
+            break;
+          case "completed":
+            acc.completed++;
+            break;
+          case "failed":
+            acc.failed++;
+            break;
+        }
+        return acc;
+      },
+      { pending: 0, running: 0, completed: 0, failed: 0 },
+    );
   };
 
   const getDocumentTypeDistribution = () => {
     if (!stats?.documents_by_type) return [];
-    
+
     return Object.entries(stats.documents_by_type).map(([type, count]) => ({
       type,
       count,
-      percentage: (count / stats.total_documents) * 100
+      percentage: (count / stats.total_documents) * 100,
     }));
   };
 
   const getDocumentStatusDistribution = () => {
     if (!stats?.documents_by_status) return [];
-    
+
     return Object.entries(stats.documents_by_status).map(([status, count]) => ({
       status,
       count,
-      percentage: (count / stats.total_documents) * 100
+      percentage: (count / stats.total_documents) * 100,
     }));
   };
 
@@ -134,10 +138,10 @@ const SystemStats: React.FC = () => {
             prefix={<CloudOutlined />}
             loading={loading}
           />
-          <Progress 
-            percent={getStorageUsagePercentage()} 
-            size="small" 
-            status={getStorageUsagePercentage() > 80 ? 'exception' : 'normal'}
+          <Progress
+            percent={getStorageUsagePercentage()}
+            size="small"
+            status={getStorageUsagePercentage() > 80 ? "exception" : "normal"}
             style={{ marginTop: 8 }}
           />
         </Card>
@@ -148,7 +152,7 @@ const SystemStats: React.FC = () => {
   const renderProcessingStats = () => {
     const processingStatus = getProcessingStatus();
     const totalJobs = processingJobs.length;
-    
+
     return (
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -156,7 +160,7 @@ const SystemStats: React.FC = () => {
             <Statistic
               title="Pending Jobs"
               value={processingStatus.pending}
-              valueStyle={{ color: '#faad14' }}
+              valueStyle={{ color: "#faad14" }}
               prefix={<ClockCircleOutlined />}
             />
           </Card>
@@ -166,7 +170,7 @@ const SystemStats: React.FC = () => {
             <Statistic
               title="Running Jobs"
               value={processingStatus.running}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: "#1890ff" }}
               prefix={<ReloadOutlined />}
             />
           </Card>
@@ -176,7 +180,7 @@ const SystemStats: React.FC = () => {
             <Statistic
               title="Completed Jobs"
               value={processingStatus.completed}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: "#52c41a" }}
               prefix={<FileTextOutlined />}
             />
           </Card>
@@ -186,7 +190,7 @@ const SystemStats: React.FC = () => {
             <Statistic
               title="Failed Jobs"
               value={processingStatus.failed}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ color: "#ff4d4f" }}
               prefix={<FileTextOutlined />}
             />
           </Card>
@@ -197,19 +201,27 @@ const SystemStats: React.FC = () => {
 
   const renderDocumentTypeChart = () => {
     const distribution = getDocumentTypeDistribution();
-    
+
     return (
       <Card title="Document Type Distribution" style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           {distribution.map((item) => (
             <div key={item.type}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 4,
+                }}
+              >
                 <Text>{item.type}</Text>
-                <Text strong>{item.count} ({item.percentage.toFixed(1)}%)</Text>
+                <Text strong>
+                  {item.count} ({item.percentage.toFixed(1)}%)
+                </Text>
               </div>
-              <Progress 
-                percent={item.percentage} 
-                size="small" 
+              <Progress
+                percent={item.percentage}
+                size="small"
                 showInfo={false}
                 strokeColor="#1890ff"
               />
@@ -222,29 +234,42 @@ const SystemStats: React.FC = () => {
 
   const renderDocumentStatusChart = () => {
     const distribution = getDocumentStatusDistribution();
-    
+
     const getStatusColor = (status: string) => {
       switch (status.toLowerCase()) {
-        case 'processed': return '#52c41a';
-        case 'processing': return '#1890ff';
-        case 'error': return '#ff4d4f';
-        case 'uploaded': return '#faad14';
-        default: return '#8c8c8c';
+        case "processed":
+          return "#52c41a";
+        case "processing":
+          return "#1890ff";
+        case "error":
+          return "#ff4d4f";
+        case "uploaded":
+          return "#faad14";
+        default:
+          return "#8c8c8c";
       }
     };
-    
+
     return (
       <Card title="Document Status Distribution" style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           {distribution.map((item) => (
             <div key={item.status}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 4,
+                }}
+              >
                 <Tag color={getStatusColor(item.status)}>{item.status}</Tag>
-                <Text strong>{item.count} ({item.percentage.toFixed(1)}%)</Text>
+                <Text strong>
+                  {item.count} ({item.percentage.toFixed(1)}%)
+                </Text>
               </div>
-              <Progress 
-                percent={item.percentage} 
-                size="small" 
+              <Progress
+                percent={item.percentage}
+                size="small"
                 showInfo={false}
                 strokeColor={getStatusColor(item.status)}
               />
@@ -257,55 +282,56 @@ const SystemStats: React.FC = () => {
 
   const renderRecentJobs = () => {
     const recentJobs = processingJobs
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
       .slice(0, 10);
 
     const columns = [
       {
-        title: 'Job Type',
-        dataIndex: 'job_type',
-        key: 'job_type',
-        render: (type: string) => (
-          <Tag color="blue">{type}</Tag>
-        ),
+        title: "Job Type",
+        dataIndex: "job_type",
+        key: "job_type",
+        render: (type: string) => <Tag color="blue">{type}</Tag>,
       },
       {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
         render: (status: string) => {
           const colorMap: Record<string, string> = {
-            pending: 'orange',
-            running: 'blue',
-            completed: 'green',
-            failed: 'red'
+            pending: "orange",
+            running: "blue",
+            completed: "green",
+            failed: "red",
           };
-          return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
+          return <Tag color={colorMap[status] || "default"}>{status}</Tag>;
         },
       },
       {
-        title: 'Progress',
-        key: 'progress',
+        title: "Progress",
+        key: "progress",
         render: (record: DocumentProcessingJob) => (
-          <Progress 
-            percent={record.progress} 
-            size="small" 
-            status={record.status === 'failed' ? 'exception' : 'normal'}
+          <Progress
+            percent={record.progress}
+            size="small"
+            status={record.status === "failed" ? "exception" : "normal"}
           />
         ),
       },
       {
-        title: 'Created',
-        dataIndex: 'created_at',
-        key: 'created_at',
+        title: "Created",
+        dataIndex: "created_at",
+        key: "created_at",
         render: (date: string) => formatRelativeTime(date),
       },
       {
-        title: 'Actions',
-        key: 'actions',
+        title: "Actions",
+        key: "actions",
         render: (record: DocumentProcessingJob) => (
           <Space>
-            {record.status === 'failed' && (
+            {record.status === "failed" && (
               <Button size="small" type="link">
                 Retry
               </Button>
@@ -336,24 +362,29 @@ const SystemStats: React.FC = () => {
     const failedJobs = getProcessingStatus().failed;
     const totalJobs = processingJobs.length;
     const failureRate = totalJobs > 0 ? (failedJobs / totalJobs) * 100 : 0;
-    
+
     const getHealthStatus = () => {
-      if (storageUsage > 90 || failureRate > 20) return 'critical';
-      if (storageUsage > 70 || failureRate > 10) return 'warning';
-      return 'healthy';
+      if (storageUsage > 90 || failureRate > 20) return "critical";
+      if (storageUsage > 70 || failureRate > 10) return "warning";
+      return "healthy";
     };
-    
+
     const healthStatus = getHealthStatus();
-    const statusColor = healthStatus === 'critical' ? '#ff4d4f' : 
-                       healthStatus === 'warning' ? '#faad14' : '#52c41a';
-    
+    const statusColor =
+      healthStatus === "critical"
+        ? "#ff4d4f"
+        : healthStatus === "warning"
+          ? "#faad14"
+          : "#52c41a";
+
     return (
       <Card title="System Health" style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <div>
             <Text strong>Storage Usage: </Text>
             <Text style={{ color: statusColor }}>
-              {storageUsage.toFixed(1)}% ({formatFileSize(stats?.storage_used || 0)})
+              {storageUsage.toFixed(1)}% (
+              {formatFileSize(stats?.storage_used || 0)})
             </Text>
           </div>
           <div>
@@ -364,12 +395,22 @@ const SystemStats: React.FC = () => {
           </div>
           <div>
             <Text strong>Last Updated: </Text>
-            <Text>{stats?.last_processed ? formatRelativeTime(stats.last_processed) : 'Never'}</Text>
+            <Text>
+              {stats?.last_processed
+                ? formatRelativeTime(stats.last_processed)
+                : "Never"}
+            </Text>
           </div>
-          
+
           <Alert
             message={`System Status: ${healthStatus.toUpperCase()}`}
-            type={healthStatus === 'critical' ? 'error' : healthStatus === 'warning' ? 'warning' : 'success'}
+            type={
+              healthStatus === "critical"
+                ? "error"
+                : healthStatus === "warning"
+                  ? "warning"
+                  : "success"
+            }
             showIcon
           />
         </Space>
@@ -379,7 +420,13 @@ const SystemStats: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <Title level={3}>System Statistics</Title>
         <Space>
           <Select
@@ -400,8 +447,8 @@ const SystemStats: React.FC = () => {
               onChange={(dates) => setCustomRange(dates)}
             />
           )} */}
-          <Button 
-            icon={<ReloadOutlined />} 
+          <Button
+            icon={<ReloadOutlined />}
             onClick={() => {
               fetchStats();
               fetchProcessingJobs();
@@ -422,23 +469,15 @@ const SystemStats: React.FC = () => {
 
       {renderMainStats()}
       {renderProcessingStats()}
-      
+
       <Row gutter={16}>
-        <Col span={12}>
-          {renderDocumentTypeChart()}
-        </Col>
-        <Col span={12}>
-          {renderDocumentStatusChart()}
-        </Col>
+        <Col span={12}>{renderDocumentTypeChart()}</Col>
+        <Col span={12}>{renderDocumentStatusChart()}</Col>
       </Row>
-      
+
       <Row gutter={16}>
-        <Col span={16}>
-          {renderRecentJobs()}
-        </Col>
-        <Col span={8}>
-          {renderSystemHealth()}
-        </Col>
+        <Col span={16}>{renderRecentJobs()}</Col>
+        <Col span={8}>{renderSystemHealth()}</Col>
       </Row>
 
       {/* {showDetailedStats && (

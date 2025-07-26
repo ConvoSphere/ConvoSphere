@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
-import { Button, Result, Card, Typography, Space } from 'antd';
-import { ReloadOutlined, HomeOutlined, BugOutlined } from '@ant-design/icons';
-import { useThemeStore } from '../store/themeStore';
+import React, { Component } from "react";
+import type { ErrorInfo, ReactNode } from "react";
+import { Button, Result, Card, Typography, Space } from "antd";
+import { ReloadOutlined, HomeOutlined, BugOutlined } from "@ant-design/icons";
+import { useThemeStore } from "../store/themeStore";
 
 const { Text, Paragraph } = Typography;
 
@@ -27,7 +27,7 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      errorId: '',
+      errorId: "",
     };
   }
 
@@ -41,10 +41,10 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    
+
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     // Call custom error handler
@@ -63,7 +63,7 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
         hasError: false,
         error: null,
         errorInfo: null,
-        errorId: '',
+        errorId: "",
       });
     }
   }
@@ -71,7 +71,7 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
   logErrorToService = (error: Error, errorInfo: ErrorInfo) => {
     // In a real app, you would send this to your error monitoring service
     // Example: Sentry.captureException(error, { extra: errorInfo });
-    
+
     const errorData = {
       errorId: this.state.errorId,
       message: error.message,
@@ -84,11 +84,16 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
 
     // Store error in localStorage for debugging
     try {
-      const existingErrors = JSON.parse(localStorage.getItem('app-errors') || '[]');
+      const existingErrors = JSON.parse(
+        localStorage.getItem("app-errors") || "[]",
+      );
       existingErrors.push(errorData);
-      localStorage.setItem('app-errors', JSON.stringify(existingErrors.slice(-10))); // Keep last 10 errors
+      localStorage.setItem(
+        "app-errors",
+        JSON.stringify(existingErrors.slice(-10)),
+      ); // Keep last 10 errors
     } catch (e) {
-      console.warn('Could not save error to localStorage:', e);
+      console.warn("Could not save error to localStorage:", e);
     }
   };
 
@@ -97,12 +102,12 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      errorId: '',
+      errorId: "",
     });
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   handleReportBug = () => {
@@ -117,17 +122,18 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
     };
 
     // In a real app, you would send this to your bug reporting system
-    console.log('Bug Report:', errorReport);
-    
+    console.log("Bug Report:", errorReport);
+
     // For now, just copy to clipboard
-    navigator.clipboard.writeText(JSON.stringify(errorReport, null, 2))
-      .then(() => alert('Error report copied to clipboard'))
-      .catch(() => alert('Could not copy error report'));
+    navigator.clipboard
+      .writeText(JSON.stringify(errorReport, null, 2))
+      .then(() => alert("Error report copied to clipboard"))
+      .catch(() => alert("Could not copy error report"));
   };
 
   render() {
     const { colors } = this.props;
-    
+
     if (this.state.hasError) {
       // Custom fallback UI
       if (this.props.fallback) {
@@ -136,18 +142,20 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
 
       // Default error UI
       return (
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.colorBgBase,
-          padding: '20px',
-        }}>
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.colorBgBase,
+            padding: "20px",
+          }}
+        >
           <Card
             style={{
-              maxWidth: '600px',
-              width: '100%',
+              maxWidth: "600px",
+              width: "100%",
               backgroundColor: colors.colorBgContainer,
               border: `1px solid ${colors.colorBorder}`,
               boxShadow: colors.boxShadow,
@@ -159,7 +167,11 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
               title="Something went wrong"
               subTitle="We're sorry, but something unexpected happened. Please try again."
               extra={
-                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <Space
+                  direction="vertical"
+                  size="middle"
+                  style={{ width: "100%" }}
+                >
                   <Space>
                     <Button
                       type="primary"
@@ -193,53 +205,75 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
                       Report Bug
                     </Button>
                   </Space>
-                  
-                  {process.env.NODE_ENV === 'development' && this.state.error && (
-                    <div style={{
-                      marginTop: '20px',
-                      padding: '16px',
-                      backgroundColor: colors.colorBgElevated,
-                      border: `1px solid ${colors.colorBorder}`,
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontFamily: 'monospace',
-                      overflow: 'auto',
-                      maxHeight: '200px',
-                    }}>
-                      <Text strong style={{ color: colors.colorError }}>
-                        Error ID: {this.state.errorId}
-                      </Text>
-                      <Paragraph style={{ margin: '8px 0', color: colors.colorTextSecondary }}>
-                        {this.state.error.message}
-                      </Paragraph>
-                      <details>
-                        <summary style={{ cursor: 'pointer', color: colors.colorTextSecondary }}>
-                          Stack Trace
-                        </summary>
-                        <pre style={{
-                          margin: '8px 0',
-                          color: colors.colorTextSecondary,
-                          whiteSpace: 'pre-wrap',
-                        }}>
-                          {this.state.error.stack}
-                        </pre>
-                      </details>
-                      {this.state.errorInfo && (
-                        <details>
-                          <summary style={{ cursor: 'pointer', color: colors.colorTextSecondary }}>
-                            Component Stack
-                          </summary>
-                          <pre style={{
-                            margin: '8px 0',
+
+                  {process.env.NODE_ENV === "development" &&
+                    this.state.error && (
+                      <div
+                        style={{
+                          marginTop: "20px",
+                          padding: "16px",
+                          backgroundColor: colors.colorBgElevated,
+                          border: `1px solid ${colors.colorBorder}`,
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          fontFamily: "monospace",
+                          overflow: "auto",
+                          maxHeight: "200px",
+                        }}
+                      >
+                        <Text strong style={{ color: colors.colorError }}>
+                          Error ID: {this.state.errorId}
+                        </Text>
+                        <Paragraph
+                          style={{
+                            margin: "8px 0",
                             color: colors.colorTextSecondary,
-                            whiteSpace: 'pre-wrap',
-                          }}>
-                            {this.state.errorInfo.componentStack}
+                          }}
+                        >
+                          {this.state.error.message}
+                        </Paragraph>
+                        <details>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              color: colors.colorTextSecondary,
+                            }}
+                          >
+                            Stack Trace
+                          </summary>
+                          <pre
+                            style={{
+                              margin: "8px 0",
+                              color: colors.colorTextSecondary,
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {this.state.error.stack}
                           </pre>
                         </details>
-                      )}
-                    </div>
-                  )}
+                        {this.state.errorInfo && (
+                          <details>
+                            <summary
+                              style={{
+                                cursor: "pointer",
+                                color: colors.colorTextSecondary,
+                              }}
+                            >
+                              Component Stack
+                            </summary>
+                            <pre
+                              style={{
+                                margin: "8px 0",
+                                color: colors.colorTextSecondary,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {this.state.errorInfo.componentStack}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    )}
                 </Space>
               }
             />

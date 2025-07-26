@@ -1,18 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Card, Statistic, Progress, Button, Space, Typography, Divider } from 'antd';
-import { 
-  DashboardOutlined, 
-  ReloadOutlined, 
-  CloseOutlined
-} from '@ant-design/icons';
-import { useThemeStore } from '../store/themeStore';
-import performanceMonitor from '../utils/performance';
-import cacheManager from '../utils/cacheManager';
-import networkOptimizer from '../utils/networkOptimizer';
-import workerManager from '../utils/workerManager';
-import resourceOptimizer from '../utils/resourceOptimizer';
-import accessibilityManager from '../utils/accessibilityManager';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Card,
+  Statistic,
+  Progress,
+  Button,
+  Space,
+  Typography,
+  Divider,
+} from "antd";
+import {
+  DashboardOutlined,
+  ReloadOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
+import { useThemeStore } from "../store/themeStore";
+import performanceMonitor from "../utils/performance";
+import cacheManager from "../utils/cacheManager";
+import networkOptimizer from "../utils/networkOptimizer";
+import workerManager from "../utils/workerManager";
+import resourceOptimizer from "../utils/resourceOptimizer";
+import accessibilityManager from "../utils/accessibilityManager";
 
 const { Title, Text } = Typography;
 
@@ -55,12 +63,12 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   if (!visible) return null;
 
   const cardStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    width: '400px',
-    maxHeight: '80vh',
-    overflow: 'auto',
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    width: "400px",
+    maxHeight: "80vh",
+    overflow: "auto",
     backgroundColor: colors.colorBgContainer,
     border: `1px solid ${colors.colorBorder}`,
     boxShadow: colors.boxShadow,
@@ -68,29 +76,32 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   };
 
   const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "16px",
     borderBottom: `1px solid ${colors.colorBorder}`,
   };
 
   const contentStyle: React.CSSProperties = {
-    padding: '16px',
+    padding: "16px",
   };
 
-  const getMetricColor = (value: number, thresholds: { good: number; warning: number }) => {
+  const getMetricColor = (
+    value: number,
+    thresholds: { good: number; warning: number },
+  ) => {
     if (value <= thresholds.good) return colors.colorSuccess;
     if (value <= thresholds.warning) return colors.colorWarning;
     return colors.colorError;
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const formatTime = (ms: number) => {
@@ -105,7 +116,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         <Space>
           <DashboardOutlined style={{ color: colors.colorPrimary }} />
           <Title level={5} style={{ margin: 0, color: colors.colorTextBase }}>
-            {t('performance.title')}
+            {t("performance.title")}
           </Title>
         </Space>
         <Space>
@@ -129,26 +140,45 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
       {/* Content */}
       <div style={contentStyle}>
         {/* Web Vitals */}
-        <div style={{ marginBottom: '20px' }}>
-          <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-            {t('performance.web_vitals')}
+        <div style={{ marginBottom: "20px" }}>
+          <Title
+            level={5}
+            style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+          >
+            {t("performance.web_vitals")}
           </Title>
-          
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
+
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
             {metrics.fcp && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <Text style={{ color: colors.colorTextSecondary }}>{t('performance.metrics.fcp')}</Text>
-                  <Text style={{ 
-                    color: getMetricColor(metrics.fcp, { good: 1800, warning: 3000 }),
-                    fontWeight: 500 
-                  }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <Text style={{ color: colors.colorTextSecondary }}>
+                    {t("performance.metrics.fcp")}
+                  </Text>
+                  <Text
+                    style={{
+                      color: getMetricColor(metrics.fcp, {
+                        good: 1800,
+                        warning: 3000,
+                      }),
+                      fontWeight: 500,
+                    }}
+                  >
                     {formatTime(metrics.fcp)}
                   </Text>
                 </div>
                 <Progress
                   percent={Math.min((metrics.fcp / 3000) * 100, 100)}
-                  strokeColor={getMetricColor(metrics.fcp, { good: 1800, warning: 3000 })}
+                  strokeColor={getMetricColor(metrics.fcp, {
+                    good: 1800,
+                    warning: 3000,
+                  })}
                   showInfo={false}
                   size="small"
                 />
@@ -157,18 +187,34 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 
             {metrics.lcp && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <Text style={{ color: colors.colorTextSecondary }}>{t('performance.metrics.lcp')}</Text>
-                  <Text style={{ 
-                    color: getMetricColor(metrics.lcp, { good: 2500, warning: 4000 }),
-                    fontWeight: 500 
-                  }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <Text style={{ color: colors.colorTextSecondary }}>
+                    {t("performance.metrics.lcp")}
+                  </Text>
+                  <Text
+                    style={{
+                      color: getMetricColor(metrics.lcp, {
+                        good: 2500,
+                        warning: 4000,
+                      }),
+                      fontWeight: 500,
+                    }}
+                  >
                     {formatTime(metrics.lcp)}
                   </Text>
                 </div>
                 <Progress
                   percent={Math.min((metrics.lcp / 4000) * 100, 100)}
-                  strokeColor={getMetricColor(metrics.lcp, { good: 2500, warning: 4000 })}
+                  strokeColor={getMetricColor(metrics.lcp, {
+                    good: 2500,
+                    warning: 4000,
+                  })}
                   showInfo={false}
                   size="small"
                 />
@@ -177,18 +223,34 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 
             {metrics.cls && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <Text style={{ color: colors.colorTextSecondary }}>{t('performance.metrics.cls')}</Text>
-                  <Text style={{ 
-                    color: getMetricColor(metrics.cls, { good: 0.1, warning: 0.25 }),
-                    fontWeight: 500 
-                  }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <Text style={{ color: colors.colorTextSecondary }}>
+                    {t("performance.metrics.cls")}
+                  </Text>
+                  <Text
+                    style={{
+                      color: getMetricColor(metrics.cls, {
+                        good: 0.1,
+                        warning: 0.25,
+                      }),
+                      fontWeight: 500,
+                    }}
+                  >
                     {metrics.cls.toFixed(3)}
                   </Text>
                 </div>
                 <Progress
                   percent={Math.min((metrics.cls / 0.25) * 100, 100)}
-                  strokeColor={getMetricColor(metrics.cls, { good: 0.1, warning: 0.25 })}
+                  strokeColor={getMetricColor(metrics.cls, {
+                    good: 0.1,
+                    warning: 0.25,
+                  })}
                   showInfo={false}
                   size="small"
                 />
@@ -197,49 +259,68 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
           </Space>
         </div>
 
-        <Divider style={{ margin: '16px 0', borderColor: colors.colorBorder }} />
+        <Divider
+          style={{ margin: "16px 0", borderColor: colors.colorBorder }}
+        />
 
         {/* Memory Usage */}
         {metrics.jsHeapUsed && (
-          <div style={{ marginBottom: '20px' }}>
-            <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-              {t('performance.memory_usage')}
+          <div style={{ marginBottom: "20px" }}>
+            <Title
+              level={5}
+              style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+            >
+              {t("performance.memory_usage")}
             </Title>
-            
+
             <Statistic
-              title={t('performance.heap_used')}
+              title={t("performance.heap_used")}
               value={formatBytes(metrics.jsHeapUsed)}
-              valueStyle={{ 
-                color: getMetricColor(metrics.jsHeapUsed / 1024 / 1024, { good: 50, warning: 100 }),
-                fontSize: '16px' 
+              valueStyle={{
+                color: getMetricColor(metrics.jsHeapUsed / 1024 / 1024, {
+                  good: 50,
+                  warning: 100,
+                }),
+                fontSize: "16px",
               }}
             />
           </div>
         )}
 
-        <Divider style={{ margin: '16px 0', borderColor: colors.colorBorder }} />
+        <Divider
+          style={{ margin: "16px 0", borderColor: colors.colorBorder }}
+        />
 
         {/* Cache Stats */}
-        <div style={{ marginBottom: '20px' }}>
-                      <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-              {t('performance.cache_performance')}
-            </Title>
-          
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.entries')}</Text>
+        <div style={{ marginBottom: "20px" }}>
+          <Title
+            level={5}
+            style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+          >
+            {t("performance.cache_performance")}
+          </Title>
+
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.entries")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {stats.cache?.entryCount || 0} / {stats.cache?.maxEntries || 0}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.size')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.size")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {formatBytes(stats.cache?.size || 0)}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.hit_rate')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.hit_rate")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {((stats.cache?.hitRate || 0) * 100).toFixed(1)}%
               </Text>
@@ -247,32 +328,49 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
           </Space>
         </div>
 
-        <Divider style={{ margin: '16px 0', borderColor: colors.colorBorder }} />
+        <Divider
+          style={{ margin: "16px 0", borderColor: colors.colorBorder }}
+        />
 
         {/* Network Status */}
-        <div style={{ marginBottom: '20px' }}>
-                      <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-              {t('performance.network_status')}
-            </Title>
-          
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.status')}</Text>
-              <Text style={{ 
-                color: stats.network?.isOnline ? colors.colorSuccess : colors.colorError,
-                fontWeight: 500 
-              }}>
-                {stats.network?.isOnline ? t('performance.online') : t('performance.offline')}
+        <div style={{ marginBottom: "20px" }}>
+          <Title
+            level={5}
+            style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+          >
+            {t("performance.network_status")}
+          </Title>
+
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.status")}
+              </Text>
+              <Text
+                style={{
+                  color: stats.network?.isOnline
+                    ? colors.colorSuccess
+                    : colors.colorError,
+                  fontWeight: 500,
+                }}
+              >
+                {stats.network?.isOnline
+                  ? t("performance.online")
+                  : t("performance.offline")}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.quality')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.quality")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
-                {stats.network?.connectionQuality || 'Unknown'}
+                {stats.network?.connectionQuality || "Unknown"}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.queue')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.queue")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {stats.network?.queueLength || 0}
               </Text>
@@ -280,23 +378,33 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
           </Space>
         </div>
 
-        <Divider style={{ margin: '16px 0', borderColor: colors.colorBorder }} />
+        <Divider
+          style={{ margin: "16px 0", borderColor: colors.colorBorder }}
+        />
 
         {/* Worker Stats */}
-        <div style={{ marginBottom: '20px' }}>
-                      <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-              {t('performance.workers')}
-            </Title>
-          
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.active')}</Text>
+        <div style={{ marginBottom: "20px" }}>
+          <Title
+            level={5}
+            style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+          >
+            {t("performance.workers")}
+          </Title>
+
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.active")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
-                {stats.workers?.busyWorkers || 0} / {stats.workers?.totalWorkers || 0}
+                {stats.workers?.busyWorkers || 0} /{" "}
+                {stats.workers?.totalWorkers || 0}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.tasks')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.tasks")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {stats.workers?.activeTasks || 0}
               </Text>
@@ -304,23 +412,32 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
           </Space>
         </div>
 
-        <Divider style={{ margin: '16px 0', borderColor: colors.colorBorder }} />
+        <Divider
+          style={{ margin: "16px 0", borderColor: colors.colorBorder }}
+        />
 
         {/* Resource Stats */}
-        <div style={{ marginBottom: '20px' }}>
-                      <Title level={5} style={{ color: colors.colorTextBase, marginBottom: '12px' }}>
-              {t('performance.resources')}
-            </Title>
-          
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.loaded')}</Text>
+        <div style={{ marginBottom: "20px" }}>
+          <Title
+            level={5}
+            style={{ color: colors.colorTextBase, marginBottom: "12px" }}
+          >
+            {t("performance.resources")}
+          </Title>
+
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.loaded")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {stats.resources?.loadedResources || 0}
               </Text>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: colors.colorTextSecondary }}>{t('performance.labels.active_loads')}</Text>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text style={{ color: colors.colorTextSecondary }}>
+                {t("performance.labels.active_loads")}
+              </Text>
               <Text style={{ color: colors.colorTextBase, fontWeight: 500 }}>
                 {stats.resources?.activeLoads || 0}
               </Text>
@@ -329,15 +446,17 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
         </div>
 
         {/* Last Update */}
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '16px',
-          padding: '8px',
-          backgroundColor: colors.colorBgElevated,
-          borderRadius: '4px'
-        }}>
-          <Text style={{ color: colors.colorTextSecondary, fontSize: '12px' }}>
-            {t('performance.last_update')}: {lastUpdate.toLocaleTimeString()}
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "16px",
+            padding: "8px",
+            backgroundColor: colors.colorBgElevated,
+            borderRadius: "4px",
+          }}
+        >
+          <Text style={{ color: colors.colorTextSecondary, fontSize: "12px" }}>
+            {t("performance.last_update")}: {lastUpdate.toLocaleTimeString()}
           </Text>
         </div>
       </div>

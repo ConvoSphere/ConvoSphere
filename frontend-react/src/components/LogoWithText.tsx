@@ -1,27 +1,27 @@
-import React from 'react';
-import { Logo } from './Logo';
-import type { LogoProps } from './Logo';
+import React from "react";
+import { Logo } from "./Logo";
+import type { LogoProps } from "./Logo";
 
-export interface LogoWithTextProps extends Omit<LogoProps, 'variant'> {
+export interface LogoWithTextProps extends Omit<LogoProps, "variant"> {
   showTagline?: boolean;
   tagline?: string;
-  layout?: 'horizontal' | 'vertical';
+  layout?: "horizontal" | "vertical";
   logoSize?: number;
   className?: string;
 }
 
 export const LogoWithText: React.FC<LogoWithTextProps> = ({
   showTagline = true,
-  tagline = 'AI-Powered Conversations',
-  layout = 'horizontal',
+  tagline = "AI-Powered Conversations",
+  layout = "horizontal",
   logoSize,
-  className = '',
+  className = "",
   ...logoProps
 }) => {
   const containerClass = `logo-container ${layout} ${className}`.trim();
   const textClass = `logo-with-text ${layout}`.trim();
 
-  if (layout === 'vertical') {
+  if (layout === "vertical") {
     return (
       <div className={containerClass}>
         <Logo variant="icon" size={logoSize || 64} {...logoProps} />

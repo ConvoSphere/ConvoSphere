@@ -1,6 +1,6 @@
 /**
  * Text Format Icons
- * 
+ *
  * Icons used for text formatting and editing operations.
  */
 
@@ -18,8 +18,8 @@ import {
   VerticalAlignTopOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignBottomOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const textFormatIcons: IconMapping = {
   bold: BoldOutlined,

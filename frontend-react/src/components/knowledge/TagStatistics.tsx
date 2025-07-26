@@ -1,6 +1,6 @@
-import React from 'react';
-import { Row, Col, Card, Statistic } from 'antd';
-import { TagOutlined, BarChartOutlined } from '@ant-design/icons';
+import React from "react";
+import { Row, Col, Card, Statistic } from "antd";
+import { TagOutlined, BarChartOutlined } from "@ant-design/icons";
 
 interface TagStatisticsProps {
   totalTags: number;
@@ -9,7 +9,12 @@ interface TagStatisticsProps {
   totalUsage: number;
 }
 
-const TagStatistics: React.FC<TagStatisticsProps> = ({ totalTags, systemTags, userTags, totalUsage }) => (
+const TagStatistics: React.FC<TagStatisticsProps> = ({
+  totalTags,
+  systemTags,
+  userTags,
+  totalUsage,
+}) => (
   <Row gutter={16} style={{ marginBottom: 24 }}>
     <Col span={6}>
       <Card>
@@ -25,7 +30,7 @@ const TagStatistics: React.FC<TagStatisticsProps> = ({ totalTags, systemTags, us
         <Statistic
           title="System Tags"
           value={systemTags}
-          valueStyle={{ color: '#cf1322' }}
+          valueStyle={{ color: "#cf1322" }}
         />
       </Card>
     </Col>
@@ -34,7 +39,7 @@ const TagStatistics: React.FC<TagStatisticsProps> = ({ totalTags, systemTags, us
         <Statistic
           title="User Tags"
           value={userTags}
-          valueStyle={{ color: '#3f8600' }}
+          valueStyle={{ color: "#3f8600" }}
         />
       </Card>
     </Col>

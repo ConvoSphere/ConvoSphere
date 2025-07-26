@@ -1,45 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Button, 
-  Input, 
-  Form, 
-  Select, 
-  Space, 
-  Typography, 
-  message
-} from 'antd';
-import { 
-  PlusOutlined
-} from '@ant-design/icons';
-import type { Tag as TagType } from '../../services/knowledge';
-import { useKnowledgeStore } from '../../store/knowledgeStore';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Button,
+  Input,
+  Form,
+  Select,
+  Space,
+  Typography,
+  message,
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import type { Tag as TagType } from "../../services/knowledge";
+import { useKnowledgeStore } from "../../store/knowledgeStore";
 
 const { Search } = Input;
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface TagManagerProps {
-  onTagSelect?: (tag: TagType) => void;
   showCreateButton?: boolean;
   showStatistics?: boolean;
-  mode?: 'selection' | 'management';
 }
 
 const TagManager: React.FC<TagManagerProps> = ({
-  onTagSelect,
   showCreateButton = true,
   showStatistics = true,
-  mode = 'management'
 }) => {
   const { tags, fetchTags } = useKnowledgeStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagType | null>(null);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [filterType, setFilterType] = useState<'all' | 'system' | 'user'>('all');
+  const [filterType, setFilterType] = useState<"all" | "system" | "user">(
+    "all",
+  );
 
   useEffect(() => {
     fetchTags();
@@ -48,12 +43,12 @@ const TagManager: React.FC<TagManagerProps> = ({
   const handleCreateTag = async () => {
     try {
       // TODO: Implement create tag API call
-      message.success('Tag created successfully');
+      message.success("Tag created successfully");
       setShowCreateModal(false);
       form.resetFields();
       fetchTags();
-    } catch (error) {
-      message.error('Failed to create tag');
+    } catch (_error) {
+      message.error("Failed to create tag");
     }
   };
 
@@ -61,40 +56,34 @@ const TagManager: React.FC<TagManagerProps> = ({
     if (!selectedTag) return;
     try {
       // TODO: Implement edit tag API call
-      message.success('Tag updated successfully');
+      message.success("Tag updated successfully");
       setShowEditModal(false);
       setSelectedTag(null);
       editForm.resetFields();
       fetchTags();
-    } catch (error) {
-      message.error('Failed to update tag');
+    } catch (_error) {
+      message.error("Failed to update tag");
     }
   };
 
-  const handleDeleteTag = async () => {
-    try {
-      // TODO: Implement delete tag API call
-      message.success('Tag deleted successfully');
-      fetchTags();
-    } catch (error) {
-      message.error('Failed to delete tag');
-    }
-  };
 
-  const filteredTags = tags.filter(tag => {
-    const matchesSearch = tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tag.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || 
-                       (filterType === 'system' && tag.is_system) ||
-                       (filterType === 'user' && !tag.is_system);
+
+  const filteredTags = tags.filter((tag) => {
+    const matchesSearch =
+      tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tag.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType =
+      filterType === "all" ||
+      (filterType === "system" && tag.is_system) ||
+      (filterType === "user" && !tag.is_system);
     return matchesSearch && matchesType;
   });
 
   const stats = {
     totalTags: tags.length,
-    systemTags: tags.filter(tag => tag.is_system).length,
-    userTags: tags.filter(tag => !tag.is_system).length,
-    totalUsage: tags.reduce((sum, tag) => sum + tag.usage_count, 0)
+    systemTags: tags.filter((tag) => tag.is_system).length,
+    userTags: tags.filter((tag) => !tag.is_system).length,
+    totalUsage: tags.reduce((sum, tag) => sum + tag.usage_count, 0),
   };
 
   return (
@@ -140,8 +129,15 @@ const TagManager: React.FC<TagManagerProps> = ({
         }
       >
         <div>
-          {filteredTags.map(tag => (
-            <div key={tag.id} style={{ padding: '8px', border: '1px solid #f0f0f0', marginBottom: '4px' }}>
+          {filteredTags.map((tag) => (
+            <div
+              key={tag.id}
+              style={{
+                padding: "8px",
+                border: "1px solid #f0f0f0",
+                marginBottom: "4px",
+              }}
+            >
               <Text>{tag.name}</Text>
             </div>
           ))}
@@ -153,21 +149,14 @@ const TagManager: React.FC<TagManagerProps> = ({
         <Form.Item
           name="name"
           label="Tag Name"
-          rules={[{ required: true, message: 'Please enter tag name' }]}
+          rules={[{ required: true, message: "Please enter tag name" }]}
         >
           <Input placeholder="Enter tag name" />
         </Form.Item>
-        <Form.Item
-          name="description"
-          label="Description"
-        >
+        <Form.Item name="description" label="Description">
           <Input.TextArea placeholder="Enter tag description" />
         </Form.Item>
-        <Form.Item
-          name="color"
-          label="Color"
-          initialValue="#1890ff"
-        >
+        <Form.Item name="color" label="Color" initialValue="#1890ff">
           <Input type="color" />
         </Form.Item>
         <Form.Item>
@@ -175,9 +164,7 @@ const TagManager: React.FC<TagManagerProps> = ({
             <Button type="primary" htmlType="submit">
               Create
             </Button>
-            <Button onClick={() => setShowCreateModal(false)}>
-              Cancel
-            </Button>
+            <Button onClick={() => setShowCreateModal(false)}>Cancel</Button>
           </Space>
         </Form.Item>
       </Form>
@@ -187,20 +174,14 @@ const TagManager: React.FC<TagManagerProps> = ({
         <Form.Item
           name="name"
           label="Tag Name"
-          rules={[{ required: true, message: 'Please enter tag name' }]}
+          rules={[{ required: true, message: "Please enter tag name" }]}
         >
           <Input placeholder="Enter tag name" />
         </Form.Item>
-        <Form.Item
-          name="description"
-          label="Description"
-        >
+        <Form.Item name="description" label="Description">
           <Input.TextArea placeholder="Enter tag description" />
         </Form.Item>
-        <Form.Item
-          name="color"
-          label="Color"
-        >
+        <Form.Item name="color" label="Color">
           <Input type="color" />
         </Form.Item>
         <Form.Item>
@@ -208,9 +189,7 @@ const TagManager: React.FC<TagManagerProps> = ({
             <Button type="primary" htmlType="submit">
               Update
             </Button>
-            <Button onClick={() => setShowEditModal(false)}>
-              Cancel
-            </Button>
+            <Button onClick={() => setShowEditModal(false)}>Cancel</Button>
           </Space>
         </Form.Item>
       </Form>

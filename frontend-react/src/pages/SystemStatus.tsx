@@ -1,16 +1,23 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Row, Col, Tag, Spin, Alert, Typography, Progress, Statistic, Space, Divider } from 'antd';
-import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../store/authStore';
-import { useThemeStore } from '../store/themeStore';
-import api from '../services/api';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import ModernCard from '../components/ModernCard';
-import ModernButton from '../components/ModernButton';
-import { 
-  MonitorOutlined, 
-  DatabaseOutlined, 
-  CloudOutlined, 
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Row,
+  Col,
+  Tag,
+  Spin,
+  Alert,
+  Typography,
+  Space,
+} from "antd";
+import { useTranslation } from "react-i18next";
+import { useAuthStore } from "../store/authStore";
+import { useThemeStore } from "../store/themeStore";
+import api from "../services/api";
+
+import ModernCard from "../components/ModernCard";
+import ModernButton from "../components/ModernButton";
+import {
+  DatabaseOutlined,
+  CloudOutlined,
   BugOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
@@ -19,8 +26,8 @@ import {
   ActivityOutlined,
   MemoryOutlined,
   ServerOutlined,
-  SafetyOutlined
-} from '@ant-design/icons';
+  SafetyOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -42,7 +49,8 @@ const SystemStatus: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
+  const isAdmin =
+    user && (user.role === "admin" || user.role === "super_admin");
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +60,7 @@ const SystemStatus: React.FC = () => {
 
   const fetchStatus = async () => {
     try {
-      const res = await api.get('/users/admin/system-status');
+      const res = await api.get("/users/admin/system-status");
       setData(res.data);
       const now = new Date().toLocaleTimeString();
       // CPU
@@ -64,7 +72,7 @@ const SystemStatus: React.FC = () => {
       setLastUpdate(new Date());
       setError(null);
     } catch {
-      setError(t('system.load_failed'));
+      setError(t("system.load_failed"));
     } finally {
       setLoading(false);
     }
@@ -72,12 +80,12 @@ const SystemStatus: React.FC = () => {
 
   useEffect(() => {
     if (!isAdmin) return;
-    
+
     // Initial fetch
     fetchStatus();
-    
+
     const timer: NodeJS.Timeout = setInterval(fetchStatus, 5000);
-    
+
     return () => clearInterval(timer);
   }, [isAdmin]);
 
@@ -91,9 +99,9 @@ const SystemStatus: React.FC = () => {
 
   const getSystemStatusColor = (status: string) => {
     switch (status) {
-      case 'ok':
+      case "ok":
         return colors.colorSuccess;
-      case 'degraded':
+      case "degraded":
         return colors.colorWarning;
       default:
         return colors.colorError;
@@ -102,9 +110,9 @@ const SystemStatus: React.FC = () => {
 
   const getSystemStatusIcon = (status: string) => {
     switch (status) {
-      case 'ok':
+      case "ok":
         return <CheckCircleOutlined />;
-      case 'degraded':
+      case "degraded":
         return <ClockCircleOutlined />;
       default:
         return <ExclamationCircleOutlined />;
@@ -113,16 +121,18 @@ const SystemStatus: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: colors.colorGradientPrimary,
-        padding: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: colors.colorGradientPrimary,
+          padding: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <ModernCard variant="elevated" size="lg">
-          <Alert type="error" message={t('errors.forbidden')} showIcon />
+          <Alert type="error" message={t("errors.forbidden")} showIcon />
         </ModernCard>
       </div>
     );
@@ -130,18 +140,22 @@ const SystemStatus: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: colors.colorGradientPrimary,
-        padding: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: colors.colorGradientPrimary,
+          padding: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <ModernCard variant="elevated" size="lg">
-          <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ textAlign: "center", padding: "40px" }}>
             <Spin size="large" />
-            <Text style={{ display: 'block', marginTop: 16 }}>{t('system.loading')}</Text>
+            <Text style={{ display: "block", marginTop: 16 }}>
+              {t("system.loading")}
+            </Text>
           </div>
         </ModernCard>
       </div>
@@ -150,14 +164,16 @@ const SystemStatus: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: colors.colorGradientPrimary,
-        padding: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: colors.colorGradientPrimary,
+          padding: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <ModernCard variant="elevated" size="lg">
           <Alert type="error" message={error} showIcon />
         </ModernCard>
@@ -168,108 +184,155 @@ const SystemStatus: React.FC = () => {
   if (!data) return null;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: colors.colorGradientPrimary,
-      padding: '24px'
-    }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: colors.colorGradientPrimary,
+        padding: "24px",
+      }}
+    >
+      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         <ModernCard variant="gradient" size="lg" className="stagger-children">
-          <div style={{ textAlign: 'center', padding: '32px 0' }}>
-            <div style={{
-              fontSize: '48px',
-              marginBottom: '16px',
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
-            }}>
+          <div style={{ textAlign: "center", padding: "32px 0" }}>
+            <div
+              style={{
+                fontSize: "48px",
+                marginBottom: "16px",
+                filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+              }}
+            >
               🖥️
             </div>
-            <Title level={1} style={{ color: '#FFFFFF', margin: 0 }}>{t('system.title')}</Title>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px' }}>
-              {t('system.subtitle')}
+            <Title level={1} style={{ color: "#FFFFFF", margin: 0 }}>
+              {t("system.title")}
+            </Title>
+            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "16px" }}>
+              {t("system.subtitle")}
             </Text>
           </div>
         </ModernCard>
 
         <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
           <Col xs={24} lg={16}>
-            <ModernCard variant="elevated" size="lg" style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <ModernCard
+              variant="elevated"
+              size="lg"
+              style={{ marginBottom: 24 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 24,
+                }}
+              >
                 <Title level={3} style={{ margin: 0 }}>
-                  <ActivityOutlined style={{ marginRight: 8, color: colors.colorPrimary }} />
-                  {t('system.real_time_metrics')}
+                  <ActivityOutlined
+                    style={{ marginRight: 8, color: colors.colorPrimary }}
+                  />
+                  {t("system.real_time_metrics")}
                 </Title>
                 <Space>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {t('system.last_update')}: {lastUpdate.toLocaleTimeString()}
+                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                    {t("system.last_update")}: {lastUpdate.toLocaleTimeString()}
                   </Text>
-                  <ModernButton 
-                    variant="outlined" 
-                    icon={<ReloadOutlined />} 
+                  <ModernButton
+                    variant="outlined"
+                    icon={<ReloadOutlined />}
                     size="small"
                     onClick={fetchStatus}
                   >
-                    {t('common.refresh')}
+                    {t("common.refresh")}
                   </ModernButton>
                 </Space>
               </div>
-              
+
               <Row gutter={[24, 24]}>
                 <Col xs={24} lg={12}>
                   <ModernCard variant="outlined" size="sm">
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-                      <ActivityOutlined style={{ color: colors.colorPrimary, marginRight: 8 }} />
-                      <Text strong>{t('system.metrics.cpu_usage')}</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: 16,
+                      }}
+                    >
+                      <ActivityOutlined
+                        style={{ color: colors.colorPrimary, marginRight: 8 }}
+                      />
+                      <Text strong>{t("system.metrics.cpu_usage")}</Text>
                     </div>
                     <ResponsiveContainer width="100%" height={200}>
-                      <AreaChart data={cpuHistory.current} margin={{ left: 0, right: 0, top: 8, bottom: 8 }}>
+                      <AreaChart
+                        data={cpuHistory.current}
+                        margin={{ left: 0, right: 0, top: 8, bottom: 8 }}
+                      >
                         <XAxis dataKey="time" minTickGap={20} />
                         <YAxis domain={[0, 100]} />
                         <Tooltip />
                         <CartesianGrid strokeDasharray="3 3" />
-                        <Area 
-                          type="monotone" 
-                          dataKey="cpu" 
-                          stroke={colors.colorPrimary} 
+                        <Area
+                          type="monotone"
+                          dataKey="cpu"
+                          stroke={colors.colorPrimary}
                           fill={colors.colorPrimary}
                           fillOpacity={0.3}
-                          dot={false} 
-                          isAnimationActive={false} 
+                          dot={false}
+                          isAnimationActive={false}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
-                    <div style={{ textAlign: 'center', marginTop: 8 }}>
-                      <Text strong style={{ fontSize: '24px', color: colors.colorPrimary }}>
+                    <div style={{ textAlign: "center", marginTop: 8 }}>
+                      <Text
+                        strong
+                        style={{ fontSize: "24px", color: colors.colorPrimary }}
+                      >
                         {data.system.cpu_percent.toFixed(1)}%
                       </Text>
                     </div>
                   </ModernCard>
                 </Col>
-                
+
                 <Col xs={24} lg={12}>
                   <ModernCard variant="outlined" size="sm">
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-                      <MemoryOutlined style={{ color: colors.colorSuccess, marginRight: 8 }} />
-                      <Text strong>{t('system.metrics.ram_usage')}</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: 16,
+                      }}
+                    >
+                      <MemoryOutlined
+                        style={{ color: colors.colorSuccess, marginRight: 8 }}
+                      />
+                      <Text strong>{t("system.metrics.ram_usage")}</Text>
                     </div>
                     <ResponsiveContainer width="100%" height={200}>
-                      <AreaChart data={ramHistory.current} margin={{ left: 0, right: 0, top: 8, bottom: 8 }}>
+                      <AreaChart
+                        data={ramHistory.current}
+                        margin={{ left: 0, right: 0, top: 8, bottom: 8 }}
+                      >
                         <XAxis dataKey="time" minTickGap={20} />
                         <YAxis domain={[0, 100]} />
                         <Tooltip />
                         <CartesianGrid strokeDasharray="3 3" />
-                        <Area 
-                          type="monotone" 
-                          dataKey="ram" 
-                          stroke={colors.colorSuccess} 
+                        <Area
+                          type="monotone"
+                          dataKey="ram"
+                          stroke={colors.colorSuccess}
                           fill={colors.colorSuccess}
                           fillOpacity={0.3}
-                          dot={false} 
-                          isAnimationActive={false} 
+                          dot={false}
+                          isAnimationActive={false}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
-                    <div style={{ textAlign: 'center', marginTop: 8 }}>
-                      <Text strong style={{ fontSize: '24px', color: colors.colorSuccess }}>
+                    <div style={{ textAlign: "center", marginTop: 8 }}>
+                      <Text
+                        strong
+                        style={{ fontSize: "24px", color: colors.colorSuccess }}
+                      >
                         {data.system.ram.percent.toFixed(1)}%
                       </Text>
                     </div>
@@ -280,62 +343,112 @@ const SystemStatus: React.FC = () => {
 
             <ModernCard variant="elevated" size="lg">
               <Title level={3} style={{ marginBottom: 24 }}>
-                <ServerOutlined style={{ marginRight: 8, color: colors.colorPrimary }} />
-                {t('system.service_status')}
+                <ServerOutlined
+                  style={{ marginRight: 8, color: colors.colorPrimary }}
+                />
+                {t("system.service_status")}
               </Title>
-              
+
               <Row gutter={[24, 24]}>
                 <Col xs={24} sm={8}>
                   <ModernCard variant="interactive" size="md">
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                      <DatabaseOutlined style={{ 
-                        color: getStatusColor(data.database.healthy), 
-                        marginRight: 8,
-                        fontSize: '20px'
-                      }} />
-                      <Text strong>{t('system.metrics.database')}</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <DatabaseOutlined
+                        style={{
+                          color: getStatusColor(data.database.healthy),
+                          marginRight: 8,
+                          fontSize: "20px",
+                        }}
+                      />
+                      <Text strong>{t("system.metrics.database")}</Text>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Tag color={data.database.healthy ? 'success' : 'error'}>
-                        {data.database.healthy ? t('system.status.ok') : t('system.status.error')}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Tag color={data.database.healthy ? "success" : "error"}>
+                        {data.database.healthy
+                          ? t("system.status.ok")
+                          : t("system.status.error")}
                       </Tag>
                       {getStatusIcon(data.database.healthy)}
                     </div>
                   </ModernCard>
                 </Col>
-                
+
                 <Col xs={24} sm={8}>
                   <ModernCard variant="interactive" size="md">
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                      <CloudOutlined style={{ 
-                        color: getStatusColor(data.redis.healthy), 
-                        marginRight: 8,
-                        fontSize: '20px'
-                      }} />
-                      <Text strong>{t('system.metrics.redis')}</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <CloudOutlined
+                        style={{
+                          color: getStatusColor(data.redis.healthy),
+                          marginRight: 8,
+                          fontSize: "20px",
+                        }}
+                      />
+                      <Text strong>{t("system.metrics.redis")}</Text>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Tag color={data.redis.healthy ? 'success' : 'error'}>
-                        {data.redis.healthy ? t('system.status.ok') : t('system.status.error')}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Tag color={data.redis.healthy ? "success" : "error"}>
+                        {data.redis.healthy
+                          ? t("system.status.ok")
+                          : t("system.status.error")}
                       </Tag>
                       {getStatusIcon(data.redis.healthy)}
                     </div>
                   </ModernCard>
                 </Col>
-                
+
                 <Col xs={24} sm={8}>
                   <ModernCard variant="interactive" size="md">
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                      <BugOutlined style={{ 
-                        color: getStatusColor(data.weaviate.healthy), 
-                        marginRight: 8,
-                        fontSize: '20px'
-                      }} />
-                      <Text strong>{t('system.metrics.weaviate')}</Text>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <BugOutlined
+                        style={{
+                          color: getStatusColor(data.weaviate.healthy),
+                          marginRight: 8,
+                          fontSize: "20px",
+                        }}
+                      />
+                      <Text strong>{t("system.metrics.weaviate")}</Text>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Tag color={data.weaviate.healthy ? 'success' : 'error'}>
-                        {data.weaviate.healthy ? t('system.status.ok') : t('system.status.error')}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Tag color={data.weaviate.healthy ? "success" : "error"}>
+                        {data.weaviate.healthy
+                          ? t("system.status.ok")
+                          : t("system.status.error")}
                       </Tag>
                       {getStatusIcon(data.weaviate.healthy)}
                     </div>
@@ -344,46 +457,93 @@ const SystemStatus: React.FC = () => {
               </Row>
             </ModernCard>
           </Col>
-          
+
           <Col xs={24} lg={8}>
-            <ModernCard variant="interactive" size="md" style={{ marginBottom: 24 }}>
+            <ModernCard
+              variant="interactive"
+              size="md"
+              style={{ marginBottom: 24 }}
+            >
               <Title level={4}>
-                <SafetyOutlined style={{ marginRight: 8, color: colors.colorPrimary }} />
-                {t('system.overall_status')}
+                <SafetyOutlined
+                  style={{ marginRight: 8, color: colors.colorPrimary }}
+                />
+                {t("system.overall_status")}
               </Title>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <Text strong>{t('system.metrics.system_status')}</Text>
-                <Tag color={data.status === 'ok' ? 'success' : 'warning'}>
-                  {data.status === 'ok' ? t('system.status.ok') : t('system.status.degraded')}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <Text strong>{t("system.metrics.system_status")}</Text>
+                <Tag color={data.status === "ok" ? "success" : "warning"}>
+                  {data.status === "ok"
+                    ? t("system.status.ok")
+                    : t("system.status.degraded")}
                 </Tag>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{
-                  fontSize: '48px',
-                  color: getSystemStatusColor(data.status)
-                }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "48px",
+                    color: getSystemStatusColor(data.status),
+                  }}
+                >
                   {getSystemStatusIcon(data.status)}
                 </div>
               </div>
             </ModernCard>
 
-            <ModernCard variant="outlined" size="md" style={{ marginBottom: 24 }}>
-              <Title level={4}>{t('system.quick_stats')}</Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text>{t('system.stats.uptime')}</Text>
+            <ModernCard
+              variant="outlined"
+              size="md"
+              style={{ marginBottom: 24 }}
+            >
+              <Title level={4}>{t("system.quick_stats")}</Title>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text>{t("system.stats.uptime")}</Text>
                   <Text strong style={{ color: colors.colorSuccess }}>
                     99.9%
                   </Text>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text>{t('system.stats.response_time')}</Text>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text>{t("system.stats.response_time")}</Text>
                   <Text strong style={{ color: colors.colorPrimary }}>
                     45ms
                   </Text>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text>{t('system.stats.active_connections')}</Text>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text>{t("system.stats.active_connections")}</Text>
                   <Text strong style={{ color: colors.colorWarning }}>
                     127
                   </Text>
@@ -392,19 +552,24 @@ const SystemStatus: React.FC = () => {
             </ModernCard>
 
             <ModernCard variant="elevated" size="md">
-              <Title level={4}>{t('system.trace_info')}</Title>
-              <div style={{ 
-                backgroundColor: colors.colorBgContainer, 
-                padding: '12px', 
-                borderRadius: '8px',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                wordBreak: 'break-all'
-              }}>
-                {data.tracing.trace_id || '-'}
+              <Title level={4}>{t("system.trace_info")}</Title>
+              <div
+                style={{
+                  backgroundColor: colors.colorBgContainer,
+                  padding: "12px",
+                  borderRadius: "8px",
+                  fontFamily: "monospace",
+                  fontSize: "12px",
+                  wordBreak: "break-all",
+                }}
+              >
+                {data.tracing.trace_id || "-"}
               </div>
-              <Text type="secondary" style={{ fontSize: '12px', marginTop: 8, display: 'block' }}>
-                {t('system.trace_description')}
+              <Text
+                type="secondary"
+                style={{ fontSize: "12px", marginTop: 8, display: "block" }}
+              >
+                {t("system.trace_description")}
               </Text>
             </ModernCard>
           </Col>
@@ -414,4 +579,4 @@ const SystemStatus: React.FC = () => {
   );
 };
 
-export default SystemStatus; 
+export default SystemStatus;

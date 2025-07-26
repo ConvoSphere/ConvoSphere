@@ -45,13 +45,13 @@
 
 .modern-card--gradient {
   background: var(--colorGradientPrimary);
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   position: relative;
 }
 
 .modern-card--gradient::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -203,7 +203,7 @@
 }
 
 .modern-card--loading::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -220,8 +220,12 @@
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Card Grid */
@@ -257,16 +261,16 @@
   .modern-card--xl {
     padding: 24px;
   }
-  
+
   .modern-card--lg {
     padding: 20px;
   }
-  
+
   .modern-card-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .modern-card-grid--wide {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -278,7 +282,7 @@
   .modern-card--outlined {
     border-color: var(--colorBorder);
   }
-  
+
   .modern-card--outlined:hover {
     border-color: var(--colorPrimary);
     background: var(--colorBgElevated);
@@ -293,11 +297,11 @@
     transition: none !important;
     animation: none !important;
   }
-  
+
   .modern-card:hover {
     transform: none !important;
   }
-  
+
   .modern-card--loading::before {
     animation: none !important;
   }

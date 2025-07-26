@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Form as AntForm, FormProps as AntFormProps, FormInstance } from 'antd';
-import { useThemeStore } from '../store/themeStore';
-import './ModernForm.css';
+import React from "react";
+import { Form as AntForm, FormProps as AntFormProps } from "antd";
+import { useThemeStore } from "../store/themeStore";
+import "./ModernForm.css";
 
-export interface ModernFormProps extends Omit<AntFormProps, 'size'> {
-  variant?: 'default' | 'card' | 'minimal';
-  size?: 'sm' | 'md' | 'lg';
+export interface ModernFormProps extends Omit<AntFormProps, "size"> {
+  variant?: "default" | "card" | "minimal";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   children: React.ReactNode;
   className?: string;
@@ -17,17 +17,17 @@ export interface ModernFormItemProps {
   label?: string;
   required?: boolean;
   help?: string;
-  validateStatus?: 'success' | 'warning' | 'error' | 'validating';
+  validateStatus?: "success" | "warning" | "error" | "validating";
   children: React.ReactNode;
   className?: string;
 }
 
 const ModernForm: React.FC<ModernFormProps> = ({
-  variant = 'default',
-  size = 'md',
+  variant = "default",
+  size = "md",
   loading = false,
   children,
-  className = '',
+  className = "",
   onSubmit,
   onValuesChange,
   ...props
@@ -37,25 +37,27 @@ const ModernForm: React.FC<ModernFormProps> = ({
   const [form] = AntForm.useForm();
 
   const formClasses = [
-    'modern-form',
+    "modern-form",
     `modern-form--${variant}`,
     `modern-form--${size}`,
-    loading && 'modern-form--loading',
-    className
-  ].filter(Boolean).join(' ');
+    loading && "modern-form--loading",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const formStyle: React.CSSProperties = {
-    width: '100%',
-    ...(variant === 'card' && {
+    width: "100%",
+    ...(variant === "card" && {
       background: colors.colorBgContainer,
       border: `1px solid ${colors.colorBorder}`,
-      borderRadius: '16px',
-      padding: '24px',
+      borderRadius: "16px",
+      padding: "24px",
       boxShadow: colors.boxShadow,
     }),
-    ...(variant === 'minimal' && {
-      background: 'transparent',
-      border: 'none',
+    ...(variant === "minimal" && {
+      background: "transparent",
+      border: "none",
       padding: 0,
     }),
   };
@@ -92,13 +94,15 @@ export const ModernFormItem: React.FC<ModernFormItemProps> = ({
   help,
   validateStatus,
   children,
-  className = '',
+  className = "",
 }) => {
   const itemClasses = [
-    'modern-form-item',
+    "modern-form-item",
     validateStatus && `modern-form-item--${validateStatus}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={itemClasses}>
@@ -108,13 +112,13 @@ export const ModernFormItem: React.FC<ModernFormItemProps> = ({
           {required && <span className="modern-form-item__required">*</span>}
         </label>
       )}
-      
-      <div className="modern-form-item__control">
-        {children}
-      </div>
-      
+
+      <div className="modern-form-item__control">{children}</div>
+
       {help && (
-        <div className={`modern-form-item__help modern-form-item__help--${validateStatus || 'default'}`}>
+        <div
+          className={`modern-form-item__help modern-form-item__help--${validateStatus || "default"}`}
+        >
           {help}
         </div>
       )}
@@ -128,24 +132,23 @@ export const ModernFormSection: React.FC<{
   description?: string;
   children: React.ReactNode;
   className?: string;
-}> = ({ title, description, children, className = '' }) => {
-  const sectionClasses = [
-    'modern-form-section',
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ title, description, children, className = "" }) => {
+  const sectionClasses = ["modern-form-section", className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={sectionClasses}>
       {(title || description) && (
         <div className="modern-form-section__header">
           {title && <h3 className="modern-form-section__title">{title}</h3>}
-          {description && <p className="modern-form-section__description">{description}</p>}
+          {description && (
+            <p className="modern-form-section__description">{description}</p>
+          )}
         </div>
       )}
-      
-      <div className="modern-form-section__content">
-        {children}
-      </div>
+
+      <div className="modern-form-section__content">{children}</div>
     </div>
   );
 };
@@ -154,19 +157,17 @@ export const ModernFormSection: React.FC<{
 export const ModernFormActions: React.FC<{
   children: React.ReactNode;
   className?: string;
-  align?: 'left' | 'center' | 'right';
-}> = ({ children, className = '', align = 'right' }) => {
+  align?: "left" | "center" | "right";
+}> = ({ children, className = "", align = "right" }) => {
   const actionsClasses = [
-    'modern-form-actions',
+    "modern-form-actions",
     `modern-form-actions--${align}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  return (
-    <div className={actionsClasses}>
-      {children}
-    </div>
-  );
+  return <div className={actionsClasses}>{children}</div>;
 };
 
 export default ModernForm;

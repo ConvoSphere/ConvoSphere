@@ -7,7 +7,7 @@ export interface WorkerMessage {
 }
 
 export interface WorkerResponse {
-  type: 'success' | 'error' | 'ready';
+  type: "success" | "error" | "ready";
   data: any;
   id: string;
   workerId: string;
@@ -45,7 +45,7 @@ class WorkerManager {
     // Create workers
     for (let i = 0; i < this.maxWorkers; i++) {
       try {
-        const worker = new Worker('/worker.js');
+        const worker = new Worker("/worker.js");
         this.setupWorker(worker);
         this.workers.push(worker);
         this.availableWorkers.push(worker);
@@ -55,14 +55,16 @@ class WorkerManager {
     }
 
     this.isInitialized = true;
-    console.log(`WorkerManager initialized with ${this.workers.length} workers`);
+    console.log(
+      `WorkerManager initialized with ${this.workers.length} workers`,
+    );
   }
 
   private setupWorker(worker: Worker) {
-    worker.addEventListener('message', (event) => {
+    worker.addEventListener("message", (event) => {
       const response: WorkerResponse = event.data;
-      
-      if (response.type === 'ready') {
+
+      if (response.type === "ready") {
         console.log(`Worker ${response.workerId} is ready`);
         return;
       }
@@ -81,9 +83,9 @@ class WorkerManager {
       this.availableWorkers.push(worker);
 
       // Process response
-      if (response.type === 'success') {
+      if (response.type === "success") {
         task.resolve(response.data);
-      } else if (response.type === 'error') {
+      } else if (response.type === "error") {
         task.reject(new Error(response.data.message));
       }
 
@@ -91,8 +93,8 @@ class WorkerManager {
       this.processNextTask();
     });
 
-    worker.addEventListener('error', (error) => {
-      console.error('Worker error:', error);
+    worker.addEventListener("error", (error) => {
+      console.error("Worker error:", error);
       // Handle worker error - could restart worker or mark as failed
     });
   }
@@ -121,12 +123,12 @@ class WorkerManager {
     setTimeout(() => {
       if (this.tasks.has(task.id)) {
         this.tasks.delete(task.id);
-        task.reject(new Error('Task timeout'));
-        
+        task.reject(new Error("Task timeout"));
+
         // Mark worker as available
         this.busyWorkers.delete(worker);
         this.availableWorkers.push(worker);
-        
+
         this.processNextTask();
       }
     }, task.timeout);
@@ -139,7 +141,7 @@ class WorkerManager {
 
     return new Promise((resolve, reject) => {
       const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const task: WorkerTask = {
         id: taskId,
         type,
@@ -163,34 +165,40 @@ class WorkerManager {
   }
 
   // Convenience methods for common tasks
-  async calculate(operation: string, numbers: number[], precision = 2): Promise<number> {
-    return this.executeTask('calculate', { operation, numbers, precision });
+  async calculate(
+    operation: string,
+    numbers: number[],
+    precision = 2,
+  ): Promise<number> {
+    return this.executeTask("calculate", { operation, numbers, precision });
   }
 
   async processData(dataset: any[], operations: any[]): Promise<any> {
-    return this.executeTask('process_data', { dataset, operations });
+    return this.executeTask("process_data", { dataset, operations });
   }
 
   async analyzeText(text: string): Promise<any> {
-    return this.executeTask('analyze_text', { text });
+    return this.executeTask("analyze_text", { text });
   }
 
-  async generateHash(text: string, algorithm = 'sha256'): Promise<any> {
-    return this.executeTask('generate_hash', { text, algorithm });
+  async generateHash(text: string, algorithm = "sha256"): Promise<any> {
+    return this.executeTask("generate_hash", { text, algorithm });
   }
 
-  async compressData(text: string, algorithm = 'simple'): Promise<any> {
-    return this.executeTask('compress_data', { text, algorithm });
+  async compressData(text: string, algorithm = "simple"): Promise<any> {
+    return this.executeTask("compress_data", { text, algorithm });
   }
 
   async validateData(schema: any, data: any): Promise<any> {
-    return this.executeTask('validate_data', { schema, data });
+    return this.executeTask("validate_data", { schema, data });
   }
 
   // Batch processing
-  async executeBatch(tasks: Array<{ type: string; data: any; timeout?: number }>): Promise<any[]> {
-    const promises = tasks.map(task => 
-      this.executeTask(task.type, task.data, task.timeout)
+  async executeBatch(
+    tasks: Array<{ type: string; data: any; timeout?: number }>,
+  ): Promise<any[]> {
+    const promises = tasks.map((task) =>
+      this.executeTask(task.type, task.data, task.timeout),
     );
     return Promise.all(promises);
   }
@@ -209,17 +217,17 @@ class WorkerManager {
 
   // Cleanup
   terminate() {
-    console.log('Terminating WorkerManager');
-    
+    console.log("Terminating WorkerManager");
+
     // Clear all tasks
-    this.tasks.forEach(task => {
-      task.reject(new Error('WorkerManager terminated'));
+    this.tasks.forEach((task) => {
+      task.reject(new Error("WorkerManager terminated"));
     });
     this.tasks.clear();
     this.taskQueue = [];
 
     // Terminate all workers
-    this.workers.forEach(worker => {
+    this.workers.forEach((worker) => {
       worker.terminate();
     });
 
@@ -234,7 +242,7 @@ class WorkerManager {
 export const workerManager = new WorkerManager();
 
 // Auto-initialize in development
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   workerManager.init();
 }
 

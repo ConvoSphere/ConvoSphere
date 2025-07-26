@@ -1,7 +1,16 @@
-import React from 'react';
-import { Table, Space, Button, Tooltip, Popconfirm, Tag, Typography, Select } from 'antd';
-import { EditOutlined, DeleteOutlined, TagOutlined } from '@ant-design/icons';
-import { Tag as TagType } from '../../services/knowledge';
+import React from "react";
+import {
+  Table,
+  Space,
+  Button,
+  Tooltip,
+  Popconfirm,
+  Tag,
+  Typography,
+  Select,
+} from "antd";
+import { EditOutlined, DeleteOutlined, TagOutlined } from "@ant-design/icons";
+import { Tag as TagType } from "../../services/knowledge";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -9,87 +18,93 @@ const { Option } = Select;
 interface TagTableProps {
   tags: TagType[];
   loading: boolean;
-  mode: 'management' | 'selection' | 'view';
+  mode: "management" | "selection" | "view";
   onTagSelect?: (tag: TagType) => void;
   onEditTag?: (tag: TagType) => void;
   onDeleteTag?: (tagId: string) => void;
 }
 
-const TagTable: React.FC<TagTableProps> = ({ tags, loading, mode, onTagSelect, onEditTag, onDeleteTag }) => {
+const TagTable: React.FC<TagTableProps> = ({
+  tags,
+  loading,
+  mode,
+  onTagSelect,
+  onEditTag,
+  onDeleteTag,
+}) => {
   const columns = [
     {
-      title: 'Tag',
-      key: 'tag',
+      title: "Tag",
+      key: "tag",
       render: (record: TagType) => (
         <Space>
-          <Tag color={record.color || '#1890ff'} icon={<TagOutlined />}>
+          <Tag color={record.color || "#1890ff"} icon={<TagOutlined />}>
             {record.name}
           </Tag>
-          {record.is_system && (
-            <Tag color="red">System</Tag>
-          )}
+          {record.is_system && <Tag color="red">System</Tag>}
         </Space>
       ),
       sorter: (a: TagType, b: TagType) => a.name.localeCompare(b.name),
     },
     {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
-      render: (description: string) => description || <Text type="secondary">-</Text>,
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (description: string) =>
+        description || <Text type="secondary">-</Text>,
       ellipsis: true,
     },
     {
-      title: 'Usage Count',
-      dataIndex: 'usage_count',
-      key: 'usage_count',
-      render: (count: number) => (
-        <Text strong>{count.toLocaleString()}</Text>
-      ),
+      title: "Usage Count",
+      dataIndex: "usage_count",
+      key: "usage_count",
+      render: (count: number) => <Text strong>{count.toLocaleString()}</Text>,
       sorter: (a: TagType, b: TagType) => a.usage_count - b.usage_count,
     },
     {
-      title: 'Type',
-      key: 'type',
+      title: "Type",
+      key: "type",
       render: (record: TagType) => (
-        <Tag color={record.is_system ? 'red' : 'green'}>
-          {record.is_system ? 'System' : 'User'}
+        <Tag color={record.is_system ? "red" : "green"}>
+          {record.is_system ? "System" : "User"}
         </Tag>
       ),
       filters: [
-        { text: 'System', value: 'system' },
-        { text: 'User', value: 'user' },
+        { text: "System", value: "system" },
+        { text: "User", value: "user" },
       ],
-      onFilter: (value: string, record: TagType) => 
-        (value === 'system' && record.is_system) || (value === 'user' && !record.is_system),
+      onFilter: (value: string, record: TagType) =>
+        (value === "system" && record.is_system) ||
+        (value === "user" && !record.is_system),
     },
     {
-      title: 'Created',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      title: "Created",
+      dataIndex: "created_at",
+      key: "created_at",
       render: (date: string) => new Date(date).toLocaleDateString(),
-      sorter: (a: TagType, b: TagType) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sorter: (a: TagType, b: TagType) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       render: (record: TagType) => (
         <Space>
-          {mode === 'selection' && (
-            <Button 
-              type="text" 
+          {mode === "selection" && (
+            <Button
+              type="text"
               size="small"
               onClick={() => onTagSelect?.(record)}
             >
               Select
             </Button>
           )}
-          {mode === 'management' && (
+          {mode === "management" && (
             <>
               <Tooltip title="Edit Tag">
-                <Button 
-                  type="text" 
-                  size="small" 
+                <Button
+                  type="text"
+                  size="small"
                   icon={<EditOutlined />}
                   onClick={() => onEditTag?.(record)}
                   disabled={record.is_system}
@@ -102,11 +117,17 @@ const TagTable: React.FC<TagTableProps> = ({ tags, loading, mode, onTagSelect, o
                 cancelText="No"
                 disabled={record.is_system || record.usage_count > 0}
               >
-                <Tooltip title={record.usage_count > 0 ? "Cannot delete tag in use" : "Delete Tag"}>
-                  <Button 
-                    type="text" 
-                    size="small" 
-                    danger 
+                <Tooltip
+                  title={
+                    record.usage_count > 0
+                      ? "Cannot delete tag in use"
+                      : "Delete Tag"
+                  }
+                >
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
                     icon={<DeleteOutlined />}
                     disabled={record.is_system || record.usage_count > 0}
                   />
@@ -129,7 +150,7 @@ const TagTable: React.FC<TagTableProps> = ({ tags, loading, mode, onTagSelect, o
         showSizeChanger: true,
         showQuickJumper: true,
         showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} tags`,
-        pageSizeOptions: ['10', '20', '50'],
+        pageSizeOptions: ["10", "20", "50"],
         defaultPageSize: 20,
       }}
     />

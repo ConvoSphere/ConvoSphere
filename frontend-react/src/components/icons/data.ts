@@ -1,6 +1,6 @@
 /**
  * Data Icons
- * 
+ *
  * Icons used for data visualization and tables.
  */
 
@@ -20,8 +20,8 @@ import {
   RadiusUprightOutlined,
   RadiusBottomleftOutlined,
   RadiusBottomrightOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const dataIcons: IconMapping = {
   barchart: BarChartOutlined,

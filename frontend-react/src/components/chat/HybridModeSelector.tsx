@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Select, Tooltip, Badge, Space, Button, Modal, message } from 'antd';
-import { 
-  MessageOutlined, 
-  RobotOutlined, 
-  ThunderboltOutlined, 
+import React, { useState, useEffect } from "react";
+import { Select, Tooltip, Badge, Space, Button, Modal, message } from "antd";
+import {
+  MessageOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
   SettingOutlined,
-  InfoCircleOutlined 
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 interface HybridModeSelectorProps {
   conversationId: string;
@@ -31,7 +31,7 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
   currentMode,
   onModeChange,
   disabled = false,
-  className = '',
+  className = "",
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -44,12 +44,12 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
 
   const fetchAvailableModes = async () => {
     try {
-      const response = await fetch('/api/v1/hybrid-mode/modes', {
+      const response = await fetch("/api/v1/hybrid-mode/modes", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const modes: ModeInfo[] = data.modes.map((mode: any) => ({
@@ -63,17 +63,17 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
         setModeInfo(modes);
       }
     } catch (error) {
-      console.error('Error fetching available modes:', error);
+      console.error("Error fetching available modes:", error);
     }
   };
 
   const getModeIcon = (mode: string) => {
     switch (mode) {
-      case 'chat':
+      case "chat":
         return <MessageOutlined />;
-      case 'agent':
+      case "agent":
         return <RobotOutlined />;
-      case 'auto':
+      case "auto":
         return <ThunderboltOutlined />;
       default:
         return <MessageOutlined />;
@@ -82,14 +82,14 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
 
   const getModeColor = (mode: string) => {
     switch (mode) {
-      case 'chat':
-        return 'blue';
-      case 'agent':
-        return 'green';
-      case 'auto':
-        return 'purple';
+      case "chat":
+        return "blue";
+      case "agent":
+        return "green";
+      case "auto":
+        return "purple";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -98,18 +98,21 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/hybrid-mode/conversations/${conversationId}/mode/change`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      const response = await fetch(
+        `/api/v1/hybrid-mode/conversations/${conversationId}/mode/change`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            target_mode: newMode,
+            reason: "User requested mode change",
+            force_change: true,
+          }),
         },
-        body: JSON.stringify({
-          target_mode: newMode,
-          reason: 'User requested mode change',
-          force_change: true,
-        }),
-      });
+      );
 
       if (response.ok) {
         const result = await response.json();
@@ -120,20 +123,20 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
         message.error(`Failed to change mode: ${error.detail}`);
       }
     } catch (error) {
-      console.error('Error changing mode:', error);
-      message.error('Failed to change mode');
+      console.error("Error changing mode:", error);
+      message.error("Failed to change mode");
     } finally {
       setLoading(false);
     }
   };
 
   const getModeLabel = (mode: string) => {
-    const modeData = modeInfo.find(m => m.value === mode);
+    const modeData = modeInfo.find((m) => m.value === mode);
     return modeData?.label || mode;
   };
 
   const getCurrentModeInfo = () => {
-    return modeInfo.find(m => m.value === currentMode);
+    return modeInfo.find((m) => m.value === currentMode);
   };
 
   const currentModeInfo = getCurrentModeInfo();
@@ -141,13 +144,13 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
   return (
     <div className={`hybrid-mode-selector ${className}`}>
       <Space>
-        <Tooltip title={t('chat.hybridMode.selector.tooltip')}>
-          <Badge 
-            color={currentModeInfo?.color || 'default'}
-            text={t('chat.hybridMode.selector.label')}
+        <Tooltip title={t("chat.hybridMode.selector.tooltip")}>
+          <Badge
+            color={currentModeInfo?.color || "default"}
+            text={t("chat.hybridMode.selector.label")}
           />
         </Tooltip>
-        
+
         <Select
           value={currentMode}
           onChange={handleModeChange}
@@ -166,7 +169,7 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
           ))}
         </Select>
 
-        <Tooltip title={t('chat.hybridMode.config.tooltip')}>
+        <Tooltip title={t("chat.hybridMode.config.tooltip")}>
           <Button
             type="text"
             icon={<SettingOutlined />}
@@ -176,7 +179,7 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
           />
         </Tooltip>
 
-        <Tooltip title={t('chat.hybridMode.info.tooltip')}>
+        <Tooltip title={t("chat.hybridMode.info.tooltip")}>
           <Button
             type="text"
             icon={<InfoCircleOutlined />}
@@ -189,13 +192,13 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
 
       {/* Configuration Modal */}
       <Modal
-        title={t('chat.hybridMode.config.title')}
+        title={t("chat.hybridMode.config.title")}
         open={configModalVisible}
         onCancel={() => setConfigModalVisible(false)}
         footer={null}
         width={600}
       >
-        <HybridModeConfig 
+        <HybridModeConfig
           conversationId={conversationId}
           onClose={() => setConfigModalVisible(false)}
         />
@@ -232,12 +235,15 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
 
   const fetchCurrentConfig = async () => {
     try {
-      const response = await fetch(`/api/v1/hybrid-mode/conversations/${conversationId}/mode/status`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      const response = await fetch(
+        `/api/v1/hybrid-mode/conversations/${conversationId}/mode/status`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
-      
+      );
+
       if (response.ok) {
         const data = await response.json();
         if (data.config) {
@@ -245,32 +251,35 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
         }
       }
     } catch (error) {
-      console.error('Error fetching config:', error);
+      console.error("Error fetching config:", error);
     }
   };
 
   const handleConfigUpdate = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/hybrid-mode/conversations/${conversationId}/config`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      const response = await fetch(
+        `/api/v1/hybrid-mode/conversations/${conversationId}/config`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(config),
         },
-        body: JSON.stringify(config),
-      });
+      );
 
       if (response.ok) {
-        message.success(t('chat.hybridMode.config.success'));
+        message.success(t("chat.hybridMode.config.success"));
         onClose();
       } else {
         const error = await response.json();
         message.error(`Failed to update config: ${error.detail}`);
       }
     } catch (error) {
-      console.error('Error updating config:', error);
-      message.error('Failed to update configuration');
+      console.error("Error updating config:", error);
+      message.error("Failed to update configuration");
     } finally {
       setLoading(false);
     }
@@ -279,52 +288,64 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
   return (
     <div className="hybrid-mode-config">
       <div className="config-section">
-        <h4>{t('chat.hybridMode.config.general')}</h4>
+        <h4>{t("chat.hybridMode.config.general")}</h4>
         <div className="config-item">
           <label>
             <input
               type="checkbox"
               checked={config.auto_mode_enabled}
-              onChange={(e) => setConfig({ ...config, auto_mode_enabled: e.target.checked })}
+              onChange={(e) =>
+                setConfig({ ...config, auto_mode_enabled: e.target.checked })
+              }
             />
-            {t('chat.hybridMode.config.autoMode')}
+            {t("chat.hybridMode.config.autoMode")}
           </label>
         </div>
       </div>
 
       <div className="config-section">
-        <h4>{t('chat.hybridMode.config.thresholds')}</h4>
+        <h4>{t("chat.hybridMode.config.thresholds")}</h4>
         <div className="config-item">
-          <label>{t('chat.hybridMode.config.complexityThreshold')}</label>
+          <label>{t("chat.hybridMode.config.complexityThreshold")}</label>
           <input
             type="range"
             min="0"
             max="1"
             step="0.1"
             value={config.complexity_threshold}
-            onChange={(e) => setConfig({ ...config, complexity_threshold: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              setConfig({
+                ...config,
+                complexity_threshold: parseFloat(e.target.value),
+              })
+            }
           />
           <span>{config.complexity_threshold}</span>
         </div>
-        
+
         <div className="config-item">
-          <label>{t('chat.hybridMode.config.confidenceThreshold')}</label>
+          <label>{t("chat.hybridMode.config.confidenceThreshold")}</label>
           <input
             type="range"
             min="0"
             max="1"
             step="0.1"
             value={config.confidence_threshold}
-            onChange={(e) => setConfig({ ...config, confidence_threshold: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              setConfig({
+                ...config,
+                confidence_threshold: parseFloat(e.target.value),
+              })
+            }
           />
           <span>{config.confidence_threshold}</span>
         </div>
       </div>
 
       <div className="config-actions">
-        <Button onClick={onClose}>{t('common.cancel')}</Button>
+        <Button onClick={onClose}>{t("common.cancel")}</Button>
         <Button type="primary" onClick={handleConfigUpdate} loading={loading}>
-          {t('common.save')}
+          {t("common.save")}
         </Button>
       </div>
     </div>
@@ -333,21 +354,30 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
 
 const showModeInfo = () => {
   Modal.info({
-    title: 'Hybrid Mode Information',
+    title: "Hybrid Mode Information",
     content: (
       <div>
         <h4>Chat Mode</h4>
-        <p>Direct conversational responses without tool usage. Best for simple questions and casual conversation.</p>
-        
+        <p>
+          Direct conversational responses without tool usage. Best for simple
+          questions and casual conversation.
+        </p>
+
         <h4>Agent Mode</h4>
-        <p>Tool-enabled responses with reasoning and actions. Best for complex tasks requiring external tools or step-by-step analysis.</p>
-        
+        <p>
+          Tool-enabled responses with reasoning and actions. Best for complex
+          tasks requiring external tools or step-by-step analysis.
+        </p>
+
         <h4>Auto Mode</h4>
-        <p>Automatic mode switching based on query analysis. The system intelligently chooses the best mode for each message.</p>
+        <p>
+          Automatic mode switching based on query analysis. The system
+          intelligently chooses the best mode for each message.
+        </p>
       </div>
     ),
     width: 600,
   });
 };
 
-export default HybridModeSelector; 
+export default HybridModeSelector;

@@ -1,17 +1,19 @@
-import React, { Suspense, lazy } from 'react';
-import { Spin } from 'antd';
-import { useThemeStore } from '../store/themeStore';
+import React, { Suspense, lazy } from "react";
+import { Spin } from "antd";
+import { useThemeStore } from "../store/themeStore";
 
 // Loading Component mit Theme-Aware Styling
-const LoadingSpinner: React.FC<{ size?: 'small' | 'default' | 'large' }> = ({ size = 'default' }) => {
+const LoadingSpinner: React.FC<{ size?: "small" | "default" | "large" }> = ({
+  size = "default",
+}) => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
   const spinnerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '40px',
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "40px",
     color: colors.colorTextSecondary,
   };
 
@@ -23,22 +25,22 @@ const LoadingSpinner: React.FC<{ size?: 'small' | 'default' | 'large' }> = ({ si
 };
 
 // Lazy-Loaded Page Components
-export const LazyDashboard = lazy(() => import('../pages/Dashboard'));
-export const LazyChat = lazy(() => import('../pages/Chat'));
-export const LazyAssistants = lazy(() => import('../pages/Assistants'));
-export const LazyKnowledgeBase = lazy(() => import('../pages/KnowledgeBase'));
-export const LazyTools = lazy(() => import('../pages/Tools'));
-export const LazySettings = lazy(() => import('../pages/Settings'));
-export const LazyAdmin = lazy(() => import('../pages/Admin'));
-export const LazyLogin = lazy(() => import('../pages/Login'));
-export const LazyRegister = lazy(() => import('../pages/Register'));
-export const LazyProfile = lazy(() => import('../pages/Profile'));
-export const LazyConversations = lazy(() => import('../pages/Conversations'));
-export const LazyMcpTools = lazy(() => import('../pages/McpTools'));
-export const LazySystemStatus = lazy(() => import('../pages/SystemStatus'));
+export const LazyDashboard = lazy(() => import("../pages/Dashboard"));
+export const LazyChat = lazy(() => import("../pages/Chat"));
+export const LazyAssistants = lazy(() => import("../pages/Assistants"));
+export const LazyKnowledgeBase = lazy(() => import("../pages/KnowledgeBase"));
+export const LazyTools = lazy(() => import("../pages/Tools"));
+export const LazySettings = lazy(() => import("../pages/Settings"));
+export const LazyAdmin = lazy(() => import("../pages/Admin"));
+export const LazyLogin = lazy(() => import("../pages/Login"));
+export const LazyRegister = lazy(() => import("../pages/Register"));
+export const LazyProfile = lazy(() => import("../pages/Profile"));
+export const LazyConversations = lazy(() => import("../pages/Conversations"));
+export const LazyMcpTools = lazy(() => import("../pages/McpTools"));
+export const LazySystemStatus = lazy(() => import("../pages/SystemStatus"));
 
 // Lazy-Loaded Feature Components
-export const LazyVirtualizedChat = lazy(() => import('./VirtualizedChat'));
+export const LazyVirtualizedChat = lazy(() => import("./VirtualizedChat"));
 // IconSystem is not a component; use Icon from './icons' where needed
 
 // Lazy Component Wrapper
@@ -47,15 +49,11 @@ interface LazyComponentProps {
   fallback?: React.ReactNode;
 }
 
-export const LazyComponent: React.FC<LazyComponentProps> = ({ 
-  children, 
-  fallback = <LoadingSpinner size="large" /> 
+export const LazyComponent: React.FC<LazyComponentProps> = ({
+  children,
+  fallback = <LoadingSpinner size="large" />,
 }) => {
-  return (
-    <Suspense fallback={fallback}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={fallback}>{children}</Suspense>;
 };
 
 // Page-specific Lazy Components

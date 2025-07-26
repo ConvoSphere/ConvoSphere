@@ -1,7 +1,7 @@
-import React from 'react';
-import { Button } from 'antd';
-import { useAuthStore } from '../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { Button } from "antd";
+import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 
 const LogoutButton: React.FC = () => {
   const logout = useAuthStore((s) => s.logout);
@@ -12,7 +12,7 @@ const LogoutButton: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -22,4 +22,4 @@ const LogoutButton: React.FC = () => {
   );
 };
 
-export default LogoutButton; 
+export default LogoutButton;

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Card, Alert, Spinner, Badge } from './ui';
-import { ssoLink, getSSOProviders } from '../services/auth';
-import { useAuthStore } from '../stores/authStore';
+import React, { useState, useEffect } from "react";
+import { Button, Card, Alert, Spinner, Badge } from "./ui";
+import { ssoLink, getSSOProviders } from "../services/auth";
+
 
 interface SSOProvider {
   id: string;
@@ -19,15 +19,15 @@ interface SSOAccountLinkingProps {
 
 export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
   onSuccess,
-  onError
+  onError,
 }) => {
   const [providers, setProviders] = useState<SSOProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [linking, setLinking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
-  const { user } = useAuthStore();
+
+
 
   useEffect(() => {
     loadSSOProviders();
@@ -38,9 +38,9 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
       setLoading(true);
       const response = await getSSOProviders();
       setProviders(response);
-    } catch (err) {
-      setError('Failed to load SSO providers');
-      onError?.('Failed to load SSO providers');
+    } catch (_err) {
+      setError("Failed to load SSO providers");
+      onError?.("Failed to load SSO providers");
     } finally {
       setLoading(false);
     }
@@ -53,15 +53,15 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
       setSuccess(null);
 
       await ssoLink(providerId);
-      
+
       setSuccess(`Successfully linked account with ${providerId}`);
       onSuccess?.();
-      
+
       // Reload providers to update linked status
       await loadSSOProviders();
-      
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Failed to link account';
+      const errorMessage =
+        err.response?.data?.detail || "Failed to link account";
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -71,24 +71,24 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
 
   const getProviderIcon = (provider: SSOProvider) => {
     const iconMap: Record<string, string> = {
-      google: '🔍',
-      microsoft: '🪟',
-      github: '🐙',
-      saml: '🔐',
-      oidc: '🔑'
+      google: "🔍",
+      microsoft: "🪟",
+      github: "🐙",
+      saml: "🔐",
+      oidc: "🔑",
     };
-    return iconMap[provider.id] || '🔗';
+    return iconMap[provider.id] || "🔗";
   };
 
   const getProviderColor = (provider: SSOProvider) => {
     const colorMap: Record<string, string> = {
-      google: 'bg-red-100 text-red-800',
-      microsoft: 'bg-blue-100 text-blue-800',
-      github: 'bg-gray-100 text-gray-800',
-      saml: 'bg-purple-100 text-purple-800',
-      oidc: 'bg-green-100 text-green-800'
+      google: "bg-red-100 text-red-800",
+      microsoft: "bg-blue-100 text-blue-800",
+      github: "bg-gray-100 text-gray-800",
+      saml: "bg-purple-100 text-purple-800",
+      oidc: "bg-green-100 text-green-800",
     };
-    return colorMap[provider.id] || 'bg-gray-100 text-gray-800';
+    return colorMap[provider.id] || "bg-gray-100 text-gray-800";
   };
 
   if (loading) {
@@ -109,7 +109,8 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
           Link SSO Accounts
         </h2>
         <p className="text-gray-600">
-          Connect your local account with external SSO providers for easier login.
+          Connect your local account with external SSO providers for easier
+          login.
         </p>
       </div>
 
@@ -141,9 +142,7 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
                 </div>
               </div>
               {provider.linked && (
-                <Badge className={getProviderColor(provider)}>
-                  Linked
-                </Badge>
+                <Badge className={getProviderColor(provider)}>Linked</Badge>
               )}
             </div>
 
@@ -165,7 +164,7 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
                         Relinking...
                       </>
                     ) : (
-                      'Relink Account'
+                      "Relink Account"
                     )}
                   </Button>
                 </div>

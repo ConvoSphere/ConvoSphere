@@ -15,14 +15,14 @@ export interface ImageConfig {
   width?: number;
   height?: number;
   quality?: number;
-  format?: 'webp' | 'avif' | 'jpg' | 'png';
+  format?: "webp" | "avif" | "jpg" | "png";
   lazy?: boolean;
-  priority?: 'high' | 'normal' | 'low';
+  priority?: "high" | "normal" | "low";
 }
 
 export interface PreloadConfig {
   href: string;
-  as: 'script' | 'style' | 'image' | 'font' | 'fetch';
+  as: "script" | "style" | "image" | "font" | "fetch";
   type?: string;
   crossorigin?: string;
   media?: string;
@@ -30,7 +30,11 @@ export interface PreloadConfig {
 
 class ResourceOptimizer {
   private config: ResourceConfig;
-  private loadingQueue: Array<{ resource: string; priority: number; resolve: () => void }> = [];
+  private loadingQueue: Array<{
+    resource: string;
+    priority: number;
+    resolve: () => void;
+  }> = [];
   private activeLoads = 0;
   private loadedResources = new Set<string>();
   private intersectionObserver: IntersectionObserver | null = null;
@@ -56,7 +60,7 @@ class ResourceOptimizer {
     this.processQueue();
 
     this.isInitialized = true;
-    console.log('Resource Optimizer initialized');
+    console.log("Resource Optimizer initialized");
   }
 
   // Image Optimization
@@ -66,27 +70,27 @@ class ResourceOptimizer {
     }
 
     const url = new URL(config.src, window.location.origin);
-    
+
     // Add optimization parameters
     if (config.width) {
-      url.searchParams.set('w', config.width.toString());
+      url.searchParams.set("w", config.width.toString());
     }
     if (config.height) {
-      url.searchParams.set('h', config.height.toString());
+      url.searchParams.set("h", config.height.toString());
     }
     if (config.quality) {
-      url.searchParams.set('q', config.quality.toString());
+      url.searchParams.set("q", config.quality.toString());
     }
     if (config.format) {
-      url.searchParams.set('f', config.format);
+      url.searchParams.set("f", config.format);
     }
 
     // Add WebP/AVIF support detection
-    if (this.supportsWebP() && config.format !== 'avif') {
-      url.searchParams.set('webp', '1');
+    if (this.supportsWebP() && config.format !== "avif") {
+      url.searchParams.set("webp", "1");
     }
-    if (this.supportsAVIF() && config.format === 'avif') {
-      url.searchParams.set('avif', '1');
+    if (this.supportsAVIF() && config.format === "avif") {
+      url.searchParams.set("avif", "1");
     }
 
     return url.toString();
@@ -94,7 +98,7 @@ class ResourceOptimizer {
 
   // Lazy Loading Setup
   private setupLazyLoading() {
-    if (!this.config.enableLazyLoading || !('IntersectionObserver' in window)) {
+    if (!this.config.enableLazyLoading || !("IntersectionObserver" in window)) {
       return;
     }
 
@@ -111,7 +115,7 @@ class ResourceOptimizer {
       {
         rootMargin: `${this.config.preloadDistance}px`,
         threshold: 0.1,
-      }
+      },
     );
 
     // Observe existing lazy elements
@@ -119,14 +123,16 @@ class ResourceOptimizer {
   }
 
   private observeLazyElements() {
-    const lazyElements = document.querySelectorAll('[data-lazy], [loading="lazy"]');
+    const lazyElements = document.querySelectorAll(
+      '[data-lazy], [loading="lazy"]',
+    );
     lazyElements.forEach((element) => {
       this.intersectionObserver?.observe(element);
     });
   }
 
   private loadLazyResource(element: HTMLElement) {
-    const src = element.getAttribute('data-src') || element.getAttribute('src');
+    const src = element.getAttribute("data-src") || element.getAttribute("src");
     if (!src) return;
 
     const priority = this.getPriority(element);
@@ -147,12 +153,15 @@ class ResourceOptimizer {
   }
 
   private async processQueue() {
-    while (this.loadingQueue.length > 0 && this.activeLoads < this.config.maxConcurrentLoads) {
+    while (
+      this.loadingQueue.length > 0 &&
+      this.activeLoads < this.config.maxConcurrentLoads
+    ) {
       const item = this.loadingQueue.shift();
       if (!item) break;
 
       this.activeLoads++;
-      
+
       try {
         await this.loadResource(item.resource);
         this.loadedResources.add(item.resource);
@@ -169,7 +178,7 @@ class ResourceOptimizer {
 
   private async loadResource(resource: string): Promise<void> {
     const url = new URL(resource, window.location.origin);
-    
+
     // Handle different resource types
     if (url.pathname.match(/\.(jpg|jpeg|png|gif|webp|avif|svg)$/i)) {
       return this.loadImage(resource);
@@ -193,18 +202,19 @@ class ResourceOptimizer {
 
   private loadStylesheet(href: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
       link.href = href;
       link.onload = () => resolve();
-      link.onerror = () => reject(new Error(`Failed to load stylesheet: ${href}`));
+      link.onerror = () =>
+        reject(new Error(`Failed to load stylesheet: ${href}`));
       document.head.appendChild(link);
     });
   }
 
   private loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = src;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
@@ -213,7 +223,7 @@ class ResourceOptimizer {
   }
 
   private loadFetch(url: string): Promise<void> {
-    return fetch(url, { method: 'HEAD' }).then(() => {});
+    return fetch(url, { method: "HEAD" }).then(() => {});
   }
 
   // Preloading
@@ -226,11 +236,11 @@ class ResourceOptimizer {
   }
 
   private addPreloadLink(config: PreloadConfig) {
-    const link = document.createElement('link');
-    link.rel = 'preload';
+    const link = document.createElement("link");
+    link.rel = "preload";
     link.href = config.href;
     link.as = config.as;
-    
+
     if (config.type) link.type = config.type;
     if (config.crossorigin) link.crossOrigin = config.crossorigin;
     if (config.media) link.media = config.media;
@@ -244,7 +254,7 @@ class ResourceOptimizer {
 
     // DNS prefetch for external domains
     this.addDNSPrefetch();
-    
+
     // Preconnect to critical domains
     this.addPreconnect();
   }
@@ -252,8 +262,8 @@ class ResourceOptimizer {
   private addDNSPrefetch() {
     const externalDomains = this.getExternalDomains();
     externalDomains.forEach((domain) => {
-      const link = document.createElement('link');
-      link.rel = 'dns-prefetch';
+      const link = document.createElement("link");
+      link.rel = "dns-prefetch";
       link.href = `//${domain}`;
       document.head.appendChild(link);
     });
@@ -262,10 +272,10 @@ class ResourceOptimizer {
   private addPreconnect() {
     const criticalDomains = this.getCriticalDomains();
     criticalDomains.forEach((domain) => {
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
+      const link = document.createElement("link");
+      link.rel = "preconnect";
       link.href = `//${domain}`;
-      link.crossOrigin = 'anonymous';
+      link.crossOrigin = "anonymous";
       document.head.appendChild(link);
     });
   }
@@ -273,10 +283,12 @@ class ResourceOptimizer {
   private getExternalDomains(): string[] {
     // Extract external domains from current page resources
     const domains = new Set<string>();
-    const links = document.querySelectorAll('a[href], img[src], script[src], link[href]');
-    
+    const links = document.querySelectorAll(
+      "a[href], img[src], script[src], link[href]",
+    );
+
     links.forEach((element) => {
-      const href = element.getAttribute('href') || element.getAttribute('src');
+      const href = element.getAttribute("href") || element.getAttribute("src");
       if (href) {
         try {
           const url = new URL(href, window.location.origin);
@@ -295,33 +307,36 @@ class ResourceOptimizer {
   private getCriticalDomains(): string[] {
     // Return domains that are critical for the application
     return [
-      'api.example.com', // Replace with your API domain
-      'cdn.example.com', // Replace with your CDN domain
+      "api.example.com", // Replace with your API domain
+      "cdn.example.com", // Replace with your CDN domain
     ];
   }
 
   // Utility Methods
   private getPriority(element: HTMLElement): number {
-    const priority = element.getAttribute('data-priority');
+    const priority = element.getAttribute("data-priority");
     switch (priority) {
-      case 'high': return 3;
-      case 'low': return 1;
-      default: return 2;
+      case "high":
+        return 3;
+      case "low":
+        return 1;
+      default:
+        return 2;
     }
   }
 
   private supportsWebP(): boolean {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 1;
     canvas.height = 1;
-    return canvas.toDataURL('image/webp').indexOf('image/webp') === 5;
+    return canvas.toDataURL("image/webp").indexOf("image/webp") === 5;
   }
 
   private supportsAVIF(): boolean {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 1;
     canvas.height = 1;
-    return canvas.toDataURL('image/avif').indexOf('image/avif') === 5;
+    return canvas.toDataURL("image/avif").indexOf("image/avif") === 5;
   }
 
   // Public API
@@ -331,10 +346,10 @@ class ResourceOptimizer {
       return;
     }
 
-    element.setAttribute('data-src', this.optimizeImage(config));
-    element.setAttribute('data-lazy', 'true');
-    element.setAttribute('data-priority', config.priority || 'normal');
-    
+    element.setAttribute("data-src", this.optimizeImage(config));
+    element.setAttribute("data-lazy", "true");
+    element.setAttribute("data-priority", config.priority || "normal");
+
     if (config.alt) {
       element.alt = config.alt;
     }
@@ -345,8 +360,8 @@ class ResourceOptimizer {
   preloadCriticalResources() {
     const criticalResources: PreloadConfig[] = [
       // Add your critical resources here
-      { href: '/api/config', as: 'fetch' },
-      { href: '/images/logo.webp', as: 'image' },
+      { href: "/api/config", as: "fetch" },
+      { href: "/images/logo.webp", as: "image" },
     ];
 
     this.preloadResources(criticalResources);
@@ -380,7 +395,7 @@ class ResourceOptimizer {
 export const resourceOptimizer = new ResourceOptimizer();
 
 // Auto-initialize
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   resourceOptimizer.init();
 }
 

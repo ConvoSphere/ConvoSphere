@@ -1,18 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import { 
-  Upload, 
-  Button, 
-  Progress, 
-  List, 
-  Card, 
-  Space, 
-  Typography, 
+import React, { useState, useCallback } from "react";
+import {
+  Upload,
+  Button,
+  Progress,
+  List,
+  Card,
+  Space,
+  Typography,
   Alert,
   Tag,
-  Tooltip
-} from 'antd';
-import { 
-  InboxOutlined, 
+  Tooltip,
+} from "antd";
+import {
+  InboxOutlined,
   FileTextOutlined,
   FilePdfOutlined,
   FileWordOutlined,
@@ -22,10 +22,10 @@ import {
   CloseOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  LoadingOutlined
-} from '@ant-design/icons';
-import { useKnowledgeStore } from '../../store/knowledgeStore';
-import { formatFileSize, getFileExtension } from '../../utils/formatters';
+  LoadingOutlined,
+} from "@ant-design/icons";
+import { useKnowledgeStore } from "../../store/knowledgeStore";
+import { formatFileSize, getFileExtension } from "../../utils/formatters";
 
 const { Dragger } = Upload;
 const { Text, Title } = Typography;
@@ -42,45 +42,56 @@ const UploadArea: React.FC<UploadAreaProps> = ({
   onUploadComplete,
   maxFiles = 10,
   maxFileSize = 100 * 1024 * 1024, // 100MB
-  allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx'],
-  showQueue = true
+  allowedTypes = [
+    "pdf",
+    "doc",
+    "docx",
+    "txt",
+    "md",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
+  ],
+  showQueue = true,
 }) => {
-  const { uploadQueue, addToUploadQueue, removeFromUploadQueue, uploadFiles } = useKnowledgeStore();
+  const { uploadQueue, addToUploadQueue, removeFromUploadQueue, uploadFiles } =
+    useKnowledgeStore();
   const [dragOver, setDragOver] = useState(false);
 
   const getFileIcon = (fileType: string) => {
     const ext = getFileExtension(fileType);
     switch (ext) {
-      case 'pdf':
-        return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
-      case 'doc':
-      case 'docx':
-        return <FileWordOutlined style={{ color: '#1890ff' }} />;
-      case 'xls':
-      case 'xlsx':
-        return <FileExcelOutlined style={{ color: '#52c41a' }} />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <FileImageOutlined style={{ color: '#722ed1' }} />;
-      case 'zip':
-      case 'rar':
-      case '7z':
-        return <FileZipOutlined style={{ color: '#fa8c16' }} />;
+      case "pdf":
+        return <FilePdfOutlined style={{ color: "#ff4d4f" }} />;
+      case "doc":
+      case "docx":
+        return <FileWordOutlined style={{ color: "#1890ff" }} />;
+      case "xls":
+      case "xlsx":
+        return <FileExcelOutlined style={{ color: "#52c41a" }} />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <FileImageOutlined style={{ color: "#722ed1" }} />;
+      case "zip":
+      case "rar":
+      case "7z":
+        return <FileZipOutlined style={{ color: "#fa8c16" }} />;
       default:
-        return <FileTextOutlined style={{ color: '#8c8c8c' }} />;
+        return <FileTextOutlined style={{ color: "#8c8c8c" }} />;
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
-      case 'error':
-        return <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
-      case 'uploading':
-        return <LoadingOutlined style={{ color: '#1890ff' }} />;
+      case "completed":
+        return <CheckCircleOutlined style={{ color: "#52c41a" }} />;
+      case "error":
+        return <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />;
+      case "uploading":
+        return <LoadingOutlined style={{ color: "#1890ff" }} />;
       default:
         return null;
     }
@@ -88,62 +99,74 @@ const UploadArea: React.FC<UploadAreaProps> = ({
 
   const validateFile = (file: File): string | null => {
     const ext = getFileExtension(file.name);
-    
+
     if (!allowedTypes.includes(ext)) {
       return `File type .${ext} is not allowed`;
     }
-    
+
     if (file.size > maxFileSize) {
       return `File size exceeds ${formatFileSize(maxFileSize)}`;
     }
-    
+
     return null;
   };
 
-  const handleFileSelect = useCallback((files: File[]) => {
-    const validFiles: File[] = [];
-    const errors: string[] = [];
-    
-    files.forEach(file => {
-      const error = validateFile(file);
-      if (error) {
-        errors.push(`${file.name}: ${error}`);
-      } else {
-        validFiles.push(file);
-      }
-    });
-    
-    if (errors.length > 0) {
-      // You might want to show these errors in a more user-friendly way
-      console.error('Upload errors:', errors);
-    }
-    
-    if (validFiles.length > 0) {
-      addToUploadQueue(validFiles);
-      uploadFiles(validFiles).then(() => {
-        onUploadComplete?.();
+  const handleFileSelect = useCallback(
+    (files: File[]) => {
+      const validFiles: File[] = [];
+      const errors: string[] = [];
+
+      files.forEach((file) => {
+        const error = validateFile(file);
+        if (error) {
+          errors.push(`${file.name}: ${error}`);
+        } else {
+          validFiles.push(file);
+        }
       });
-    }
-  }, [addToUploadQueue, uploadFiles, onUploadComplete, allowedTypes, maxFileSize]);
+
+      if (errors.length > 0) {
+        // You might want to show these errors in a more user-friendly way
+        console.error("Upload errors:", errors);
+      }
+
+      if (validFiles.length > 0) {
+        addToUploadQueue(validFiles);
+        uploadFiles(validFiles).then(() => {
+          onUploadComplete?.();
+        });
+      }
+    },
+    [
+      addToUploadQueue,
+      uploadFiles,
+      onUploadComplete,
+      allowedTypes,
+      maxFileSize,
+    ],
+  );
 
   const uploadProps = {
-    name: 'file',
+    name: "file",
     multiple: true,
     beforeUpload: (file: File) => {
       handleFileSelect([file]);
       return false; // Prevent default upload
     },
     showUploadList: false,
-    accept: allowedTypes.map(type => `.${type}`).join(','),
+    accept: allowedTypes.map((type) => `.${type}`).join(","),
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    handleFileSelect(files);
-  }, [handleFileSelect]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      handleFileSelect(files);
+    },
+    [handleFileSelect],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -159,13 +182,17 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     removeFromUploadQueue(id);
   };
 
-  const pendingFiles = uploadQueue.filter(item => item.status === 'pending');
-  const uploadingFiles = uploadQueue.filter(item => item.status === 'uploading');
-  const completedFiles = uploadQueue.filter(item => item.status === 'completed');
-  const errorFiles = uploadQueue.filter(item => item.status === 'error');
+  const pendingFiles = uploadQueue.filter((item) => item.status === "pending");
+  const uploadingFiles = uploadQueue.filter(
+    (item) => item.status === "uploading",
+  );
+  const completedFiles = uploadQueue.filter(
+    (item) => item.status === "completed",
+  );
+  const errorFiles = uploadQueue.filter((item) => item.status === "error");
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="large">
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Card>
         <Dragger
           {...uploadProps}
@@ -173,13 +200,18 @@ const UploadArea: React.FC<UploadAreaProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           style={{
-            border: dragOver ? '2px dashed #1890ff' : '2px dashed #d9d9d9',
-            backgroundColor: dragOver ? '#f0f8ff' : '#fafafa',
-            transition: 'all 0.3s',
+            border: dragOver ? "2px dashed #1890ff" : "2px dashed #d9d9d9",
+            backgroundColor: dragOver ? "#f0f8ff" : "#fafafa",
+            transition: "all 0.3s",
           }}
         >
           <p className="ant-upload-drag-icon">
-            <InboxOutlined style={{ fontSize: '48px', color: dragOver ? '#1890ff' : '#8c8c8c' }} />
+            <InboxOutlined
+              style={{
+                fontSize: "48px",
+                color: dragOver ? "#1890ff" : "#8c8c8c",
+              }}
+            />
           </p>
           <p className="ant-upload-text">
             <Title level={4} style={{ margin: 0 }}>
@@ -188,7 +220,8 @@ const UploadArea: React.FC<UploadAreaProps> = ({
           </p>
           <p className="ant-upload-hint">
             <Text type="secondary">
-              Support for {allowedTypes.join(', ').toUpperCase()} files up to {formatFileSize(maxFileSize)}
+              Support for {allowedTypes.join(", ").toUpperCase()} files up to{" "}
+              {formatFileSize(maxFileSize)}
             </Text>
           </p>
         </Dragger>
@@ -196,7 +229,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
 
       {showQueue && uploadQueue.length > 0 && (
         <Card title="Upload Queue" size="small">
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
             {/* Pending files */}
             {pendingFiles.length > 0 && (
               <div>
@@ -212,7 +245,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
                           size="small"
                           icon={<CloseOutlined />}
                           onClick={() => handleRemoveFromQueue(item.id)}
-                        />
+                        />,
                       ]}
                     >
                       <List.Item.Meta
@@ -239,13 +272,13 @@ const UploadArea: React.FC<UploadAreaProps> = ({
                         avatar={getFileIcon(item.file.name)}
                         title={item.file.name}
                         description={
-                          <Space direction="vertical" style={{ width: '100%' }}>
+                          <Space direction="vertical" style={{ width: "100%" }}>
                             <Text type="secondary">
                               {formatFileSize(item.file.size)} - Uploading...
                             </Text>
-                            <Progress 
-                              percent={item.progress} 
-                              size="small" 
+                            <Progress
+                              percent={item.progress}
+                              size="small"
                               status="active"
                               showInfo={false}
                             />
@@ -272,13 +305,15 @@ const UploadArea: React.FC<UploadAreaProps> = ({
                       actions={[
                         <Tag color="success" icon={<CheckCircleOutlined />}>
                           Success
-                        </Tag>
+                        </Tag>,
                       ]}
                     >
                       <List.Item.Meta
                         avatar={getFileIcon(item.file.name)}
                         title={
-                          <Tooltip title={item.document?.title || item.file.name}>
+                          <Tooltip
+                            title={item.document?.title || item.file.name}
+                          >
                             {item.document?.title || item.file.name}
                           </Tooltip>
                         }
@@ -307,20 +342,20 @@ const UploadArea: React.FC<UploadAreaProps> = ({
                           size="small"
                           icon={<CloseOutlined />}
                           onClick={() => handleRemoveFromQueue(item.id)}
-                        />
+                        />,
                       ]}
                     >
                       <List.Item.Meta
                         avatar={getFileIcon(item.file.name)}
                         title={item.file.name}
                         description={
-                          <Space direction="vertical" style={{ width: '100%' }}>
+                          <Space direction="vertical" style={{ width: "100%" }}>
                             <Text type="danger">
-                              {item.error || 'Upload failed'}
+                              {item.error || "Upload failed"}
                             </Text>
-                            <Button 
-                              size="small" 
-                              type="link" 
+                            <Button
+                              size="small"
+                              type="link"
                               onClick={() => {
                                 handleRemoveFromQueue(item.id);
                                 handleFileSelect([item.file]);
@@ -344,13 +379,13 @@ const UploadArea: React.FC<UploadAreaProps> = ({
       {uploadQueue.length > 0 && (
         <Alert
           message={`Upload Summary: ${completedFiles.length} completed, ${uploadingFiles.length} uploading, ${errorFiles.length} failed`}
-          type={errorFiles.length > 0 ? 'warning' : 'success'}
+          type={errorFiles.length > 0 ? "warning" : "success"}
           showIcon
           closable
           onClose={() => {
             // Clear completed and error files from queue
-            uploadQueue.forEach(item => {
-              if (item.status === 'completed' || item.status === 'error') {
+            uploadQueue.forEach((item) => {
+              if (item.status === "completed" || item.status === "error") {
                 handleRemoveFromQueue(item.id);
               }
             });

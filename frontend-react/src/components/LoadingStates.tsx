@@ -1,7 +1,7 @@
-import React from 'react';
-import { Spin, Progress, Skeleton } from 'antd';
-import { useThemeStore } from '../store/themeStore';
-import './LoadingStates.css';
+import React from "react";
+import { Spin, Progress, Skeleton } from "antd";
+import { useThemeStore } from "../store/themeStore";
+import "./LoadingStates.css";
 
 export interface SkeletonCardProps {
   rows?: number;
@@ -11,15 +11,15 @@ export interface SkeletonCardProps {
 }
 
 export interface LoadingSpinnerProps {
-  size?: 'small' | 'default' | 'large';
+  size?: "small" | "default" | "large";
   text?: string;
   className?: string;
 }
 
 export interface ProgressIndicatorProps {
   percent?: number;
-  status?: 'active' | 'exception' | 'normal' | 'success';
-  size?: 'small' | 'default' | 'large';
+  status?: "active" | "exception" | "normal" | "success";
+  size?: "small" | "default" | "large";
   showInfo?: boolean;
   className?: string;
 }
@@ -29,12 +29,11 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
   rows = 3,
   avatar = false,
   title = true,
-  className = '',
+  className = "",
 }) => {
-  const skeletonClasses = [
-    'skeleton-card',
-    className
-  ].filter(Boolean).join(' ');
+  const skeletonClasses = ["skeleton-card", className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={skeletonClasses}>
@@ -51,18 +50,20 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({
 
 // Modern Loading Spinner Component
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  size = 'default',
+  size = "default",
   text,
-  className = '',
+  className = "",
 }) => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
   const spinnerClasses = [
-    'loading-spinner',
+    "loading-spinner",
     `loading-spinner--${size}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const spinnerStyle: React.CSSProperties = {
     color: colors.colorPrimary,
@@ -71,11 +72,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div className={spinnerClasses}>
       <Spin size={size} style={spinnerStyle} />
-      {text && (
-        <div className="loading-spinner__text">
-          {text}
-        </div>
-      )}
+      {text && <div className="loading-spinner__text">{text}</div>}
     </div>
   );
 };
@@ -83,16 +80,18 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 // Modern Progress Indicator Component
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   percent = 0,
-  status = 'active',
-  size = 'default',
+  status = "active",
+  size = "default",
   showInfo = true,
-  className = '',
+  className = "",
 }) => {
   const progressClasses = [
-    'progress-indicator',
+    "progress-indicator",
     `progress-indicator--${size}`,
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={progressClasses}>
@@ -101,8 +100,8 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         status={status}
         showInfo={showInfo}
         strokeColor={{
-          '0%': 'var(--colorPrimary)',
-          '100%': 'var(--colorSecondary)',
+          "0%": "var(--colorPrimary)",
+          "100%": "var(--colorSecondary)",
         }}
         className="progress-indicator__bar"
       />
@@ -114,11 +113,8 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 export const SkeletonList: React.FC<{
   count?: number;
   className?: string;
-}> = ({ count = 5, className = '' }) => {
-  const listClasses = [
-    'skeleton-list',
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ count = 5, className = "" }) => {
+  const listClasses = ["skeleton-list", className].filter(Boolean).join(" ");
 
   return (
     <div className={listClasses}>
@@ -140,11 +136,8 @@ export const SkeletonGrid: React.FC<{
   rows?: number;
   cols?: number;
   className?: string;
-}> = ({ rows = 3, cols = 3, className = '' }) => {
-  const gridClasses = [
-    'skeleton-grid',
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ rows = 3, cols = 3, className = "" }) => {
+  const gridClasses = ["skeleton-grid", className].filter(Boolean).join(" ");
 
   return (
     <div className={gridClasses}>
@@ -167,12 +160,14 @@ export const LoadingOverlay: React.FC<{
   text?: string;
   children: React.ReactNode;
   className?: string;
-}> = ({ visible, text, children, className = '' }) => {
+}> = ({ visible, text, children, className = "" }) => {
   const overlayClasses = [
-    'loading-overlay',
-    visible && 'loading-overlay--visible',
-    className
-  ].filter(Boolean).join(' ');
+    "loading-overlay",
+    visible && "loading-overlay--visible",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={overlayClasses}>
@@ -188,14 +183,12 @@ export const LoadingOverlay: React.FC<{
 
 // Pulse Loading Component
 export const PulseLoading: React.FC<{
-  size?: 'small' | 'default' | 'large';
+  size?: "small" | "default" | "large";
   className?: string;
-}> = ({ size = 'default', className = '' }) => {
-  const pulseClasses = [
-    'pulse-loading',
-    `pulse-loading--${size}`,
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ size = "default", className = "" }) => {
+  const pulseClasses = ["pulse-loading", `pulse-loading--${size}`, className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={pulseClasses}>
@@ -210,11 +203,8 @@ export const PulseLoading: React.FC<{
 export const WaveLoading: React.FC<{
   bars?: number;
   className?: string;
-}> = ({ bars = 5, className = '' }) => {
-  const waveClasses = [
-    'wave-loading',
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ bars = 5, className = "" }) => {
+  const waveClasses = ["wave-loading", className].filter(Boolean).join(" ");
 
   return (
     <div className={waveClasses}>
@@ -234,11 +224,10 @@ export const ShimmerLoading: React.FC<{
   width?: string;
   height?: string;
   className?: string;
-}> = ({ width = '100%', height = '20px', className = '' }) => {
-  const shimmerClasses = [
-    'shimmer-loading',
-    className
-  ].filter(Boolean).join(' ');
+}> = ({ width = "100%", height = "20px", className = "" }) => {
+  const shimmerClasses = ["shimmer-loading", className]
+    .filter(Boolean)
+    .join(" ");
 
   const shimmerStyle: React.CSSProperties = {
     width,

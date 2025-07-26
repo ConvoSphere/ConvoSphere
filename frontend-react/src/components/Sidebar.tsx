@@ -1,7 +1,7 @@
-import React from 'react';
-import { Menu, Avatar } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { Menu, Avatar } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   DashboardOutlined,
   MessageOutlined,
@@ -13,10 +13,10 @@ import {
   AppstoreOutlined,
   ApiOutlined,
   BarChartOutlined,
-  RobotOutlined
-} from '@ant-design/icons';
-import { useAuthStore } from '../store/authStore';
-import { useThemeStore } from '../store/themeStore';
+  RobotOutlined,
+} from "@ant-design/icons";
+import { useAuthStore } from "../store/authStore";
+import { useThemeStore } from "../store/themeStore";
 
 const Sidebar: React.FC = () => {
   const { t } = useTranslation();
@@ -25,122 +25,129 @@ const Sidebar: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
-  const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
+  const isAdmin =
+    user && (user.role === "admin" || user.role === "super_admin");
 
   const menuStyle: React.CSSProperties = {
-    height: '100%',
+    height: "100%",
     borderRight: 0,
     backgroundColor: colors.colorBgContainer,
     color: colors.colorTextBase,
-    padding: '8px',
+    padding: "8px",
   };
 
   const logoStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '20px 16px',
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "20px 16px",
     borderBottom: `1px solid ${colors.colorBorder}`,
     backgroundColor: colors.colorBgElevated,
   };
 
   const userSectionStyle: React.CSSProperties = {
-    padding: '16px',
+    padding: "16px",
     borderTop: `1px solid ${colors.colorBorder}`,
     backgroundColor: colors.colorBgElevated,
   };
 
   const items = [
-    { 
-      key: '/', 
-      icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />, 
-      label: t('navigation.dashboard') 
+    {
+      key: "/",
+      icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />,
+      label: t("navigation.dashboard"),
     },
-    { 
-      key: '/chat', 
-      icon: <MessageOutlined style={{ color: colors.colorSecondary }} />, 
-      label: t('chat.title') 
+    {
+      key: "/chat",
+      icon: <MessageOutlined style={{ color: colors.colorSecondary }} />,
+      label: t("chat.title"),
     },
-    { 
-      key: '/assistants', 
-      icon: <TeamOutlined style={{ color: colors.colorAccent }} />, 
-      label: t('navigation.assistants') 
+    {
+      key: "/assistants",
+      icon: <TeamOutlined style={{ color: colors.colorAccent }} />,
+      label: t("navigation.assistants"),
     },
-    { 
-      key: '/knowledge-base', 
-      icon: <BookOutlined style={{ color: colors.colorPrimary }} />, 
-      label: t('knowledge.title') 
+    {
+      key: "/knowledge-base",
+      icon: <BookOutlined style={{ color: colors.colorPrimary }} />,
+      label: t("knowledge.title"),
     },
-    { 
-      key: '/tools', 
-      icon: <ToolOutlined style={{ color: colors.colorSecondary }} />, 
-      label: t('tools.title') 
+    {
+      key: "/tools",
+      icon: <ToolOutlined style={{ color: colors.colorSecondary }} />,
+      label: t("tools.title"),
     },
-    { 
-      key: '/conversations', 
-      icon: <AppstoreOutlined style={{ color: colors.colorAccent }} />, 
-      label: t('navigation.conversations') 
+    {
+      key: "/conversations",
+      icon: <AppstoreOutlined style={{ color: colors.colorAccent }} />,
+      label: t("navigation.conversations"),
     },
-    { 
-      key: '/mcp-tools', 
-      icon: <ApiOutlined style={{ color: colors.colorPrimary }} />, 
-      label: t('navigation.mcp_tools') 
+    {
+      key: "/mcp-tools",
+      icon: <ApiOutlined style={{ color: colors.colorPrimary }} />,
+      label: t("navigation.mcp_tools"),
     },
-    { 
-      key: '/settings', 
-      icon: <SettingOutlined style={{ color: colors.colorSecondary }} />, 
-      label: t('settings.title') 
+    {
+      key: "/settings",
+      icon: <SettingOutlined style={{ color: colors.colorSecondary }} />,
+      label: t("settings.title"),
     },
-    { 
-      key: '/profile', 
-      icon: <UserOutlined style={{ color: colors.colorAccent }} />, 
-      label: t('profile.title') 
+    {
+      key: "/profile",
+      icon: <UserOutlined style={{ color: colors.colorAccent }} />,
+      label: t("profile.title"),
     },
-    ...(isAdmin ? [
-      { 
-        key: '/admin', 
-        icon: <TeamOutlined style={{ color: colors.colorPrimary }} />, 
-        label: t('admin.title') 
-      },
-      { 
-        key: '/admin/system-status', 
-        icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />, 
-        label: t('admin.system_status') 
-      }
-    ] : []),
+    ...(isAdmin
+      ? [
+          {
+            key: "/admin",
+            icon: <TeamOutlined style={{ color: colors.colorPrimary }} />,
+            label: t("admin.title"),
+          },
+          {
+            key: "/admin/system-status",
+            icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />,
+            label: t("admin.system_status"),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Logo Section */}
       <div style={logoStyle}>
-        <Avatar 
-          icon={<RobotOutlined />} 
+        <Avatar
+          icon={<RobotOutlined />}
           size="large"
-          style={{ 
+          style={{
             backgroundColor: colors.colorPrimary,
             color: colors.colorTextBase,
           }}
         />
         <div style={{ flex: 1 }}>
-          <div style={{ 
-            fontWeight: 600, 
-            fontSize: '16px',
-            color: colors.colorTextBase,
-          }}>
-            {t('app.title')}
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: "16px",
+              color: colors.colorTextBase,
+            }}
+          >
+            {t("app.title")}
           </div>
-          <div style={{ 
-            fontSize: '12px',
-            color: colors.colorTextSecondary,
-          }}>
-            {user?.role || t('navigation.user')}
+          <div
+            style={{
+              fontSize: "12px",
+              color: colors.colorTextSecondary,
+            }}
+          >
+            {user?.role || t("navigation.user")}
           </div>
         </div>
       </div>
 
       {/* Navigation Menu */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div style={{ flex: 1, overflow: "auto" }}>
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
@@ -153,33 +160,39 @@ const Sidebar: React.FC = () => {
 
       {/* User Section */}
       <div style={userSectionStyle}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px',
-          marginBottom: '8px',
-        }}>
-          <Avatar 
-            icon={<UserOutlined />} 
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "8px",
+          }}
+        >
+          <Avatar
+            icon={<UserOutlined />}
             size="small"
-            style={{ 
+            style={{
               backgroundColor: colors.colorSecondary,
               color: colors.colorTextBase,
             }}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ 
-              fontSize: '14px',
-              fontWeight: 500,
-              color: colors.colorTextBase,
-            }}>
-              {user?.username || t('navigation.user')}
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: 500,
+                color: colors.colorTextBase,
+              }}
+            >
+              {user?.username || t("navigation.user")}
             </div>
-            <div style={{ 
-              fontSize: '12px',
-              color: colors.colorTextSecondary,
-            }}>
-              {user?.email || 'user@example.com'}
+            <div
+              style={{
+                fontSize: "12px",
+                color: colors.colorTextSecondary,
+              }}
+            >
+              {user?.email || "user@example.com"}
             </div>
           </div>
         </div>
@@ -188,4 +201,4 @@ const Sidebar: React.FC = () => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Spin } from 'antd';
-import { useThemeStore } from '../store/themeStore';
-import resourceOptimizer from '../utils/resourceOptimizer';
-import type { ImageConfig } from '../utils/resourceOptimizer';
+import React, { useState, useEffect, useRef } from "react";
+import { Spin } from "antd";
+import { useThemeStore } from "../store/themeStore";
+import resourceOptimizer from "../utils/resourceOptimizer";
+import type { ImageConfig } from "../utils/resourceOptimizer";
 
 interface OptimizedImageProps extends ImageConfig {
   className?: string;
@@ -23,7 +23,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   quality,
   format,
   lazy = true,
-  priority = 'normal',
+  priority = "normal",
   className,
   style,
   fallback,
@@ -39,7 +39,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState<string>('');
+  const [currentSrc, setCurrentSrc] = useState<string>("");
 
   // Optimize image URL
   const optimizedSrc = resourceOptimizer.optimizeImage({
@@ -85,24 +85,24 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onError?.(new Error(`Failed to load image: ${src}`));
       };
 
-      imgRef.current.addEventListener('load', handleLoad);
-      imgRef.current.addEventListener('error', handleError);
+      imgRef.current.addEventListener("load", handleLoad);
+      imgRef.current.addEventListener("error", handleError);
 
       return () => {
         if (imgRef.current) {
-          imgRef.current.removeEventListener('load', handleLoad);
-          imgRef.current.removeEventListener('error', handleError);
+          imgRef.current.removeEventListener("load", handleLoad);
+          imgRef.current.removeEventListener("error", handleError);
         }
       };
     }
   }, [optimizedSrc, lazy, onLoad, onError, src]);
 
   const containerStyle: React.CSSProperties = {
-    position: 'relative',
-    display: 'inline-block',
+    position: "relative",
+    display: "inline-block",
     backgroundColor: colors.colorBgElevated,
-    borderRadius: '8px',
-    overflow: 'hidden',
+    borderRadius: "8px",
+    overflow: "hidden",
     ...style,
   };
 
@@ -111,33 +111,33 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }
 
   const imageStyle: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
     opacity: isLoading ? 0 : 1,
-    transition: 'opacity 0.3s ease',
+    transition: "opacity 0.3s ease",
   };
 
   const loadingStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     color: colors.colorTextSecondary,
   };
 
   const placeholderStyle: React.CSSProperties = {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     backgroundColor: colors.colorBgElevated,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     color: colors.colorTextSecondary,
-    fontSize: '14px',
+    fontSize: "14px",
   };
 
   // Show error state
@@ -158,9 +158,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   if (isLoading && placeholder) {
     return (
       <div style={containerStyle} className={className}>
-        <div style={placeholderStyle}>
-          {placeholder}
-        </div>
+        <div style={placeholderStyle}>{placeholder}</div>
         {showLoading && (
           <div style={loadingStyle}>
             <Spin size="small" />
@@ -178,11 +176,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         alt={alt}
         style={imageStyle}
         data-src={lazy ? optimizedSrc : undefined}
-        data-lazy={lazy ? 'true' : undefined}
+        data-lazy={lazy ? "true" : undefined}
         data-priority={priority}
         {...props}
       />
-      
+
       {isLoading && showLoading && (
         <div style={loadingStyle}>
           <Spin size="small" />

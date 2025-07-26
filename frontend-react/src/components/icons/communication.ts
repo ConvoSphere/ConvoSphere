@@ -1,6 +1,6 @@
 /**
  * Communication Icons
- * 
+ *
  * Icons used for communication and user interaction.
  */
 
@@ -15,8 +15,8 @@ import {
   LoginOutlined,
   KeyOutlined,
   BookOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const communicationIcons: IconMapping = {
   message: MessageOutlined,

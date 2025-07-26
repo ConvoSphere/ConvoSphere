@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal, Typography, Button } from 'antd';
+import React from "react";
+import { Modal, Typography, Button } from "antd";
 
 const { Text } = Typography;
 
@@ -17,7 +17,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ open, onClose }) => {
       footer={[
         <Button key="close" onClick={onClose}>
           Close
-        </Button>
+        </Button>,
       ]}
       width={800}
     >

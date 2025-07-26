@@ -1,7 +1,11 @@
-import React from 'react';
-import { Modal, Button, Typography, Divider, Space, Tag } from 'antd';
-import type { Document } from '../../services/knowledge';
-import { formatDate, formatFileSize, formatDocumentType } from '../../utils/formatters';
+import React from "react";
+import { Modal, Button, Typography, Divider, Space, Tag } from "antd";
+import type { Document } from "../../services/knowledge";
+import {
+  formatDate,
+  formatFileSize,
+  formatDocumentType,
+} from "../../utils/formatters";
 
 const { Title, Text } = Typography;
 
@@ -12,7 +16,12 @@ interface DocumentDetailsModalProps {
   onUse: (document: Document) => void;
 }
 
-const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, document, onClose, onUse }) => (
+const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
+  open,
+  document,
+  onClose,
+  onUse,
+}) => (
   <Modal
     title="Document Details"
     open={open}
@@ -21,14 +30,14 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, docum
       <Button key="close" onClick={onClose}>
         Close
       </Button>,
-      <Button 
-        key="use" 
+      <Button
+        key="use"
         type="primary"
         onClick={() => document && onUse(document)}
         disabled={!document}
       >
         Use in Chat
-      </Button>
+      </Button>,
     ]}
     width={600}
   >
@@ -37,9 +46,10 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, docum
         <Title level={4}>{document.title}</Title>
         <Text type="secondary">{document.file_name}</Text>
         <Divider />
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <div>
-            <Text strong>Type:</Text> {formatDocumentType(document.document_type || 'Unknown')}
+            <Text strong>Type:</Text>{" "}
+            {formatDocumentType(document.document_type || "Unknown")}
           </div>
           {document.author && (
             <div>
@@ -71,8 +81,10 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({ open, docum
             <div>
               <Text strong>Tags:</Text>
               <div style={{ marginTop: 8 }}>
-                {document.tags.map(tag => (
-                  <Tag key={tag.id} color="blue">{tag.name}</Tag>
+                {document.tags.map((tag) => (
+                  <Tag key={tag.id} color="blue">
+                    {tag.name}
+                  </Tag>
                 ))}
               </div>
             </div>

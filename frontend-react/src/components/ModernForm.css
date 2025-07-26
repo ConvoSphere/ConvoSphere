@@ -212,7 +212,7 @@
 }
 
 .modern-form--loading::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -229,8 +229,12 @@
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Form Validation Animation */
@@ -239,13 +243,21 @@
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-4px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(4px);
   }
 }
@@ -309,30 +321,30 @@
   .modern-form-grid--4 {
     grid-template-columns: 1fr;
   }
-  
+
   .modern-form-row {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .modern-form-row .modern-form-item {
     width: 100%;
   }
-  
+
   .modern-form--inline {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .modern-form--inline .modern-form-item {
     min-width: auto;
   }
-  
+
   .modern-form-actions {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .modern-form-actions--left,
   .modern-form-actions--center,
   .modern-form-actions--right {
@@ -346,7 +358,7 @@
     background: var(--colorBgContainer);
     border-color: var(--colorBorder);
   }
-  
+
   .modern-form--card:hover {
     background: var(--colorBgElevated);
   }
@@ -361,15 +373,15 @@
     transition: none !important;
     animation: none !important;
   }
-  
+
   .modern-form--loading::before {
     animation: none !important;
   }
-  
+
   .modern-form-item--error {
     animation: none !important;
   }
-  
+
   .modern-form-item--success {
     animation: none !important;
   }

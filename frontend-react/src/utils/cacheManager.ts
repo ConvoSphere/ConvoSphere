@@ -63,7 +63,7 @@ class CacheManager {
 
       return true;
     } catch (error) {
-      console.warn('Cache set failed:', error);
+      console.warn("Cache set failed:", error);
       return false;
     }
   }
@@ -71,7 +71,7 @@ class CacheManager {
   // Get cache entry
   get<T>(key: string): T | null {
     const entry = this.cache.get(key) as CacheEntry<T>;
-    
+
     if (!entry) {
       return null;
     }
@@ -132,17 +132,23 @@ class CacheManager {
       maxSize: this.config.maxSize,
       maxEntries: this.config.maxEntries,
       hitRate: this.calculateHitRate(),
-      averageAge: entries.length > 0 
-        ? entries.reduce((sum, entry) => sum + (now - entry.timestamp), 0) / entries.length 
-        : 0,
-      averageSize: entries.length > 0 
-        ? entries.reduce((sum, entry) => sum + entry.size, 0) / entries.length 
-        : 0,
+      averageAge:
+        entries.length > 0
+          ? entries.reduce((sum, entry) => sum + (now - entry.timestamp), 0) /
+            entries.length
+          : 0,
+      averageSize:
+        entries.length > 0
+          ? entries.reduce((sum, entry) => sum + entry.size, 0) / entries.length
+          : 0,
     };
   }
 
   // Cache warming - preload frequently accessed data
-  async warmCache(keys: string[], loader: (key: string) => Promise<any>): Promise<void> {
+  async warmCache(
+    keys: string[],
+    loader: (key: string) => Promise<any>,
+  ): Promise<void> {
     const promises = keys.map(async (key) => {
       if (!this.has(key)) {
         try {
@@ -160,7 +166,7 @@ class CacheManager {
   // Batch operations
   async getBatch<T>(keys: string[]): Promise<Map<string, T | null>> {
     const result = new Map<string, T | null>();
-    
+
     for (const key of keys) {
       result.set(key, this.get<T>(key));
     }
@@ -168,7 +174,9 @@ class CacheManager {
     return result;
   }
 
-  async setBatch<T>(entries: Array<{ key: string; data: T; ttl?: number }>): Promise<void> {
+  async setBatch<T>(
+    entries: Array<{ key: string; data: T; ttl?: number }>,
+  ): Promise<void> {
     for (const { key, data, ttl } of entries) {
       this.set(key, data, ttl);
     }
@@ -176,17 +184,19 @@ class CacheManager {
 
   // Memory management
   private shouldEvict(newEntrySize: number): boolean {
-    return this.currentSize + newEntrySize > this.config.maxSize ||
-           this.cache.size >= this.config.maxEntries;
+    return (
+      this.currentSize + newEntrySize > this.config.maxSize ||
+      this.cache.size >= this.config.maxEntries
+    );
   }
 
   private evictEntries(requiredSpace: number): void {
     const entries = Array.from(this.cache.entries());
-    
+
     // Sort by LRU (Least Recently Used) and access count
     entries.sort(([, a], [, b]) => {
-      const aScore = a.lastAccessed + (a.accessCount * 1000);
-      const bScore = b.lastAccessed + (b.accessCount * 1000);
+      const aScore = a.lastAccessed + a.accessCount * 1000;
+      const bScore = b.lastAccessed + b.accessCount * 1000;
       return aScore - bScore;
     });
 
@@ -195,13 +205,13 @@ class CacheManager {
 
     for (const [key, entry] of entries) {
       if (freedSpace >= requiredSpace) break;
-      
+
       toDelete.push(key);
       freedSpace += entry.size;
     }
 
     // Delete entries
-    toDelete.forEach(key => this.delete(key));
+    toDelete.forEach((key) => this.delete(key));
   }
 
   private isExpired(entry: CacheEntry): boolean {
@@ -244,7 +254,7 @@ class CacheManager {
       }
     }
 
-    toDelete.forEach(key => this.delete(key));
+    toDelete.forEach((key) => this.delete(key));
 
     if (toDelete.length > 0) {
       console.log(`Cache cleanup: removed ${toDelete.length} expired entries`);
