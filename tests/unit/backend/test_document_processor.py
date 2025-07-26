@@ -18,7 +18,7 @@ from typing import Dict, Any, List
 import pytest
 from docx import Document as DocxDocument
 
-from backend.app.services.document_processor import (
+from backend.app.services.document import (
     DocumentProcessor,
     DocumentChunk,
     DocumentMetadata,

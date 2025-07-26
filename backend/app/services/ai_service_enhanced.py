@@ -8,8 +8,8 @@ and performance monitoring from Phase 3.
 import time
 from typing import Any
 
-from app.services.ai_service import ai_service
-from app.services.performance_integration import performance_integration
+from backend.app.services.ai_service import ai_service
+from backend.app.services.performance_integration import performance_integration
 from loguru import logger
 
 

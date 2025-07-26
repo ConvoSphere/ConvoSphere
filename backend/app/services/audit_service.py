@@ -13,8 +13,8 @@ from typing import Any
 from uuid import uuid4
 
 import redis
-from app.core.config import settings
-from app.models.audit_extended import (
+from backend.app.core.config import settings
+from backend.app.models.audit_extended import (
     AuditAlert,
     AuditArchive,
     AuditEventCategory,
@@ -27,8 +27,8 @@ from app.models.audit_extended import (
     DataClassification,
     ExtendedAuditLog,
 )
-from app.models.user import User
-from app.utils.exceptions import AuditError, ComplianceError
+from backend.app.models.user import User
+from backend.app.utils.exceptions import AuditError, ComplianceError
 from fastapi import Request
 from sqlalchemy import and_, desc, func
 from sqlalchemy.orm import Session

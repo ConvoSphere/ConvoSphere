@@ -7,8 +7,8 @@ AI assistants with their personality profiles and tool configurations.
 
 from typing import Any
 
-from app.core.database import get_db
-from app.models.assistant import Assistant, AssistantStatus
+from backend.app.core.database import get_db
+from backend.app.models.assistant import Assistant, AssistantStatus
 from loguru import logger
 from sqlalchemy import and_, or_
 
@@ -178,7 +178,7 @@ class AssistantService:
         Returns:
             Optional[str]: Default assistant ID if configured, None otherwise
         """
-        from app.models.user import User
+        from backend.app.models.user import User
 
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -211,7 +211,7 @@ class AssistantService:
         Returns:
             bool: True if successful, False otherwise
         """
-        from app.models.user import User
+        from backend.app.models.user import User
 
         # Verify the assistant exists and user has access
         assistant = self.get_assistant(assistant_id, user_id)

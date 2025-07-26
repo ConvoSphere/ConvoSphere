@@ -19,7 +19,7 @@ except ImportError:
     DOCLING_AVAILABLE = False
     logging.warning("Docling not available. Install with: pip install docling")
 
-from app.core.config import get_settings
+from backend.app.core.config import get_settings
 
 if TYPE_CHECKING:
     from docling.document import DoclingDocument

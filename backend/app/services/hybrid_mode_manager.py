@@ -9,8 +9,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from app.core.exceptions import ConversationError
-from app.schemas.hybrid_mode import (
+from backend.app.core.exceptions import ConversationError
+from backend.app.schemas.hybrid_mode import (
     AgentMemory,
     AgentReasoning,
     ConversationMode,
@@ -21,7 +21,7 @@ from app.schemas.hybrid_mode import (
     ModeDecision,
     ModeDecisionReason,
 )
-from app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
+from backend.app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
 from loguru import logger
 from pydantic import BaseModel
 

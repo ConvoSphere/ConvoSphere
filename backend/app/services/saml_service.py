@@ -10,11 +10,11 @@ import tempfile
 from datetime import datetime
 from typing import Any
 
-from app.core.config import get_settings
-from app.core.security import create_access_token, create_refresh_token
-from app.models.user import AuthProvider, User
-from app.schemas.user import SSOUserCreate
-from app.services.user_service import UserService
+from backend.app.core.config import get_settings
+from backend.app.core.security import create_access_token, create_refresh_token
+from backend.app.models.user import AuthProvider, User
+from backend.app.schemas.user import SSOUserCreate
+from backend.app.services.user_service import UserService
 from fastapi import HTTPException, Request, status
 from loguru import logger
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT

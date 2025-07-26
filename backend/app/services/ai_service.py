@@ -20,10 +20,10 @@ except ImportError:
     LITELLM_AVAILABLE = False
     logger.warning("LiteLLM not available. AI features will be disabled.")
 
-from app.core.config import get_settings
-from app.services.tool_service import tool_service
-from app.services.weaviate_service import weaviate_service
-from app.tools.mcp_tool import mcp_manager
+from backend.app.core.config import get_settings
+from backend.app.services.tool_service import tool_service
+from backend.app.services.weaviate_service import weaviate_service
+from backend.app.tools.mcp_tool import mcp_manager
 
 
 @dataclass
@@ -800,7 +800,7 @@ class AIService:
             # Get conversation history
             conversation_history = []
             if db:
-                from app.services.conversation_service import ConversationService
+                from backend.app.services.conversation_service import ConversationService
 
                 conv_service = ConversationService(db)
                 conversation_history = conv_service.get_conversation_history(

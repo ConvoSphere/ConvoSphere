@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from app.services.tool_service import tool_service
+from backend.app.services.tool_service import tool_service
 from loguru import logger
 
 if TYPE_CHECKING:

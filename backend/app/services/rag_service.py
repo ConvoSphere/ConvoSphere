@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from app.core.exceptions import AIError, ConfigurationError
-from app.core.exceptions import ValidationError as AppValidationError
-from app.schemas.rag import (
+from backend.app.core.exceptions import AIError, ConfigurationError
+from backend.app.core.exceptions import ValidationError as AppValidationError
+from backend.app.schemas.rag import (
     ContextRankingMethod,
     EmbeddingModel,
     RAGConfig,
@@ -24,8 +24,8 @@ from app.schemas.rag import (
     RAGResult,
     RAGStrategy,
 )
-from app.services.cache_service import cache_service
-from app.services.weaviate_service import WeaviateService
+from backend.app.services.cache_service import cache_service
+from backend.app.services.weaviate_service import WeaviateService
 from loguru import logger
 
 

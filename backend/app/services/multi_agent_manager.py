@@ -8,8 +8,8 @@ agent handoff, collaboration, and performance monitoring.
 from datetime import datetime
 from typing import Any
 
-from app.core.exceptions import ConversationError
-from app.schemas.agent import AgentConfig, AgentResponse, AgentState
+from backend.app.core.exceptions import ConversationError
+from backend.app.schemas.agent import AgentConfig, AgentResponse, AgentState
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 

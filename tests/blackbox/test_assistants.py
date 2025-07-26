@@ -6,7 +6,7 @@ CRUD operations, tool management, and assistant configuration.
 """
 
 import pytest
-from .conftest import TEST_ASSISTANT_DATA
+from backend.appconftest import TEST_ASSISTANT_DATA
 
 
 class TestAssistantManagementEndpoints:

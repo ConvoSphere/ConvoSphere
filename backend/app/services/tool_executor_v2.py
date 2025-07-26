@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
-from app.core.exceptions import ToolError
-from app.services.tool_service import tool_service
-from app.tools.mcp_tool import mcp_manager
+from backend.app.core.exceptions import ToolError
+from backend.app.services.tool_service import tool_service
+from backend.app.tools.mcp_tool import mcp_manager
 from loguru import logger
 from pydantic import BaseModel, Field
 

@@ -13,7 +13,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-from app.core.exceptions import ConfigurationError
+from backend.app.core.exceptions import ConfigurationError
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 

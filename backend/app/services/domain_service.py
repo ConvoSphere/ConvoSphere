@@ -9,7 +9,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Any
 
-from app.models.domain_groups import (
+from backend.app.models.domain_groups import (
     AccessLevel,
     DomainActivity,
     DomainGroup,
@@ -18,8 +18,8 @@ from app.models.domain_groups import (
     DomainType,
     ResourceType,
 )
-from app.models.user import User, UserRole
-from app.schemas.domain_groups import (
+from backend.app.models.user import User, UserRole
+from backend.app.schemas.domain_groups import (
     DomainGroupCreate,
     DomainGroupStats,
     DomainGroupUpdate,
@@ -30,7 +30,7 @@ from app.schemas.domain_groups import (
     DomainResourceUpdate,
     DomainSearchParams,
 )
-from app.utils.exceptions import (
+from backend.app.utils.exceptions import (
     DomainGroupNotFoundError,
     InvitationNotFoundError,
     PermissionDeniedError,

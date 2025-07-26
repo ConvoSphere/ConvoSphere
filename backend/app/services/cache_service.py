@@ -11,8 +11,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import redis.asyncio as redis
-from app.core.config import settings
-from app.core.exceptions import ConfigurationError
+from backend.app.core.config import settings
+from backend.app.core.exceptions import ConfigurationError
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 
@@ -150,7 +150,7 @@ class CacheService:
         """Initialize Redis connection with graceful degradation."""
         try:
             # Use the global Redis client if available
-            from app.core.redis_client import get_redis, is_redis_available
+            from backend.app.core.redis_client import get_redis, is_redis_available
 
             if is_redis_available():
                 self.redis_client = await get_redis()
