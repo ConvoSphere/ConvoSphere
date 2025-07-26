@@ -747,7 +747,10 @@ class DomainService:
             return True
 
         # Organization admins can access domains in their organization
-        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
+        return bool(
+            user.role == UserRole.ADMIN
+            and domain_group.organization_id == user.organization_id
+        )
 
     def _can_manage_domain_group(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain group."""
@@ -761,7 +764,10 @@ class DomainService:
             return True
 
         # Organization admins can manage domains in their organization
-        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
+        return bool(
+            user.role == UserRole.ADMIN
+            and domain_group.organization_id == user.organization_id
+        )
 
     def _can_manage_domain_members(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain members."""

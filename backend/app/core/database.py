@@ -90,7 +90,9 @@ def create_default_assistant():
             logger.info("No admin user found, creating default admin user")
             admin_user = create_default_admin_user()
             if not admin_user:
-                logger.warning("Failed to create admin user, cannot create default assistant")
+                logger.warning(
+                    "Failed to create admin user, cannot create default assistant"
+                )
                 return
 
         # Create default assistant

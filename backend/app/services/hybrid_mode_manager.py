@@ -444,7 +444,6 @@ class HybridModeManager:
             reasoning_steps=reasoning_steps,
         )
 
-
     def _determine_recommended_mode(
         self,
         state: HybridModeState,

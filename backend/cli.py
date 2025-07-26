@@ -20,6 +20,7 @@ def get_redis_client():
     """Get Redis client."""
     try:
         import redis
+
         return redis.from_url(settings.redis_url)
     except ImportError:
         raise ImportError("Redis client not available")
@@ -29,9 +30,11 @@ def get_weaviate_client():
     """Get Weaviate client."""
     try:
         import weaviate
+
         return weaviate.connect_to_weaviate(settings.weaviate_url)
     except ImportError:
         raise ImportError("Weaviate client not available")
+
 
 # DB-Session vorbereiten
 engine = create_engine(settings.database_url)
@@ -208,7 +211,9 @@ def user_list():
         else:
             print_info(f"Found {len(users)} users:")
             for user in users:
-                print_info(f"  - {user.email} ({user.username}) - {user.role} - {user.status}")
+                print_info(
+                    f"  - {user.email} ({user.username}) - {user.role} - {user.status}"
+                )
     except Exception as e:
         print_error(f"Error: {e}")
         sys.exit(1)
@@ -501,7 +506,6 @@ def dev_test_data(users=5):
     user_service = UserService(db)
 
     try:
-
         for i in range(users):
             user_data = UserCreate(
                 email=f"test{i}@example.com",
@@ -592,7 +596,6 @@ def db_reset(confirm=False):
         if response.lower() != "yes":
             return
 
-
     try:
         # Step 1: Drop all tables
         with engine.connect() as conn:
@@ -619,12 +622,10 @@ def db_reset(confirm=False):
             conn.execute(text("SET session_replication_role = DEFAULT;"))
             conn.commit()
 
-
         # Step 2: Reset Alembic version table
         with engine.connect() as conn:
             conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
             conn.commit()
-
 
         # Step 3: Run migrations to recreate all tables
         db_migrate()
@@ -645,7 +646,6 @@ def db_clear_data(confirm=False):
         )
         if response.lower() != "yes":
             return
-
 
     try:
         with engine.connect() as conn:

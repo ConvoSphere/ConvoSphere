@@ -211,7 +211,6 @@ class TestSSOPerformance:
         assert min_time > 0.001
 
 
-
 class TestSSOLoadTesting:
     """Load testing for SSO functionality."""
 
@@ -258,7 +257,6 @@ class TestSSOLoadTesting:
         # Should complete in under 10 seconds
         assert total_time < 10.0
 
-
     def test_sustained_load(self, client):
         """Test sustained load over time."""
         start_time = time.time()
@@ -290,7 +288,6 @@ class TestSSOLoadTesting:
             else 0
         )
         assert error_rate < 0.1
-
 
 
 class TestSSOSecurityPerformance:
@@ -350,4 +347,3 @@ class TestSSOSecurityPerformance:
 
                 # Recent requests shouldn't be significantly slower
                 assert recent_avg < early_avg * 1.5
-

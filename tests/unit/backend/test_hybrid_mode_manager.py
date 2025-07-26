@@ -5,8 +5,8 @@ This module tests the hybrid mode management functionality including
 mode decisions, reasoning, and state management.
 """
 
-
 import pytest
+
 from backend.app.schemas.hybrid_mode import (
     ConversationMode,
     HybridModeConfig,

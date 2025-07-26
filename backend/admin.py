@@ -507,7 +507,6 @@ def user_show(identifier):
             print_error(f"User not found: {identifier}")
             sys.exit(1)
 
-
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
         print_info("Please run in a backend environment with dependencies installed")

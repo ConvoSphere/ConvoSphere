@@ -19,7 +19,7 @@ class TextProcessor:
             return {
                 "text": content,
                 "file_path": file_path,
-                "character_count": len(content)
+                "character_count": len(content),
             }
         except Exception as e:
             raise Exception(f"Error processing text file: {str(e)}")

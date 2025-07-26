@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from backend.app.services.ai_service import AIService
 from backend.app.services.assistant_service import AssistantService
 from backend.app.services.conversation_service import ConversationService
@@ -131,9 +132,7 @@ class TestUserServiceComprehensive:
         ]
 
         with patch.object(user_service, "db") as mock_db:
-            mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = (
-                users
-            )
+            mock_db.query.return_value.offset.return_value.limit.return_value.all.return_value = users
             mock_db.query.return_value.count.return_value = 2
 
             result = user_service.get_users(skip=0, limit=10)

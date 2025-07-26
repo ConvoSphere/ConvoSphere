@@ -411,7 +411,6 @@ class AuditMetrics:
             # This would implement actual performance metrics collection
             # For now, return placeholder data
 
-
         except Exception as e:
             logger.exception(f"Failed to get performance metrics: {str(e)}")
             return {}
@@ -434,7 +433,6 @@ class AuditMetrics:
             # This would implement actual cache metrics collection
             # For now, return placeholder data
 
-
         except Exception as e:
             logger.exception(f"Failed to get cache metrics: {str(e)}")
             return {}
@@ -456,7 +454,6 @@ class AuditMetrics:
 
             # This would implement actual database metrics collection
             # For now, return placeholder data
-
 
         except Exception as e:
             logger.exception(f"Failed to get database metrics: {str(e)}")
@@ -551,7 +548,6 @@ class AuditPerformanceMonitor:
                 "trends": await self._get_performance_trends(),
             }
 
-
         except Exception as e:
             logger.exception(f"Failed to get monitoring dashboard: {str(e)}")
             raise AuditError(f"Failed to get monitoring dashboard: {str(e)}")
@@ -588,7 +584,9 @@ class AuditPerformanceMonitor:
                 "system_status": (
                     "healthy"
                     if total_errors / total_events < 0.1
-                    else "degraded" if total_events > 0 else "unknown"
+                    else "degraded"
+                    if total_events > 0
+                    else "unknown"
                 ),
             }
 

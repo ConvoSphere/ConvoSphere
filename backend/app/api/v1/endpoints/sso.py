@@ -153,7 +153,6 @@ async def get_ldap_user_info(
         sso_manager = get_sso_manager()
         return await sso_manager.get_user_info("ldap", str(current_user.id), db)
 
-
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
@@ -300,7 +299,6 @@ async def saml_metadata():
         # Generate SP metadata
         return entity_descriptor(provider.saml_config)
 
-
     except SSOConfigurationError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -421,7 +419,6 @@ async def get_oauth_user_info(
             str(current_user.id),
             db,
         )
-
 
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

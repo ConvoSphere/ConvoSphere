@@ -628,7 +628,9 @@ class ConversationIntelligenceService:
                 category=(
                     TopicCategory.TECHNICAL
                     if i == 0
-                    else TopicCategory.BUSINESS if i == 1 else TopicCategory.GENERAL
+                    else TopicCategory.BUSINESS
+                    if i == 1
+                    else TopicCategory.GENERAL
                 ),
                 confidence=0.8 - i * 0.1,
                 keywords=[f"keyword_{i}_{j}" for j in range(3)],

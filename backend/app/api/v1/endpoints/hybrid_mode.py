@@ -31,9 +31,7 @@ class ModeChangeRequestModel(BaseModel):
     """Request model for mode change."""
 
     target_mode: ConversationMode = Field(..., description="Target conversation mode")
-    reason: str | None = Field(
-        None, description="User-provided reason for mode change"
-    )
+    reason: str | None = Field(None, description="User-provided reason for mode change")
     force_change: bool = Field(
         default=False, description="Force mode change ignoring recommendations"
     )
@@ -87,9 +85,7 @@ class ModeDecisionRequest(BaseModel):
     context: dict[str, Any] | None = Field(
         default_factory=dict, description="Conversation context"
     )
-    force_mode: ConversationMode | None = Field(
-        None, description="Force specific mode"
-    )
+    force_mode: ConversationMode | None = Field(None, description="Force specific mode")
 
 
 @router.post(
@@ -268,7 +264,6 @@ async def decide_conversation_mode(
             context=request.context or {},
             force_mode=request.force_mode,
         )
-
 
     except Exception as e:
         logger.error(f"Error deciding conversation mode: {e}")

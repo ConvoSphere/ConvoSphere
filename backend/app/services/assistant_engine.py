@@ -302,7 +302,6 @@ class AssistantEngine:
                 "assistant_id": request.assistant_id,
             }
 
-
         except Exception as e:
             logger.error(f"Error getting conversation context: {e}")
             return {"messages": [], "conversation_metadata": {}, "message_count": 0}

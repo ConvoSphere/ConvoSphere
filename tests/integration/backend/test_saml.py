@@ -9,8 +9,9 @@ import base64
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from backend.app.services.saml_service import MockSamlSettings, SAMLService
 from fastapi import HTTPException
+
+from backend.app.services.saml_service import MockSamlSettings, SAMLService
 
 
 class TestSAMLService:
@@ -136,9 +137,7 @@ class TestSAMLService:
 
                     # Mock certificate
                     mock_cert = MagicMock()
-                    mock_x509.CertificateBuilder.return_value.subject_name.return_value.issuer_name.return_value.public_key.return_value.serial_number.return_value.not_valid_before.return_value.not_valid_after.return_value.add_extension.return_value.sign.return_value = (
-                        mock_cert
-                    )
+                    mock_x509.CertificateBuilder.return_value.subject_name.return_value.issuer_name.return_value.public_key.return_value.serial_number.return_value.not_valid_before.return_value.not_valid_after.return_value.add_extension.return_value.sign.return_value = mock_cert
 
                     # Mock serialization
                     mock_cert.public_bytes.return_value = b"mock_cert_data"

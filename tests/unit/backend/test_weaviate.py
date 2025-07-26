@@ -1,5 +1,9 @@
 import pytest
-from backend.app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
+
+from backend.app.core.weaviate_client import (
+    check_weaviate_connection,
+    get_weaviate_info,
+)
 
 
 def test_weaviate_connection():

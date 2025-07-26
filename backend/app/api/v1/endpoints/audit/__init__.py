@@ -26,8 +26,12 @@ router = APIRouter(prefix="/audit", tags=["audit"])
 # Include all sub-routers
 router.include_router(logs_router, prefix="/logs", tags=["audit-logs"])
 router.include_router(policies_router, prefix="/policies", tags=["audit-policies"])
-router.include_router(compliance_router, prefix="/compliance", tags=["audit-compliance"])
+router.include_router(
+    compliance_router, prefix="/compliance", tags=["audit-compliance"]
+)
 router.include_router(alerts_router, prefix="/alerts", tags=["audit-alerts"])
 router.include_router(retention_router, prefix="/retention", tags=["audit-retention"])
 router.include_router(archives_router, prefix="/archives", tags=["audit-archives"])
-router.include_router(maintenance_router, prefix="/maintenance", tags=["audit-maintenance"])
+router.include_router(
+    maintenance_router, prefix="/maintenance", tags=["audit-maintenance"]
+)

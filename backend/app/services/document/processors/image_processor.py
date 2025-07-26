@@ -23,7 +23,7 @@ class ImageProcessor:
                 "text": text_content,
                 "file_path": file_path,
                 "image_size": image.size,
-                "mode": image.mode
+                "mode": image.mode,
             }
         except Exception as e:
             raise Exception(f"Error processing image: {str(e)}")
