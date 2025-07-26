@@ -6,7 +6,7 @@ document management, search, tags, and processing.
 """
 
 import pytest
-from .conftest import TEST_DOCUMENT_DATA
+from backend.appconftest import TEST_DOCUMENT_DATA
 
 
 class TestDocumentManagement:

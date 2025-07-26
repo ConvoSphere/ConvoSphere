@@ -13,9 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from app.core.config import get_settings
-from app.core.database import get_db
-from app.models.knowledge import (
+from backend.app.core.config import get_settings
+from backend.app.core.database import get_db
+from backend.app.models.knowledge import (
     Document,
     DocumentChunk,
     DocumentProcessingJob,

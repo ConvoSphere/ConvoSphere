@@ -7,7 +7,7 @@ login, logout, registration, token refresh, and SSO functionality.
 
 import pytest
 import uuid
-from .conftest import TEST_USER_CREDENTIALS
+from backend.appconftest import TEST_USER_CREDENTIALS
 
 
 class TestAuthenticationEndpoints:

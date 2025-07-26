@@ -18,7 +18,7 @@ import magic
 import markdown
 import pypdf
 import tiktoken
-from app.core.config import get_settings
+from backend.app.core.config import get_settings
 from docx import Document
 
 from .docling_processor import docling_processor

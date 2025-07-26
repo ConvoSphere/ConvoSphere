@@ -6,7 +6,7 @@ tool management, categories, and tool execution.
 """
 
 import pytest
-from .conftest import TEST_TOOL_DATA
+from backend.appconftest import TEST_TOOL_DATA
 
 
 class TestToolManagementEndpoints:

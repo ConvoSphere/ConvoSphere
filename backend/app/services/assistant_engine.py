@@ -11,18 +11,18 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from app.core.config import get_settings
-from app.schemas.hybrid_mode import (
+from backend.app.core.config import get_settings
+from backend.app.schemas.hybrid_mode import (
     ConversationMode,
     HybridModeConfig,
     ModeChangeRequest,
     StructuredResponse,
 )
-from app.services.ai_service import ai_service
-from app.services.conversation_service import conversation_service
-from app.services.hybrid_mode_manager import hybrid_mode_manager
-from app.services.knowledge_service import knowledge_service
-from app.services.tool_executor_v2 import tool_executor
+from backend.app.services.ai_service import ai_service
+from backend.app.services.conversation_service import conversation_service
+from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
+from backend.app.services.knowledge_service import knowledge_service
+from backend.app.services.tool_executor_v2 import tool_executor
 from loguru import logger
 
 

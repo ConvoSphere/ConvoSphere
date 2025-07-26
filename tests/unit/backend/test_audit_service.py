@@ -16,7 +16,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from backend.app.models.audit import AuditLog
-from backend.app.services.audit_service import AuditService
+from backend.app.services.audit import AuditService
 
 
 class TestAuditService:

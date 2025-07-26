@@ -14,9 +14,9 @@ from datetime import datetime
 from queue import Empty, PriorityQueue
 from typing import Any
 
-from app.core.database import get_db
-from app.models.knowledge import Document, DocumentProcessingJob, DocumentStatus
-from app.services.knowledge_service import KnowledgeService
+from backend.app.core.database import get_db
+from backend.app.models.knowledge import Document, DocumentProcessingJob, DocumentStatus
+from backend.app.services.knowledge_service import KnowledgeService
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -195,14 +195,14 @@ class BackgroundJobService:
             db.commit()
 
             # Delete chunks from database
-            from app.models.knowledge import DocumentChunk
+            from backend.app.models.knowledge import DocumentChunk
 
             db.query(DocumentChunk).filter(
                 DocumentChunk.document_id == document.id,
             ).delete()
 
             # Delete from Weaviate
-            from app.services.weaviate_service import WeaviateService
+            from backend.app.services.weaviate_service import WeaviateService
 
             weaviate_service = WeaviateService()
             weaviate_service.delete_document_chunks(str(document.id))

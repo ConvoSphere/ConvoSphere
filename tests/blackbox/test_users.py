@@ -6,7 +6,7 @@ CRUD operations, profile management, and administrative functions.
 """
 
 import pytest
-from .conftest import TEST_USER_CREDENTIALS
+from backend.appconftest import TEST_USER_CREDENTIALS
 
 
 class TestUserManagementEndpoints:

@@ -14,7 +14,7 @@ from enum import Enum
 from typing import Any
 
 import numpy as np
-from app.core.config import get_settings
+from backend.app.core.config import get_settings
 from litellm import completion
 
 logger = logging.getLogger(__name__)
@@ -929,7 +929,7 @@ class EmbeddingService:
     @property
     def weaviate_client(self):
         """Get weaviate client for testing."""
-        from app.core.weaviate_client import get_weaviate_client
+        from backend.app.core.weaviate_client import get_weaviate_client
 
         return get_weaviate_client()
 

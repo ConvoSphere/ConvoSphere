@@ -8,21 +8,21 @@ into a unified interface for easy use throughout the application.
 from datetime import datetime, timedelta
 from typing import Any
 
-from app.core.exceptions import ConfigurationError
-from app.services.async_processor import (
+from backend.app.core.exceptions import ConfigurationError
+from backend.app.services.async_processor import (
     TaskPriority,
     TaskRequest,
     TaskType,
     async_processor,
     initialize_default_handlers,
 )
-from app.services.cache_service import (
+from backend.app.services.cache_service import (
     ai_response_cache,
     cache_service,
     conversation_cache,
     tool_result_cache,
 )
-from app.services.performance_monitor import (
+from backend.app.services.performance_monitor import (
     APIMetric,
     CacheMetric,
     DatabaseQueryMetric,

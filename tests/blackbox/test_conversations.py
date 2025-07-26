@@ -6,7 +6,7 @@ CRUD operations, message management, and conversation features.
 """
 
 import pytest
-from .conftest import TEST_CONVERSATION_DATA, TEST_MESSAGE_DATA
+from backend.appconftest import TEST_CONVERSATION_DATA, TEST_MESSAGE_DATA
 
 
 class TestConversationManagementEndpoints:

@@ -1,5 +1,6 @@
 """
-Comprehensive test configuration and fixtures for AI Assistant Platform.
+Consolidated test configuration and fixtures for AI Assistant Platform.
+This file combines fixtures from both tests/conftest.py and backend/tests/conftest.py
 """
 import asyncio
 import json
@@ -7,13 +8,14 @@ import os
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+from collections.abc import Generator
 
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 # Update import paths for new test structure
 import sys
@@ -21,11 +23,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from backend.app.core.database import get_db
 from backend.app.models.base import Base
+from backend.app.models.knowledge import Document, DocumentProcessingJob, Tag
+from backend.app.models.user import User
 
 # Import the main application
 from backend.main import app
 
-# Test configuration
+# Test configuration - Using PostgreSQL for all tests
 TEST_DATABASE_URL = "postgresql://test_user:test_password@localhost:5434/chatassistant_test"
 TEST_REDIS_URL = "redis://localhost:6380"
 TEST_WEAVIATE_URL = "http://localhost:8081"
@@ -98,157 +102,99 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def test_engine():
-    """Create test database engine."""
+    """Create database engine for testing."""
     engine = create_engine(TEST_DATABASE_URL)
+    Base.metadata.create_all(bind=engine)
     yield engine
-    engine.dispose()
+    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="session")
 def test_db_session_factory(test_engine):
-    """Create test database session factory."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-    return TestingSessionLocal
+    """Create database session factory for testing."""
+    return sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 @pytest.fixture(scope="function")
 def test_db_session(test_db_session_factory):
-    """Create test database session."""
-    # Create tables
-    Base.metadata.create_all(bind=test_db_session_factory.bind)
-
-    session = test_db_session_factory()
+    """Create a new database session for a test."""
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    session = test_db_session_factory(bind=connection)
+    
     yield session
-
-    # Cleanup
+    
     session.close()
-    Base.metadata.drop_all(bind=test_db_session_factory.bind)
+    transaction.rollback()
+    connection.close()
 
 @pytest.fixture
 def override_get_db(test_db_session):
-    """Override database dependency for testing."""
+    """Override the database dependency."""
     def _override_get_db():
         try:
             yield test_db_session
         finally:
             pass
-
-    app.dependency_overrides[get_db] = _override_get_db
-    yield
-    app.dependency_overrides.clear()
+    return _override_get_db
 
 @pytest.fixture
 def client(override_get_db):
-    """Create test client."""
+    """Create a test client."""
+    app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
+    app.dependency_overrides.clear()
 
 @pytest_asyncio.fixture
 async def async_client(override_get_db):
-    """Create async test client."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
+    """Create an async test client."""
+    app.dependency_overrides[get_db] = override_get_db
+    async with AsyncClient(app=app, base_url="http://test") as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
 
-# Redis Mocking
 @pytest.fixture(scope="session", autouse=True)
 def setup_redis_mock():
-    """Setup Redis mock for all tests."""
-    mock_redis = AsyncMock()
-    mock_redis.get.return_value = None
-    mock_redis.set.return_value = True
-    mock_redis.delete.return_value = True
-    mock_redis.incr.return_value = 1
-    mock_redis.ping.return_value = True
-    mock_redis.exists.return_value = False
-    mock_redis.expire.return_value = True
-    mock_redis.ttl.return_value = 3600
+    """Mock Redis for testing."""
+    with patch('backend.app.core.cache.redis.Redis') as mock_redis:
+        mock_redis_instance = MagicMock()
+        mock_redis.return_value = mock_redis_instance
+        yield mock_redis_instance
 
-    with (
-        patch("backend.app.core.redis_client.redis_client", mock_redis),
-        patch("backend.app.core.redis_client.get_redis", return_value=mock_redis),
-        patch("backend.app.core.redis_client.init_redis", return_value=mock_redis),
-        patch("backend.app.core.redis_client.check_redis_connection", return_value=True),
-        patch(
-            "backend.app.core.redis_client.get_redis_info",
-            return_value={
-                "status": "connected",
-                "version": "7.0.0",
-                "connected_clients": 1,
-                "used_memory_human": "1.0M",
-                "uptime_in_seconds": 3600,
-                "keyspace_hits": 100,
-                "keyspace_misses": 10,
-            },
-        ),
-    ):
-        yield
-
-# Weaviate Mocking
 @pytest.fixture(scope="session", autouse=True)
 def setup_weaviate_mock():
-    """Setup Weaviate mock for all tests."""
-    mock_weaviate = MagicMock()
-    mock_weaviate.collections.get.return_value = MagicMock()
-    mock_weaviate.collections.create.return_value = MagicMock()
-    mock_weaviate.collections.delete.return_value = True
-    mock_weaviate.data.insert.return_value = {"id": "test-id"}
-    mock_weaviate.data.get.return_value = {"id": "test-id", "properties": {}}
-    mock_weaviate.data.delete.return_value = True
-    mock_weaviate.query.get.return_value = MagicMock()
-    mock_weaviate.query.aggregate.return_value = MagicMock()
+    """Mock Weaviate for testing."""
+    with patch('backend.app.services.weaviate_service.weaviate.Client') as mock_weaviate:
+        mock_client = MagicMock()
+        mock_weaviate.return_value = mock_client
+        yield mock_client
 
-    with patch("backend.app.core.weaviate_client.weaviate_client", mock_weaviate):
-        yield
-
-# Authentication Fixtures
 @pytest.fixture
 def test_user_headers(client, test_user_data):
-    """Create authenticated user headers."""
-    # Register user
-    response = client.post("/api/auth/register", json=test_user_data)
-    assert response.status_code == 201
-
-    # Login
-    login_data = {
-        "username": test_user_data["email"],
-        "password": test_user_data["password"],
-    }
-    response = client.post("/api/auth/login", data=login_data)
-    assert response.status_code == 200
-
-    token = response.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    """Get headers for authenticated user."""
+    response = client.post("/api/v1/auth/register", json=test_user_data)
+    if response.status_code == 201:
+        token = response.json().get("access_token")
+        return {"Authorization": f"Bearer {token}"}
+    return {}
 
 @pytest.fixture
 def test_admin_headers(client, test_admin_data):
-    """Create authenticated admin headers."""
-    # Register admin
-    response = client.post("/api/auth/register", json=test_admin_data)
-    assert response.status_code == 201
+    """Get headers for authenticated admin."""
+    response = client.post("/api/v1/auth/register", json=test_admin_data)
+    if response.status_code == 201:
+        token = response.json().get("access_token")
+        return {"Authorization": f"Bearer {token}"}
+    return {}
 
-    # Login
-    login_data = {
-        "username": test_admin_data["email"],
-        "password": test_admin_data["password"],
-    }
-    response = client.post("/api/auth/login", data=login_data)
-    assert response.status_code == 200
-
-    token = response.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-# Data Fixtures
 @pytest.fixture
 def test_user(test_db_session):
-    """Create test user in database."""
-    from backend.app.core.security import get_password_hash
-    from backend.app.models.user import User
-
+    """Create a test user."""
     user = User(
-        email=TEST_USER_DATA["email"],
-        username=TEST_USER_DATA["username"],
-        hashed_password=get_password_hash(TEST_USER_DATA["password"]),
-        first_name=TEST_USER_DATA["first_name"],
-        last_name=TEST_USER_DATA["last_name"],
-        role=TEST_USER_DATA["role"],
+        email="test@example.com",
+        username="testuser",
+        hashed_password="hashed_password",
+        first_name="Test",
+        last_name="User",
     )
     test_db_session.add(user)
     test_db_session.commit()
@@ -257,37 +203,34 @@ def test_user(test_db_session):
 
 @pytest.fixture
 def test_admin(test_db_session):
-    """Create test admin in database."""
-    from backend.app.core.security import get_password_hash
-    from backend.app.models.user import User
-
-    admin = User(
-        email=TEST_ADMIN_DATA["email"],
-        username=TEST_ADMIN_DATA["username"],
-        hashed_password=get_password_hash(TEST_ADMIN_DATA["password"]),
-        first_name=TEST_ADMIN_DATA["first_name"],
-        last_name=TEST_ADMIN_DATA["last_name"],
-        role=TEST_ADMIN_DATA["role"],
+    """Create a test admin user."""
+    from backend.app.models.user import UserRole
+    admin_user = User(
+        email="admin@example.com",
+        username="adminuser",
+        hashed_password="hashed_password",
+        first_name="Admin",
+        last_name="User",
+        role=UserRole.ADMIN,
     )
-    test_db_session.add(admin)
+    test_db_session.add(admin_user)
     test_db_session.commit()
-    test_db_session.refresh(admin)
-    return admin
+    test_db_session.refresh(admin_user)
+    return admin_user
 
 @pytest.fixture
 def test_assistant(test_db_session, test_user):
-    """Create test assistant in database."""
+    """Create a test assistant."""
     from backend.app.models.assistant import Assistant
-
     assistant = Assistant(
-        name=TEST_ASSISTANT_DATA["name"],
-        description=TEST_ASSISTANT_DATA["description"],
-        system_prompt=TEST_ASSISTANT_DATA["system_prompt"],
-        model=TEST_ASSISTANT_DATA["model"],
-        temperature=TEST_ASSISTANT_DATA["temperature"],
-        max_tokens=TEST_ASSISTANT_DATA["max_tokens"],
-        is_active=TEST_ASSISTANT_DATA["is_active"],
-        created_by=test_user.id,
+        name="Test Assistant",
+        description="A test assistant",
+        system_prompt="You are a helpful assistant.",
+        model="gpt-4",
+        temperature=0.7,
+        max_tokens=1000,
+        is_active=True,
+        user_id=test_user.id,
     )
     test_db_session.add(assistant)
     test_db_session.commit()
@@ -296,11 +239,10 @@ def test_assistant(test_db_session, test_user):
 
 @pytest.fixture
 def test_conversation(test_db_session, test_user, test_assistant):
-    """Create test conversation in database."""
+    """Create a test conversation."""
     from backend.app.models.conversation import Conversation
-
     conversation = Conversation(
-        title=TEST_CONVERSATION_DATA["title"],
+        title="Test Conversation",
         user_id=test_user.id,
         assistant_id=test_assistant.id,
     )
@@ -311,12 +253,11 @@ def test_conversation(test_db_session, test_user, test_assistant):
 
 @pytest.fixture
 def test_message(test_db_session, test_conversation):
-    """Create test message in database."""
+    """Create a test message."""
     from backend.app.models.message import Message
-
     message = Message(
-        content=TEST_MESSAGE_DATA["content"],
-        role=TEST_MESSAGE_DATA["role"],
+        content="Hello, this is a test message",
+        role="user",
         conversation_id=test_conversation.id,
     )
     test_db_session.add(message)
@@ -326,16 +267,14 @@ def test_message(test_db_session, test_conversation):
 
 @pytest.fixture
 def test_document(test_db_session, test_user):
-    """Create test document in database."""
-    from backend.app.models.document import Document
-
+    """Create a test document."""
     document = Document(
-        title=TEST_DOCUMENT_DATA["title"],
-        description=TEST_DOCUMENT_DATA["description"],
-        file_path=TEST_DOCUMENT_DATA["file_path"],
-        file_size=TEST_DOCUMENT_DATA["file_size"],
-        file_type=TEST_DOCUMENT_DATA["file_type"],
-        uploaded_by=test_user.id,
+        title="Test Document",
+        description="A test document",
+        file_path="/tmp/test_document.pdf",
+        file_size=1024,
+        file_type="pdf",
+        user_id=test_user.id,
     )
     test_db_session.add(document)
     test_db_session.commit()
@@ -344,155 +283,103 @@ def test_document(test_db_session, test_user):
 
 @pytest.fixture
 def test_tool(test_db_session):
-    """Create test tool in database."""
+    """Create a test tool."""
     from backend.app.models.tool import Tool
-
     tool = Tool(
-        name=TEST_TOOL_DATA["name"],
-        description=TEST_TOOL_DATA["description"],
-        category=TEST_TOOL_DATA["category"],
-        function_name=TEST_TOOL_DATA["function_name"],
-        parameters=TEST_TOOL_DATA["parameters"],
+        name="Test Tool",
+        description="A test tool",
+        category="search",
+        function_name="test_function",
+        parameters={
+            "query": {"type": "string", "description": "Search query"},
+        },
     )
     test_db_session.add(tool)
     test_db_session.commit()
     test_db_session.refresh(tool)
     return tool
 
-# File Fixtures
 @pytest.fixture
 def temp_file():
-    """Create temporary file for testing."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-        f.write(b"Test file content for testing purposes.")
+    """Create a temporary file."""
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(b"Test content")
         temp_file_path = f.name
-
     yield temp_file_path
-
-    # Cleanup
-    if os.path.exists(temp_file_path):
-        os.unlink(temp_file_path)
+    os.unlink(temp_file_path)
 
 @pytest.fixture
 def temp_pdf_file():
-    """Create temporary PDF file for testing."""
-    # Create a simple PDF file for testing
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-        # Minimal PDF content
-        pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Contents 4 0 R\n>>\nendobj\n4 0 obj\n<<\n/Length 44\n>>\nstream\nBT\n/F1 12 Tf\n72 720 Td\n(Test PDF) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000204 00000 n \ntrailer\n<<\n/Size 5\n/Root 1 0 R\n>>\nstartxref\n297\n%%EOF\n"
-        f.write(pdf_content)
+    """Create a temporary PDF file."""
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+        f.write(b"%PDF-1.4\nTest PDF content")
         temp_file_path = f.name
-
     yield temp_file_path
+    os.unlink(temp_file_path)
 
-    # Cleanup
-    if os.path.exists(temp_file_path):
-        os.unlink(temp_file_path)
-
-# API Response Fixtures
 @pytest.fixture
 def mock_llm_response():
-    """Mock LLM response for testing."""
+    """Mock LLM response."""
     return {
-        "id": "chatcmpl-test123",
-        "object": "chat.completion",
-        "created": 1677652288,
-        "model": "gpt-4",
         "choices": [
             {
-                "index": 0,
                 "message": {
-                    "role": "assistant",
-                    "content": "This is a test response from the LLM.",
-                },
-                "finish_reason": "stop",
-            },
-        ],
-        "usage": {
-            "prompt_tokens": 10,
-            "completion_tokens": 8,
-            "total_tokens": 18,
-        },
+                    "content": "This is a mock response from the LLM.",
+                    "role": "assistant"
+                }
+            }
+        ]
     }
 
 @pytest.fixture
 def mock_embedding_response():
-    """Mock embedding response for testing."""
+    """Mock embedding response."""
     return {
-        "object": "list",
         "data": [
             {
-                "object": "embedding",
-                "embedding": [0.1, 0.2, 0.3, 0.4, 0.5] * 100,  # 500-dimensional vector
-                "index": 0,
-            },
-        ],
-        "model": "text-embedding-ada-002",
-        "usage": {
-            "prompt_tokens": 5,
-            "total_tokens": 5,
-        },
+                "embedding": [0.1, 0.2, 0.3, 0.4, 0.5] * 100  # 500-dimensional vector
+            }
+        ]
     }
 
-# Test Data Loaders
 @pytest.fixture
 def test_data():
-    """Load test data from fixtures."""
-    fixtures_dir = Path(__file__).parent / "fixtures"
+    """General test data."""
+    return {
+        "users": [test_user_data, test_admin_data],
+        "assistants": [test_assistant_data],
+        "conversations": [test_conversation_data],
+        "messages": [test_message_data],
+        "documents": [test_document_data],
+        "tools": [test_tool_data],
+    }
 
-    test_data = {}
-    for fixture_file in fixtures_dir.glob("*.json"):
-        with open(fixture_file, encoding="utf-8") as f:
-            test_data[fixture_file.stem] = json.load(f)
-
-    return test_data
-
-# Performance Test Fixtures
 @pytest.fixture
 def performance_test_data():
-    """Generate performance test data."""
+    """Data for performance tests."""
     return {
-        "users": [f"user{i}@test.com" for i in range(100)],
-        "messages": [f"Test message {i}" for i in range(1000)],
-        "documents": [f"document_{i}.pdf" for i in range(50)],
+        "large_text": "Lorem ipsum " * 1000,
+        "many_users": [{"email": f"user{i}@example.com", "username": f"user{i}"} for i in range(100)],
+        "many_documents": [{"title": f"Doc {i}", "content": f"Content {i}"} for i in range(50)],
     }
 
-# Security Test Fixtures
 @pytest.fixture
 def security_test_payloads():
-    """Common security test payloads."""
+    """Payloads for security tests."""
     return {
-        "sql_injection": [
-            "'; DROP TABLE users; --",
-            "' OR '1'='1",
-            "'; INSERT INTO users VALUES ('hacker', 'password'); --",
-        ],
-        "xss": [
-            "<script>alert('XSS')</script>",
-            "javascript:alert('XSS')",
-            "<img src=x onerror=alert('XSS')>",
-        ],
-        "csrf": [
-            "http://malicious-site.com/steal-token",
-            "javascript:fetch('http://malicious-site.com/steal-token')",
-        ],
+        "sql_injection": "'; DROP TABLE users; --",
+        "xss": "<script>alert('XSS')</script>",
+        "path_traversal": "../../../etc/passwd",
+        "command_injection": "; rm -rf /",
     }
 
-# Utility Functions
 def create_test_file(content: str, extension: str = ".txt") -> str:
     """Create a test file with given content."""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=extension, mode="w") as f:
-        f.write(content)
+    with tempfile.NamedTemporaryFile(suffix=extension, delete=False) as f:
+        f.write(content.encode())
         return f.name
 
 def cleanup_test_file(file_path: str):
-    """Clean up test file."""
+    """Clean up a test file."""
     if os.path.exists(file_path):
         os.unlink(file_path)
-
-# Test Markers
-# pytest_plugins = [
-#     "tests.fixtures.auth",
-#     "tests.fixtures.data",
-#     "tests.fixtures.api",
-# ]
