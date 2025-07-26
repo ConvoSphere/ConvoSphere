@@ -10,6 +10,7 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,15 @@ from app.core.config import get_settings
 from docx import Document
 
 from .docling_processor import docling_processor
+
+
+class DocumentChunkingStrategy(Enum):
+    """Enumeration of document chunking strategies."""
+    
+    SEMANTIC = "semantic"
+    FIXED = "fixed"
+    PARAGRAPH = "paragraph"
+    SENTENCE = "sentence"
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,36 @@
+Collecting pysaml2
+  Downloading pysaml2-7.5.2-py3-none-any.whl.metadata (7.2 kB)
+Requirement already satisfied: cryptography>=3.1 in ./venv/lib/python3.13/site-packages (from pysaml2) (45.0.5)
+Collecting defusedxml (from pysaml2)
+  Downloading defusedxml-0.7.1-py2.py3-none-any.whl.metadata (32 kB)
+Collecting pyopenssl<24.3.0 (from pysaml2)
+  Downloading pyOpenSSL-24.2.1-py3-none-any.whl.metadata (13 kB)
+Requirement already satisfied: python-dateutil in ./venv/lib/python3.13/site-packages (from pysaml2) (2.9.0.post0)
+Requirement already satisfied: pytz in ./venv/lib/python3.13/site-packages (from pysaml2) (2025.2)
+Requirement already satisfied: requests<3,>=2 in ./venv/lib/python3.13/site-packages (from pysaml2) (2.32.4)
+Collecting xmlschema<3,>=2 (from pysaml2)
+  Downloading xmlschema-2.5.1-py3-none-any.whl.metadata (8.3 kB)
+Requirement already satisfied: cffi>=1.14 in ./venv/lib/python3.13/site-packages (from cryptography>=3.1->pysaml2) (1.17.1)
+Collecting cryptography>=3.1 (from pysaml2)
+  Downloading cryptography-43.0.3-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (5.4 kB)
+Requirement already satisfied: charset_normalizer<4,>=2 in ./venv/lib/python3.13/site-packages (from requests<3,>=2->pysaml2) (3.4.2)
+Requirement already satisfied: idna<4,>=2.5 in ./venv/lib/python3.13/site-packages (from requests<3,>=2->pysaml2) (3.10)
+Requirement already satisfied: urllib3<3,>=1.21.1 in ./venv/lib/python3.13/site-packages (from requests<3,>=2->pysaml2) (2.5.0)
+Requirement already satisfied: certifi>=2017.4.17 in ./venv/lib/python3.13/site-packages (from requests<3,>=2->pysaml2) (2025.7.14)
+Collecting elementpath<5.0.0,>=4.1.5 (from xmlschema<3,>=2->pysaml2)
+  Downloading elementpath-4.8.0-py3-none-any.whl.metadata (7.2 kB)
+Requirement already satisfied: six>=1.5 in ./venv/lib/python3.13/site-packages (from python-dateutil->pysaml2) (1.17.0)
+Requirement already satisfied: pycparser in ./venv/lib/python3.13/site-packages (from cffi>=1.14->cryptography>=3.1->pysaml2) (2.22)
+Downloading pysaml2-7.5.2-py3-none-any.whl (420 kB)
+Downloading pyOpenSSL-24.2.1-py3-none-any.whl (58 kB)
+Downloading cryptography-43.0.3-cp39-abi3-manylinux_2_28_x86_64.whl (4.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 97.3 MB/s eta 0:00:00
+Downloading xmlschema-2.5.1-py3-none-any.whl (395 kB)
+Downloading defusedxml-0.7.1-py2.py3-none-any.whl (25 kB)
+Downloading elementpath-4.8.0-py3-none-any.whl (243 kB)
+Installing collected packages: elementpath, defusedxml, xmlschema, cryptography, pyopenssl, pysaml2
+  Attempting uninstall: cryptography
+    Found existing installation: cryptography 45.0.5
+    Uninstalling cryptography-45.0.5:
+      Successfully uninstalled cryptography-45.0.5
+Successfully installed cryptography-43.0.3 defusedxml-0.7.1 elementpath-4.8.0 pyopenssl-24.2.1 pysaml2-7.5.2 xmlschema-2.5.1
