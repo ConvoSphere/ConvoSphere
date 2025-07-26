@@ -157,8 +157,8 @@ class ChatWebSocket {
       try {
         const data = JSON.parse(event.data);
         this.handleMessage(data);
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
+      } catch (_error) {
+        console.error("Error parsing WebSocket message:", _error);
       }
     };
 

@@ -13,14 +13,10 @@ import {
   message,
   Empty,
   Statistic,
-  Progress,
   Modal,
   Form,
-  Input,
-  Select,
   Switch,
   Upload,
-  Button,
   Table,
   Alert,
   Badge,
@@ -39,20 +35,11 @@ import {
   ExclamationCircleOutlined,
   ReloadOutlined,
   PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  CopyOutlined,
   UploadOutlined,
   DownloadOutlined,
   InfoCircleOutlined,
   StarOutlined,
-  FireOutlined,
   ThunderboltOutlined,
-  DatabaseOutlined,
-  GlobalOutlined,
-  SecurityScanOutlined,
-  BarChartOutlined,
 } from "@ant-design/icons";
 import { getTools, runTool } from "../services/tools";
 import ModernCard from "../components/ModernCard";
@@ -62,8 +49,7 @@ import ModernSelect from "../components/ModernSelect";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
-const { TextArea } = Input;
+
 
 interface Tool {
   id: number;
@@ -178,7 +164,7 @@ const Tools: React.FC = () => {
           timestamp: "2024-01-15T09:15:00Z",
         },
       ]);
-    } catch (error) {
+    } catch (_error) {
       message.error(t("tools.load_failed", "Fehler beim Laden der Tools"));
     } finally {
       setLoading(false);
@@ -210,7 +196,7 @@ const Tools: React.FC = () => {
       message.success(
         t("tools.execution_success", "Tool erfolgreich ausgeführt"),
       );
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t("tools.execution_failed", "Fehler bei der Tool-Ausführung"),
       );
@@ -228,7 +214,7 @@ const Tools: React.FC = () => {
           ? t("tools.deactivated", "Tool deaktiviert")
           : t("tools.activated", "Tool aktiviert"),
       );
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t("tools.toggle_failed", "Fehler beim Umschalten des Tools"),
       );

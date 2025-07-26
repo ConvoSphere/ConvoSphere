@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Card, Alert, Spinner, Badge, Switch, Modal } from "./ui";
 import { getSSOProviders } from "../services/auth";
-import { useAuthStore } from "../stores/authStore";
+
 
 interface SSOProvider {
   id: string;
@@ -31,7 +31,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
   const [showConfigModal, setShowConfigModal] = useState<string | null>(null);
   const [configData, setConfigData] = useState<any>(null);
 
-  const { user } = useAuthStore();
+
 
   useEffect(() => {
     loadSSOProviders();
@@ -42,7 +42,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       setLoading(true);
       const response = await getSSOProviders();
       setProviders(response);
-    } catch (err) {
+    } catch (_err) {
       setError(t("sso.load_failed"));
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
       setConfigData(mockConfig);
       setShowConfigModal(providerId);
-    } catch (err) {
+    } catch (_err) {
       setError(t("sso.config_load_failed"));
     }
   };

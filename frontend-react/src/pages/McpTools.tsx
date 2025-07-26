@@ -11,7 +11,6 @@ import {
   Avatar,
   Tag,
   Empty,
-  Statistic,
 } from "antd";
 import { getMcpTools, runMcpTool } from "../services/mcpTools";
 import { useThemeStore } from "../store/themeStore";

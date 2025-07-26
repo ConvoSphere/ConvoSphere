@@ -6,30 +6,16 @@ import {
   Spin,
   Alert,
   Typography,
-  Progress,
-  Statistic,
   Space,
-  Divider,
 } from "antd";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";
 import api from "../services/api";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-} from "recharts";
+
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import {
-  MonitorOutlined,
   DatabaseOutlined,
   CloudOutlined,
   BugOutlined,

@@ -17,8 +17,6 @@ import {
 import {
   MessageOutlined,
   SearchOutlined,
-  FilterOutlined,
-  CalendarOutlined,
   UserOutlined,
   RobotOutlined,
   BookOutlined,

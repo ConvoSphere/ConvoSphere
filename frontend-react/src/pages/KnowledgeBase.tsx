@@ -12,7 +12,6 @@ import {
   message,
   Avatar,
   Tag,
-  Progress,
   Empty,
   Spin,
 } from "antd";
@@ -31,14 +30,10 @@ import {
   BarChartOutlined,
   SettingOutlined,
   EyeOutlined,
-  EditOutlined,
-  DeleteOutlined,
   DownloadOutlined,
   CloudUploadOutlined,
   DatabaseOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { useKnowledgeStore } from "../store/knowledgeStore";
 import DocumentList from "../components/knowledge/DocumentList";
@@ -46,19 +41,19 @@ import UploadArea from "../components/knowledge/UploadArea";
 import TagManager from "../components/knowledge/TagManager";
 import BulkActions from "../components/knowledge/BulkActions";
 import SystemStats from "../components/admin/SystemStats";
-import { useAuthStore } from "../store/authStore";
+
 import { useThemeStore } from "../store/themeStore";
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
-import ModernForm from "../components/ModernForm";
 
-const { Title, Text, Paragraph } = Typography;
+
+const { Title, Text } = Typography;
 
 const KnowledgeBase: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+
   const { colors } = useThemeStore();
   const {
     documents,
@@ -113,7 +108,7 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success("Document deleted successfully");
       refreshDocuments();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to delete document");
     }
   };
@@ -126,7 +121,7 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success("Document reprocessing started");
       refreshDocuments();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to reprocess document");
     }
   };
@@ -136,7 +131,7 @@ const KnowledgeBase: React.FC = () => {
       message.success(`${documentIds.length} documents deleted successfully`);
       setSelectedRowKeys([]);
       refreshDocuments();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to delete documents");
     }
   };
@@ -145,7 +140,7 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success(`Tags applied to ${documentIds.length} documents`);
       refreshDocuments();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to apply tags");
     }
   };
@@ -156,7 +151,7 @@ const KnowledgeBase: React.FC = () => {
         `${documentIds.length} documents queued for reprocessing`,
       );
       refreshDocuments();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to queue documents for reprocessing");
     }
   };
@@ -164,7 +159,7 @@ const KnowledgeBase: React.FC = () => {
   const handleBulkDownload = async (documentIds: string[]) => {
     try {
       message.success(`Download started for ${documentIds.length} documents`);
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to start download");
     }
   };

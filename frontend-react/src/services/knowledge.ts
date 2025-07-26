@@ -297,9 +297,9 @@ export async function bulkUploadWithProgress(
         (progress) => onProgress?.(i, progress),
       );
       results.push(document);
-    } catch (error) {
-      console.error(`Failed to upload ${file.name}:`, error);
-      throw error;
+    } catch (_error) {
+      console.error(`Failed to upload ${file.name}:`, _error);
+      throw _error;
     }
   }
 

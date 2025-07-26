@@ -208,11 +208,11 @@ const Assistants: React.FC = () => {
         try {
           const defaultData = await getDefaultAssistantId();
           setDefaultAssistantId(defaultData.assistant_id);
-        } catch (error) {
+        } catch (_error) {
           // No default assistant configured yet
           console.log("No default assistant configured");
         }
-      } catch (error) {
+      } catch (_error) {
         message.error(t("assistants.load_failed"));
       } finally {
         setLoading(false);
@@ -244,7 +244,7 @@ const Assistants: React.FC = () => {
       setVisible(false);
       form.resetFields();
       message.success(t("assistants.added_success"));
-    } catch (error) {
+    } catch (_error) {
       message.error(t("assistants.add_failed"));
     } finally {
       setAdding(false);
@@ -274,7 +274,7 @@ const Assistants: React.FC = () => {
       setEditingAssistant(null);
       form.resetFields();
       message.success(t("assistants.updated_success"));
-    } catch (error) {
+    } catch (_error) {
       message.error(t("assistants.update_failed"));
     } finally {
       setAdding(false);
@@ -289,7 +289,7 @@ const Assistants: React.FC = () => {
 
       setAssistants((prev) => prev.filter((a) => a.id !== id));
       message.success(t("assistants.deleted_success"));
-    } catch (error) {
+    } catch (_error) {
       message.error(t("assistants.delete_failed"));
     } finally {
       setDeleting(null);
@@ -307,7 +307,7 @@ const Assistants: React.FC = () => {
           ? t("assistants.deactivated")
           : t("assistants.activated"),
       );
-    } catch (error) {
+    } catch (_error) {
       message.error(t("assistants.toggle_failed"));
     }
   };
@@ -318,7 +318,7 @@ const Assistants: React.FC = () => {
       await setDefaultAssistant(assistantId);
       setDefaultAssistantId(assistantId);
       message.success(t("assistants.default_set_success"));
-    } catch (error) {
+    } catch (_error) {
       message.error(t("assistants.default_set_failed"));
     } finally {
       setSettingDefault(null);

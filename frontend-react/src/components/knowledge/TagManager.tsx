@@ -15,24 +15,19 @@ import { useKnowledgeStore } from "../../store/knowledgeStore";
 
 const { Search } = Input;
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface TagManagerProps {
-  onTagSelect?: (tag: TagType) => void;
   showCreateButton?: boolean;
   showStatistics?: boolean;
-  mode?: "selection" | "management";
 }
 
 const TagManager: React.FC<TagManagerProps> = ({
-  onTagSelect,
   showCreateButton = true,
   showStatistics = true,
-  mode = "management",
 }) => {
   const { tags, fetchTags } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagType | null>(null);
   const [form] = Form.useForm();
@@ -52,7 +47,7 @@ const TagManager: React.FC<TagManagerProps> = ({
       setShowCreateModal(false);
       form.resetFields();
       fetchTags();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to create tag");
     }
   };
@@ -66,20 +61,12 @@ const TagManager: React.FC<TagManagerProps> = ({
       setSelectedTag(null);
       editForm.resetFields();
       fetchTags();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to update tag");
     }
   };
 
-  const handleDeleteTag = async () => {
-    try {
-      // TODO: Implement delete tag API call
-      message.success("Tag deleted successfully");
-      fetchTags();
-    } catch (error) {
-      message.error("Failed to delete tag");
-    }
-  };
+
 
   const filteredTags = tags.filter((tag) => {
     const matchesSearch =

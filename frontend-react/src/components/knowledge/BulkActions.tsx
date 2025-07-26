@@ -99,7 +99,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
 
       onCancel();
       form.resetFields();
-    } catch (error) {
+    } catch (_error) {
       message.error("Failed to perform bulk action");
     } finally {
       setLoading(false);

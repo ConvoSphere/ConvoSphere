@@ -287,7 +287,7 @@ class NetworkOptimizer {
           groupRequests,
         );
         results.push(...batchResponse);
-      } catch (error) {
+      } catch (_error) {
         // Fallback to individual requests
         const individualResults = await Promise.allSettled(
           groupRequests.map((req) => this.executeRequest(req)),

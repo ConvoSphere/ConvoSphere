@@ -203,7 +203,7 @@ const Admin: React.FC = () => {
           status: "success",
         },
       ]);
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t("admin.load_failed", "Fehler beim Laden der Admin-Daten"),
       );
@@ -217,7 +217,7 @@ const Admin: React.FC = () => {
     try {
       setSystemConfig((prev) => (prev ? { ...prev, [key]: value } : null));
       message.success(t("admin.config_updated", "Konfiguration aktualisiert"));
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t(
           "admin.config_update_failed",
@@ -239,7 +239,7 @@ const Admin: React.FC = () => {
       message.success(
         t("admin.user_status_updated", "Benutzerstatus aktualisiert"),
       );
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t(
           "admin.user_status_update_failed",
@@ -257,7 +257,7 @@ const Admin: React.FC = () => {
       message.success(
         t("admin.user_role_updated", "Benutzerrolle aktualisiert"),
       );
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t(
           "admin.user_role_update_failed",
@@ -301,7 +301,7 @@ const Admin: React.FC = () => {
       setUserModalVisible(false);
       setEditingUser(null);
       form.resetFields();
-    } catch (error) {
+    } catch (_error) {
       message.error(
         t("admin.user_save_failed", "Fehler beim Speichern des Benutzers"),
       );

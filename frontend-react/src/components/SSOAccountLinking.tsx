@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Card, Alert, Spinner, Badge } from "./ui";
 import { ssoLink, getSSOProviders } from "../services/auth";
-import { useAuthStore } from "../stores/authStore";
+
 
 interface SSOProvider {
   id: string;
@@ -27,7 +27,7 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { user } = useAuthStore();
+
 
   useEffect(() => {
     loadSSOProviders();
@@ -38,7 +38,7 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
       setLoading(true);
       const response = await getSSOProviders();
       setProviders(response);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to load SSO providers");
       onError?.("Failed to load SSO providers");
     } finally {
