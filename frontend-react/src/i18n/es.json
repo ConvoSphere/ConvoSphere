@@ -1,5 +1,8 @@
 {
-  "app.title": "ConvoSphere Plataforma Asistente IA",
+  "app": {
+    "title": "ConvoSphere Plataforma Asistente IA",
+    "subtitle": "Plataforma Asistente IA"
+  },
   "theme.light": "Modo Claro",
   "theme.dark": "Modo Oscuro",
   "language.en": "Inglés",
@@ -28,7 +31,25 @@
     "upload": "Subir",
     "download": "Descargar",
     "sources": "Fuentes",
-    "or": "o"
+    "or": "o",
+    "loading_app": "Cargando ConvoSphere...",
+    "error_something_wrong": "Algo salió mal",
+    "error_unexpected": "Lo sentimos, pero algo inesperado sucedió al cargar la aplicación.",
+    "try_again": "Intentar de nuevo",
+    "error_details": "Detalles del error",
+    "refresh_page": "Actualizar página",
+    "application_error": "Error de aplicación",
+    "failed_to_load": "Error al cargar la aplicación. Por favor actualice la página.",
+    "open": "Abrir",
+    "run": "Ejecutar",
+    "clear_all": "Limpiar todo",
+    "remove": "Eliminar",
+    "no_results": "No se encontraron resultados",
+    "sending": "Enviando...",
+    "no_messages": "Aún no hay mensajes",
+    "start_conversation": "Iniciar una conversación",
+    "loading_messages": "Cargando más mensajes...",
+    "sending_message": "Enviando mensaje..."
   },
   "settings.title": "Configuración",
   "settings.language": "Idioma",
@@ -61,6 +82,15 @@
   "chat.error": "Error al cargar mensajes",
   "chat.typing": "El asistente está escribiendo...",
   "chat.new_conversation": "Nueva Conversación",
+  "conversations.title": "Conversaciones",
+  "conversations.load_failed": "Error al cargar conversaciones",
+  "conversations.load_detail_failed": "Error al cargar conversación",
+  "mcp_tools.title": "Herramientas MCP",
+  "mcp_tools.load_failed": "Error al cargar herramientas MCP",
+  "mcp_tools.execution_failed": "Error en la ejecución de la herramienta MCP",
+  "mcp_tools.result": "Resultado",
+  "mcp_tools.success": "Éxito",
+  "mcp_tools.parameter_label": "Parámetro (Marcador de posición)",
   "knowledge.title": "Base de Conocimientos",
   "knowledge.upload": "Subir Documento",
   "knowledge.search": "Buscar documentos...",
@@ -69,6 +99,33 @@
   "knowledge.processing": "La Base de Conocimientos está activada. Sus mensajes serán mejorados con contexto de documentos relevantes",
   "knowledge.no_results": "No se encontraron documentos",
   "knowledge.delete_confirm": "¿Está seguro de que desea eliminar este documento?",
+  "knowledge.context_title": "Contexto de Conocimientos",
+  "knowledge.search_documents": "Buscar documentos...",
+  "knowledge.selected_documents": "Documentos Seleccionados",
+  "knowledge.available_documents": "Documentos Disponibles",
+  "knowledge.upload.title": "Subir Documentos",
+  "knowledge.tabs": {
+    "documents": "Documentos",
+    "tags": "Etiquetas",
+    "statistics": "Estadísticas",
+    "settings": "Configuración"
+  },
+  "knowledge.settings": {
+    "title": "Configuración de la Base de Conocimientos",
+    "description": "Configurar ajustes del sistema y preferencias"
+  },
+  "knowledge.document_types": {
+    "pdf": "PDF",
+    "word": "Documento Word",
+    "text": "Archivo de texto",
+    "spreadsheet": "Hoja de cálculo"
+  },
+  "knowledge.languages": {
+    "en": "Inglés",
+    "de": "Alemán",
+    "fr": "Francés",
+    "es": "Español"
+  },
   "tools.title": "Herramientas",
   "tools.run": "Ejecutar",
   "tools.result": "Resultado",
@@ -79,6 +136,92 @@
   "notifications.error": "Error",
   "notifications.warning": "Advertencia",
   "notifications.info": "Información",
+  "system": {
+    "title": "Estado del Sistema y Rendimiento",
+    "load_failed": "Error al cargar el estado del sistema",
+    "status": {
+      "ok": "OK",
+      "error": "Error",
+      "degraded": "Degradado"
+    },
+    "metrics": {
+      "cpu_usage": "Uso de CPU (%)",
+      "ram_usage": "Uso de RAM (%)",
+      "database": "Base de datos",
+      "redis": "Redis",
+      "weaviate": "Weaviate",
+      "trace_id": "ID de Traza",
+      "system_status": "Estado del Sistema"
+    }
+  },
+  "sso": {
+    "title": "Gestión de Proveedores SSO",
+    "description": "Configurar y gestionar proveedores de autenticación única para su aplicación.",
+    "load_failed": "Error al cargar proveedores SSO",
+    "update_failed": "Error al actualizar proveedor",
+    "config_load_failed": "Error al cargar configuración del proveedor",
+    "enabled": "habilitado",
+    "disabled": "deshabilitado",
+    "successfully": "exitosamente",
+    "updating": "Actualizando...",
+    "no_providers": "No hay proveedores SSO configurados actualmente.",
+    "configuration": "Configuración",
+    "status": {
+      "label": "Estado",
+      "not_configured": "No configurado",
+      "active": "Activo",
+      "disabled": "Deshabilitado"
+    },
+    "loading_providers": "Cargando proveedores SSO...",
+    "configuration": {
+      "client_id": "ID de Cliente:",
+      "redirect_uri": "URI de Redirección:",
+      "scopes": "Ámbitos:",
+      "metadata_url": "URL de Metadatos:"
+    },
+    "actions": {
+      "view_config": "Ver Config",
+      "test_login": "Probar Login",
+      "edit_config": "Editar Configuración"
+    },
+    "guide": {
+      "title": "Guía de Gestión de Proveedores",
+      "enable_disable": "Habilitar/deshabilitar proveedores usando el interruptor",
+      "view_config": "Ver detalles de configuración para cada proveedor",
+      "test_login": "Probar flujos de login para verificar configuración del proveedor",
+      "configure_env": "Configurar proveedores en sus variables de entorno"
+    }
+  },
+  "performance": {
+    "title": "Monitor de Rendimiento",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Uso de Memoria",
+    "heap_used": "Montón Utilizado",
+    "cache_performance": "Rendimiento de Caché",
+    "network_status": "Estado de Red",
+    "workers": "Workers",
+    "resources": "Recursos",
+    "last_update": "Última actualización",
+    "online": "En línea",
+    "offline": "Sin conexión",
+    "metrics": {
+      "fcp": "FCP",
+      "lcp": "LCP",
+      "cls": "CLS"
+    },
+    "labels": {
+      "entries": "Entradas",
+      "size": "Tamaño",
+      "hit_rate": "Tasa de acierto",
+      "status": "Estado",
+      "quality": "Calidad",
+      "queue": "Cola",
+      "active": "Activo",
+      "tasks": "Tareas",
+      "loaded": "Cargado",
+      "active_loads": "Cargas activas"
+    }
+  },
   "auth": {
     "login.title": "Iniciar Sesión",
     "login.username": "Nombre de usuario",

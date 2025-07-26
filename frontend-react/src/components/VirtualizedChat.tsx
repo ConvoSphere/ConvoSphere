@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Avatar, Spin } from 'antd';
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { useThemeStore } from '../store/themeStore';
@@ -29,6 +30,7 @@ const VirtualizedChat: React.FC<VirtualizedChatProps> = ({
   height = 400,
   itemHeight = 80,
 }) => {
+  const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
   const listRef = useRef<HTMLDivElement>(null);
@@ -191,7 +193,7 @@ const VirtualizedChat: React.FC<VirtualizedChatProps> = ({
         {loading && hasMore && (
           <div style={loadingStyle}>
             <Spin size="small" />
-            <span style={{ marginLeft: '8px' }}>Loading more messages...</span>
+            <span style={{ marginLeft: '8px' }}>{t('common.loading_messages')}</span>
           </div>
         )}
 
@@ -201,8 +203,8 @@ const VirtualizedChat: React.FC<VirtualizedChatProps> = ({
         ) : !loading ? (
           <div style={emptyStyle}>
             <Icon name="message" size="xl" variant="muted" />
-            <p style={{ marginTop: '16px' }}>No messages yet</p>
-            <p style={{ fontSize: '14px', opacity: 0.7 }}>Start a conversation</p>
+            <p style={{ marginTop: '16px' }}>{t('common.no_messages')}</p>
+            <p style={{ fontSize: '14px', opacity: 0.7 }}>{t('common.start_conversation')}</p>
           </div>
         ) : (
           <div style={loadingStyle}>
@@ -214,7 +216,7 @@ const VirtualizedChat: React.FC<VirtualizedChatProps> = ({
         {loading && !hasMore && (
           <div style={loadingStyle}>
             <Spin size="small" />
-            <span style={{ marginLeft: '8px' }}>Sending message...</span>
+            <span style={{ marginLeft: '8px' }}>{t('common.sending_message')}</span>
           </div>
         )}
       </div>

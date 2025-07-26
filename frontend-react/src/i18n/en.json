@@ -1,5 +1,6 @@
 {
   "app.title": "ConvoSphere AI Assistant Platform",
+  "app.subtitle": "AI Assistant Platform",
   "theme.light": "Light Mode",
   "theme.dark": "Dark Mode",
   "language.en": "English",
@@ -28,7 +29,25 @@
     "upload": "Upload",
     "download": "Download",
     "sources": "Sources",
-    "or": "or"
+    "or": "or",
+    "loading_app": "Loading ConvoSphere...",
+    "error_something_wrong": "Something went wrong",
+    "error_unexpected": "We're sorry, but something unexpected happened while loading the application.",
+    "try_again": "Try Again",
+    "error_details": "Error Details",
+    "refresh_page": "Refresh Page",
+    "application_error": "Application Error",
+    "failed_to_load": "Failed to load the application. Please refresh the page.",
+    "open": "Open",
+    "run": "Run",
+    "clear_all": "Clear All",
+    "remove": "Remove",
+    "no_results": "No results found",
+    "sending": "Sending...",
+    "no_messages": "No messages yet",
+    "start_conversation": "Start a conversation",
+    "loading_messages": "Loading more messages...",
+    "sending_message": "Sending message..."
   },
   "settings.title": "Settings",
   "settings.language": "Language",
@@ -61,14 +80,50 @@
   "chat.error": "Failed to load messages",
   "chat.typing": "Assistant is typing...",
   "chat.new_conversation": "New Conversation",
+  "conversations.title": "Conversations",
+  "conversations.load_failed": "Failed to load conversations",
+  "conversations.load_detail_failed": "Failed to load conversation",
+  "mcp_tools.title": "MCP Tools",
+  "mcp_tools.load_failed": "Failed to load MCP tools",
+  "mcp_tools.execution_failed": "MCP Tool execution failed",
+  "mcp_tools.result": "Result",
+  "mcp_tools.success": "Success",
+  "mcp_tools.parameter_label": "Parameter (Placeholder)",
   "knowledge.title": "Knowledge Base",
   "knowledge.upload": "Upload Document",
+  "knowledge.upload.title": "Upload Documents",
   "knowledge.search": "Search documents...",
   "knowledge.upload_success": "Document uploaded successfully",
   "knowledge.upload_failed": "Upload failed",
   "knowledge.processing": "Knowledge Base is enabled. Your messages will be enhanced with relevant document context",
   "knowledge.no_results": "No documents found",
   "knowledge.delete_confirm": "Are you sure you want to delete this document?",
+  "knowledge.context_title": "Knowledge Context",
+  "knowledge.search_documents": "Search documents...",
+  "knowledge.selected_documents": "Selected Documents",
+  "knowledge.available_documents": "Available Documents",
+  "knowledge.tabs": {
+    "documents": "Documents",
+    "tags": "Tags",
+    "statistics": "Statistics",
+    "settings": "Settings"
+  },
+  "knowledge.settings": {
+    "title": "Knowledge Base Settings",
+    "description": "Configure system settings and preferences"
+  },
+  "knowledge.document_types": {
+    "pdf": "PDF",
+    "word": "Word Document",
+    "text": "Text File",
+    "spreadsheet": "Spreadsheet"
+  },
+  "knowledge.languages": {
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish"
+  },
   "tools.title": "Tools",
   "tools.run": "Run",
   "tools.result": "Result",
@@ -561,5 +616,97 @@
     "lastEndDate": "Last End Date",
     "lastCreatedDate": "Last Created Date",
     "lastModifiedDate": "Last Modified Date"
+  },
+  "system": {
+    "title": "System Status & Performance",
+    "load_failed": "Failed to load system status",
+    "status": {
+      "ok": "OK",
+      "error": "Error",
+      "degraded": "Degraded"
+    },
+    "metrics": {
+      "cpu_usage": "CPU Usage (%)",
+      "ram_usage": "RAM Usage (%)",
+      "database": "Database",
+      "redis": "Redis",
+      "weaviate": "Weaviate",
+      "trace_id": "Trace ID",
+      "system_status": "System Status"
+    }
+  },
+  "sso": {
+    "title": "SSO Provider Management",
+    "description": "Configure and manage Single Sign-On providers for your application.",
+    "load_failed": "Failed to load SSO providers",
+    "update_failed": "Failed to update provider",
+    "config_load_failed": "Failed to load provider configuration",
+    "enabled": "enabled",
+    "disabled": "disabled",
+    "successfully": "successfully",
+    "updating": "Updating...",
+    "no_providers": "No SSO providers are currently configured.",
+    "configuration": "Configuration",
+    "status": {
+      "label": "Status",
+      "not_configured": "Not Configured",
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "loading_providers": "Loading SSO providers...",
+    "configuration": {
+      "client_id": "Client ID:",
+      "redirect_uri": "Redirect URI:",
+      "scopes": "Scopes:",
+      "metadata_url": "Metadata URL:"
+    },
+    "actions": {
+      "view_config": "View Config",
+      "test_login": "Test Login",
+      "edit_config": "Edit Configuration"
+    },
+    "guide": {
+      "title": "Provider Management Guide",
+      "enable_disable": "Enable/disable providers using the toggle switch",
+      "view_config": "View configuration details for each provider",
+      "test_login": "Test login flows to verify provider setup",
+      "configure_env": "Configure providers in your environment variables"
+    },
+    "help": {
+      "enable_disable": "• Enable/disable providers using the toggle switch",
+      "view_config": "• View configuration details for each provider",
+      "test_login": "• Test login flows to verify provider setup",
+      "configure_env": "• Configure providers in your environment variables"
+    }
+  },
+  "performance": {
+    "title": "Performance Monitor",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Memory Usage",
+    "heap_used": "Heap Used",
+    "cache_performance": "Cache Performance",
+    "network_status": "Network Status",
+    "workers": "Workers",
+    "resources": "Resources",
+    "last_update": "Last update",
+    "online": "Online",
+    "offline": "Offline",
+    "metrics": {
+      "fcp": "FCP",
+      "lcp": "LCP",
+      "cls": "CLS"
+    },
+    "labels": {
+      "entries": "Entries",
+      "size": "Size",
+      "hit_rate": "Hit Rate",
+      "status": "Status",
+      "quality": "Quality",
+      "queue": "Queue",
+      "active": "Active",
+      "tasks": "Tasks",
+      "loaded": "Loaded",
+      "active_loads": "Active Loads"
+    }
   }
 } 

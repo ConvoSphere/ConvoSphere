@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, Alert, Spinner, Badge, Switch, Modal } from './ui';
 import { getSSOProviders } from '../services/auth';
 import { useAuthStore } from '../stores/authStore';
@@ -21,6 +22,7 @@ interface SSOProviderManagementProps {
 export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
   onProviderUpdate
 }) => {
+  const { t } = useTranslation();
   const [providers, setProviders] = useState<SSOProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       const response = await getSSOProviders();
       setProviders(response);
     } catch (err) {
-      setError('Failed to load SSO providers');
+      setError(t('sso.load_failed'));
     } finally {
       setLoading(false);
     }
@@ -56,14 +58,14 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       // This would call the backend API to toggle provider status
       // await toggleSSOProvider(providerId, enabled);
       
-      setSuccess(`${providerId} ${enabled ? 'enabled' : 'disabled'} successfully`);
+      setSuccess(`${providerId} ${enabled ? t('sso.enabled') : t('sso.disabled')} ${t('sso.successfully')}`);
       onProviderUpdate?.();
       
       // Reload providers to update status
       await loadSSOProviders();
       
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Failed to update provider';
+      const errorMessage = err.response?.data?.detail || t('sso.update_failed');
       setError(errorMessage);
     } finally {
       setUpdating(null);
@@ -84,7 +86,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       setConfigData(mockConfig);
       setShowConfigModal(providerId);
     } catch (err) {
-      setError('Failed to load provider configuration');
+      setError(t('sso.config_load_failed'));
     }
   };
 
@@ -101,12 +103,12 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
   const getStatusBadge = (provider: SSOProvider) => {
     if (!provider.configured) {
-      return <Badge className="bg-red-100 text-red-800">Not Configured</Badge>;
+      return <Badge className="bg-red-100 text-red-800">{t('sso.status.not_configured')}</Badge>;
     }
     if (provider.enabled) {
-      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      return <Badge className="bg-green-100 text-green-800">{t('sso.status.active')}</Badge>;
     }
-    return <Badge className="bg-yellow-100 text-yellow-800">Disabled</Badge>;
+    return <Badge className="bg-yellow-100 text-yellow-800">{t('sso.status.disabled')}</Badge>;
   };
 
   const getProviderDescription = (provider: SSOProvider) => {
@@ -125,7 +127,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       <Card className="p-6">
         <div className="flex items-center justify-center">
           <Spinner size="lg" />
-          <span className="ml-2">Loading SSO providers...</span>
+          <span className="ml-2">{t('sso.loading_providers')}</span>
         </div>
       </Card>
     );
@@ -135,10 +137,10 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
     <div className="space-y-4">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          SSO Provider Management
+          {t('sso.title')}
         </h2>
         <p className="text-gray-600">
-          Configure and manage Single Sign-On providers for your application.
+          {t('sso.description')}
         </p>
       </div>
 
@@ -179,7 +181,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
-                  Status
+                  {t('sso.status.label')}
                 </span>
                 <Switch
                   checked={provider.enabled || false}
@@ -195,7 +197,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
                   onClick={() => handleViewConfig(provider.id)}
                   className="flex-1"
                 >
-                  View Config
+                  {t('sso.actions.view_config')}
                 </Button>
                 <Button
                   variant="outline"
@@ -203,14 +205,14 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
                   onClick={() => window.open(provider.login_url, '_blank')}
                   className="flex-1"
                 >
-                  Test Login
+                  {t('sso.actions.test_login')}
                 </Button>
               </div>
 
               {updating === provider.id && (
                 <div className="flex items-center justify-center text-sm text-gray-500">
                   <Spinner size="sm" className="mr-2" />
-                  Updating...
+                  {t('sso.updating')}
                 </div>
               )}
             </div>
@@ -221,7 +223,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       {providers.length === 0 && (
         <Card className="p-6 text-center">
           <p className="text-gray-500">
-            No SSO providers are currently configured.
+            {t('sso.no_providers')}
           </p>
         </Card>
       )}
@@ -230,26 +232,26 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
       <Modal
         isOpen={showConfigModal !== null}
         onClose={() => setShowConfigModal(null)}
-        title={`${showConfigModal?.toUpperCase()} Configuration`}
+        title={`${showConfigModal?.toUpperCase()} ${t('sso.configuration')}`}
       >
         {configData && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium text-gray-700">Client ID:</span>
+                <span className="font-medium text-gray-700">{t('sso.configuration.client_id')}</span>
                 <p className="text-gray-600 font-mono">{configData.client_id}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Redirect URI:</span>
+                <span className="font-medium text-gray-700">{t('sso.configuration.redirect_uri')}</span>
                 <p className="text-gray-600 font-mono">{configData.redirect_uri}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Scopes:</span>
+                <span className="font-medium text-gray-700">{t('sso.configuration.scopes')}</span>
                 <p className="text-gray-600">{configData.scopes.join(', ')}</p>
               </div>
               {configData.metadata_url && (
                 <div>
-                  <span className="font-medium text-gray-700">Metadata URL:</span>
+                  <span className="font-medium text-gray-700">{t('sso.configuration.metadata_url')}</span>
                   <p className="text-gray-600 font-mono">{configData.metadata_url}</p>
                 </div>
               )}
@@ -260,7 +262,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
                 variant="outline"
                 onClick={() => setShowConfigModal(null)}
               >
-                Close
+                {t('common.close')}
               </Button>
               <Button
                 onClick={() => {
@@ -268,7 +270,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
                   setShowConfigModal(null);
                 }}
               >
-                Edit Configuration
+                {t('sso.actions.edit_config')}
               </Button>
             </div>
           </div>
@@ -277,13 +279,13 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <h4 className="font-semibold text-blue-900 mb-2">
-          Provider Management Guide
+          {t('sso.guide.title')}
         </h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Enable/disable providers using the toggle switch</li>
-          <li>• View configuration details for each provider</li>
-          <li>• Test login flows to verify provider setup</li>
-          <li>• Configure providers in your environment variables</li>
+          <li>• {t('sso.guide.enable_disable')}</li>
+          <li>• {t('sso.guide.view_config')}</li>
+          <li>• {t('sso.guide.test_login')}</li>
+          <li>• {t('sso.guide.configure_env')}</li>
         </ul>
       </div>
     </div>

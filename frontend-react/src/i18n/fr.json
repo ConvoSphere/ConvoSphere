@@ -1,5 +1,8 @@
 {
-  "app.title": "ConvoSphere Plateforme Assistant IA",
+  "app": {
+    "title": "ConvoSphere Plateforme Assistant IA",
+    "subtitle": "Plateforme Assistant IA"
+  },
   "theme.light": "Mode Clair",
   "theme.dark": "Mode Sombre",
   "language.en": "Anglais",
@@ -28,7 +31,25 @@
     "upload": "Télécharger",
     "download": "Télécharger",
     "sources": "Sources",
-    "or": "ou"
+    "or": "ou",
+    "loading_app": "Chargement de ConvoSphere...",
+    "error_something_wrong": "Quelque chose s'est mal passé",
+    "error_unexpected": "Nous sommes désolés, mais quelque chose d'inattendu s'est produit lors du chargement de l'application.",
+    "try_again": "Réessayer",
+    "error_details": "Détails de l'erreur",
+    "refresh_page": "Actualiser la page",
+    "application_error": "Erreur d'application",
+    "failed_to_load": "Échec du chargement de l'application. Veuillez actualiser la page.",
+    "open": "Ouvrir",
+    "run": "Exécuter",
+    "clear_all": "Tout effacer",
+    "remove": "Supprimer",
+    "no_results": "Aucun résultat trouvé",
+    "sending": "Envoi...",
+    "no_messages": "Aucun message pour le moment",
+    "start_conversation": "Commencer une conversation",
+    "loading_messages": "Chargement de plus de messages...",
+    "sending_message": "Envoi du message..."
   },
   "settings.title": "Paramètres",
   "settings.language": "Langue",
@@ -61,6 +82,15 @@
   "chat.error": "Échec du chargement des messages",
   "chat.typing": "L'assistant tape...",
   "chat.new_conversation": "Nouvelle Conversation",
+  "conversations.title": "Conversations",
+  "conversations.load_failed": "Échec du chargement des conversations",
+  "conversations.load_detail_failed": "Échec du chargement de la conversation",
+  "mcp_tools.title": "Outils MCP",
+  "mcp_tools.load_failed": "Échec du chargement des outils MCP",
+  "mcp_tools.execution_failed": "Échec de l'exécution de l'outil MCP",
+  "mcp_tools.result": "Résultat",
+  "mcp_tools.success": "Succès",
+  "mcp_tools.parameter_label": "Paramètre (Placeholder)",
   "knowledge.title": "Base de Connaissances",
   "knowledge.upload": "Télécharger un Document",
   "knowledge.search": "Rechercher des documents...",
@@ -69,6 +99,33 @@
   "knowledge.processing": "La Base de Connaissances est activée. Vos messages seront enrichis avec le contexte de documents pertinents",
   "knowledge.no_results": "Aucun document trouvé",
   "knowledge.delete_confirm": "Êtes-vous sûr de vouloir supprimer ce document?",
+  "knowledge.context_title": "Contexte de Connaissances",
+  "knowledge.search_documents": "Rechercher des documents...",
+  "knowledge.selected_documents": "Documents Sélectionnés",
+  "knowledge.available_documents": "Documents Disponibles",
+  "knowledge.upload.title": "Télécharger des Documents",
+  "knowledge.tabs": {
+    "documents": "Documents",
+    "tags": "Tags",
+    "statistics": "Statistiques",
+    "settings": "Paramètres"
+  },
+  "knowledge.settings": {
+    "title": "Paramètres de la Base de Connaissances",
+    "description": "Configurer les paramètres système et les préférences"
+  },
+  "knowledge.document_types": {
+    "pdf": "PDF",
+    "word": "Document Word",
+    "text": "Fichier Texte",
+    "spreadsheet": "Tableur"
+  },
+  "knowledge.languages": {
+    "en": "Anglais",
+    "de": "Allemand",
+    "fr": "Français",
+    "es": "Espagnol"
+  },
   "tools.title": "Outils",
   "tools.run": "Exécuter",
   "tools.result": "Résultat",
@@ -79,6 +136,92 @@
   "notifications.error": "Erreur",
   "notifications.warning": "Avertissement",
   "notifications.info": "Information",
+  "system": {
+    "title": "État du Système et Performance",
+    "load_failed": "Échec du chargement de l'état du système",
+    "status": {
+      "ok": "OK",
+      "error": "Erreur",
+      "degraded": "Dégradé"
+    },
+    "metrics": {
+      "cpu_usage": "Utilisation CPU (%)",
+      "ram_usage": "Utilisation RAM (%)",
+      "database": "Base de données",
+      "redis": "Redis",
+      "weaviate": "Weaviate",
+      "trace_id": "ID de Trace",
+      "system_status": "État du Système"
+    }
+  },
+  "sso": {
+    "title": "Gestion des Fournisseurs SSO",
+    "description": "Configurer et gérer les fournisseurs d'authentification unique pour votre application.",
+    "load_failed": "Échec du chargement des fournisseurs SSO",
+    "update_failed": "Échec de la mise à jour du fournisseur",
+    "config_load_failed": "Échec du chargement de la configuration du fournisseur",
+    "enabled": "activé",
+    "disabled": "désactivé",
+    "successfully": "avec succès",
+    "updating": "Mise à jour...",
+    "no_providers": "Aucun fournisseur SSO n'est actuellement configuré.",
+    "configuration": "Configuration",
+    "status": {
+      "label": "Statut",
+      "not_configured": "Non configuré",
+      "active": "Actif",
+      "disabled": "Désactivé"
+    },
+    "loading_providers": "Chargement des fournisseurs SSO...",
+    "configuration": {
+      "client_id": "ID Client :",
+      "redirect_uri": "URI de redirection :",
+      "scopes": "Portées :",
+      "metadata_url": "URL des métadonnées :"
+    },
+    "actions": {
+      "view_config": "Voir la config",
+      "test_login": "Tester la connexion",
+      "edit_config": "Modifier la configuration"
+    },
+    "guide": {
+      "title": "Guide de Gestion des Fournisseurs",
+      "enable_disable": "Activer/désactiver les fournisseurs à l'aide du commutateur",
+      "view_config": "Voir les détails de configuration pour chaque fournisseur",
+      "test_login": "Tester les flux de connexion pour vérifier la configuration du fournisseur",
+      "configure_env": "Configurer les fournisseurs dans vos variables d'environnement"
+    }
+  },
+  "performance": {
+    "title": "Moniteur de Performance",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Utilisation de la Mémoire",
+    "heap_used": "Tas Utilisé",
+    "cache_performance": "Performance du Cache",
+    "network_status": "État du Réseau",
+    "workers": "Workers",
+    "resources": "Ressources",
+    "last_update": "Dernière mise à jour",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "metrics": {
+      "fcp": "FCP",
+      "lcp": "LCP",
+      "cls": "CLS"
+    },
+    "labels": {
+      "entries": "Entrées",
+      "size": "Taille",
+      "hit_rate": "Taux de réussite",
+      "status": "Statut",
+      "quality": "Qualité",
+      "queue": "File d'attente",
+      "active": "Actif",
+      "tasks": "Tâches",
+      "loaded": "Chargé",
+      "active_loads": "Chargements actifs"
+    }
+  },
   "auth": {
     "login.title": "Connexion",
     "login.username": "Nom d'utilisateur",

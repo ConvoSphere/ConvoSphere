@@ -1,5 +1,6 @@
 {
   "app.title": "ConvoSphere KI-Assistent Plattform",
+  "app.subtitle": "KI-Assistent Plattform",
   "theme.light": "Heller Modus",
   "theme.dark": "Dunkler Modus",
   "language.en": "Englisch",
@@ -28,7 +29,25 @@
     "upload": "Hochladen",
     "download": "Herunterladen",
     "sources": "Quellen",
-    "or": "oder"
+    "or": "oder",
+    "loading_app": "Lade ConvoSphere...",
+    "error_something_wrong": "Etwas ist schiefgelaufen",
+    "error_unexpected": "Es tut uns leid, aber beim Laden der Anwendung ist etwas Unerwartetes passiert.",
+    "try_again": "Erneut versuchen",
+    "error_details": "Fehlerdetails",
+    "refresh_page": "Seite neu laden",
+    "application_error": "Anwendungsfehler",
+    "failed_to_load": "Die Anwendung konnte nicht geladen werden. Bitte laden Sie die Seite neu.",
+    "open": "Öffnen",
+    "run": "Ausführen",
+    "clear_all": "Alle löschen",
+    "remove": "Entfernen",
+    "no_results": "Keine Ergebnisse gefunden",
+    "sending": "Sende...",
+    "no_messages": "Noch keine Nachrichten",
+    "start_conversation": "Unterhaltung beginnen",
+    "loading_messages": "Lade weitere Nachrichten...",
+    "sending_message": "Nachricht wird gesendet..."
   },
   "settings.title": "Einstellungen",
   "settings.language": "Sprache",
@@ -61,14 +80,50 @@
   "chat.error": "Fehler beim Laden der Nachrichten",
   "chat.typing": "Assistent schreibt...",
   "chat.new_conversation": "Neue Unterhaltung",
+  "conversations.title": "Unterhaltungen",
+  "conversations.load_failed": "Unterhaltungen konnten nicht geladen werden",
+  "conversations.load_detail_failed": "Unterhaltung konnte nicht geladen werden",
+  "mcp_tools.title": "MCP Tools",
+  "mcp_tools.load_failed": "MCP Tools konnten nicht geladen werden",
+  "mcp_tools.execution_failed": "MCP Tool Ausführung fehlgeschlagen",
+  "mcp_tools.result": "Ergebnis",
+  "mcp_tools.success": "Erfolgreich",
+  "mcp_tools.parameter_label": "Parameter (Platzhalter)",
   "knowledge.title": "Knowledge Base",
   "knowledge.upload": "Dokument hochladen",
+  "knowledge.upload.title": "Dokumente hochladen",
   "knowledge.search": "Dokumente durchsuchen...",
   "knowledge.upload_success": "Dokument erfolgreich hochgeladen",
   "knowledge.upload_failed": "Upload fehlgeschlagen",
   "knowledge.processing": "Knowledge Base ist aktiviert. Ihre Nachrichten werden mit relevantem Dokumentkontext erweitert",
   "knowledge.no_results": "Keine Dokumente gefunden",
   "knowledge.delete_confirm": "Sind Sie sicher, dass Sie dieses Dokument löschen möchten?",
+  "knowledge.context_title": "Wissenskontext",
+  "knowledge.search_documents": "Dokumente durchsuchen...",
+  "knowledge.selected_documents": "Ausgewählte Dokumente",
+  "knowledge.available_documents": "Verfügbare Dokumente",
+  "knowledge.tabs": {
+    "documents": "Dokumente",
+    "tags": "Tags",
+    "statistics": "Statistiken",
+    "settings": "Einstellungen"
+  },
+  "knowledge.settings": {
+    "title": "Knowledge Base Einstellungen",
+    "description": "Systemeinstellungen und Präferenzen konfigurieren"
+  },
+  "knowledge.document_types": {
+    "pdf": "PDF",
+    "word": "Word-Dokument",
+    "text": "Textdatei",
+    "spreadsheet": "Tabellenkalkulation"
+  },
+  "knowledge.languages": {
+    "en": "Englisch",
+    "de": "Deutsch",
+    "fr": "Französisch",
+    "es": "Spanisch"
+  },
   "tools.title": "Tools",
   "tools.run": "Ausführen",
   "tools.result": "Ergebnis",
@@ -561,5 +616,97 @@
     "lastEndDate": "Letztes Enddatum",
     "lastCreatedDate": "Letztes Erstellungsdatum",
     "lastModifiedDate": "Letztes Änderungsdatum"
+  },
+  "system": {
+    "title": "Systemstatus & Performance",
+    "load_failed": "Systemstatus konnte nicht geladen werden",
+    "status": {
+      "ok": "OK",
+      "error": "Fehler",
+      "degraded": "Beeinträchtigt"
+    },
+    "metrics": {
+      "cpu_usage": "CPU-Auslastung (%)",
+      "ram_usage": "RAM-Auslastung (%)",
+      "database": "Datenbank",
+      "redis": "Redis",
+      "weaviate": "Weaviate",
+      "trace_id": "Trace-ID",
+      "system_status": "Systemstatus"
+    }
+  },
+  "sso": {
+    "title": "SSO Provider Verwaltung",
+    "description": "Konfigurieren und verwalten Sie Single Sign-On Provider für Ihre Anwendung.",
+    "load_failed": "SSO Provider konnten nicht geladen werden",
+    "update_failed": "Provider konnte nicht aktualisiert werden",
+    "config_load_failed": "Provider-Konfiguration konnte nicht geladen werden",
+    "enabled": "aktiviert",
+    "disabled": "deaktiviert",
+    "successfully": "erfolgreich",
+    "updating": "Aktualisiere...",
+    "no_providers": "Derzeit sind keine SSO Provider konfiguriert.",
+    "configuration": "Konfiguration",
+    "status": {
+      "label": "Status",
+      "not_configured": "Nicht konfiguriert",
+      "active": "Aktiv",
+      "disabled": "Deaktiviert"
+    },
+    "loading_providers": "Lade SSO-Provider...",
+    "configuration": {
+      "client_id": "Client-ID:",
+      "redirect_uri": "Weiterleitungs-URI:",
+      "scopes": "Bereiche:",
+      "metadata_url": "Metadaten-URL:"
+    },
+    "actions": {
+      "view_config": "Konfiguration anzeigen",
+      "test_login": "Login testen",
+      "edit_config": "Konfiguration bearbeiten"
+    },
+    "guide": {
+      "title": "Provider Verwaltungsanleitung",
+      "enable_disable": "Provider mit dem Umschalter aktivieren/deaktivieren",
+      "view_config": "Konfigurationsdetails für jeden Provider anzeigen",
+      "test_login": "Login-Flows testen, um Provider-Setup zu verifizieren",
+      "configure_env": "Provider in Ihren Umgebungsvariablen konfigurieren"
+    },
+    "help": {
+      "enable_disable": "• Provider mit dem Umschalter aktivieren/deaktivieren",
+      "view_config": "• Konfigurationsdetails für jeden Provider anzeigen",
+      "test_login": "• Login-Flows testen, um Provider-Setup zu verifizieren",
+      "configure_env": "• Provider in Ihren Umgebungsvariablen konfigurieren"
+    }
+  },
+  "performance": {
+    "title": "Performance Monitor",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Speichernutzung",
+    "heap_used": "Heap verwendet",
+    "cache_performance": "Cache Performance",
+    "network_status": "Netzwerkstatus",
+    "workers": "Worker",
+    "resources": "Ressourcen",
+    "last_update": "Letzte Aktualisierung",
+    "online": "Online",
+    "offline": "Offline",
+    "metrics": {
+      "fcp": "FCP",
+      "lcp": "LCP",
+      "cls": "CLS"
+    },
+    "labels": {
+      "entries": "Einträge",
+      "size": "Größe",
+      "hit_rate": "Trefferrate",
+      "status": "Status",
+      "quality": "Qualität",
+      "queue": "Warteschlange",
+      "active": "Aktiv",
+      "tasks": "Aufgaben",
+      "loaded": "Geladen",
+      "active_loads": "Aktive Ladevorgänge"
+    }
   }
 } 

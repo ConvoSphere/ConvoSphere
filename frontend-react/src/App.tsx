@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
 import { ConfigProvider, theme as antdTheme, Spin, Button } from 'antd';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { DashboardOutlined } from '@ant-design/icons';
 import i18n from './i18n';
 import { useThemeStore } from './store/themeStore';
@@ -33,6 +33,7 @@ import {
 
 // Loading component with theme-aware styling
 const LoadingSpinner: React.FC = () => {
+  const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
@@ -51,7 +52,7 @@ const LoadingSpinner: React.FC = () => {
           color: colors.colorTextSecondary,
           fontSize: '14px',
         }}>
-          Loading ConvoSphere...
+          {t('common.loading_app')}
         </div>
       </div>
     </div>
@@ -63,6 +64,7 @@ const ErrorFallback: React.FC<{ error: Error; resetErrorBoundary: () => void }> 
   error, 
   resetErrorBoundary 
 }) => {
+  const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
@@ -85,10 +87,10 @@ const ErrorFallback: React.FC<{ error: Error; resetErrorBoundary: () => void }> 
         boxShadow: colors.boxShadow,
       }}>
         <h2 style={{ color: colors.colorError, marginBottom: '16px' }}>
-          Something went wrong
+          {t('common.error_something_wrong')}
         </h2>
         <p style={{ color: colors.colorTextSecondary, marginBottom: '24px' }}>
-          We're sorry, but something unexpected happened while loading the application.
+          {t('common.error_unexpected')}
         </p>
         <button
           onClick={resetErrorBoundary}
@@ -103,12 +105,12 @@ const ErrorFallback: React.FC<{ error: Error; resetErrorBoundary: () => void }> 
             fontWeight: 500,
           }}
         >
-          Try Again
+          {t('common.try_again')}
         </button>
         {process.env.NODE_ENV === 'development' && (
           <details style={{ marginTop: '16px', textAlign: 'left' }}>
             <summary style={{ cursor: 'pointer', color: colors.colorTextSecondary }}>
-              Error Details
+              {t('common.error_details')}
             </summary>
             <pre style={{
               marginTop: '8px',
