@@ -13,6 +13,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
+        NodeJS: "readonly",
       },
       parserOptions: {
         ecmaVersion: "latest",
@@ -31,13 +32,13 @@ export default [
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "off",
-      
+
       // React rules
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      
+
       // General rules
       "no-undef": "warn",
       "no-case-declarations": "warn",
@@ -51,9 +52,16 @@ export default [
   },
   {
     files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**/*"],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        ...globals.node,
+      },
+    },
     rules: {
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
   {

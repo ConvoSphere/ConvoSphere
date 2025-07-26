@@ -1,6 +1,6 @@
 /**
  * System Icons
- * 
+ *
  * Icons used for system and technical operations.
  */
 
@@ -18,8 +18,8 @@ import {
   EnvironmentOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const systemIcons: IconMapping = {
   setting: SettingOutlined,

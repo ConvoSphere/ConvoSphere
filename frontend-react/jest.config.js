@@ -1,27 +1,25 @@
 export default {
-  testEnvironment: 'jsdom',
+  testEnvironment: "jsdom",
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
+    "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  roots: ['<rootDir>/src'],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+  roots: ["<rootDir>/src"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^../config$': '<rootDir>/src/config/index.ts',
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^../config$": "<rootDir>/src/config/index.ts",
   },
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  extensionsToTreatAsEsm: [".ts", ".tsx"],
   globals: {
-    'ts-jest': {
+    "ts-jest": {
       useESM: true,
     },
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(vite|@vitejs)/)',
-  ],
+  transformIgnorePatterns: ["node_modules/(?!(vite|@vitejs)/)"],
   testTimeout: 30000,
   maxWorkers: 1,
   testEnvironmentOptions: {
-    customExportConditions: ['node', 'node-addons'],
+    customExportConditions: ["node", "node-addons"],
   },
-}; 
+};

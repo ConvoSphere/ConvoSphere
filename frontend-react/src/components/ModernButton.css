@@ -88,13 +88,13 @@
 
 .modern-button--gradient {
   background: var(--colorGradientPrimary);
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   position: relative;
 }
 
 .modern-button--gradient::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -203,7 +203,7 @@
 
 /* Ripple Effect */
 .modern-button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -212,7 +212,9 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  transition:
+    width 0.6s ease,
+    height 0.6s ease;
 }
 
 .modern-button:active::after {
@@ -251,7 +253,7 @@
     font-size: var(--font-size-lg);
     min-height: 48px;
   }
-  
+
   .modern-button--lg {
     padding: 12px 20px;
     font-size: var(--font-size-base);
@@ -264,7 +266,7 @@
   .modern-button--ghost {
     color: var(--colorPrimary);
   }
-  
+
   .modern-button--ghost:hover {
     background: var(--colorBgElevated);
   }
@@ -278,7 +280,7 @@
     transition: none !important;
     animation: none !important;
   }
-  
+
   .modern-button:hover {
     transform: none !important;
   }

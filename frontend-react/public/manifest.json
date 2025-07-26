@@ -10,11 +10,7 @@
   "scope": "/",
   "lang": "en",
   "dir": "ltr",
-  "categories": [
-    "productivity",
-    "communication",
-    "utilities"
-  ],
+  "categories": ["productivity", "communication", "utilities"],
   "icons": [
     {
       "src": "/favicon.ico",

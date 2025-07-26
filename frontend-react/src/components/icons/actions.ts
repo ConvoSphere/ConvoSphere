@@ -1,6 +1,6 @@
 /**
  * Action Icons
- * 
+ *
  * Icons used for user actions and interactions.
  */
 
@@ -61,8 +61,8 @@ import {
   FireOutlined,
   ThunderboltOutlined,
   BulbOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const actionIcons: IconMapping = {
   plus: PlusOutlined,

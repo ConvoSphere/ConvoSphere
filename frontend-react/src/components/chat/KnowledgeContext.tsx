@@ -1,21 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  List, 
-  Typography, 
-  Button, 
-  Tag,
-  Select,
-  Input,
-  message
-} from 'antd';
-import { useTranslation } from 'react-i18next';
-import { 
-  BookOutlined, 
-  SearchOutlined
-} from '@ant-design/icons';
-import { useKnowledgeStore } from '../../store/knowledgeStore';
-import type { Document } from '../../services/knowledge';
-import { formatDocumentType } from '../../utils/formatters';
+import React, { useState, useEffect } from "react";
+import { List, Typography, Button, Tag, Select, Input, message } from "antd";
+import { useTranslation } from "react-i18next";
+import { BookOutlined, SearchOutlined } from "@ant-design/icons";
+import { useKnowledgeStore } from "../../store/knowledgeStore";
+import type { Document } from "../../services/knowledge";
+import { formatDocumentType } from "../../utils/formatters";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -29,54 +18,55 @@ interface KnowledgeContextProps {
 const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   onDocumentSelect,
   selectedDocuments = [],
-  maxDocuments = 5
+  maxDocuments = 5,
 }) => {
   const { t } = useTranslation();
   const { documents } = useKnowledgeStore();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredDocuments = Array.isArray(documents) ? documents.filter(doc => {
-    const matchesSearch = !searchQuery || 
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesSearch;
-  }) : [];
+  const filteredDocuments = Array.isArray(documents)
+    ? documents.filter((doc) => {
+        const matchesSearch =
+          !searchQuery ||
+          doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesSearch;
+      })
+    : [];
 
   const renderDocumentItem = (document: Document) => (
     <List.Item
       key={document.id}
       onClick={() => onDocumentSelect?.(document)}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: "pointer" }}
     >
       <List.Item.Meta
         avatar={<BookOutlined />}
         title={
           <div>
             <Text strong>{document.title}</Text>
-            <div style={{ marginTop: '4px' }}>
+            <div style={{ marginTop: "4px" }}>
               <Tag color="blue">
-                {formatDocumentType(document.document_type || 'Unknown')}
+                {formatDocumentType(document.document_type || "Unknown")}
               </Tag>
               {document.language && (
-                <Tag color="green">
-                  {document.language.toUpperCase()}
-                </Tag>
+                <Tag color="green">{document.language.toUpperCase()}</Tag>
               )}
               {document.page_count && (
-                <Tag color="orange">
-                  {document.page_count} pages
-                </Tag>
+                <Tag color="orange">{document.page_count} pages</Tag>
               )}
             </div>
           </div>
         }
         description={
           <div>
-            <Text type="secondary">{document.description || 'No description'}</Text>
+            <Text type="secondary">
+              {document.description || "No description"}
+            </Text>
             {document.tags && document.tags.length > 0 && (
-              <div style={{ marginTop: '4px' }}>
-                {document.tags.map(tag => (
+              <div style={{ marginTop: "4px" }}>
+                {document.tags.map((tag) => (
                   <Tag key={tag.id} color="purple">
                     {tag.name}
                   </Tag>
@@ -90,42 +80,56 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   );
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "16px", borderBottom: "1px solid #f0f0f0" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "8px",
+          }}
+        >
           <Title level={4} style={{ margin: 0 }}>
-            <BookOutlined /> {t('knowledge.context_title')}
+            <BookOutlined /> {t("knowledge.context_title")}
           </Title>
         </div>
       </div>
 
       {/* Search */}
-      <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+      <div style={{ padding: "16px", borderBottom: "1px solid #f0f0f0" }}>
         <Input
-          placeholder={t('knowledge.search_documents')}
+          placeholder={t("knowledge.search_documents")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           prefix={<SearchOutlined />}
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
         />
       </div>
 
       {/* Selected Documents */}
       {selectedDocuments.length > 0 && (
-        <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <Text strong style={{ fontSize: '12px' }}>
-              {t('knowledge.selected_documents')} ({selectedDocuments.length})
+        <div style={{ padding: "16px", borderBottom: "1px solid #f0f0f0" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <Text strong style={{ fontSize: "12px" }}>
+              {t("knowledge.selected_documents")} ({selectedDocuments.length})
             </Text>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               size="small"
               onClick={() => {
                 // TODO: Implement clear all
-                message.info('Clear all coming soon');
+                message.info("Clear all coming soon");
               }}
             >
-              {t('common.clear_all')}
+              {t("common.clear_all")}
             </Button>
           </div>
           <List
@@ -134,26 +138,30 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
             renderItem={(doc) => (
               <List.Item
                 key={doc.id}
-                style={{ padding: '4px 0' }}
+                style={{ padding: "4px 0" }}
                 actions={[
-                  <Button 
-                    key="remove" 
-                    type="text" 
-                    size="small" 
+                  <Button
+                    key="remove"
+                    type="text"
+                    size="small"
                     danger
                     onClick={(e) => {
                       e.stopPropagation();
                       // TODO: Implement remove
-                      message.info('Remove coming soon');
+                      message.info("Remove coming soon");
                     }}
                   >
-                    {t('common.remove')}
-                  </Button>
+                    {t("common.remove")}
+                  </Button>,
                 ]}
               >
                 <List.Item.Meta
-                  title={<Text style={{ fontSize: '12px' }}>{doc.title}</Text>}
-                  description={<Text type="secondary" style={{ fontSize: '10px' }}>{doc.document_type}</Text>}
+                  title={<Text style={{ fontSize: "12px" }}>{doc.title}</Text>}
+                  description={
+                    <Text type="secondary" style={{ fontSize: "10px" }}>
+                      {doc.document_type}
+                    </Text>
+                  }
                 />
               </List.Item>
             )}
@@ -162,17 +170,31 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
       )}
 
       {/* Search Results */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', padding: '16px 16px 0' }}>
-          <Text strong style={{ fontSize: '12px' }}>
-            {t('knowledge.available_documents')} ({filteredDocuments.length})
+      <div style={{ flex: 1, overflow: "hidden" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "8px",
+            padding: "16px 16px 0",
+          }}
+        >
+          <Text strong style={{ fontSize: "12px" }}>
+            {t("knowledge.available_documents")} ({filteredDocuments.length})
           </Text>
         </div>
 
-        <div style={{ height: 'calc(100% - 30px)', overflowY: 'auto', padding: '0 16px 16px' }}>
+        <div
+          style={{
+            height: "calc(100% - 30px)",
+            overflowY: "auto",
+            padding: "0 16px 16px",
+          }}
+        >
           {filteredDocuments.length === 0 ? (
-            <div style={{ padding: '20px 0' }}>
-              <Text type="secondary">{t('common.no_results')}</Text>
+            <div style={{ padding: "20px 0" }}>
+              <Text type="secondary">{t("common.no_results")}</Text>
             </div>
           ) : (
             <List

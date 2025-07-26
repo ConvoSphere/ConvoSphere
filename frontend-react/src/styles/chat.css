@@ -34,13 +34,17 @@
 }
 
 .message-bubble::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -71,11 +75,17 @@
   animation: typingBounce 1.4s infinite ease-in-out;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes typingBounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0.8);
     opacity: 0.5;
   }
@@ -212,16 +222,16 @@
   .chat-messages-container {
     padding: 16px;
   }
-  
+
   .message-item {
     max-width: 95%;
   }
-  
+
   .chat-input-container {
     padding: 12px;
     gap: 8px;
   }
-  
+
   .chat-header {
     padding: 12px 16px;
   }
@@ -232,11 +242,11 @@
   .file-upload-area {
     background: var(--colorBgElevated);
   }
-  
+
   .file-upload-area:hover {
     background: var(--colorBgContainer);
   }
-  
+
   .reaction-button {
     background: var(--colorBgElevated);
   }
@@ -252,7 +262,7 @@
     animation: none !important;
     transition: none !important;
   }
-  
+
   .file-upload-area:hover {
     transform: none !important;
   }

@@ -1,13 +1,13 @@
-import React, { useState, useRef } from 'react';
-import { Select as AntSelect, SelectProps as AntSelectProps } from 'antd';
-import { DownOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
-import { useThemeStore } from '../store/themeStore';
-import './ModernSelect.css';
+import React, { useState, useRef } from "react";
+import { Select as AntSelect, SelectProps as AntSelectProps } from "antd";
+import { DownOutlined, SearchOutlined, CloseOutlined } from "@ant-design/icons";
+import { useThemeStore } from "../store/themeStore";
+import "./ModernSelect.css";
 
-export interface ModernSelectProps extends Omit<AntSelectProps, 'size'> {
-  variant?: 'default' | 'filled' | 'outlined' | 'ghost';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  status?: 'default' | 'success' | 'warning' | 'error';
+export interface ModernSelectProps extends Omit<AntSelectProps, "size"> {
+  variant?: "default" | "filled" | "outlined" | "ghost";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  status?: "default" | "success" | "warning" | "error";
   label?: string;
   helperText?: string;
   clearable?: boolean;
@@ -18,15 +18,15 @@ export interface ModernSelectProps extends Omit<AntSelectProps, 'size'> {
 }
 
 const ModernSelect: React.FC<ModernSelectProps> = ({
-  variant = 'default',
-  size = 'md',
-  status = 'default',
+  variant = "default",
+  size = "md",
+  status = "default",
   label,
   helperText,
   clearable = false,
   searchable = false,
   loading = false,
-  className = '',
+  className = "",
   onClear,
   children,
   ...props
@@ -37,14 +37,16 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
   const [hasValue, setHasValue] = useState(!!props.value);
 
   const selectClasses = [
-    'modern-select',
+    "modern-select",
     `modern-select--${variant}`,
     `modern-select--${size}`,
     `modern-select--${status}`,
-    isOpen && 'modern-select--open',
-    hasValue && 'modern-select--has-value',
-    className
-  ].filter(Boolean).join(' ');
+    isOpen && "modern-select--open",
+    hasValue && "modern-select--has-value",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const handleChange = (value: any, option: any) => {
     setHasValue(!!value);
@@ -62,28 +64,28 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
   };
 
   const selectStyle: React.CSSProperties = {
-    borderRadius: '12px',
-    border: '1px solid var(--colorBorder)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    fontSize: 'var(--font-size-base)',
-    fontWeight: 'var(--font-weight-normal)',
-    ...(variant === 'filled' && {
-      backgroundColor: 'var(--colorBgElevated)',
-      borderColor: 'transparent',
+    borderRadius: "12px",
+    border: "1px solid var(--colorBorder)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    fontSize: "var(--font-size-base)",
+    fontWeight: "var(--font-weight-normal)",
+    ...(variant === "filled" && {
+      backgroundColor: "var(--colorBgElevated)",
+      borderColor: "transparent",
     }),
-    ...(variant === 'ghost' && {
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
-      borderBottom: '2px solid var(--colorBorder)',
-      borderRadius: '0',
+    ...(variant === "ghost" && {
+      backgroundColor: "transparent",
+      borderColor: "transparent",
+      borderBottom: "2px solid var(--colorBorder)",
+      borderRadius: "0",
     }),
   };
 
   const dropdownStyle: React.CSSProperties = {
-    borderRadius: '12px',
-    boxShadow: 'var(--shadow-lg)',
-    border: '1px solid var(--colorBorder)',
-    backgroundColor: 'var(--colorBgContainer)',
+    borderRadius: "12px",
+    boxShadow: "var(--shadow-lg)",
+    border: "1px solid var(--colorBorder)",
+    backgroundColor: "var(--colorBgContainer)",
   };
 
   return (
@@ -94,12 +96,12 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
           {props.required && <span className="modern-select__required">*</span>}
         </label>
       )}
-      
+
       <div className="modern-select__container">
         <AntSelect
           className={selectClasses}
           style={selectStyle}
-          size={size === 'xs' ? 'small' : size === 'lg' ? 'large' : 'middle'}
+          size={size === "xs" ? "small" : size === "lg" ? "large" : "middle"}
           allowClear={clearable}
           showSearch={searchable}
           loading={loading}
@@ -114,12 +116,14 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
         >
           {children}
         </AntSelect>
-        
+
         <div className="modern-select__focus-border" />
       </div>
-      
+
       {helperText && (
-        <div className={`modern-select__helper-text modern-select__helper-text--${status}`}>
+        <div
+          className={`modern-select__helper-text modern-select__helper-text--${status}`}
+        >
           {helperText}
         </div>
       )}

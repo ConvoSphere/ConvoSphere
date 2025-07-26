@@ -1,6 +1,6 @@
 /**
  * Navigation Icons
- * 
+ *
  * Icons used for navigation and layout purposes.
  */
 
@@ -11,8 +11,8 @@ import {
   BarsOutlined,
   MoreOutlined,
   EllipsisOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const navigationIcons: IconMapping = {
   dashboard: DashboardOutlined,

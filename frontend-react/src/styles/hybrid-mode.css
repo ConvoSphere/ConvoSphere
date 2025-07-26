@@ -330,29 +330,29 @@
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .hybrid-mode-selector .ant-select {
     min-width: 100%;
   }
-  
+
   .decision-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .decision-metrics {
     flex-direction: column;
   }
-  
+
   .metric {
     min-width: auto;
   }
-  
+
   .progress-step-card {
     margin-bottom: 8px;
   }
-  
+
   .step-header {
     flex-direction: column;
     align-items: flex-start;
@@ -395,34 +395,34 @@
     background: #1f1f1f;
     border-color: #434343;
   }
-  
+
   .agent-reasoning-display {
     background: #1f1f1f;
     border-color: #434343;
   }
-  
+
   .reasoning-header {
     background: #262626;
     border-color: #434343;
   }
-  
+
   .mode-decision-card {
     background: #1f1f1f;
     border-color: #434343;
   }
-  
+
   .reasoning-step-panel {
     background: #262626;
     border-color: #434343;
   }
-  
+
   .progress-visualization {
     background: #262626;
     border-color: #434343;
   }
-  
+
   .config-item {
     background: #1f1f1f;
     border-color: #434343;
   }
-} 
+}

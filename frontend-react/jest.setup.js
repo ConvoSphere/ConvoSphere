@@ -1,15 +1,15 @@
 /* global jest */
-import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
 
 // Add TextEncoder and TextDecoder to global scope
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -51,4 +51,4 @@ global.console = {
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
-}; 
+};

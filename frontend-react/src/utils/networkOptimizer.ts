@@ -16,7 +16,7 @@ export interface RequestConfig {
   headers?: Record<string, string>;
   retries?: number;
   timeout?: number;
-  priority?: 'high' | 'normal' | 'low';
+  priority?: "high" | "normal" | "low";
 }
 
 export interface BatchRequest {
@@ -25,7 +25,7 @@ export interface BatchRequest {
   resolve: (value: any) => void;
   reject: (error: any) => void;
   timestamp: number;
-  priority: 'high' | 'normal' | 'low';
+  priority: "high" | "normal" | "low";
 }
 
 class NetworkOptimizer {
@@ -33,7 +33,7 @@ class NetworkOptimizer {
   private requestQueue: BatchRequest[] = [];
   private batchTimer: NodeJS.Timeout | null = null;
   private isOnline = navigator.onLine;
-  private connectionQuality: 'fast' | 'slow' | 'offline' = 'fast';
+  private connectionQuality: "fast" | "slow" | "offline" = "fast";
   private pendingRequests = new Map<string, BatchRequest>();
 
   constructor(config: Partial<NetworkConfig> = {}) {
@@ -53,21 +53,21 @@ class NetworkOptimizer {
 
   // Setup network event listeners
   private setupNetworkListeners() {
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.isOnline = true;
-      this.connectionQuality = 'fast';
+      this.connectionQuality = "fast";
       this.processOfflineQueue();
     });
 
-    window.addEventListener('offline', () => {
+    window.addEventListener("offline", () => {
       this.isOnline = false;
-      this.connectionQuality = 'offline';
+      this.connectionQuality = "offline";
     });
 
     // Monitor connection quality
-    if ('connection' in navigator) {
+    if ("connection" in navigator) {
       const connection = (navigator as any).connection;
-      connection.addEventListener('change', () => {
+      connection.addEventListener("change", () => {
         this.updateConnectionQuality(connection);
       });
       this.updateConnectionQuality(connection);
@@ -75,12 +75,15 @@ class NetworkOptimizer {
   }
 
   private updateConnectionQuality(connection: any) {
-    if (connection.effectiveType === '4g') {
-      this.connectionQuality = 'fast';
-    } else if (connection.effectiveType === '3g' || connection.effectiveType === '2g') {
-      this.connectionQuality = 'slow';
+    if (connection.effectiveType === "4g") {
+      this.connectionQuality = "fast";
+    } else if (
+      connection.effectiveType === "3g" ||
+      connection.effectiveType === "2g"
+    ) {
+      this.connectionQuality = "slow";
     } else {
-      this.connectionQuality = 'fast';
+      this.connectionQuality = "fast";
     }
   }
 
@@ -91,7 +94,7 @@ class NetworkOptimizer {
     }
 
     // High priority requests go directly
-    if (config.priority === 'high') {
+    if (config.priority === "high") {
       return this.executeRequest(config);
     }
 
@@ -113,7 +116,7 @@ class NetworkOptimizer {
         const response = await fetch(config.url, {
           method: config.method,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             ...config.headers,
           },
           body: config.data ? JSON.stringify(config.data) : undefined,
@@ -129,7 +132,7 @@ class NetworkOptimizer {
         return await response.json();
       } catch (error) {
         lastError = error as Error;
-        
+
         // Don't retry on certain errors
         if (this.shouldNotRetry(error as Error)) {
           throw error;
@@ -155,7 +158,7 @@ class NetworkOptimizer {
         resolve,
         reject,
         timestamp: Date.now(),
-        priority: config.priority || 'normal',
+        priority: config.priority || "normal",
       };
 
       this.requestQueue.push(request);
@@ -183,27 +186,29 @@ class NetworkOptimizer {
       const priorityOrder = { high: 3, normal: 2, low: 1 };
       const aPriority = priorityOrder[a.priority];
       const bPriority = priorityOrder[b.priority];
-      
+
       if (aPriority !== bPriority) {
         return bPriority - aPriority;
       }
-      
+
       return a.timestamp - b.timestamp;
     });
 
     // Take batch
     const batch = this.requestQueue.splice(0, this.config.batchSize);
-    
+
     // Execute batch
-    const promises = batch.map(request => this.executeRequest(request.config));
-    
+    const promises = batch.map((request) =>
+      this.executeRequest(request.config),
+    );
+
     try {
       const results = await Promise.allSettled(promises);
-      
+
       // Resolve/reject each request
       batch.forEach((request, index) => {
         const result = results[index];
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           request.resolve(result.value);
         } else {
           request.reject(result.reason);
@@ -211,7 +216,7 @@ class NetworkOptimizer {
       });
     } catch (error) {
       // If batch fails, reject all requests
-      batch.forEach(request => {
+      batch.forEach((request) => {
         request.reject(error);
       });
     }
@@ -221,7 +226,7 @@ class NetworkOptimizer {
   private async handleOfflineRequest<T>(config: RequestConfig): Promise<T> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        reject(new Error('Request timeout - offline'));
+        reject(new Error("Request timeout - offline"));
       }, this.config.offlineTimeout);
 
       // Store for later processing
@@ -237,7 +242,7 @@ class NetworkOptimizer {
           reject(error);
         },
         timestamp: Date.now(),
-        priority: config.priority || 'normal',
+        priority: config.priority || "normal",
       };
 
       this.pendingRequests.set(request.id, request);
@@ -265,7 +270,7 @@ class NetworkOptimizer {
 
     // Group by endpoint
     const groups = new Map<string, RequestConfig[]>();
-    requests.forEach(request => {
+    requests.forEach((request) => {
       const baseUrl = this.getBaseUrl(request.url);
       if (!groups.has(baseUrl)) {
         groups.set(baseUrl, []);
@@ -277,15 +282,18 @@ class NetworkOptimizer {
     const results: T[] = [];
     for (const [baseUrl, groupRequests] of groups) {
       try {
-        const batchResponse = await this.executeBatchRequest(baseUrl, groupRequests);
+        const batchResponse = await this.executeBatchRequest(
+          baseUrl,
+          groupRequests,
+        );
         results.push(...batchResponse);
       } catch (error) {
         // Fallback to individual requests
         const individualResults = await Promise.allSettled(
-          groupRequests.map(req => this.executeRequest(req))
+          groupRequests.map((req) => this.executeRequest(req)),
         );
-        individualResults.forEach(result => {
-          if (result.status === 'fulfilled') {
+        individualResults.forEach((result) => {
+          if (result.status === "fulfilled") {
             results.push(result.value);
           }
         });
@@ -296,19 +304,22 @@ class NetworkOptimizer {
   }
 
   // Execute batch request (customize based on your API)
-  private async executeBatchRequest<T>(baseUrl: string, requests: RequestConfig[]): Promise<T[]> {
+  private async executeBatchRequest<T>(
+    baseUrl: string,
+    requests: RequestConfig[],
+  ): Promise<T[]> {
     const batchData = requests.map((req, index) => ({
       id: index,
       method: req.method,
-      path: req.url.replace(baseUrl, ''),
+      path: req.url.replace(baseUrl, ""),
       data: req.data,
       headers: req.headers,
     }));
 
     const response = await fetch(`${baseUrl}/batch`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ requests: batchData }),
     });
@@ -324,17 +335,17 @@ class NetworkOptimizer {
   // Utility methods
   private shouldNotRetry(error: Error): boolean {
     // Don't retry on client errors (4xx) except 408, 429
-    if (error.message.includes('HTTP 4')) {
-      const status = parseInt(error.message.match(/HTTP (\d+)/)?.[1] || '0');
+    if (error.message.includes("HTTP 4")) {
+      const status = parseInt(error.message.match(/HTTP (\d+)/)?.[1] || "0");
       return ![408, 429].includes(status);
     }
-    
+
     // Don't retry on network errors that won't be resolved by retrying
-    return error.name === 'AbortError' || error.name === 'TypeError';
+    return error.name === "AbortError" || error.name === "TypeError";
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getBaseUrl(url: string): string {
@@ -367,13 +378,13 @@ class NetworkOptimizer {
 
   // Clear all pending requests
   clearQueue() {
-    this.requestQueue.forEach(request => {
-      request.reject(new Error('Request cancelled'));
+    this.requestQueue.forEach((request) => {
+      request.reject(new Error("Request cancelled"));
     });
     this.requestQueue = [];
-    
-    this.pendingRequests.forEach(request => {
-      request.reject(new Error('Request cancelled'));
+
+    this.pendingRequests.forEach((request) => {
+      request.reject(new Error("Request cancelled"));
     });
     this.pendingRequests.clear();
   }

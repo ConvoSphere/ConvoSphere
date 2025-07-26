@@ -1,26 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Spin, Alert, message, Avatar, Row, Col, Drawer, Typography, Badge, Tooltip } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined, BookOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { chatWebSocket } from '../services/chat';
-import type { ChatMessage, KnowledgeContext } from '../services/chat';
-import { useAuthStore } from '../store/authStore';
-import { useThemeStore } from '../store/themeStore';
-import { useKnowledgeStore } from '../store/knowledgeStore';
-import KnowledgeContextComponent from '../components/chat/KnowledgeContext';
-import type { Document } from '../services/knowledge';
-import type { InputRef } from 'antd';
-import { config } from '../config';
-import ModernCard from '../components/ModernCard';
-import ModernButton from '../components/ModernButton';
-import ModernInput from '../components/ModernInput';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Spin,
+  Alert,
+  message,
+  Avatar,
+  Row,
+  Col,
+  Drawer,
+  Typography,
+  Badge,
+  Tooltip,
+} from "antd";
+import {
+  SendOutlined,
+  UserOutlined,
+  RobotOutlined,
+  BookOutlined,
+  SearchOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { chatWebSocket } from "../services/chat";
+import type { ChatMessage, KnowledgeContext } from "../services/chat";
+import { useAuthStore } from "../store/authStore";
+import { useThemeStore } from "../store/themeStore";
+import { useKnowledgeStore } from "../store/knowledgeStore";
+import KnowledgeContextComponent from "../components/chat/KnowledgeContext";
+import type { Document } from "../services/knowledge";
+import type { InputRef } from "antd";
+import { config } from "../config";
+import ModernCard from "../components/ModernCard";
+import ModernButton from "../components/ModernButton";
+import ModernInput from "../components/ModernInput";
 
 const { Title, Text } = Typography;
 
 const Chat: React.FC = () => {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -29,11 +47,13 @@ const Chat: React.FC = () => {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [searchResults, setSearchResults] = useState<Document[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
+    null,
+  );
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
-  
+
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
@@ -45,17 +65,17 @@ const Chat: React.FC = () => {
   // Create or get conversation ID
   useEffect(() => {
     if (!token) return;
-    
+
     const createOrGetConversation = async () => {
       try {
         // Try to get existing conversations first
         const response = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
-        
+
         if (response.ok) {
           const conversations = await response.json();
           if (conversations.length > 0) {
@@ -64,58 +84,67 @@ const Chat: React.FC = () => {
             return;
           }
         }
-        
+
         // Get default assistant ID first
-        const assistantIdResponse = await fetch(`${config.apiUrl}/v1/assistants/default/id`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!assistantIdResponse.ok) {
-          throw new Error('Failed to get default assistant ID');
-        }
-        
-        const { assistant_id } = await assistantIdResponse.json();
-        
-        // Get the full assistant details
-        const assistantResponse = await fetch(`${config.apiUrl}/v1/assistants/${assistant_id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!assistantResponse.ok) {
-          throw new Error('Failed to get default assistant');
-        }
-        
-        const defaultAssistant = await assistantResponse.json();
-        
-        // Create new conversation if none exists
-        const createResponse = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const assistantIdResponse = await fetch(
+          `${config.apiUrl}/v1/assistants/default/id`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-          body: JSON.stringify({
-            title: 'New Chat',
-            assistant_id: defaultAssistant.id
-          })
-        });
-        
+        );
+
+        if (!assistantIdResponse.ok) {
+          throw new Error("Failed to get default assistant ID");
+        }
+
+        const { assistant_id } = await assistantIdResponse.json();
+
+        // Get the full assistant details
+        const assistantResponse = await fetch(
+          `${config.apiUrl}/v1/assistants/${assistant_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!assistantResponse.ok) {
+          throw new Error("Failed to get default assistant");
+        }
+
+        const defaultAssistant = await assistantResponse.json();
+
+        // Create new conversation if none exists
+        const createResponse = await fetch(
+          `${config.apiUrl}/v1/chat/conversations`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title: "New Chat",
+              assistant_id: defaultAssistant.id,
+            }),
+          },
+        );
+
         if (createResponse.ok) {
           const conversation = await createResponse.json();
           setConversationId(conversation.id);
         }
       } catch (error) {
-        console.error('Error creating/getting conversation:', error);
-        setError(t('chat.error'));
+        console.error("Error creating/getting conversation:", error);
+        setError(t("chat.error"));
       }
     };
-    
+
     createOrGetConversation();
   }, [token]);
 
@@ -131,10 +160,10 @@ const Chat: React.FC = () => {
         handleKnowledgeUpdate,
         handleProcessingJobUpdate,
         handleStreamChunk,
-        handleStreamComplete
+        handleStreamComplete,
       );
     } catch {
-      setError(t('chat.error'));
+      setError(t("chat.error"));
       setLoading(false);
     }
     return () => chatWebSocket.disconnect();
@@ -147,25 +176,35 @@ const Chat: React.FC = () => {
   }, [messages]);
 
   const handleMessage = (msg: ChatMessage) => {
-    setMessages((prev) => [...prev, { ...msg, timestamp: msg.timestamp || new Date() }]);
+    setMessages((prev) => [
+      ...prev,
+      { ...msg, timestamp: msg.timestamp || new Date() },
+    ]);
     setLoading(false);
     setIsTyping(false);
   };
 
-  const handleKnowledgeUpdate = (documents: Document[], searchQuery: string) => {
+  const handleKnowledgeUpdate = (
+    documents: Document[],
+    searchQuery: string,
+  ) => {
     setSearchResults(documents);
     // Add a system message about knowledge search
     const searchMessage: ChatMessage = {
-      sender: 'System',
+      sender: "System",
       text: `Found ${documents.length} relevant documents for "${searchQuery}"`,
-      messageType: 'system',
+      messageType: "system",
       timestamp: new Date(),
-      documents
+      documents,
     };
     setMessages((prev) => [...prev, searchMessage]);
   };
 
-  const handleProcessingJobUpdate = (jobId: string, status: string, progress: number) => {
+  const handleProcessingJobUpdate = (
+    jobId: string,
+    status: string,
+    progress: number,
+  ) => {
     // Update processing job status in knowledge store
     // This could be used to show upload progress or processing status
     console.log(`Job ${jobId}: ${status} (${progress}%)`);
@@ -179,8 +218,11 @@ const Chat: React.FC = () => {
 
   const handleStreamComplete = (msg: ChatMessage) => {
     // Handle completed streaming message
-    setMessages((prev) => [...prev, { ...msg, timestamp: msg.timestamp || new Date() }]);
-    setStreamingMessage('');
+    setMessages((prev) => [
+      ...prev,
+      { ...msg, timestamp: msg.timestamp || new Date() },
+    ]);
+    setStreamingMessage("");
     setIsStreaming(false);
     setIsTyping(false);
     setLoading(false);
@@ -191,33 +233,47 @@ const Chat: React.FC = () => {
       setSending(true);
       try {
         // Create knowledge context if enabled
-        const knowledgeContext: KnowledgeContext | undefined = knowledgeContextEnabled ? {
-          enabled: true,
-          documentIds: selectedDocuments.map(doc => doc.id),
-          searchQuery: input,
-          maxChunks: 5,
-          filters: {
-            tags: selectedDocuments.flatMap(doc => doc.tags?.map(tag => tag.name) || []),
-            documentTypes: [...new Set(selectedDocuments.map(doc => doc.document_type).filter(Boolean) as string[])]
-          }
-        } : undefined;
-        
+        const knowledgeContext: KnowledgeContext | undefined =
+          knowledgeContextEnabled
+            ? {
+                enabled: true,
+                documentIds: selectedDocuments.map((doc) => doc.id),
+                searchQuery: input,
+                maxChunks: 5,
+                filters: {
+                  tags: selectedDocuments.flatMap(
+                    (doc) => doc.tags?.map((tag) => tag.name) || [],
+                  ),
+                  documentTypes: [
+                    ...new Set(
+                      selectedDocuments
+                        .map((doc) => doc.document_type)
+                        .filter(Boolean) as string[],
+                    ),
+                  ],
+                },
+              }
+            : undefined;
+
         // Send message via WebSocket
         chatWebSocket.sendMessage(input, knowledgeContext);
-        
+
         // Add user message to local state
-        setMessages((prev) => [...prev, { 
-          sender: 'You', 
-          text: input, 
-          timestamp: new Date() 
-        }]);
-        
-        setInput('');
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "You",
+            text: input,
+            timestamp: new Date(),
+          },
+        ]);
+
+        setInput("");
         setSelectedDocuments([]); // Clear selected documents after sending
-        message.success('Message sent');
+        message.success("Message sent");
         setTimeout(() => inputRef.current?.focus(), 100);
       } catch {
-        message.error('Failed to send message');
+        message.error("Failed to send message");
       } finally {
         setSending(false);
       }
@@ -227,20 +283,20 @@ const Chat: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInput(value);
-    
+
     // Send typing indicator
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
-    
+
     setIsTyping(true);
     chatWebSocket.sendTypingIndicator(true);
-    
+
     const timeout = setTimeout(() => {
       setIsTyping(false);
       chatWebSocket.sendTypingIndicator(false);
     }, 1000);
-    
+
     setTypingTimeout(timeout);
   };
 
@@ -248,23 +304,23 @@ const Chat: React.FC = () => {
     try {
       const results = await searchDocuments(query);
       setSearchResults(results.documents || []);
-      
+
       // Send knowledge search via WebSocket for real-time updates
       chatWebSocket.sendKnowledgeSearch(query);
-      
+
       return results.documents || [];
     } catch (error) {
-      console.error('Knowledge search failed:', error);
-      message.error('Search failed');
+      console.error("Knowledge search failed:", error);
+      message.error("Search failed");
       return [];
     }
   };
 
   const handleDocumentSelect = (document: Document) => {
-    setSelectedDocuments(prev => {
-      const exists = prev.find(doc => doc.id === document.id);
+    setSelectedDocuments((prev) => {
+      const exists = prev.find((doc) => doc.id === document.id);
       if (exists) {
-        return prev.filter(doc => doc.id !== document.id);
+        return prev.filter((doc) => doc.id !== document.id);
       } else {
         return [...prev, document];
       }
@@ -280,125 +336,173 @@ const Chat: React.FC = () => {
   };
 
   const formatTime = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return timestamp.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const renderMessage = (msg: ChatMessage, index: number) => {
-    const isUser = msg.sender === 'You';
-    const isSystem = msg.messageType === 'system';
-    const isError = msg.messageType === 'error';
-    
+    const isUser = msg.sender === "You";
+    const isSystem = msg.messageType === "system";
+    const isError = msg.messageType === "error";
+
     const messageStyle: React.CSSProperties = {
-      display: 'flex',
-      flexDirection: isUser ? 'row-reverse' : 'row',
-      alignItems: 'flex-start',
-      gap: '16px',
-      marginBottom: '20px',
-      maxWidth: '85%',
-      marginLeft: isUser ? 'auto' : '0',
-      marginRight: isUser ? '0' : 'auto',
-      animation: 'fadeInUp 0.3s ease-out',
+      display: "flex",
+      flexDirection: isUser ? "row-reverse" : "row",
+      alignItems: "flex-start",
+      gap: "16px",
+      marginBottom: "20px",
+      maxWidth: "85%",
+      marginLeft: isUser ? "auto" : "0",
+      marginRight: isUser ? "0" : "auto",
+      animation: "fadeInUp 0.3s ease-out",
     };
 
     const bubbleStyle: React.CSSProperties = {
-      background: isError ? '#ff4d4f' : 
-                  isSystem ? '#f0f0f0' :
-                  isUser ? colors.colorChatUserBubble : colors.colorChatAIBubble,
-      color: isError ? '#fff' :
-             isSystem ? '#666' :
-             isUser ? colors.colorChatUserText : colors.colorChatAIText,
-      padding: '16px 20px',
-      borderRadius: '20px',
+      background: isError
+        ? "#ff4d4f"
+        : isSystem
+          ? "#f0f0f0"
+          : isUser
+            ? colors.colorChatUserBubble
+            : colors.colorChatAIBubble,
+      color: isError
+        ? "#fff"
+        : isSystem
+          ? "#666"
+          : isUser
+            ? colors.colorChatUserText
+            : colors.colorChatAIText,
+      padding: "16px 20px",
+      borderRadius: "20px",
       boxShadow: colors.boxShadow,
-      position: 'relative',
-      wordWrap: 'break-word',
-      maxWidth: '100%',
-      border: isSystem ? '1px dashed #d9d9d9' : 'none',
-      transition: 'all 0.3s ease',
+      position: "relative",
+      wordWrap: "break-word",
+      maxWidth: "100%",
+      border: isSystem ? "1px dashed #d9d9d9" : "none",
+      transition: "all 0.3s ease",
     };
 
     const avatarStyle: React.CSSProperties = {
-      backgroundColor: isError ? '#ff4d4f' :
-                      isSystem ? '#d9d9d9' :
-                      isUser ? colors.colorPrimary : colors.colorSecondary,
+      backgroundColor: isError
+        ? "#ff4d4f"
+        : isSystem
+          ? "#d9d9d9"
+          : isUser
+            ? colors.colorPrimary
+            : colors.colorSecondary,
       flexShrink: 0,
-      width: '40px',
-      height: '40px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      width: "40px",
+      height: "40px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "50%",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
     };
 
     return (
       <div key={index} style={messageStyle} className="message-item">
         <div style={avatarStyle}>
-          {isUser ? <UserOutlined style={{ color: '#fff' }} /> : 
-           isSystem ? <SearchOutlined style={{ color: '#666' }} /> :
-           <RobotOutlined style={{ color: '#fff' }} />}
+          {isUser ? (
+            <UserOutlined style={{ color: "#fff" }} />
+          ) : isSystem ? (
+            <SearchOutlined style={{ color: "#666" }} />
+          ) : (
+            <RobotOutlined style={{ color: "#fff" }} />
+          )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            flex: 1,
+          }}
+        >
           <div style={bubbleStyle} className="message-bubble">
             {msg.text}
             {isStreaming && index === messages.length - 1 && (
-              <span style={{ 
-                display: 'inline-block',
-                width: '8px',
-                height: '16px',
-                backgroundColor: colors.colorPrimary,
-                animation: 'blink 1s infinite',
-                marginLeft: '4px'
-              }} />
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "8px",
+                  height: "16px",
+                  backgroundColor: colors.colorPrimary,
+                  animation: "blink 1s infinite",
+                  marginLeft: "4px",
+                }}
+              />
             )}
             {msg.metadata && (
-              <div style={{ 
-                fontSize: '11px', 
-                marginTop: '12px', 
-                opacity: 0.7,
-                borderTop: '1px solid rgba(0,0,0,0.1)',
-                paddingTop: '8px'
-              }}>
-                {msg.metadata.contextChunks && `Context: ${msg.metadata.contextChunks} chunks`}
-                {msg.metadata.confidence && ` | Confidence: ${(msg.metadata.confidence * 100).toFixed(1)}%`}
-                {msg.metadata.processingTime && ` | Time: ${msg.metadata.processingTime}ms`}
+              <div
+                style={{
+                  fontSize: "11px",
+                  marginTop: "12px",
+                  opacity: 0.7,
+                  borderTop: "1px solid rgba(0,0,0,0.1)",
+                  paddingTop: "8px",
+                }}
+              >
+                {msg.metadata.contextChunks &&
+                  `Context: ${msg.metadata.contextChunks} chunks`}
+                {msg.metadata.confidence &&
+                  ` | Confidence: ${(msg.metadata.confidence * 100).toFixed(1)}%`}
+                {msg.metadata.processingTime &&
+                  ` | Time: ${msg.metadata.processingTime}ms`}
               </div>
             )}
           </div>
-          
+
           {msg.documents && msg.documents.length > 0 && (
-            <ModernCard 
-              variant="outlined" 
+            <ModernCard
+              variant="outlined"
               size="sm"
-              style={{ 
-                maxWidth: '400px',
-                marginTop: '8px'
+              style={{
+                maxWidth: "400px",
+                marginTop: "8px",
               }}
             >
-              <div style={{ 
-                fontSize: '12px', 
-                color: colors.colorSecondary,
-              }}>
-                <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                  {t('common.sources')} ({msg.documents.length}):
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: colors.colorSecondary,
+                }}
+              >
+                <Text
+                  type="secondary"
+                  style={{ fontSize: "12px", fontWeight: "bold" }}
+                >
+                  {t("common.sources")} ({msg.documents.length}):
                 </Text>
-                <div style={{ marginTop: '8px' }}>
+                <div style={{ marginTop: "8px" }}>
                   {msg.documents.slice(0, 3).map((doc, idx) => (
-                    <div key={idx} style={{ 
-                      fontSize: '11px', 
-                      marginBottom: '4px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      padding: '4px 8px',
-                      background: 'rgba(0,0,0,0.05)',
-                      borderRadius: '6px'
-                    }}>
+                    <div
+                      key={idx}
+                      style={{
+                        fontSize: "11px",
+                        marginBottom: "4px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        padding: "4px 8px",
+                        background: "rgba(0,0,0,0.05)",
+                        borderRadius: "6px",
+                      }}
+                    >
                       • {doc.title}
                     </div>
                   ))}
                   {msg.documents.length > 3 && (
-                    <div style={{ fontSize: '11px', color: colors.colorSecondary, textAlign: 'center', marginTop: '4px' }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: colors.colorSecondary,
+                        textAlign: "center",
+                        marginTop: "4px",
+                      }}
+                    >
                       +{msg.documents.length - 3} more
                     </div>
                   )}
@@ -406,14 +510,16 @@ const Chat: React.FC = () => {
               </div>
             </ModernCard>
           )}
-          
-          <div style={{ 
-            fontSize: '11px', 
-            color: colors.colorSecondary,
-            marginLeft: isUser ? 'auto' : '0',
-            marginRight: isUser ? '0' : 'auto',
-            opacity: 0.8
-          }}>
+
+          <div
+            style={{
+              fontSize: "11px",
+              color: colors.colorSecondary,
+              marginLeft: isUser ? "auto" : "0",
+              marginRight: isUser ? "0" : "auto",
+              opacity: 0.8,
+            }}
+          >
             {msg.timestamp && formatTime(msg.timestamp)}
           </div>
         </div>
@@ -422,52 +528,84 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <Row style={{ height: '100vh' }}>
-      <Col span={showKnowledgeDrawer ? 18 : 24} style={{ height: '100%' }}>
-        <ModernCard 
+    <Row style={{ height: "100vh" }}>
+      <Col span={showKnowledgeDrawer ? 18 : 24} style={{ height: "100%" }}>
+        <ModernCard
           variant="default"
           size="xl"
           header={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Title level={4} style={{ margin: 0, color: colors.colorTextBase }}>
-                  {t('chat.title')}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
+                <Title
+                  level={4}
+                  style={{ margin: 0, color: colors.colorTextBase }}
+                >
+                  {t("chat.title")}
                 </Title>
                 {!chatWebSocket.isConnected() && (
-                  <Badge status="error" text={t('errors.network')} />
+                  <Badge status="error" text={t("errors.network")} />
                 )}
                 {isTyping && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <LoadingOutlined style={{ fontSize: '14px', color: colors.colorPrimary }} />
-                    <span style={{ fontSize: '14px', color: colors.colorSecondary }}>{t('chat.typing')}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <LoadingOutlined
+                      style={{ fontSize: "14px", color: colors.colorPrimary }}
+                    />
+                    <span
+                      style={{ fontSize: "14px", color: colors.colorSecondary }}
+                    >
+                      {t("chat.typing")}
+                    </span>
                   </div>
                 )}
               </div>
-              <Tooltip title={knowledgeContextEnabled ? t('knowledge.processing') : t('knowledge.title')}>
+              <Tooltip
+                title={
+                  knowledgeContextEnabled
+                    ? t("knowledge.processing")
+                    : t("knowledge.title")
+                }
+              >
                 <ModernButton
-                  variant={knowledgeContextEnabled ? 'primary' : 'secondary'}
+                  variant={knowledgeContextEnabled ? "primary" : "secondary"}
                   size="md"
                   icon={<BookOutlined />}
                   onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
                 >
-                  {t('knowledge.title')}
+                  {t("knowledge.title")}
                   {selectedDocuments.length > 0 && (
-                    <Badge count={selectedDocuments.length} style={{ marginLeft: '8px' }} />
+                    <Badge
+                      count={selectedDocuments.length}
+                      style={{ marginLeft: "8px" }}
+                    />
                   )}
                 </ModernButton>
               </Tooltip>
             </div>
           }
-          style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+          style={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
           {error && (
             <Alert
-              message={t('errors.network')}
+              message={t("errors.network")}
               description={error}
               type="error"
               showIcon
               closable
-              style={{ marginBottom: 16, borderRadius: '12px' }}
+              style={{ marginBottom: 16, borderRadius: "12px" }}
             />
           )}
 
@@ -475,36 +613,57 @@ const Chat: React.FC = () => {
             ref={listRef}
             style={{
               flex: 1,
-              overflowY: 'auto',
-              padding: '24px',
-              marginBottom: '20px',
-              border: '1px solid var(--colorBorder)',
-              borderRadius: '16px',
+              overflowY: "auto",
+              padding: "24px",
+              marginBottom: "20px",
+              border: "1px solid var(--colorBorder)",
+              borderRadius: "16px",
               background: colors.colorBackground,
-              minHeight: '400px'
+              minHeight: "400px",
             }}
             className="chat-messages-container"
           >
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '60px' }}>
+              <div style={{ textAlign: "center", padding: "60px" }}>
                 <Spin size="large" />
-                <div style={{ marginTop: 20, fontSize: '16px', color: colors.colorSecondary }}>
-                  {t('chat.loading')}
+                <div
+                  style={{
+                    marginTop: 20,
+                    fontSize: "16px",
+                    color: colors.colorSecondary,
+                  }}
+                >
+                  {t("chat.loading")}
                 </div>
               </div>
             ) : messages.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px', color: colors.colorSecondary }}>
-                <RobotOutlined style={{ fontSize: '64px', marginBottom: 24, color: colors.colorPrimary }} />
-                <Title level={3} style={{ color: colors.colorTextBase, marginBottom: 16 }}>
-                  {t('chat.title')}
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "60px",
+                  color: colors.colorSecondary,
+                }}
+              >
+                <RobotOutlined
+                  style={{
+                    fontSize: "64px",
+                    marginBottom: 24,
+                    color: colors.colorPrimary,
+                  }}
+                />
+                <Title
+                  level={3}
+                  style={{ color: colors.colorTextBase, marginBottom: 16 }}
+                >
+                  {t("chat.title")}
                 </Title>
-                <Text type="secondary" style={{ fontSize: '16px' }}>
-                  {t('chat.empty')}
+                <Text type="secondary" style={{ fontSize: "16px" }}>
+                  {t("chat.empty")}
                 </Text>
                 {knowledgeContextEnabled && (
-                  <div style={{ marginTop: '20px' }}>
-                    <Text type="secondary" style={{ fontSize: '14px' }}>
-                      {t('knowledge.processing')}
+                  <div style={{ marginTop: "20px" }}>
+                    <Text type="secondary" style={{ fontSize: "14px" }}>
+                      {t("knowledge.processing")}
                     </Text>
                   </div>
                 )}
@@ -513,52 +672,67 @@ const Chat: React.FC = () => {
               <div className="stagger-children">
                 {messages.map(renderMessage)}
                 {isStreaming && streamingMessage && (
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    gap: '16px',
-                    marginBottom: '20px',
-                    maxWidth: '85%',
-                    marginLeft: '0',
-                    marginRight: 'auto',
-                    animation: 'fadeInUp 0.3s ease-out',
-                  }}>
-                    <div style={{
-                      backgroundColor: colors.colorChatAIBubble,
-                      color: colors.colorChatAIText,
-                      padding: '16px 20px',
-                      borderRadius: '20px',
-                      boxShadow: colors.boxShadow,
-                      position: 'relative',
-                      wordWrap: 'break-word',
-                      maxWidth: '100%',
-                      transition: 'all 0.3s ease',
-                    }}>
-                      <div style={{
-                        backgroundColor: colors.colorPrimary,
-                        flexShrink: 0,
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '50%',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      }}>
-                        <RobotOutlined style={{ color: '#fff' }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: "16px",
+                      marginBottom: "20px",
+                      maxWidth: "85%",
+                      marginLeft: "0",
+                      marginRight: "auto",
+                      animation: "fadeInUp 0.3s ease-out",
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: colors.colorChatAIBubble,
+                        color: colors.colorChatAIText,
+                        padding: "16px 20px",
+                        borderRadius: "20px",
+                        boxShadow: colors.boxShadow,
+                        position: "relative",
+                        wordWrap: "break-word",
+                        maxWidth: "100%",
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: colors.colorPrimary,
+                          flexShrink: 0,
+                          width: "40px",
+                          height: "40px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "50%",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <RobotOutlined style={{ color: "#fff" }} />
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                          flex: 1,
+                        }}
+                      >
                         <div className="message-bubble">
                           {streamingMessage}
-                          <span style={{ 
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '16px',
-                            backgroundColor: colors.colorPrimary,
-                            animation: 'blink 1s infinite',
-                            marginLeft: '4px'
-                          }} />
+                          <span
+                            style={{
+                              display: "inline-block",
+                              width: "8px",
+                              height: "16px",
+                              backgroundColor: colors.colorPrimary,
+                              animation: "blink 1s infinite",
+                              marginLeft: "4px",
+                            }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -568,7 +742,7 @@ const Chat: React.FC = () => {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
             <div style={{ flex: 1 }}>
               <ModernInput
                 variant="filled"
@@ -576,12 +750,14 @@ const Chat: React.FC = () => {
                 value={input}
                 onChange={handleInputChange}
                 onPressEnter={handleSend}
-                placeholder={knowledgeContextEnabled ? 
-                  t('chat.placeholder') + ' (' + t('knowledge.title') + ')' : 
-                  t('chat.placeholder')}
+                placeholder={
+                  knowledgeContextEnabled
+                    ? t("chat.placeholder") + " (" + t("knowledge.title") + ")"
+                    : t("chat.placeholder")
+                }
                 disabled={sending}
                 clearable
-                onClear={() => setInput('')}
+                onClear={() => setInput("")}
               />
             </div>
             <ModernButton
@@ -591,21 +767,25 @@ const Chat: React.FC = () => {
               onClick={handleSend}
               loading={sending}
               disabled={!input.trim()}
-              style={{ minWidth: '120px' }}
+              style={{ minWidth: "120px" }}
             >
-              {t('chat.send')}
+              {t("chat.send")}
             </ModernButton>
           </div>
         </ModernCard>
       </Col>
 
       {showKnowledgeDrawer && (
-        <Col span={6} style={{ height: '100%' }}>
-          <ModernCard 
+        <Col span={6} style={{ height: "100%" }}>
+          <ModernCard
             variant="outlined"
             size="lg"
-            header={<Title level={5} style={{ margin: 0 }}>{t('knowledge.title')}</Title>}
-            style={{ height: '100%', overflowY: 'auto' }}
+            header={
+              <Title level={5} style={{ margin: 0 }}>
+                {t("knowledge.title")}
+              </Title>
+            }
+            style={{ height: "100%", overflowY: "auto" }}
           >
             <KnowledgeContextComponent
               onDocumentSelect={handleDocumentSelect}
@@ -622,4 +802,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat; 
+export default Chat;

@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 // Types
 export interface Document {
@@ -11,7 +11,7 @@ export interface Document {
   file_type: string;
   file_size: number;
   mime_type: string;
-  status: 'UPLOADED' | 'PROCESSING' | 'PROCESSED' | 'ERROR' | 'REPROCESSING';
+  status: "UPLOADED" | "PROCESSING" | "PROCESSED" | "ERROR" | "REPROCESSING";
   author?: string;
   source?: string;
   language?: string;
@@ -89,7 +89,7 @@ export interface AdvancedSearchRequest {
   query?: string;
   filters?: DocumentFilter;
   sort_by?: string;
-  sort_order?: 'asc' | 'desc';
+  sort_order?: "asc" | "desc";
   page?: number;
   page_size?: number;
 }
@@ -125,20 +125,22 @@ export interface KnowledgeStats {
 }
 
 // API Functions
-export async function getDocuments(filters?: DocumentFilter): Promise<Document[]> {
+export async function getDocuments(
+  filters?: DocumentFilter,
+): Promise<Document[]> {
   const params = new URLSearchParams();
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
-          value.forEach(v => params.append(key, v.toString()));
+          value.forEach((v) => params.append(key, v.toString()));
         } else {
           params.append(key, value.toString());
         }
       }
     });
   }
-  
+
   const response = await api.get(`/knowledge/documents?${params.toString()}`);
   return response.data;
 }
@@ -148,21 +150,27 @@ export async function getDocument(documentId: string): Promise<Document> {
   return response.data;
 }
 
-export async function uploadDocument(file: File, metadata?: Partial<Document>): Promise<Document> {
+export async function uploadDocument(
+  file: File,
+  metadata?: Partial<Document>,
+): Promise<Document> {
   const formData = new FormData();
-  formData.append('file', file);
-  
+  formData.append("file", file);
+
   if (metadata) {
-    formData.append('metadata', JSON.stringify(metadata));
+    formData.append("metadata", JSON.stringify(metadata));
   }
-  
-  const response = await api.post('/knowledge/documents', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+
+  const response = await api.post("/knowledge/documents", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 }
 
-export async function updateDocument(documentId: string, updates: Partial<Document>): Promise<Document> {
+export async function updateDocument(
+  documentId: string,
+  updates: Partial<Document>,
+): Promise<Document> {
   const response = await api.put(`/knowledge/documents/${documentId}`, updates);
   return response.data;
 }
@@ -171,36 +179,43 @@ export async function deleteDocument(documentId: string): Promise<void> {
   await api.delete(`/knowledge/documents/${documentId}`);
 }
 
-export async function searchDocuments(query: string, searchType: string = 'semantic'): Promise<SearchResponse> {
-  const response = await api.post('/knowledge/search', {
+export async function searchDocuments(
+  query: string,
+  searchType: string = "semantic",
+): Promise<SearchResponse> {
+  const response = await api.post("/knowledge/search", {
     query,
-    search_type: searchType
+    search_type: searchType,
   });
   return response.data;
 }
 
-export async function advancedSearch(request: AdvancedSearchRequest): Promise<SearchResponse> {
-  const response = await api.post('/knowledge/search/advanced', request);
+export async function advancedSearch(
+  request: AdvancedSearchRequest,
+): Promise<SearchResponse> {
+  const response = await api.post("/knowledge/search/advanced", request);
   return response.data;
 }
 
 export async function getSearchHistory(): Promise<SearchResponse[]> {
-  const response = await api.get('/knowledge/search/history');
+  const response = await api.get("/knowledge/search/history");
   return response.data;
 }
 
 export async function getTags(): Promise<Tag[]> {
-  const response = await api.get('/knowledge/tags');
+  const response = await api.get("/knowledge/tags");
   return response.data;
 }
 
 export async function searchTags(query: string): Promise<Tag[]> {
-  const response = await api.get(`/knowledge/tags/search?q=${encodeURIComponent(query)}`);
+  const response = await api.get(
+    `/knowledge/tags/search?q=${encodeURIComponent(query)}`,
+  );
   return response.data;
 }
 
 export async function createTag(tag: Partial<Tag>): Promise<Tag> {
-  const response = await api.post('/knowledge/tags', tag);
+  const response = await api.post("/knowledge/tags", tag);
   return response.data;
 }
 
@@ -209,50 +224,56 @@ export async function deleteTag(tagId: string): Promise<void> {
 }
 
 export async function getProcessingJobs(): Promise<DocumentProcessingJob[]> {
-  const response = await api.get('/knowledge/processing/jobs');
+  const response = await api.get("/knowledge/processing/jobs");
   return response.data;
 }
 
-export async function createProcessingJob(job: Partial<DocumentProcessingJob>): Promise<DocumentProcessingJob> {
-  const response = await api.post('/knowledge/processing/jobs', job);
+export async function createProcessingJob(
+  job: Partial<DocumentProcessingJob>,
+): Promise<DocumentProcessingJob> {
+  const response = await api.post("/knowledge/processing/jobs", job);
   return response.data;
 }
 
-export async function bulkImport(files: File[]): Promise<DocumentProcessingJob> {
+export async function bulkImport(
+  files: File[],
+): Promise<DocumentProcessingJob> {
   const formData = new FormData();
-  files.forEach(file => {
-    formData.append('files', file);
+  files.forEach((file) => {
+    formData.append("files", file);
   });
-  
-  const response = await api.post('/knowledge/bulk-import', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+
+  const response = await api.post("/knowledge/bulk-import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 }
 
 export async function getKnowledgeStats(): Promise<KnowledgeStats> {
-  const response = await api.get('/knowledge/stats');
+  const response = await api.get("/knowledge/stats");
   return response.data;
 }
 
 // Upload with progress tracking
 export async function uploadDocumentWithProgress(
-  file: File, 
+  file: File,
   metadata?: Partial<Document>,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<Document> {
   const formData = new FormData();
-  formData.append('file', file);
-  
+  formData.append("file", file);
+
   if (metadata) {
-    formData.append('metadata', JSON.stringify(metadata));
+    formData.append("metadata", JSON.stringify(metadata));
   }
-  
-  const response = await api.post('/knowledge/documents', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+
+  const response = await api.post("/knowledge/documents", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: (progressEvent) => {
       if (onProgress && progressEvent.total) {
-        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        const progress = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total,
+        );
         onProgress(progress);
       }
     },
@@ -263,17 +284,17 @@ export async function uploadDocumentWithProgress(
 // Bulk upload with progress tracking
 export async function bulkUploadWithProgress(
   files: File[],
-  onProgress?: (fileIndex: number, progress: number) => void
+  onProgress?: (fileIndex: number, progress: number) => void,
 ): Promise<Document[]> {
   const results: Document[] = [];
-  
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     try {
       const document = await uploadDocumentWithProgress(
         file,
         undefined,
-        (progress) => onProgress?.(i, progress)
+        (progress) => onProgress?.(i, progress),
       );
       results.push(document);
     } catch (error) {
@@ -281,6 +302,6 @@ export async function bulkUploadWithProgress(
       throw error;
     }
   }
-  
+
   return results;
 }

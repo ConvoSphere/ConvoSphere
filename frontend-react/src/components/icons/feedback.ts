@@ -1,6 +1,6 @@
 /**
  * Feedback Icons
- * 
+ *
  * Icons used for user feedback and system status.
  */
 
@@ -13,8 +13,8 @@ import {
   SearchOutlined,
   BellOutlined,
   RobotOutlined,
-} from '@ant-design/icons';
-import type { IconMapping } from './types';
+} from "@ant-design/icons";
+import type { IconMapping } from "./types";
 
 export const feedbackIcons: IconMapping = {
   exclamation: ExclamationCircleOutlined,
