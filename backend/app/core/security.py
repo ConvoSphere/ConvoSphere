@@ -219,6 +219,29 @@ async def get_current_user(
         db.close()
 
 
+async def get_current_active_user(
+    current_user: "User" = Depends(get_current_user),
+) -> "User":
+    """
+    Get current active user.
+
+    Args:
+        current_user: Current user from token
+
+    Returns:
+        User: Active user object
+
+    Raises:
+        HTTPException: If user is inactive
+    """
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user",
+        )
+    return current_user
+
+
 def require_permission(permission: str):
     """
     Decorator to require specific permission.

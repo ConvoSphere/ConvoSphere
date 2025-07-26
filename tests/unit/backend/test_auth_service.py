@@ -21,8 +21,8 @@ class TestSecurityFunctions:
 
     def test_create_access_token(self):
         """Test access token creation."""
-        data = {"sub": "test@example.com"}
-        token = create_access_token(data=data)
+        subject = "test@example.com"
+        token = create_access_token(subject=subject)
 
         assert isinstance(token, str)
         assert len(token) > 0
