@@ -1,6 +1,6 @@
-# ChatAssistant Admin CLI
+# ConvoSphere Admin CLI
 
-Ein umfassendes Command-Line Interface für die Verwaltung der ChatAssistant Platform.
+Ein umfassendes Command-Line Interface für die Verwaltung der ConvoSphere Platform.
 
 ## Installation
 

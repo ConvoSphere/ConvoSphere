@@ -1,7 +1,5 @@
-# =============================================================================
-# CHATASSISTANT - CONSOLIDATED REQUIREMENTS
-# =============================================================================
-# This file contains all dependencies for the ChatAssistant project.
+# CONVOSPHERE - CONSOLIDATED REQUIREMENTS
+# This file contains all dependencies for the ConvoSphere project.
 # Use specific requirement files for different environments:
 # - requirements-dev.txt: Development dependencies
 # - requirements-test.txt: Testing dependencies

@@ -1,5 +1,5 @@
 """
-Main audit service for the ChatAssistant platform.
+Main audit service for the ConvoSphere platform.
 
 This service provides the main interface for audit functionality.
 """

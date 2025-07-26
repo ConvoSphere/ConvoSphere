@@ -147,7 +147,7 @@ migrate-create:
 
 # Admin CLI Commands
 admin-cli:
-	@echo "ChatAssistant Admin CLI - Available Commands:"
+	@echo "ConvoSphere Admin CLI - Available Commands:"
 	@echo ""
 	@echo "Database Management:"
 	@echo "  python admin.py db migrate"

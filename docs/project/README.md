@@ -1,6 +1,6 @@
 # Project Documentation
 
-This directory contains comprehensive documentation for the AI Assistant Platform project.
+This directory contains comprehensive documentation for the ConvoSphere project.
 
 ## 📚 Documentation Structure
 
@@ -61,7 +61,7 @@ The AI Assistant Platform is a comprehensive, enterprise-grade solution built wi
 ```bash
 # Clone repository
 git clone <repository-url>
-cd chatassistant
+cd convosphere
 
 # Set up environment
 cp env.example .env

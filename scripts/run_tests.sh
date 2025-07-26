@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Unified Test Runner for ChatAssistant
+# Unified Test Runner for ConvoSphere
 # This script runs tests from the consolidated test structure
 
 set -e

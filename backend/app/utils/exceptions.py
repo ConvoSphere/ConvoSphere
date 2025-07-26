@@ -3,137 +3,137 @@ Custom exceptions for the application.
 """
 
 
-class ChatAssistantError(Exception):
+class ConvoSphereError(Exception):
     """Base exception for all application errors."""
 
 
-class UserNotFoundError(ChatAssistantError):
+class UserNotFoundError(ConvoSphereError):
     """Raised when a user is not found."""
 
 
-class UserAlreadyExistsError(ChatAssistantError):
+class UserAlreadyExistsError(ConvoSphereError):
     """Raised when trying to create a user that already exists."""
 
 
-class InvalidCredentialsError(ChatAssistantError):
+class InvalidCredentialsError(ConvoSphereError):
     """Raised when authentication credentials are invalid."""
 
 
-class PermissionDeniedError(ChatAssistantError):
+class PermissionDeniedError(ConvoSphereError):
     """Raised when user doesn't have required permissions."""
 
 
-class UserLockedError(ChatAssistantError):
+class UserLockedError(ConvoSphereError):
     """Raised when user account is locked."""
 
 
-class GroupNotFoundError(ChatAssistantError):
+class GroupNotFoundError(ConvoSphereError):
     """Raised when a user group is not found."""
 
 
-class AssistantNotFoundError(ChatAssistantError):
+class AssistantNotFoundError(ConvoSphereError):
     """Raised when an assistant is not found."""
 
 
-class ToolNotFoundError(ChatAssistantError):
+class ToolNotFoundError(ConvoSphereError):
     """Raised when a tool is not found."""
 
 
-class ConversationNotFoundError(ChatAssistantError):
+class ConversationNotFoundError(ConvoSphereError):
     """Raised when a conversation is not found."""
 
 
-class MessageNotFoundError(ChatAssistantError):
+class MessageNotFoundError(ConvoSphereError):
     """Raised when a message is not found."""
 
 
-class DatabaseError(ChatAssistantError):
+class DatabaseError(ConvoSphereError):
     """Raised when there's a database-related error."""
 
 
-class RedisError(ChatAssistantError):
+class RedisError(ConvoSphereError):
     """Raised when there's a Redis-related error."""
 
 
-class WeaviateError(ChatAssistantError):
+class WeaviateError(ConvoSphereError):
     """Raised when there's a Weaviate-related error."""
 
 
-class ValidationError(ChatAssistantError):
+class ValidationError(ConvoSphereError):
     """Raised when data validation fails."""
 
 
-class ConfigurationError(ChatAssistantError):
+class ConfigurationError(ConvoSphereError):
     """Raised when there's a configuration error."""
 
 
-class ExternalServiceError(ChatAssistantError):
+class ExternalServiceError(ConvoSphereError):
     """Raised when an external service call fails."""
 
 
-class RateLimitError(ChatAssistantError):
+class RateLimitError(ConvoSphereError):
     """Raised when rate limit is exceeded."""
 
 
-class FileUploadError(ChatAssistantError):
+class FileUploadError(ConvoSphereError):
     """Raised when file upload fails."""
 
 
-class ProcessingError(ChatAssistantError):
+class ProcessingError(ConvoSphereError):
     """Raised when data processing fails."""
 
 
-class AuthenticationError(ChatAssistantError):
+class AuthenticationError(ConvoSphereError):
     """Raised when authentication fails."""
 
 
-class SSOConfigurationError(ChatAssistantError):
+class SSOConfigurationError(ConvoSphereError):
     """Raised when SSO configuration is invalid."""
 
 
-class GroupSyncError(ChatAssistantError):
+class GroupSyncError(ConvoSphereError):
     """Raised when group synchronization fails."""
 
 
-class DomainGroupNotFoundError(ChatAssistantError):
+class DomainGroupNotFoundError(ConvoSphereError):
     """Raised when domain group is not found."""
 
 
-class ResourceNotFoundError(ChatAssistantError):
+class ResourceNotFoundError(ConvoSphereError):
     """Raised when resource is not found."""
 
 
-class InvitationNotFoundError(ChatAssistantError):
+class InvitationNotFoundError(ConvoSphereError):
     """Raised when invitation is not found."""
 
 
-class InvalidAccessLevelError(ChatAssistantError):
+class InvalidAccessLevelError(ConvoSphereError):
     """Raised when access level is invalid."""
 
 
-class SessionError(ChatAssistantError):
+class SessionError(ConvoSphereError):
     """Raised when session operation fails."""
 
 
-class SecurityError(ChatAssistantError):
+class SecurityError(ConvoSphereError):
     """Raised when security check fails."""
 
 
-class AuditError(ChatAssistantError):
+class AuditError(ConvoSphereError):
     """Raised when audit operation fails."""
 
 
-class ComplianceError(ChatAssistantError):
+class ComplianceError(ConvoSphereError):
     """Raised when compliance operation fails."""
 
 
-class RetentionError(ChatAssistantError):
+class RetentionError(ConvoSphereError):
     """Raised when retention operation fails."""
 
 
-class ArchiveError(ChatAssistantError):
+class ArchiveError(ConvoSphereError):
     """Raised when archive operation fails."""
 
 
-class AlertError(ChatAssistantError):
+class AlertError(ConvoSphereError):
     """Raised when alert operation fails."""

@@ -4,9 +4,9 @@ services:
   # PostgreSQL Test Database
   postgres_test:
     image: postgres:15-alpine
-    container_name: chatassistant_postgres_test
+    container_name: convosphere_postgres_test
     environment:
-      POSTGRES_DB: chatassistant_test
+      POSTGRES_DB: convosphere_test
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
     volumes:
@@ -15,9 +15,9 @@ services:
     ports:
       - "5434:5432"
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test_user -d chatassistant_test"]
+      test: ["CMD-SHELL", "pg_isready -U test_user -d convosphere_test"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,14 +25,14 @@ services:
   # Redis Test Cache
   redis_test:
     image: redis:7-alpine
-    container_name: chatassistant_redis_test
+    container_name: convosphere_redis_test
     command: redis-server --appendonly yes
     volumes:
       - redis_test_data:/data
     ports:
       - "6380:6379"
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -42,7 +42,7 @@ services:
   # Weaviate Test Vector Database
   weaviate_test:
     image: semitechnologies/weaviate:latest
-    container_name: chatassistant_weaviate_test
+    container_name: convosphere_weaviate_test
     environment:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
@@ -56,7 +56,7 @@ services:
     ports:
       - "8081:8080"
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/.well-known/ready"]
       interval: 10s
@@ -68,11 +68,11 @@ services:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
-    container_name: chatassistant_backend_test
+    container_name: convosphere_backend_test
     environment:
       - DEBUG=true
       - TESTING=true
-      - DATABASE_URL=postgresql://test_user:test_password@postgres_test:5432/chatassistant_test
+      - DATABASE_URL=postgresql://test_user:test_password@postgres_test:5432/convosphere_test
       - REDIS_URL=redis://redis_test:6379
       - WEAVIATE_URL=http://weaviate_test:8080
       - PYTHONPATH=/app
@@ -90,7 +90,7 @@ services:
       weaviate_test:
         condition: service_healthy
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     command: ["python", "-m", "pytest", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]
 
   # Test Frontend
@@ -98,7 +98,7 @@ services:
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
-    container_name: chatassistant_frontend_test
+    container_name: convosphere_frontend_test
     environment:
       - TESTING=true
       - BACKEND_URL=http://backend_test:8000
@@ -112,13 +112,13 @@ services:
       backend_test:
         condition: service_started
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     command: ["python", "-m", "pytest", "--cov=frontend", "--cov-report=html", "--cov-report=term-missing"]
 
   # Performance Testing (Locust)
   locust:
     image: locustio/locust:latest
-    container_name: chatassistant_locust_test
+    container_name: convosphere_locust_test
     environment:
       - LOCUST_HOST=http://backend_test:8000
     volumes:
@@ -129,13 +129,13 @@ services:
       backend_test:
         condition: service_started
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     command: ["locust", "-f", "/app/tests/locustfile.py", "--host", "http://backend_test:8000"]
 
   # Security Testing (OWASP ZAP)
   zap:
     image: owasp/zap2docker-stable:latest
-    container_name: chatassistant_zap_test
+    container_name: convosphere_zap_test
     environment:
       - ZAP_WEBSWING_OPTS=-Xmx4g
     volumes:
@@ -148,7 +148,7 @@ services:
       frontend_test:
         condition: service_started
     networks:
-      - chatassistant_test_network
+      - convosphere_test_network
     command: ["zap-baseline.py", "-t", "http://backend_test:8000", "-J", "/zap/wrk/report.json"]
 
 volumes:
@@ -157,5 +157,5 @@ volumes:
   weaviate_test_data:
 
 networks:
-  chatassistant_test_network:
+  convosphere_test_network:
     driver: bridge

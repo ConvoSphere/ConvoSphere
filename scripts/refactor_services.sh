@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ChatAssistant Service Layer Refactoring Script
+# ConvoSphere Service Layer Refactoring Script
 # This script refactors large service files into smaller, focused modules
 
 set -e  # Exit on any error
@@ -57,7 +57,7 @@ create_service_structure() {
 """
 $service_name service module.
 
-This module provides $service_name functionality for the ChatAssistant platform.
+This module provides $service_name functionality for the ConvoSphere platform.
 """
 
 from .${service_name}_service import ${service_name^}Service
@@ -101,7 +101,7 @@ create_service_structure "audit"
 # Create audit service modules
 cat > backend/app/services/audit/audit_service.py << 'EOF'
 """
-Main audit service for the ChatAssistant platform.
+Main audit service for the ConvoSphere platform.
 
 This service provides the main interface for audit functionality.
 """
