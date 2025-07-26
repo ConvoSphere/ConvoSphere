@@ -491,8 +491,4 @@ def cleanup_test_file(file_path: str):
         os.unlink(file_path)
 
 # Test Markers
-pytest_plugins = [
-    "tests.fixtures.auth",
-    "tests.fixtures.data",
-    "tests.fixtures.api",
-]
+
