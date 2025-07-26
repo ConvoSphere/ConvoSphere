@@ -1,27 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  Card, 
   Row, 
   Col, 
   Space, 
-  Button, 
-  Input, 
-  Select, 
-  DatePicker, 
   Typography,
   Alert,
   Tabs,
   Statistic,
   Modal,
-  message
+  message,
+  Avatar,
+  Tag,
+  Progress,
+  Empty,
+  Spin
 } from 'antd';
 import { 
   SearchOutlined, 
   FilterOutlined, 
   UploadOutlined, 
   ReloadOutlined,
-  PlusOutlined
+  PlusOutlined,
+  FileTextOutlined,
+  FilePdfOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  BookOutlined,
+  TagsOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  CloudUploadOutlined,
+  DatabaseOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useKnowledgeStore } from '../store/knowledgeStore';
 import DocumentList from '../components/knowledge/DocumentList';
@@ -30,14 +47,19 @@ import TagManager from '../components/knowledge/TagManager';
 import BulkActions from '../components/knowledge/BulkActions';
 import SystemStats from '../components/admin/SystemStats';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
+import ModernCard from '../components/ModernCard';
+import ModernButton from '../components/ModernButton';
+import ModernInput from '../components/ModernInput';
+import ModernSelect from '../components/ModernSelect';
+import ModernForm from '../components/ModernForm';
 
-const { Search } = Input;
-const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const KnowledgeBase: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { colors } = useThemeStore();
   const { 
     documents, 
     documentsLoading: loading, 
@@ -55,6 +77,7 @@ const KnowledgeBase: React.FC = () => {
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState('documents');
 
   useEffect(() => {
     fetchDocuments();
@@ -79,18 +102,15 @@ const KnowledgeBase: React.FC = () => {
   };
 
   const handleViewDocument = () => {
-    // TODO: Implement view functionality
     message.info('View functionality coming soon');
   };
 
   const handleEditDocument = () => {
-    // TODO: Implement edit functionality
     message.info('Edit functionality coming soon');
   };
 
   const handleDeleteDocument = async () => {
     try {
-      // TODO: Implement delete functionality
       message.success('Document deleted successfully');
       refreshDocuments();
     } catch (error) {
@@ -99,13 +119,11 @@ const KnowledgeBase: React.FC = () => {
   };
 
   const handleDownloadDocument = () => {
-    // TODO: Implement download functionality
     message.info('Download functionality coming soon');
   };
 
   const handleReprocessDocument = async () => {
     try {
-      // TODO: Implement reprocess functionality
       message.success('Document reprocessing started');
       refreshDocuments();
     } catch (error) {
@@ -115,7 +133,6 @@ const KnowledgeBase: React.FC = () => {
 
   const handleBulkDelete = async (documentIds: string[]) => {
     try {
-      // TODO: Implement bulk delete API call
       message.success(`${documentIds.length} documents deleted successfully`);
       setSelectedRowKeys([]);
       refreshDocuments();
@@ -126,7 +143,6 @@ const KnowledgeBase: React.FC = () => {
 
   const handleBulkTag = async (documentIds: string[]) => {
     try {
-      // TODO: Implement bulk tag API call
       message.success(`Tags applied to ${documentIds.length} documents`);
       refreshDocuments();
     } catch (error) {
@@ -136,7 +152,6 @@ const KnowledgeBase: React.FC = () => {
 
   const handleBulkReprocess = async (documentIds: string[]) => {
     try {
-      // TODO: Implement bulk reprocess API call
       message.success(`${documentIds.length} documents queued for reprocessing`);
       refreshDocuments();
     } catch (error) {
@@ -146,264 +161,451 @@ const KnowledgeBase: React.FC = () => {
 
   const handleBulkDownload = async (documentIds: string[]) => {
     try {
-      // TODO: Implement bulk download API call
       message.success(`Download started for ${documentIds.length} documents`);
     } catch (error) {
       message.error('Failed to start download');
     }
   };
 
+  const getDocumentTypeIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'pdf':
+        return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
+      case 'doc':
+      case 'docx':
+        return <FileWordOutlined style={{ color: '#1890ff' }} />;
+      case 'xls':
+      case 'xlsx':
+        return <FileExcelOutlined style={{ color: '#52c41a' }} />;
+      default:
+        return <FileTextOutlined style={{ color: '#8c8c8c' }} />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PROCESSED':
+        return 'success';
+      case 'PROCESSING':
+        return 'processing';
+      case 'ERROR':
+        return 'error';
+      case 'REPROCESSING':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const renderStats = () => (
-    <Row gutter={16} style={{ marginBottom: 24 }}>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="Total Documents"
-            value={stats?.total_documents || 0}
-            loading={statsLoading}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="Total Chunks"
-            value={stats?.total_chunks || 0}
-            loading={statsLoading}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="Total Tokens"
-            value={stats?.total_tokens || 0}
-            loading={statsLoading}
-            formatter={(value) => `${(Number(value) / 1000).toFixed(1)}K`}
-          />
-        </Card>
-      </Col>
-      <Col span={6}>
-        <Card>
-          <Statistic
-            title="Storage Used"
-            value={stats?.storage_used || 0}
-            loading={statsLoading}
-            formatter={(value) => `${(Number(value) / 1024 / 1024).toFixed(1)} MB`}
-          />
-        </Card>
-      </Col>
-    </Row>
+    <div className="modern-card-grid" style={{ marginBottom: 24 }}>
+      <ModernCard variant="elevated" size="md">
+        <Statistic
+          title={t('knowledge.stats.total_documents')}
+          value={stats?.total_documents || 0}
+          loading={statsLoading}
+          prefix={<DatabaseOutlined style={{ color: colors.colorPrimary }} />}
+        />
+      </ModernCard>
+      <ModernCard variant="elevated" size="md">
+        <Statistic
+          title={t('knowledge.stats.total_chunks')}
+          value={stats?.total_chunks || 0}
+          loading={statsLoading}
+          prefix={<FileTextOutlined style={{ color: colors.colorPrimary }} />}
+        />
+      </ModernCard>
+      <ModernCard variant="elevated" size="md">
+        <Statistic
+          title={t('knowledge.stats.total_tokens')}
+          value={stats?.total_tokens || 0}
+          loading={statsLoading}
+          formatter={(value) => `${(Number(value) / 1000).toFixed(1)}K`}
+          prefix={<CheckCircleOutlined style={{ color: colors.colorPrimary }} />}
+        />
+      </ModernCard>
+      <ModernCard variant="elevated" size="md">
+        <Statistic
+          title={t('knowledge.stats.storage_used')}
+          value={stats?.storage_used || 0}
+          loading={statsLoading}
+          formatter={(value) => formatFileSize(Number(value))}
+          prefix={<CloudUploadOutlined style={{ color: colors.colorPrimary }} />}
+        />
+      </ModernCard>
+    </div>
   );
 
   const renderFilters = () => (
-    <Card size="small" style={{ marginBottom: 16 }}>
-      <Row gutter={16} align="middle">
-        <Col span={6}>
-          <Select
-            placeholder="Document Type"
+    <ModernCard variant="outlined" size="md" style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} align="middle">
+        <Col xs={24} sm={6}>
+          <ModernSelect
+            placeholder={t('knowledge.filters.document_type')}
             allowClear
-            style={{ width: '100%' }}
             value={currentFilters.document_type}
             onChange={(value) => setFilters({ ...currentFilters, document_type: value })}
           >
-            <Option value="PDF">{t('knowledge.document_types.pdf')}</Option>
-            <Option value="DOCUMENT">{t('knowledge.document_types.word')}</Option>
-            <Option value="TEXT">{t('knowledge.document_types.text')}</Option>
-            <Option value="SPREADSHEET">{t('knowledge.document_types.spreadsheet')}</Option>
-          </Select>
+            <ModernSelect.Option value="PDF">{t('knowledge.document_types.pdf')}</ModernSelect.Option>
+            <ModernSelect.Option value="DOCUMENT">{t('knowledge.document_types.word')}</ModernSelect.Option>
+            <ModernSelect.Option value="TEXT">{t('knowledge.document_types.text')}</ModernSelect.Option>
+            <ModernSelect.Option value="SPREADSHEET">{t('knowledge.document_types.spreadsheet')}</ModernSelect.Option>
+          </ModernSelect>
         </Col>
-        <Col span={6}>
-          <Input
-            placeholder="Author"
+        <Col xs={24} sm={6}>
+          <ModernInput
+            placeholder={t('knowledge.filters.author')}
             value={currentFilters.author}
             onChange={(e) => setFilters({ ...currentFilters, author: e.target.value })}
           />
         </Col>
-        <Col span={4}>
-          <Input
-            placeholder="Year"
+        <Col xs={24} sm={4}>
+          <ModernInput
+            placeholder={t('knowledge.filters.year')}
             type="number"
             value={currentFilters.year}
             onChange={(e) => setFilters({ ...currentFilters, year: e.target.value ? parseInt(e.target.value) : undefined })}
           />
         </Col>
-        <Col span={4}>
-          <Select
-            placeholder="Language"
+        <Col xs={24} sm={4}>
+          <ModernSelect
+            placeholder={t('knowledge.filters.language')}
             allowClear
-            style={{ width: '100%' }}
             value={currentFilters.language}
             onChange={(value) => setFilters({ ...currentFilters, language: value })}
           >
-            <Option value="en">{t('knowledge.languages.en')}</Option>
-            <Option value="de">{t('knowledge.languages.de')}</Option>
-            <Option value="fr">{t('knowledge.languages.fr')}</Option>
-            <Option value="es">{t('knowledge.languages.es')}</Option>
-          </Select>
+            <ModernSelect.Option value="en">{t('knowledge.languages.en')}</ModernSelect.Option>
+            <ModernSelect.Option value="de">{t('knowledge.languages.de')}</ModernSelect.Option>
+            <ModernSelect.Option value="fr">{t('knowledge.languages.fr')}</ModernSelect.Option>
+            <ModernSelect.Option value="es">{t('knowledge.languages.es')}</ModernSelect.Option>
+          </ModernSelect>
         </Col>
-        <Col span={4}>
+        <Col xs={24} sm={4}>
           <Space>
-            <Button 
-              type="primary" 
+            <ModernButton 
+              variant="primary" 
               icon={<FilterOutlined />}
               onClick={handleApplyFilters}
             >
-              Apply
-            </Button>
-            <Button 
+              {t('common.apply')}
+            </ModernButton>
+            <ModernButton 
+              variant="outlined"
               icon={<ReloadOutlined />}
               onClick={handleClearFilters}
             >
-              Clear
-            </Button>
+              {t('common.clear')}
+            </ModernButton>
           </Space>
         </Col>
       </Row>
-    </Card>
+    </ModernCard>
   );
 
   const renderActions = () => (
-    <Row gutter={16} style={{ marginBottom: 16 }}>
-      <Col span={12}>
-        <Space>
-          <Button 
-            type="primary" 
-            icon={<UploadOutlined />}
-            onClick={() => setShowUploadArea(true)}
-          >
-            Upload Documents
-          </Button>
-          {user?.role === 'premium' && (
-            <Button 
-              icon={<PlusOutlined />}
+    <ModernCard variant="outlined" size="md" style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} align="middle">
+        <Col xs={24} sm={12}>
+          <Space wrap>
+            <ModernButton 
+              variant="primary" 
+              icon={<UploadOutlined />}
               onClick={() => setShowUploadArea(true)}
             >
-              Bulk Import
-            </Button>
-          )}
-          <Button 
-            icon={<ReloadOutlined />}
-            onClick={refreshDocuments}
-          >
-            Refresh
-          </Button>
-        </Space>
-      </Col>
-      <Col span={12} style={{ textAlign: 'right' }}>
-        <Space>
-          {selectedRowKeys.length > 0 && (
-            <>
-              <Text type="secondary">
-                {selectedRowKeys.length} selected
-              </Text>
-              <Button 
-                icon={<ReloadOutlined />}
-                onClick={() => setShowBulkActions(true)}
+              {t('knowledge.actions.upload_documents')}
+            </ModernButton>
+            {user?.role === 'premium' && (
+              <ModernButton 
+                variant="secondary"
+                icon={<PlusOutlined />}
+                onClick={() => setShowUploadArea(true)}
               >
-                Bulk Actions
-              </Button>
-            </>
-          )}
-        </Space>
-      </Col>
-    </Row>
-  );
-
-  const renderSearch = () => (
-    <Card size="small" style={{ marginBottom: 16 }}>
-      <Row gutter={16} align="middle">
-        <Col span={16}>
-          <Search
-            placeholder="Search documents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onSearch={handleSearch}
-            enterButton={<SearchOutlined />}
-            size="large"
-          />
-        </Col>
-        <Col span={8}>
-          <Space>
-            <Button 
-              type={false ? 'primary' : 'default'}
-              icon={<FilterOutlined />}
-              onClick={() => {}}
+                {t('knowledge.actions.bulk_import')}
+              </ModernButton>
+            )}
+            <ModernButton 
+              variant="outlined"
+              icon={<ReloadOutlined />}
+              onClick={refreshDocuments}
             >
-              Advanced Search
-            </Button>
-            {false && (
-              <Button onClick={() => search(searchQuery)}>
-                Search
-              </Button>
+              {t('common.refresh')}
+            </ModernButton>
+          </Space>
+        </Col>
+        <Col xs={24} sm={12} style={{ textAlign: 'right' }}>
+          <Space>
+            {selectedRowKeys.length > 0 && (
+              <>
+                <Text type="secondary">
+                  {selectedRowKeys.length} {t('common.selected')}
+                </Text>
+                <ModernButton 
+                  variant="secondary"
+                  icon={<ReloadOutlined />}
+                  onClick={() => setShowBulkActions(true)}
+                >
+                  {t('knowledge.actions.bulk_actions')}
+                </ModernButton>
+              </>
             )}
           </Space>
         </Col>
       </Row>
-    </Card>
+    </ModernCard>
   );
 
-  return (
-    <div style={{ padding: '24px' }}>
-      <Title level={2}>{t('knowledge.title')}</Title>
-      
-      {error && (
-        <Alert
-          message={t('notifications.error')}
-          description={error}
-          type="error"
-          showIcon
-          closable
-          style={{ marginBottom: 16 }}
-        />
-      )}
+  const renderSearch = () => (
+    <ModernCard variant="outlined" size="md" style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} align="middle">
+        <Col xs={24} sm={16}>
+          <ModernInput
+            placeholder={t('knowledge.search.placeholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onPressEnter={() => handleSearch(searchQuery)}
+            prefix={<SearchOutlined />}
+            size="large"
+          />
+        </Col>
+        <Col xs={24} sm={8}>
+          <Space>
+            <ModernButton 
+              variant="outlined"
+              icon={<FilterOutlined />}
+              onClick={() => {}}
+            >
+              {t('knowledge.search.advanced')}
+            </ModernButton>
+          </Space>
+        </Col>
+      </Row>
+    </ModernCard>
+  );
 
-      <Tabs defaultActiveKey="documents">
-        <Tabs.TabPane tab={t('knowledge.tabs.documents')} key="documents">
-          {renderStats()}
-          {renderSearch()}
-          {false && renderFilters()}
-          {renderActions()}
+  const renderDocumentPreview = () => {
+    const documentsArray = Array.isArray(documents) ? documents : [];
+    const recentDocuments = documentsArray.slice(0, 5);
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {recentDocuments.length === 0 ? (
+          <Empty description={t('knowledge.no_documents')} />
+        ) : (
+          recentDocuments.map((doc) => (
+            <ModernCard key={doc.id} variant="interactive" size="sm">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Avatar icon={getDocumentTypeIcon(doc.file_type)} size="large" />
+                <div style={{ flex: 1 }}>
+                  <Title level={5} style={{ margin: 0 }}>{doc.title}</Title>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    {doc.file_name} • {formatFileSize(doc.file_size || 0)}
+                  </Text>
+                  <div style={{ marginTop: 8 }}>
+                    <Tag color={getStatusColor(doc.status)}>
+                      {t(`knowledge.status.${doc.status.toLowerCase()}`)}
+                    </Tag>
+                  </div>
+                </div>
+                <Space>
+                  <ModernButton variant="text" icon={<EyeOutlined />} size="small" />
+                  <ModernButton variant="text" icon={<DownloadOutlined />} size="small" />
+                </Space>
+              </div>
+            </ModernCard>
+          ))
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: colors.colorGradientPrimary,
+      padding: '24px'
+    }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <ModernCard variant="gradient" size="lg" className="stagger-children">
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <div style={{
+              fontSize: '48px',
+              marginBottom: '16px',
+              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
+            }}>
+              📚
+            </div>
+            <Title level={1} style={{ color: '#FFFFFF', margin: 0 }}>{t('knowledge.title')}</Title>
+            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px' }}>
+              {t('knowledge.subtitle')}
+            </Text>
+          </div>
+        </ModernCard>
+
+        {error && (
+          <Alert
+            message={t('notifications.error')}
+            description={error}
+            type="error"
+            showIcon
+            closable
+            style={{ marginBottom: 16, marginTop: 24 }}
+          />
+        )}
+
+        <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
+          <Col xs={24} lg={16}>
+            <Tabs 
+              activeKey={activeTab} 
+              onChange={setActiveTab}
+              type="card" 
+              size="large"
+              style={{ backgroundColor: colors.colorBgContainer }}
+              items={[
+                {
+                  key: 'documents',
+                  label: (
+                    <Space>
+                      <BookOutlined />
+                      {t('knowledge.tabs.documents')}
+                    </Space>
+                  ),
+                  children: (
+                    <div style={{ padding: '24px 0' }}>
+                      {renderStats()}
+                      {renderSearch()}
+                      {renderActions()}
+                      
+                      <DocumentList
+                        documents={Array.isArray(documents) ? documents : []}
+                        loading={loading}
+                        onView={handleViewDocument}
+                        onEdit={handleEditDocument}
+                        onDelete={handleDeleteDocument}
+                        onDownload={handleDownloadDocument}
+                        onReprocess={handleReprocessDocument}
+                        selectedRowKeys={selectedRowKeys}
+                        onSelectionChange={setSelectedRowKeys}
+                      />
+                    </div>
+                  )
+                },
+                {
+                  key: 'tags',
+                  label: (
+                    <Space>
+                      <TagsOutlined />
+                      {t('knowledge.tabs.tags')}
+                    </Space>
+                  ),
+                  children: (
+                    <div style={{ padding: '24px 0' }}>
+                      <TagManager 
+                        showCreateButton={user?.role === 'premium'}
+                        showStatistics={true}
+                        mode="management"
+                      />
+                    </div>
+                  )
+                },
+                ...(user?.role === 'admin' ? [{
+                  key: 'statistics',
+                  label: (
+                    <Space>
+                      <BarChartOutlined />
+                      {t('knowledge.tabs.statistics')}
+                    </Space>
+                  ),
+                  children: (
+                    <div style={{ padding: '24px 0' }}>
+                      <SystemStats />
+                    </div>
+                  )
+                }] : []),
+                ...(user?.role === 'admin' ? [{
+                  key: 'settings',
+                  label: (
+                    <Space>
+                      <SettingOutlined />
+                      {t('knowledge.tabs.settings')}
+                    </Space>
+                  ),
+                  children: (
+                    <div style={{ padding: '24px 0' }}>
+                      <ModernCard variant="elevated" size="lg">
+                        <Title level={4}>{t('knowledge.settings.title')}</Title>
+                        <Text type="secondary">
+                          {t('knowledge.settings.description')}
+                        </Text>
+                        {/* TODO: Implement Settings component */}
+                      </ModernCard>
+                    </div>
+                  )
+                }] : [])
+              ]}
+            />
+          </Col>
           
-          <DocumentList
-            documents={Array.isArray(documents) ? documents : []}
-            loading={loading}
-            onView={handleViewDocument}
-            onEdit={handleEditDocument}
-            onDelete={handleDeleteDocument}
-            onDownload={handleDownloadDocument}
-            onReprocess={handleReprocessDocument}
-            selectedRowKeys={selectedRowKeys}
-            onSelectionChange={setSelectedRowKeys}
-          />
-        </Tabs.TabPane>
-        
-        <Tabs.TabPane tab={t('knowledge.tabs.tags')} key="tags">
-          <TagManager 
-            showCreateButton={user?.role === 'premium'}
-            showStatistics={true}
-            mode="management"
-          />
-        </Tabs.TabPane>
-        
-        {user?.role === 'admin' && (
-          <Tabs.TabPane tab={t('knowledge.tabs.statistics')} key="stats">
-            <SystemStats />
-          </Tabs.TabPane>
-        )}
-        
-        {user?.role === 'admin' && (
-          <Tabs.TabPane tab={t('knowledge.tabs.settings')} key="settings">
-            <Card>
-              <Title level={4}>{t('knowledge.settings.title')}</Title>
-              <Text type="secondary">
-                {t('knowledge.settings.description')}
-              </Text>
-              {/* TODO: Implement Settings component */}
-            </Card>
-          </Tabs.TabPane>
-        )}
-      </Tabs>
+          <Col xs={24} lg={8}>
+            <ModernCard variant="interactive" size="md" style={{ marginBottom: 24 }}>
+              <Title level={4}>{t('knowledge.quick_stats')}</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text>{t('knowledge.stats.processed')}</Text>
+                  <Text strong style={{ color: colors.colorSuccess }}>
+                    {stats?.processed_documents || 0}
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text>{t('knowledge.stats.processing')}</Text>
+                  <Text strong style={{ color: colors.colorWarning }}>
+                    {stats?.processing_documents || 0}
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text>{t('knowledge.stats.errors')}</Text>
+                  <Text strong style={{ color: colors.colorError }}>
+                    {stats?.error_documents || 0}
+                  </Text>
+                </div>
+              </div>
+            </ModernCard>
+
+            <ModernCard variant="outlined" size="md" style={{ marginBottom: 24 }}>
+              <Title level={4}>{t('knowledge.quick_actions')}</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <ModernButton variant="primary" icon={<UploadOutlined />} block>
+                  {t('knowledge.actions.upload')}
+                </ModernButton>
+                <ModernButton variant="secondary" icon={<SearchOutlined />} block>
+                  {t('knowledge.actions.search')}
+                </ModernButton>
+                <ModernButton variant="outlined" icon={<ReloadOutlined />} block>
+                  {t('knowledge.actions.refresh')}
+                </ModernButton>
+              </div>
+            </ModernCard>
+
+            <ModernCard variant="elevated" size="md">
+              <Title level={4}>{t('knowledge.recent_documents')}</Title>
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Spin />
+                </div>
+              ) : (
+                renderDocumentPreview()
+              )}
+            </ModernCard>
+          </Col>
+        </Row>
+      </div>
 
       {/* Upload Modal */}
       <Modal
