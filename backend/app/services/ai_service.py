@@ -382,10 +382,11 @@ class AIService:
     def health_check(self) -> dict[str, Any]:
         """Health check for AI service."""
         return {
+            "status": "healthy" if self.enabled else "disabled",
             "enabled": self.enabled,
             "litellm_available": LITELLM_AVAILABLE,
-            "providers": len([p for p in self.providers.values() if p["enabled"]]),
-            "models": len(self.models),
+            "providers_count": len([p for p in self.providers.values() if p.get("enabled", True)]),
+            "models_count": len(self.models),
             "total_cost": self.cost_tracker.get_total_cost(),
         }
 
