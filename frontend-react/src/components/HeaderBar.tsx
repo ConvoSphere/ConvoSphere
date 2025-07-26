@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, Typography, Badge } from 'antd';
 import { BellOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import ThemeSwitcher from './ThemeSwitcher';
 import LanguageSwitcher from './LanguageSwitcher';
 import LogoutButton from './LogoutButton';
@@ -10,6 +11,7 @@ import { useThemeStore } from '../store/themeStore';
 const { Text, Title } = Typography;
 
 const HeaderBar: React.FC = () => {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
@@ -74,7 +76,7 @@ const HeaderBar: React.FC = () => {
               fontWeight: 600,
             }}
           >
-            ConvoSphere
+            {t('app.title')}
           </Title>
           <Text 
             style={{ 
@@ -82,7 +84,7 @@ const HeaderBar: React.FC = () => {
               color: colors.colorTextSecondary,
             }}
           >
-            AI Assistant Platform
+            {t('app.subtitle')}
           </Text>
         </div>
       </div>

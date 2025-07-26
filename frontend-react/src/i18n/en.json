@@ -1,5 +1,6 @@
 {
   "app.title": "ConvoSphere AI Assistant Platform",
+  "app.subtitle": "AI Assistant Platform",
   "theme.light": "Light Mode",
   "theme.dark": "Dark Mode",
   "language.en": "English",
@@ -28,7 +29,25 @@
     "upload": "Upload",
     "download": "Download",
     "sources": "Sources",
-    "or": "or"
+    "or": "or",
+    "loading_app": "Loading ConvoSphere...",
+    "error_something_wrong": "Something went wrong",
+    "error_unexpected": "We're sorry, but something unexpected happened while loading the application.",
+    "try_again": "Try Again",
+    "error_details": "Error Details",
+    "refresh_page": "Refresh Page",
+    "application_error": "Application Error",
+    "failed_to_load": "Failed to load the application. Please refresh the page.",
+    "open": "Open",
+    "run": "Run",
+    "clear_all": "Clear All",
+    "remove": "Remove",
+    "no_results": "No results found",
+    "sending": "Sending...",
+    "no_messages": "No messages yet",
+    "start_conversation": "Start a conversation",
+    "loading_messages": "Loading more messages...",
+    "sending_message": "Sending message..."
   },
   "settings.title": "Settings",
   "settings.language": "Language",
@@ -69,6 +88,22 @@
   "knowledge.processing": "Knowledge Base is enabled. Your messages will be enhanced with relevant document context",
   "knowledge.no_results": "No documents found",
   "knowledge.delete_confirm": "Are you sure you want to delete this document?",
+  "knowledge.context_title": "Knowledge Context",
+  "knowledge.search_documents": "Search documents...",
+  "knowledge.selected_documents": "Selected Documents",
+  "knowledge.available_documents": "Available Documents",
+  "knowledge.document_types": {
+    "pdf": "PDF",
+    "word": "Word Document",
+    "text": "Text File",
+    "spreadsheet": "Spreadsheet"
+  },
+  "knowledge.languages": {
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish"
+  },
   "tools.title": "Tools",
   "tools.run": "Run",
   "tools.result": "Result",
@@ -561,5 +596,60 @@
     "lastEndDate": "Last End Date",
     "lastCreatedDate": "Last Created Date",
     "lastModifiedDate": "Last Modified Date"
+  },
+  "system": {
+    "status": {
+      "ok": "OK",
+      "error": "Error",
+      "degraded": "Degraded"
+    },
+    "metrics": {
+      "cpu_usage": "CPU Usage (%)",
+      "ram_usage": "RAM Usage (%)",
+      "database": "Database",
+      "redis": "Redis",
+      "weaviate": "Weaviate",
+      "trace_id": "Trace ID",
+      "system_status": "System Status"
+    }
+  },
+  "sso": {
+    "status": {
+      "not_configured": "Not Configured",
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "loading_providers": "Loading SSO providers...",
+    "configuration": {
+      "client_id": "Client ID:",
+      "redirect_uri": "Redirect URI:",
+      "scopes": "Scopes:",
+      "metadata_url": "Metadata URL:"
+    },
+    "help": {
+      "enable_disable": "• Enable/disable providers using the toggle switch",
+      "view_config": "• View configuration details for each provider",
+      "test_login": "• Test login flows to verify provider setup",
+      "configure_env": "• Configure providers in your environment variables"
+    }
+  },
+  "performance": {
+    "metrics": {
+      "fcp": "FCP",
+      "lcp": "LCP",
+      "cls": "CLS"
+    },
+    "labels": {
+      "entries": "Entries",
+      "size": "Size",
+      "hit_rate": "Hit Rate",
+      "status": "Status",
+      "quality": "Quality",
+      "queue": "Queue",
+      "active": "Active",
+      "tasks": "Tasks",
+      "loaded": "Loaded",
+      "active_loads": "Active Loads"
+    }
   }
 } 

@@ -8,6 +8,7 @@ import {
   Input,
   message
 } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { 
   BookOutlined, 
   SearchOutlined
@@ -30,6 +31,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   selectedDocuments = [],
   maxDocuments = 5
 }) => {
+  const { t } = useTranslation();
   const { documents } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -92,7 +94,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
       <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <Title level={4} style={{ margin: 0 }}>
-            <BookOutlined /> Knowledge Context
+            <BookOutlined /> {t('knowledge.context_title')}
           </Title>
         </div>
       </div>
@@ -100,7 +102,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
       {/* Search */}
       <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
         <Input
-          placeholder="Search documents..."
+          placeholder={t('knowledge.search_documents')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           prefix={<SearchOutlined />}
@@ -113,7 +115,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
         <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <Text strong style={{ fontSize: '12px' }}>
-              Selected Documents ({selectedDocuments.length})
+              {t('knowledge.selected_documents')} ({selectedDocuments.length})
             </Text>
             <Button 
               type="text" 
@@ -123,7 +125,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
                 message.info('Clear all coming soon');
               }}
             >
-              Clear All
+              {t('common.clear_all')}
             </Button>
           </div>
           <List
@@ -145,7 +147,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
                       message.info('Remove coming soon');
                     }}
                   >
-                    Remove
+                    {t('common.remove')}
                   </Button>
                 ]}
               >
@@ -163,14 +165,14 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', padding: '16px 16px 0' }}>
           <Text strong style={{ fontSize: '12px' }}>
-            Available Documents ({filteredDocuments.length})
+            {t('knowledge.available_documents')} ({filteredDocuments.length})
           </Text>
         </div>
 
         <div style={{ height: 'calc(100% - 30px)', overflowY: 'auto', padding: '0 16px 16px' }}>
           {filteredDocuments.length === 0 ? (
             <div style={{ padding: '20px 0' }}>
-              <Text type="secondary">No documents found</Text>
+              <Text type="secondary">{t('common.no_results')}</Text>
             </div>
           ) : (
             <List
