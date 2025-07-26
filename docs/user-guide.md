@@ -66,6 +66,13 @@ The Dashboard is your central hub providing:
 - **Search**: Find specific messages or topics
 - **Conversation Threading**: Organized message flows
 
+#### **Real-time Features** 🟡
+- **Instant Delivery**: Messages appear immediately via WebSocket ✅
+- **Typing Indicators**: See when AI assistants are responding ✅
+- **Status Updates**: Real-time connection and processing status ✅
+- **Live Notifications**: Instant alerts for new messages ✅
+- **Streaming Responses**: Real-time display of AI responses as they're generated 🟡 (Basis implementiert, vollständige Streaming-Logik in Entwicklung)
+
 ### 🚧 **Planned Chat Features**
 - **Voice Input**: Speech-to-text functionality *(UI ready, implementation pending)*
 - **Message Export**: Download conversation history *(UI ready, backend pending)*
@@ -88,22 +95,22 @@ The Dashboard is your central hub providing:
    - **Category**: Document classification
 4. **Processing**: Automatic text extraction and chunking
 
-#### **Advanced Upload Features** ✅
-- **Bulk Operations**: Upload dozens of files at once
-- **Progress Tracking**: Real-time upload and processing status
-- **Error Handling**: Clear feedback on failed uploads
-- **Duplicate Detection**: Automatic detection of duplicate content
-- **Metadata Auto-extraction**: Automatic title and description generation
-- **Audio Processing**: MP3 and WAV files with speech-to-text transcription
+#### **Advanced Upload Features** 🟡
+- **Bulk Operations**: Upload dozens of files at once ✅
+- **Progress Tracking**: Real-time upload and processing status ✅
+- **Error Handling**: Clear feedback on failed uploads ✅
+- **Duplicate Detection**: Automatic detection of duplicate content 🟡 (Basis implementiert, vollständige Logik in Entwicklung)
+- **Metadata Auto-extraction**: Automatic title and description generation 🟡 (Basis implementiert, vollständige Logik in Entwicklung)
+- **Audio Processing**: MP3 and WAV files with speech-to-text transcription ✅
 
 ### Document Organization ✅
 
-#### **Tag Management**
-- **Tag Creation**: Create custom tags for organization
-- **Tag Clouds**: Visual representation of tag popularity
-- **Tag Statistics**: Usage analytics and insights
-- **Bulk Tagging**: Apply tags to multiple documents
-- **System Tags**: Pre-defined organizational categories
+#### **Tag Management** 🟡
+- **Tag Creation**: Create custom tags for organization 🟡 (UI vorhanden, Backend-Logik in Entwicklung)
+- **Tag Clouds**: Visual representation of tag popularity ❌ (Geplant für zukünftige Versionen)
+- **Tag Statistics**: Usage analytics and insights ❌ (Geplant für zukünftige Versionen)
+- **Bulk Tagging**: Apply tags to multiple documents 🟡 (UI vorhanden, Backend-Logik in Entwicklung)
+- **System Tags**: Pre-defined organizational categories ❌ (Geplant für zukünftige Versionen)
 
 #### **Advanced Search**
 - **Semantic Search**: AI-powered content discovery
@@ -113,13 +120,13 @@ The Dashboard is your central hub providing:
 - **Advanced Operators**: Complex search queries
 - **Search History**: Previous search results and queries
 
-#### **Document Actions**
-- **View**: Preview document content and metadata
-- **Edit**: Modify document information and tags
-- **Download**: Retrieve original files
-- **Delete**: Remove documents (with confirmation)
-- **Reprocess**: Re-extract and re-chunk content
-- **Share**: Control document access and permissions
+#### **Document Actions** 🟡
+- **View**: Preview document content and metadata ❌ (Geplant für zukünftige Versionen)
+- **Edit**: Modify document information and tags 🟡 (UI vorhanden, Backend-Logik in Entwicklung)
+- **Download**: Retrieve original files ❌ (Geplant für zukünftige Versionen)
+- **Delete**: Remove documents (with confirmation) ✅
+- **Reprocess**: Re-extract and re-chunk content ✅
+- **Share**: Control document access and permissions ❌ (Geplant für zukünftige Versionen)
 
 ### Role-based Access ✅
 
@@ -183,11 +190,13 @@ ConvoSphere implements a comprehensive role-based access system:
 
 ## 🔧 Tools & Integrations
 
-### Model Context Protocol (MCP) Tools ✅
+### Model Context Protocol (MCP) Tools 🟡
 
 Navigate to **Tools** (`/tools`) or **MCP Tools** (`/mcp-tools`) to access:
 
-**Note**: Tools pages currently display demo/development data for UI demonstration.
+**Status**: Basis-UI implementiert, vollständige Tool-Integration in Entwicklung.
+
+**Hinweis**: Tools-Seiten zeigen derzeit Demo/Entwicklungsdaten für UI-Demonstration. Vollständige Tool-Execution und MCP-Integration sind in Entwicklung.
 
 #### **Available Tool Categories**
 - **Search Tools**: Web search, document search, semantic search

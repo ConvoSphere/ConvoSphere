@@ -63,7 +63,7 @@ The AI Assistant Platform follows a **modular, scalable architecture** designed 
 
 ### Frontend Layer (NiceGUI)
 
-The frontend is built using **React 18** with TypeScript, providing a modern, responsive web interface with real-time capabilities and enterprise-grade UI components.
+The frontend is built using **React 19.1.0** with TypeScript, providing a modern, responsive web interface with real-time capabilities and enterprise-grade UI components.
 
 #### Frontend Structure
 ```
@@ -122,12 +122,14 @@ frontend-react/
 ```
 
 #### Frontend Features
-- **Modern React**: TypeScript, React 18 with concurrent features
-- **Enterprise UI**: Ant Design components with responsive design
-- **State Management**: Zustand for lightweight state management
-- **Routing**: React Router with protected routes
-- **Internationalization**: i18next with EN/DE support
+- **Modern React**: TypeScript, React 19.1.0 with concurrent features
+- **Build System**: Vite 7.0.4 for fast development and optimized builds
+- **Enterprise UI**: Ant Design 5.26.6 components with responsive design
+- **State Management**: Zustand 5.0.6 for lightweight state management
+- **Routing**: React Router 7.7.0 with protected routes
+- **Internationalization**: i18next 25.3.2 with EN/DE support
 - **Performance**: Lazy loading, code splitting, performance monitoring
+- **Testing**: Vitest 2.1.8 + Jest 30.0.4 for comprehensive testing
 - **Accessibility**: WCAG 2.1 AA compliant interface
 - **Theme System**: Light/dark themes with dynamic switching
 - **Error Handling**: Error boundaries and robust error management
