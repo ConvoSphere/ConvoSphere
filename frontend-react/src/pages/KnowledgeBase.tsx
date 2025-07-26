@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Card, 
   Row, 
@@ -35,6 +36,7 @@ const { Option } = Select;
 const { Title, Text } = Typography;
 
 const KnowledgeBase: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const { 
     documents, 
@@ -205,10 +207,10 @@ const KnowledgeBase: React.FC = () => {
             value={currentFilters.document_type}
             onChange={(value) => setFilters({ ...currentFilters, document_type: value })}
           >
-            <Option value="PDF">PDF</Option>
-            <Option value="DOCUMENT">Word Document</Option>
-            <Option value="TEXT">Text File</Option>
-            <Option value="SPREADSHEET">Spreadsheet</Option>
+            <Option value="PDF">{t('knowledge.document_types.pdf')}</Option>
+            <Option value="DOCUMENT">{t('knowledge.document_types.word')}</Option>
+            <Option value="TEXT">{t('knowledge.document_types.text')}</Option>
+            <Option value="SPREADSHEET">{t('knowledge.document_types.spreadsheet')}</Option>
           </Select>
         </Col>
         <Col span={6}>
@@ -234,10 +236,10 @@ const KnowledgeBase: React.FC = () => {
             value={currentFilters.language}
             onChange={(value) => setFilters({ ...currentFilters, language: value })}
           >
-            <Option value="en">English</Option>
-            <Option value="de">German</Option>
-            <Option value="fr">French</Option>
-            <Option value="es">Spanish</Option>
+            <Option value="en">{t('knowledge.languages.en')}</Option>
+            <Option value="de">{t('knowledge.languages.de')}</Option>
+            <Option value="fr">{t('knowledge.languages.fr')}</Option>
+            <Option value="es">{t('knowledge.languages.es')}</Option>
           </Select>
         </Col>
         <Col span={4}>
@@ -343,11 +345,11 @@ const KnowledgeBase: React.FC = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>Knowledge Base</Title>
+      <Title level={2}>{t('knowledge.title')}</Title>
       
       {error && (
         <Alert
-          message="Error"
+          message={t('notifications.error')}
           description={error}
           type="error"
           showIcon
@@ -357,7 +359,7 @@ const KnowledgeBase: React.FC = () => {
       )}
 
       <Tabs defaultActiveKey="documents">
-        <Tabs.TabPane tab="Documents" key="documents">
+        <Tabs.TabPane tab={t('knowledge.tabs.documents')} key="documents">
           {renderStats()}
           {renderSearch()}
           {false && renderFilters()}
@@ -376,7 +378,7 @@ const KnowledgeBase: React.FC = () => {
           />
         </Tabs.TabPane>
         
-        <Tabs.TabPane tab="Tags" key="tags">
+        <Tabs.TabPane tab={t('knowledge.tabs.tags')} key="tags">
           <TagManager 
             showCreateButton={user?.role === 'premium'}
             showStatistics={true}
@@ -385,17 +387,17 @@ const KnowledgeBase: React.FC = () => {
         </Tabs.TabPane>
         
         {user?.role === 'admin' && (
-          <Tabs.TabPane tab="Statistics" key="stats">
+          <Tabs.TabPane tab={t('knowledge.tabs.statistics')} key="stats">
             <SystemStats />
           </Tabs.TabPane>
         )}
         
         {user?.role === 'admin' && (
-          <Tabs.TabPane tab="Settings" key="settings">
+          <Tabs.TabPane tab={t('knowledge.tabs.settings')} key="settings">
             <Card>
-              <Title level={4}>Knowledge Base Settings</Title>
+              <Title level={4}>{t('knowledge.settings.title')}</Title>
               <Text type="secondary">
-                Configure system settings and preferences
+                {t('knowledge.settings.description')}
               </Text>
               {/* TODO: Implement Settings component */}
             </Card>
@@ -405,7 +407,7 @@ const KnowledgeBase: React.FC = () => {
 
       {/* Upload Modal */}
       <Modal
-        title="Upload Documents"
+        title={t('knowledge.upload.title')}
         open={showUploadArea}
         onCancel={() => setShowUploadArea(false)}
         footer={null}

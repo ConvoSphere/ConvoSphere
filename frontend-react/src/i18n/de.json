@@ -80,8 +80,18 @@
   "chat.error": "Fehler beim Laden der Nachrichten",
   "chat.typing": "Assistent schreibt...",
   "chat.new_conversation": "Neue Unterhaltung",
+  "conversations.title": "Unterhaltungen",
+  "conversations.load_failed": "Unterhaltungen konnten nicht geladen werden",
+  "conversations.load_detail_failed": "Unterhaltung konnte nicht geladen werden",
+  "mcp_tools.title": "MCP Tools",
+  "mcp_tools.load_failed": "MCP Tools konnten nicht geladen werden",
+  "mcp_tools.execution_failed": "MCP Tool Ausführung fehlgeschlagen",
+  "mcp_tools.result": "Ergebnis",
+  "mcp_tools.success": "Erfolgreich",
+  "mcp_tools.parameter_label": "Parameter (Platzhalter)",
   "knowledge.title": "Knowledge Base",
   "knowledge.upload": "Dokument hochladen",
+  "knowledge.upload.title": "Dokumente hochladen",
   "knowledge.search": "Dokumente durchsuchen...",
   "knowledge.upload_success": "Dokument erfolgreich hochgeladen",
   "knowledge.upload_failed": "Upload fehlgeschlagen",
@@ -92,6 +102,16 @@
   "knowledge.search_documents": "Dokumente durchsuchen...",
   "knowledge.selected_documents": "Ausgewählte Dokumente",
   "knowledge.available_documents": "Verfügbare Dokumente",
+  "knowledge.tabs": {
+    "documents": "Dokumente",
+    "tags": "Tags",
+    "statistics": "Statistiken",
+    "settings": "Einstellungen"
+  },
+  "knowledge.settings": {
+    "title": "Knowledge Base Einstellungen",
+    "description": "Systemeinstellungen und Präferenzen konfigurieren"
+  },
   "knowledge.document_types": {
     "pdf": "PDF",
     "word": "Word-Dokument",
@@ -598,6 +618,8 @@
     "lastModifiedDate": "Letztes Änderungsdatum"
   },
   "system": {
+    "title": "Systemstatus & Performance",
+    "load_failed": "Systemstatus konnte nicht geladen werden",
     "status": {
       "ok": "OK",
       "error": "Fehler",

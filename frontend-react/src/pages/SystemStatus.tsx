@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, Row, Col, Tag, Spin, Alert } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -19,6 +20,7 @@ interface StatusData {
 const MAX_POINTS = 60; // z.B. 5 Minuten bei 5s Intervall
 
 const SystemStatus: React.FC = () => {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
   const [data, setData] = useState<StatusData | null>(null);
@@ -42,7 +44,7 @@ const SystemStatus: React.FC = () => {
         if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
         setError(null);
       } catch {
-        setError('Failed to load system status');
+        setError(t('system.load_failed'));
       } finally {
         setLoading(false);
       }
@@ -62,7 +64,7 @@ const SystemStatus: React.FC = () => {
         if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
         setError(null);
       } catch {
-        setError('Failed to load system status');
+        setError(t('system.load_failed'));
       } finally {
         setLoading(false);
       }
@@ -71,20 +73,20 @@ const SystemStatus: React.FC = () => {
     return () => clearInterval(timer);
   }, [isAdmin]);
 
-  if (!isAdmin) return <Alert type="error" message="Access denied" showIcon style={{ margin: 32 }} />;
+  if (!isAdmin) return <Alert type="error" message={t('errors.forbidden')} showIcon style={{ margin: 32 }} />;
   if (loading) return <Spin style={{ margin: 64 }} />;
   if (error) return <Alert type="error" message={error} showIcon style={{ margin: 32 }} />;
   if (!data) return null;
 
   const statusTag = (healthy: boolean) => (
-    <Tag color={healthy ? 'green' : 'red'}>{healthy ? 'OK' : 'Fehler'}</Tag>
+    <Tag color={healthy ? 'green' : 'red'}>{healthy ? t('system.status.ok') : t('system.status.error')}</Tag>
   );
 
   return (
-    <Card title="Systemstatus & Performance" style={{ maxWidth: 1000, margin: 'auto' }}>
+    <Card title={t('system.title')} style={{ maxWidth: 1000, margin: 'auto' }}>
       <Row gutter={24}>
         <Col span={12}>
-          <h4>CPU-Auslastung (%)</h4>
+          <h4>{t('system.metrics.cpu_usage')}</h4>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={cpuHistory.current} margin={{ left: 0, right: 0, top: 8, bottom: 8 }}>
               <XAxis dataKey="time" minTickGap={20} />
@@ -96,7 +98,7 @@ const SystemStatus: React.FC = () => {
           </ResponsiveContainer>
         </Col>
         <Col span={12}>
-          <h4>RAM-Auslastung (%)</h4>
+          <h4>{t('system.metrics.ram_usage')}</h4>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={ramHistory.current} margin={{ left: 0, right: 0, top: 8, bottom: 8 }}>
               <XAxis dataKey="time" minTickGap={20} />
@@ -110,25 +112,25 @@ const SystemStatus: React.FC = () => {
       </Row>
       <Row gutter={24} style={{ marginTop: 32 }}>
         <Col span={6}>
-          <h4>Datenbank</h4>
+          <h4>{t('system.metrics.database')}</h4>
           {statusTag(data.database.healthy)}
         </Col>
         <Col span={6}>
-          <h4>Redis</h4>
+          <h4>{t('system.metrics.redis')}</h4>
           {statusTag(data.redis.healthy)}
         </Col>
         <Col span={6}>
-          <h4>Weaviate</h4>
+          <h4>{t('system.metrics.weaviate')}</h4>
           {statusTag(data.weaviate.healthy)}
         </Col>
         <Col span={6}>
-          <h4>Trace-ID</h4>
+          <h4>{t('system.metrics.trace_id')}</h4>
           <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{data.tracing.trace_id || '-'}</span>
         </Col>
       </Row>
       <Row style={{ marginTop: 32 }}>
         <Col span={24}>
-          <h4>Systemstatus: {data.status === 'ok' ? <Tag color="green">OK</Tag> : <Tag color="orange">Degraded</Tag>}</h4>
+          <h4>{t('system.metrics.system_status')}: {data.status === 'ok' ? <Tag color="green">{t('system.status.ok')}</Tag> : <Tag color="orange">{t('system.status.degraded')}</Tag>}</h4>
         </Col>
       </Row>
     </Card>
