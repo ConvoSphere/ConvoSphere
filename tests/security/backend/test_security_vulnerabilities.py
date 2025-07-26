@@ -1,6 +1,7 @@
 """
 Security tests for identifying vulnerabilities.
 """
+
 import pytest
 
 
@@ -182,7 +183,9 @@ class TestInputValidation:
         ]
 
         for payload in payloads:
-            response = client.get(f"/api/documents/{payload}", headers=test_user_headers)
+            response = client.get(
+                f"/api/documents/{payload}", headers=test_user_headers
+            )
             # Should not allow access to system files
             assert response.status_code in [400, 404, 422]
 

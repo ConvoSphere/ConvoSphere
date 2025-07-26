@@ -7,7 +7,7 @@ session storage, validation, security features, and multi-device support.
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -85,7 +85,7 @@ class SessionData:
     @property
     def is_expired(self) -> bool:
         """Check if session is expired."""
-        return datetime.now() > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
     @property
     def is_inactive(self) -> bool:
@@ -94,7 +94,7 @@ class SessionData:
             return True
 
         inactivity_threshold = timedelta(hours=settings.SESSION_INACTIVITY_HOURS)
-        return datetime.now() - self.last_activity > inactivity_threshold
+        return datetime.now(UTC) - self.last_activity > inactivity_threshold
 
 
 class DeviceInfo:
@@ -185,7 +185,7 @@ class SessionManager:
             device_info = DeviceInfo.extract_from_request(request)
 
             # Set session expiration
-            created_at = datetime.now()
+            created_at = datetime.now(UTC)
             expires_at = created_at + timedelta(hours=settings.SESSION_TIMEOUT_HOURS)
 
             # Create session data
@@ -246,7 +246,7 @@ class SessionManager:
                 return None
 
             # Update last activity
-            session_data.last_activity = datetime.now()
+            session_data.last_activity = datetime.now(UTC)
             self._update_session_activity(session_id, session_data.last_activity)
 
             return session_data
@@ -314,10 +314,10 @@ class SessionManager:
                 return None
 
             # Extend session expiration
-            session_data.expires_at = datetime.now() + timedelta(
+            session_data.expires_at = datetime.now(UTC) + timedelta(
                 hours=settings.SESSION_TIMEOUT_HOURS,
             )
-            session_data.last_activity = datetime.now()
+            session_data.last_activity = datetime.now(UTC)
 
             # Update session in Redis
             self._store_session(session_data)
@@ -377,7 +377,7 @@ class SessionManager:
                 "active_sessions": active_sessions,
                 "expired_sessions": expired_sessions,
                 "total_users_with_sessions": total_users,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:

@@ -6,7 +6,7 @@ LDAP, SAML, and OAuth providers with user management and group synchronization.
 """
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user
@@ -153,7 +153,6 @@ async def get_ldap_user_info(
         sso_manager = get_sso_manager()
         return await sso_manager.get_user_info("ldap", str(current_user.id), db)
 
-
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
@@ -182,7 +181,7 @@ async def sync_ldap_groups(
         return {
             "message": "Groups synchronized successfully",
             "groups": groups,
-            "synced_at": datetime.now().isoformat(),
+            "synced_at": datetime.now(UTC).isoformat(),
         }
 
     except GroupSyncError as e:
@@ -299,7 +298,6 @@ async def saml_metadata():
 
         # Generate SP metadata
         return entity_descriptor(provider.saml_config)
-
 
     except SSOConfigurationError as e:
         raise HTTPException(
@@ -422,7 +420,6 @@ async def get_oauth_user_info(
             db,
         )
 
-
     except UserNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except SSOConfigurationError as e:
@@ -496,7 +493,7 @@ async def generic_sync_groups(
             "message": "Groups synchronized successfully",
             "provider": provider_name,
             "groups": groups,
-            "synced_at": datetime.now().isoformat(),
+            "synced_at": datetime.now(UTC).isoformat(),
         }
 
     except GroupSyncError as e:
@@ -594,7 +591,7 @@ async def sync_sso_user(
             "provider": provider_name,
             "user_info": user_info,
             "groups": groups,
-            "synced_at": datetime.now().isoformat(),
+            "synced_at": datetime.now(UTC).isoformat(),
         }
 
     except UserNotFoundError as e:
@@ -617,7 +614,7 @@ async def sso_health_check():
         health_status = {
             "status": "healthy",
             "providers": [],
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         for provider in providers:
@@ -635,7 +632,7 @@ async def sso_health_check():
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
 
@@ -657,7 +654,7 @@ async def reload_sso_config(
         # For now, return success message
         return {
             "message": "SSO configuration reloaded successfully",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     except Exception as e:

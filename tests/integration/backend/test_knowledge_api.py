@@ -10,6 +10,10 @@ import tempfile
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy.orm import Session
+
 from backend.app.core.security import create_access_token
 from backend.app.models.knowledge import (
     Document,
@@ -19,9 +23,6 @@ from backend.app.models.knowledge import (
     Tag,
 )
 from backend.app.models.user import User
-from fastapi.testclient import TestClient
-from main import app
-from sqlalchemy.orm import Session
 
 client = TestClient(app)
 

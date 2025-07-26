@@ -43,6 +43,8 @@ class AuditService:
         """Apply retention policies to audit logs."""
         return self.retention_manager.apply_policies()
 
-    def get_audit_report(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def get_audit_report(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Generate an audit report for the specified period."""
         return self.logger.generate_report(start_date, end_date)

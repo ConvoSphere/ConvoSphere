@@ -9,7 +9,7 @@ import hashlib
 import json
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -70,8 +70,8 @@ class SessionManager:
             "user_id": user_id,
             "ip_address": self._get_client_ip(request),
             "user_agent": request.headers.get("user-agent"),
-            "created_at": datetime.now().isoformat(),
-            "last_activity": datetime.now().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
+            "last_activity": datetime.now(UTC).isoformat(),
             "login_count": 1,
         }
 
@@ -110,14 +110,14 @@ class SessionManager:
                         "session_id": session_id,
                     },
                     threat_level=ThreatLevel.HIGH,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                     session_id=session_id,
                 ),
             )
             return False
 
         # Update last activity
-        session["last_activity"] = datetime.now().isoformat()
+        session["last_activity"] = datetime.now(UTC).isoformat()
         self.redis.setex(session_key, self.session_timeout, json.dumps(session))
 
         return True
@@ -172,7 +172,7 @@ class RateLimiter:
                         "current_requests": len(requests),
                     },
                     threat_level=ThreatLevel.MEDIUM,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                 ),
             )
 
@@ -248,7 +248,7 @@ class IPWhitelistManager:
                 user_agent=None,
                 details={"reason": reason, "duration": duration},
                 threat_level=ThreatLevel.HIGH,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
             ),
         )
 
@@ -307,7 +307,7 @@ class ThreatDetector:
                         "new_ip": ip_address,
                     },
                     threat_level=ThreatLevel.MEDIUM,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                 ),
             )
 
@@ -322,7 +322,7 @@ class ThreatDetector:
                     user_agent=request.headers.get("user-agent"),
                     details={"recent_logins": len(recent_logins)},
                     threat_level=ThreatLevel.HIGH,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                 ),
             )
 
@@ -350,7 +350,7 @@ class ThreatDetector:
                     user_agent=request.headers.get("user-agent"),
                     details={"action": action, "user_role": user.role},
                     threat_level=ThreatLevel.HIGH,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(UTC),
                 ),
             )
 
@@ -366,7 +366,7 @@ class ThreatDetector:
 
         # Check for unusual activity patterns
         user_activity = self._get_user_activity_pattern(user.id)
-        current_time = datetime.now()
+        current_time = datetime.now(UTC)
 
         # Check for activity outside normal hours
         if user_activity and "normal_hours" in user_activity:
@@ -482,7 +482,7 @@ class SecurityManager:
                 user_agent=None,
                 details={"duration": duration, "reason": "security_threat"},
                 threat_level=ThreatLevel.HIGH,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
             ),
         )
 

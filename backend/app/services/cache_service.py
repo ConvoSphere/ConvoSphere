@@ -7,7 +7,7 @@ AI responses, tool results, and other frequently accessed data.
 
 import json
 import pickle
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import redis.asyncio as redis
@@ -116,12 +116,12 @@ class CacheEntry(BaseModel):
         """Check if entry is expired."""
         if self.expires_at is None:
             return False
-        return datetime.now() > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
     def increment_access(self) -> None:
         """Increment access count and update last accessed."""
         self.access_count += 1
-        self.last_accessed = datetime.now()
+        self.last_accessed = datetime.now(UTC)
 
     model_config = {
         "validate_assignment": True,
@@ -257,7 +257,7 @@ class CacheService:
             # Check if expired
             if isinstance(cached_entry, dict) and "expires_at" in cached_entry:
                 expires_at = datetime.fromisoformat(cached_entry["expires_at"])
-                if datetime.now() > expires_at:
+                if datetime.now(UTC) > expires_at:
                     await self.delete(cache_key)
                     self.stats["misses"] += 1
                     return None
@@ -265,7 +265,7 @@ class CacheService:
             # Update access statistics
             if isinstance(cached_entry, dict):
                 cached_entry["access_count"] = cached_entry.get("access_count", 0) + 1
-                cached_entry["last_accessed"] = datetime.now().isoformat()
+                cached_entry["last_accessed"] = datetime.now(UTC).isoformat()
                 # Update in cache
                 await self.redis_client.setex(
                     key_string,
@@ -313,7 +313,7 @@ class CacheService:
             # Create cache entry
             entry = CacheEntry(
                 data=data,
-                expires_at=datetime.now() + timedelta(seconds=ttl),
+                expires_at=datetime.now(UTC) + timedelta(seconds=ttl),
                 metadata=metadata or {},
             )
 

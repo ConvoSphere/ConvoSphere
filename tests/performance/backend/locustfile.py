@@ -1,6 +1,7 @@
 """
 Performance testing with Locust for AI Assistant Platform.
 """
+
 import random
 
 from locust import HttpUser, between, events, task
@@ -180,7 +181,9 @@ class AIAssistantUser(HttpUser):
                 conversation = response.json()
                 self.conversation_id = conversation["id"]
             else:
-                response.failure(f"Failed to create conversation: {response.status_code}")
+                response.failure(
+                    f"Failed to create conversation: {response.status_code}"
+                )
 
     @task(4)
     def send_message(self):
@@ -425,13 +428,26 @@ def on_test_start(environment, **kwargs):
     """Called when a test is starting."""
     print("Performance test starting...")
 
+
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
     """Called when a test is ending."""
     print("Performance test ending...")
 
+
 @events.request.add_listener
-def on_request(request_type, name, response_time, response_length, response, context, exception, start_time, url, **kwargs):
+def on_request(
+    request_type,
+    name,
+    response_time,
+    response_length,
+    response,
+    context,
+    exception,
+    start_time,
+    url,
+    **kwargs,
+):
     """Called for every request."""
     if exception:
         print(f"Request failed: {name} - {exception}")

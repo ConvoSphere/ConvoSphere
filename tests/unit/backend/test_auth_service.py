@@ -1,6 +1,7 @@
 """
 Unit tests for authentication service.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest

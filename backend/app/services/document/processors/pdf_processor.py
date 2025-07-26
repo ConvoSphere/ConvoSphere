@@ -27,7 +27,7 @@ class PDFProcessor:
                 return {
                     "text": text_content,
                     "page_count": page_count,
-                    "file_path": file_path
+                    "file_path": file_path,
                 }
         except Exception as e:
             raise Exception(f"Error processing PDF: {str(e)}")

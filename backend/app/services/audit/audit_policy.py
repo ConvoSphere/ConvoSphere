@@ -21,10 +21,7 @@ class AuditPolicyManager:
         """Create a new audit policy."""
         try:
             policy = AuditPolicy(
-                name=name,
-                description=description,
-                rules=rules,
-                is_active=True
+                name=name, description=description, rules=rules, is_active=True
             )
             self.db.add(policy)
             self.db.commit()
@@ -43,7 +40,9 @@ class AuditPolicyManager:
     def update_policy(self, policy_id: int, updates: dict[str, Any]) -> bool:
         """Update an audit policy."""
         try:
-            policy = self.db.query(AuditPolicy).filter(AuditPolicy.id == policy_id).first()
+            policy = (
+                self.db.query(AuditPolicy).filter(AuditPolicy.id == policy_id).first()
+            )
             if policy:
                 for key, value in updates.items():
                     setattr(policy, key, value)
@@ -57,7 +56,9 @@ class AuditPolicyManager:
     def delete_policy(self, policy_id: int) -> bool:
         """Delete an audit policy."""
         try:
-            policy = self.db.query(AuditPolicy).filter(AuditPolicy.id == policy_id).first()
+            policy = (
+                self.db.query(AuditPolicy).filter(AuditPolicy.id == policy_id).first()
+            )
             if policy:
                 self.db.delete(policy)
                 self.db.commit()

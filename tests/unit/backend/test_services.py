@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+
 from backend.app.services.assistant_service import AssistantService
 from backend.app.services.tool_service import ToolService
 from backend.app.services.user_service import UserService

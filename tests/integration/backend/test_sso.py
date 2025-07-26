@@ -8,11 +8,12 @@ user provisioning, and SSO integration.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from fastapi.testclient import TestClient
+
 from backend.app.models.user import AuthProvider
 from backend.app.schemas.user import SSOUserCreate
 from backend.app.services.oauth_service import OAuthService
 from backend.app.services.user_service import UserService
-from fastapi.testclient import TestClient
 
 
 class TestOAuthService:
@@ -216,15 +217,19 @@ class TestOAuthService:
         db_session,
     ):
         """Test processing new SSO user."""
-        with patch.object(
-            oauth_service,
-            "_get_auth_provider",
-            return_value=AuthProvider.OAUTH_GOOGLE,
-        ), patch.object(
-            UserService,
-            "get_user_by_external_id",
-            return_value=None,
-        ), patch.object(UserService, "create_sso_user") as mock_create:
+        with (
+            patch.object(
+                oauth_service,
+                "_get_auth_provider",
+                return_value=AuthProvider.OAUTH_GOOGLE,
+            ),
+            patch.object(
+                UserService,
+                "get_user_by_external_id",
+                return_value=None,
+            ),
+            patch.object(UserService, "create_sso_user") as mock_create,
+        ):
             mock_user = MagicMock()
             mock_user.id = "test-user-id"
             mock_create.return_value = mock_user
@@ -247,14 +252,17 @@ class TestOAuthService:
         mock_user = MagicMock()
         mock_user.id = "test-user-id"
 
-        with patch.object(
-            oauth_service,
-            "_get_auth_provider",
-            return_value=AuthProvider.OAUTH_GOOGLE,
-        ), patch.object(
-            UserService,
-            "get_user_by_external_id",
-            return_value=mock_user,
+        with (
+            patch.object(
+                oauth_service,
+                "_get_auth_provider",
+                return_value=AuthProvider.OAUTH_GOOGLE,
+            ),
+            patch.object(
+                UserService,
+                "get_user_by_external_id",
+                return_value=mock_user,
+            ),
         ):
             result = await oauth_service.process_sso_user(
                 mock_user_info,
@@ -341,13 +349,17 @@ class TestSSOEndpoints:
             "expires_in": 1800,
         }
 
-        with patch(
-            "app.services.oauth_service.oauth_service.handle_callback",
-        ) as mock_callback, patch(
-            "app.services.oauth_service.oauth_service.process_sso_user",
-        ) as mock_process, patch(
-            "app.services.oauth_service.oauth_service.create_sso_tokens",
-        ) as mock_tokens_func:
+        with (
+            patch(
+                "app.services.oauth_service.oauth_service.handle_callback",
+            ) as mock_callback,
+            patch(
+                "app.services.oauth_service.oauth_service.process_sso_user",
+            ) as mock_process,
+            patch(
+                "app.services.oauth_service.oauth_service.create_sso_tokens",
+            ) as mock_tokens_func,
+        ):
             mock_callback.return_value = {
                 "user_info": mock_user_info,
                 "token": {},

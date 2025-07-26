@@ -30,17 +30,13 @@ class TableExtractor:
             elif current_table:
                 # End of table detected
                 if len(current_table) > 1:  # At least header + one row
-                    tables.append({
-                        "rows": current_table,
-                        "row_count": len(current_table)
-                    })
+                    tables.append(
+                        {"rows": current_table, "row_count": len(current_table)}
+                    )
                 current_table = []
 
         # Handle table at end of document
         if current_table and len(current_table) > 1:
-            tables.append({
-                "rows": current_table,
-                "row_count": len(current_table)
-            })
+            tables.append({"rows": current_table, "row_count": len(current_table)})
 
         return tables

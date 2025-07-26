@@ -5,7 +5,6 @@ This module provides authentication-specific functionality,
 wrapping the UserService for authentication operations.
 """
 
-
 from backend.app.core.security import get_password_hash, verify_password
 from backend.app.models.user import User
 from backend.app.schemas.user import UserCreate, UserUpdate
@@ -23,13 +22,13 @@ class AuthService:
     def register_user(self, user_create: UserCreate) -> User:
         """
         Register a new user.
-        
+
         Args:
             user_create: User creation data
-            
+
         Returns:
             User: Created user object
-            
+
         Raises:
             ValueError: If email or username already exists
         """
@@ -46,11 +45,11 @@ class AuthService:
     def authenticate_user(self, email: str, password: str) -> User | None:
         """
         Authenticate a user with email and password.
-        
+
         Args:
             email: User email
             password: User password
-            
+
         Returns:
             User: Authenticated user or None if authentication fails
         """
@@ -59,10 +58,10 @@ class AuthService:
     def get_user_by_email(self, email: str) -> User | None:
         """
         Get user by email.
-        
+
         Args:
             email: User email
-            
+
         Returns:
             User: User object or None if not found
         """
@@ -71,10 +70,10 @@ class AuthService:
     def get_user_by_username(self, username: str) -> User | None:
         """
         Get user by username.
-        
+
         Args:
             username: User username
-            
+
         Returns:
             User: User object or None if not found
         """
@@ -83,11 +82,11 @@ class AuthService:
     def update_user_profile(self, user_id: str, user_update: UserUpdate) -> User:
         """
         Update user profile.
-        
+
         Args:
             user_id: User ID
             user_update: User update data
-            
+
         Returns:
             User: Updated user object
         """
@@ -97,18 +96,20 @@ class AuthService:
 
         return self.user_service.update_user(user_id, user_update, current_user)
 
-    def change_password(self, user_id: str, current_password: str, new_password: str) -> bool:
+    def change_password(
+        self, user_id: str, current_password: str, new_password: str
+    ) -> bool:
         """
         Change user password.
-        
+
         Args:
             user_id: User ID
             current_password: Current password
             new_password: New password
-            
+
         Returns:
             bool: True if password changed successfully
-            
+
         Raises:
             ValueError: If current password is incorrect
         """
@@ -127,10 +128,10 @@ class AuthService:
     def deactivate_user(self, user_id: str) -> bool:
         """
         Deactivate a user.
-        
+
         Args:
             user_id: User ID
-            
+
         Returns:
             bool: True if user deactivated successfully
         """
@@ -145,10 +146,10 @@ class AuthService:
     def activate_user(self, user_id: str) -> bool:
         """
         Activate a user.
-        
+
         Args:
             user_id: User ID
-            
+
         Returns:
             bool: True if user activated successfully
         """

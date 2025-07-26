@@ -1,4 +1,5 @@
 import pytest
+
 from backend.app.core.redis_client import (
     check_redis_connection,
     delete_cache,

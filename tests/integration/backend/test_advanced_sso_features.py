@@ -11,6 +11,7 @@ This module tests advanced SSO functionality including:
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from backend.app.services.advanced_user_provisioning import (
     AdvancedUserProvisioning,
     AttributeMapper,
@@ -242,7 +243,9 @@ class TestAdvancedUserProvisioning:
         return MagicMock()
 
     @pytest.mark.asyncio
-    async def test_provision_user_approved(self, provisioning, mock_db, mock_user_service):
+    async def test_provision_user_approved(
+        self, provisioning, mock_db, mock_user_service
+    ):
         """Test successful user provisioning."""
         user_info = {
             "email": "user@example.com",

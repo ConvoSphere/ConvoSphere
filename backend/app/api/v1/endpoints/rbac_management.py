@@ -5,7 +5,7 @@ This module provides API endpoints for managing granular permissions,
 ABAC rules, security policies, and monitoring RBAC performance.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.database import get_db
@@ -495,4 +495,4 @@ async def get_permission_matrix(
         permissions.update(role_permissions.get(role, []))
         matrix[role] = sorted(permissions)
 
-    return {"permission_matrix": matrix, "generated_at": datetime.now().isoformat()}
+    return {"permission_matrix": matrix, "generated_at": datetime.now(UTC).isoformat()}

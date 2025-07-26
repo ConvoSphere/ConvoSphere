@@ -6,7 +6,7 @@ agent memory, and reasoning capabilities using Pydantic AI framework.
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from loguru import logger
@@ -172,7 +172,7 @@ class AgentMemoryManager(BaseModel):
             memory_type=memory_type,
             content=content,
             importance=importance,
-            expires_at=datetime.now()
+            expires_at=datetime.now(UTC)
             + timedelta(hours=self.config.memory_retention_hours),
         )
 
@@ -203,7 +203,7 @@ class AgentMemoryManager(BaseModel):
         query_words = set(query.lower().split())
 
         for memory in memories:
-            if memory.expires_at and memory.expires_at < datetime.now():
+            if memory.expires_at and memory.expires_at < datetime.now(UTC):
                 continue
 
             memory_text = str(memory.content).lower()
@@ -224,7 +224,7 @@ class AgentMemoryManager(BaseModel):
     def _cleanup_expired_memories(self, conversation_id: str):
         """Remove expired memories."""
         if conversation_id in self.memories:
-            current_time = datetime.now()
+            current_time = datetime.now(UTC)
             self.memories[conversation_id] = [
                 memory
                 for memory in self.memories[conversation_id]
@@ -369,7 +369,7 @@ class HybridModeManager:
             conversation_id=uuid.UUID(conversation_id),
             user_id=uuid.UUID(user_id),
             current_mode=initial_mode,
-            last_mode_change=datetime.now(),
+            last_mode_change=datetime.now(UTC),
             config=config,
         )
 
@@ -443,7 +443,6 @@ class HybridModeManager:
             context_relevance=self._calculate_context_relevance(context),
             reasoning_steps=reasoning_steps,
         )
-
 
     def _determine_recommended_mode(
         self,
@@ -526,15 +525,15 @@ class HybridModeManager:
 
         # Update state
         state.current_mode = new_mode
-        state.last_mode_change = datetime.now()
-        state.updated_at = datetime.now()
+        state.last_mode_change = datetime.now(UTC)
+        state.updated_at = datetime.now(UTC)
 
         # Add to history
         history_entry = {
             "from_mode": previous_mode.value,
             "to_mode": new_mode.value,
             "reason": request.reason or "User request",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         state.mode_history.append(history_entry)
 

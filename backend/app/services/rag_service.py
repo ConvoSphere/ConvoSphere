@@ -8,7 +8,7 @@ Weaviate service, knowledge base, and caching systems.
 import hashlib
 import json
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -446,7 +446,7 @@ class RAGService:
 
     def _calculate_freshness_score(self, created_at: datetime) -> float:
         """Calculate freshness score based on creation time."""
-        age_days = (datetime.now() - created_at).days
+        age_days = (datetime.now(UTC) - created_at).days
         if age_days <= 1:
             return 1.0
         if age_days <= 7:

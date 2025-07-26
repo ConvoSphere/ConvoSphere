@@ -5,7 +5,7 @@ This module provides comprehensive performance monitoring with
 metrics collection, database optimization, and performance analytics.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -234,7 +234,7 @@ class PerformanceMonitor:
             "total_metrics": 0,
             "total_alerts": 0,
             "active_alerts": 0,
-            "last_cleanup": datetime.now(),
+            "last_cleanup": datetime.now(UTC),
         }
 
     def start_monitoring(self) -> None:
@@ -382,7 +382,7 @@ class PerformanceMonitor:
 
     def _cleanup_old_metrics(self) -> None:
         """Clean up old metrics to prevent memory issues."""
-        cutoff_time = datetime.now() - timedelta(hours=24)  # Keep last 24 hours
+        cutoff_time = datetime.now(UTC) - timedelta(hours=24)  # Keep last 24 hours
 
         # Cleanup metrics history
         self.metrics_history = [
@@ -407,14 +407,14 @@ class PerformanceMonitor:
             a for a in self.alerts if not a.resolved or a.timestamp > cutoff_time
         ]
 
-        self.stats["last_cleanup"] = datetime.now()
+        self.stats["last_cleanup"] = datetime.now(UTC)
 
     def get_metrics_summary(
         self,
         time_range: timedelta = timedelta(hours=1),
     ) -> dict[str, Any]:
         """Get metrics summary for the specified time range."""
-        cutoff_time = datetime.now() - time_range
+        cutoff_time = datetime.now(UTC) - time_range
 
         # Filter metrics by time range
         recent_metrics = [m for m in self.metrics_history if m.timestamp > cutoff_time]
@@ -583,7 +583,7 @@ class DatabaseOptimizer:
         recent_queries = [
             q
             for q in self.performance_monitor.database_metrics
-            if q.timestamp > datetime.now() - timedelta(hours=1)
+            if q.timestamp > datetime.now(UTC) - timedelta(hours=1)
         ]
 
         analysis = {
@@ -650,7 +650,7 @@ class DatabaseOptimizer:
         recent_queries = [
             q
             for q in self.performance_monitor.database_metrics
-            if q.timestamp > datetime.now() - timedelta(minutes=5)
+            if q.timestamp > datetime.now(UTC) - timedelta(minutes=5)
         ]
 
         if not recent_queries:

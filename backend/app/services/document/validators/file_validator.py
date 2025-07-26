@@ -19,7 +19,7 @@ class FileValidator:
         "image/jpeg",
         "image/png",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword"
+        "application/msword",
     ]
 
     MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB

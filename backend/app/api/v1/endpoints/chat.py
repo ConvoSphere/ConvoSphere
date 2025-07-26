@@ -37,9 +37,7 @@ class ChatMessageRequest(BaseModel):
     temperature: float = Field(
         default=0.7, ge=0.0, le=2.0, description="AI temperature"
     )
-    max_tokens: int | None = Field(
-        None, ge=1, le=100000, description="Maximum tokens"
-    )
+    max_tokens: int | None = Field(None, ge=1, le=100000, description="Maximum tokens")
     model: str | None = Field(None, description="AI model to use")
     force_mode: ConversationMode | None = Field(
         None, description="Force specific conversation mode"

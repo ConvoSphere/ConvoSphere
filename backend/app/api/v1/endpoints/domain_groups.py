@@ -5,7 +5,7 @@ This module provides comprehensive API endpoints for managing domain groups,
 including CRUD operations, member management, resource sharing, and invitation handling.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.core.database import get_db
 from app.core.security import get_current_user
@@ -694,7 +694,7 @@ def _get_member_response(
         user_id=user.id,
         access_level=access_level,
         is_active=member.is_active if member else False,
-        joined_at=member.joined_at if member else datetime.now(),
+        joined_at=member.joined_at if member else datetime.now(UTC),
         invited_by=member.invited_by if member else None,
         user_email=user.email,
         user_name=user.full_name,

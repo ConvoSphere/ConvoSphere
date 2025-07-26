@@ -781,7 +781,6 @@ async def get_user_provisioning_status(
             db,
         )
 
-
     except HTTPException:
         raise
     except Exception as e:

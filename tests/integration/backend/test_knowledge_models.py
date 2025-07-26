@@ -9,6 +9,8 @@ import uuid
 from datetime import datetime
 
 import pytest
+from sqlalchemy.orm import Session
+
 from backend.app.models.knowledge import (
     Document,
     DocumentChunk,
@@ -18,7 +20,6 @@ from backend.app.models.knowledge import (
     document_tag_association,
 )
 from backend.app.models.user import User
-from sqlalchemy.orm import Session
 
 
 class TestTag:

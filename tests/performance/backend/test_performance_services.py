@@ -10,6 +10,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
+
 from backend.app.services.async_processor import (
     AsyncProcessor,
     TaskInfo,
@@ -37,7 +39,6 @@ from backend.app.services.performance_monitor import (
     PerformanceMetric,
     PerformanceMonitor,
 )
-from pydantic import ValidationError
 
 
 class TestCacheService:
@@ -57,16 +58,12 @@ class TestCacheService:
         # Invalid Redis URL
         with pytest.raises(ValidationError) as exc_info:
             CacheConfig(redis_url="invalid-url")
-        assert "Redis URL must start with redis:// or rediss://" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Redis URL must start with redis:// or rediss://" in str(exc_info.value)  # noqa: S101
 
         # Invalid TTL
         with pytest.raises(ValidationError) as exc_info:
             CacheConfig(redis_url="redis://localhost:6379", default_ttl=30)
-        assert "Input should be greater than or equal to 60" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be greater than or equal to 60" in str(exc_info.value)  # noqa: S101
 
     def test_cache_key_creation(self):
         """Test cache key creation and validation."""
@@ -169,9 +166,7 @@ class TestAsyncProcessor:
                 status=TaskStatus.COMPLETED,
                 execution_time=-1.0,
             )
-        assert "Input should be greater than or equal to 0" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be greater than or equal to 0" in str(exc_info.value)  # noqa: S101
 
     def test_task_info_validation(self):
         """Test task info validation."""
@@ -232,9 +227,7 @@ class TestPerformanceMonitor:
                 metric_type="timer",
                 value=float("nan"),
             )
-        assert "Metric value must be a valid number" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Metric value must be a valid number" in str(exc_info.value)  # noqa: S101
 
     def test_database_query_metric_validation(self):
         """Test database query metric validation."""
@@ -267,9 +260,7 @@ class TestPerformanceMonitor:
                 table_name="conversations",
                 execution_time=-0.1,
             )
-        assert "Input should be greater than or equal to 0" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be greater than or equal to 0" in str(exc_info.value)  # noqa: S101
 
     def test_api_metric_validation(self):
         """Test API metric validation."""
@@ -306,9 +297,7 @@ class TestPerformanceMonitor:
                 status_code=999,
                 response_time=0.8,
             )
-        assert "Input should be less than or equal to 599" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be less than or equal to 599" in str(exc_info.value)  # noqa: S101
 
     def test_cache_metric_validation(self):
         """Test cache metric validation."""
@@ -402,9 +391,7 @@ class TestPerformanceIntegration:
                 enable_caching=True,
                 cache_ttl=30,  # Too low
             )
-        assert "Input should be greater than or equal to 60" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be greater than or equal to 60" in str(exc_info.value)  # noqa: S101
 
         # Invalid max workers
         with pytest.raises(ValidationError) as exc_info:
@@ -412,9 +399,7 @@ class TestPerformanceIntegration:
                 enable_async_processing=True,
                 max_async_workers=100,  # Too high
             )
-        assert "Input should be less than or equal to 50" in str(
-            exc_info.value
-        )  # noqa: S101
+        assert "Input should be less than or equal to 50" in str(exc_info.value)  # noqa: S101
 
 
 class TestPerformanceMonitorFunctionality:

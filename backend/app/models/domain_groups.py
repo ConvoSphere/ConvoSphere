@@ -7,7 +7,7 @@ departments, or functional areas with shared access to resources.
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 
 from sqlalchemy import (
@@ -239,7 +239,7 @@ class DomainGroup(Base):
     def is_expired(self) -> bool:
         """Check if domain group is expired."""
         if self.expires_at:
-            return datetime.now() > self.expires_at
+            return datetime.now(UTC) > self.expires_at
         return False
 
     def has_member(self, user_id: str, access_level: AccessLevel = None) -> bool:
@@ -359,7 +359,7 @@ class DomainResource(Base):
     def is_expired(self) -> bool:
         """Check if resource access is expired."""
         if self.expires_at:
-            return datetime.now() > self.expires_at
+            return datetime.now(UTC) > self.expires_at
         return False
 
 
@@ -410,7 +410,7 @@ class DomainInvitation(Base):
     @property
     def is_expired(self) -> bool:
         """Check if invitation is expired."""
-        return datetime.now() > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
 
 class DomainActivity(Base):

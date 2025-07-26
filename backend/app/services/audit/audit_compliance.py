@@ -4,6 +4,7 @@ Audit compliance checking.
 This module handles compliance checking for audit policies.
 """
 
+from datetime import UTC
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -53,7 +54,7 @@ class ComplianceChecker:
         """Check time-based compliance rules."""
         from datetime import datetime, time
 
-        current_time = datetime.now().time()
+        current_time = datetime.now(UTC).time()
 
         if "start_time" in time_rules and "end_time" in time_rules:
             start_time = time.fromisoformat(time_rules["start_time"])

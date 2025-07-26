@@ -68,18 +68,24 @@ class DocumentService:
             "text": extracted_text,
             "metadata": metadata,
             "tables": tables,
-            "file_type": file_extension
+            "file_type": file_extension,
         }
 
-    def batch_process(self, file_paths: list[str], user_id: int) -> list[dict[str, Any]]:
+    def batch_process(
+        self, file_paths: list[str], user_id: int
+    ) -> list[dict[str, Any]]:
         """Process multiple documents in batch."""
         results = []
 
         for file_path in file_paths:
             try:
                 result = self.process_document(file_path, user_id)
-                results.append({"file_path": file_path, "success": True, "result": result})
+                results.append(
+                    {"file_path": file_path, "success": True, "result": result}
+                )
             except Exception as e:
-                results.append({"file_path": file_path, "success": False, "error": str(e)})
+                results.append(
+                    {"file_path": file_path, "success": False, "error": str(e)}
+                )
 
         return results

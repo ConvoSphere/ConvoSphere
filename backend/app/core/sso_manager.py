@@ -7,7 +7,7 @@ group synchronization, and session management.
 """
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -169,7 +169,7 @@ class LDAPProvider(SSOProvider):
                 "ldap_dn": user_dn,
                 "ldap_groups": groups,
                 "provider": "ldap",
-                "last_sync": datetime.now().isoformat(),
+                "last_sync": datetime.now(UTC).isoformat(),
             }
 
             return user, additional_data
@@ -222,7 +222,7 @@ class LDAPProvider(SSOProvider):
                     else ""
                 ),
                 "groups": await self.sync_user_groups(user, db),
-                "last_sync": datetime.now().isoformat(),
+                "last_sync": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -313,7 +313,7 @@ class LDAPProvider(SSOProvider):
                 role=self.default_role,
                 status=UserStatus.ACTIVE,
                 email_verified=True,  # LDAP users are considered verified
-                last_login=datetime.now(),
+                last_login=datetime.now(UTC),
             )
             db.add(user)
             db.commit()
@@ -322,7 +322,7 @@ class LDAPProvider(SSOProvider):
             # Update existing user
             user.email = email
             user.full_name = display_name
-            user.last_login = datetime.now()
+            user.last_login = datetime.now(UTC)
             db.commit()
 
         return user
@@ -483,7 +483,7 @@ class SAMLProvider(SSOProvider):
                 "saml_name_id": authn_response.name_id,
                 "saml_groups": groups,
                 "provider": "saml",
-                "last_sync": datetime.now().isoformat(),
+                "last_sync": datetime.now(UTC).isoformat(),
             }
 
             return user, additional_data
@@ -557,7 +557,7 @@ class SAMLProvider(SSOProvider):
                 role=self.default_role,
                 status=UserStatus.ACTIVE,
                 email_verified=True,
-                last_login=datetime.now(),
+                last_login=datetime.now(UTC),
             )
             db.add(user)
             db.commit()
@@ -566,7 +566,7 @@ class SAMLProvider(SSOProvider):
             # Update existing user
             user.email = email
             user.full_name = f"{first_name} {last_name}".strip()
-            user.last_login = datetime.now()
+            user.last_login = datetime.now(UTC)
             db.commit()
 
         return user
@@ -705,7 +705,7 @@ class OAuthProvider(SSOProvider):
                 "oauth_refresh_token": token_data.get("refresh_token"),
                 "oauth_groups": groups,
                 "provider": "oauth",
-                "last_sync": datetime.now().isoformat(),
+                "last_sync": datetime.now(UTC).isoformat(),
             }
 
             return user, additional_data
@@ -811,7 +811,7 @@ class OAuthProvider(SSOProvider):
                 role=self.default_role,
                 status=UserStatus.ACTIVE,
                 email_verified=True,
-                last_login=datetime.now(),
+                last_login=datetime.now(UTC),
             )
             db.add(user)
             db.commit()
@@ -820,7 +820,7 @@ class OAuthProvider(SSOProvider):
             # Update existing user
             user.email = email
             user.full_name = f"{first_name} {last_name}".strip()
-            user.last_login = datetime.now()
+            user.last_login = datetime.now(UTC)
             db.commit()
 
         return user

@@ -6,7 +6,7 @@ CRUD operations, member management, resource sharing, and invitation handling.
 """
 
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import and_, func, or_
@@ -236,7 +236,7 @@ class DomainService:
         for field, value in update_data.items():
             setattr(domain_group, field, value)
 
-        domain_group.updated_at = datetime.now()
+        domain_group.updated_at = datetime.now(UTC)
         self.db.commit()
         self.db.refresh(domain_group)
 
@@ -475,7 +475,7 @@ class DomainService:
         for field, value in update_data.items():
             setattr(resource, field, value)
 
-        resource.updated_at = datetime.now()
+        resource.updated_at = datetime.now(UTC)
         self.db.commit()
         self.db.refresh(resource)
 
@@ -555,7 +555,7 @@ class DomainService:
 
         # Generate invitation token
         token = secrets.token_urlsafe(32)
-        expires_at = datetime.now() + timedelta(days=invitation_data.expires_in_days)
+        expires_at = datetime.now(UTC) + timedelta(days=invitation_data.expires_in_days)
 
         # Create invitation
         invitation = DomainInvitation(
@@ -593,7 +593,7 @@ class DomainService:
                 and_(
                     DomainInvitation.token == token,
                     DomainInvitation.status == "pending",
-                    DomainInvitation.expires_at > datetime.now(),
+                    DomainInvitation.expires_at > datetime.now(UTC),
                 ),
             )
             .first()
@@ -620,7 +620,7 @@ class DomainService:
 
         # Update invitation status
         invitation.status = "accepted"
-        invitation.accepted_at = datetime.now()
+        invitation.accepted_at = datetime.now(UTC)
         invitation.user_id = current_user.id
         self.db.commit()
 
@@ -680,7 +680,7 @@ class DomainService:
         # Get recent activities (last 7 days)
         recent_activities = (
             self.db.query(DomainActivity)
-            .filter(DomainActivity.created_at >= datetime.now() - timedelta(days=7))
+            .filter(DomainActivity.created_at >= datetime.now(UTC) - timedelta(days=7))
             .count()
         )
 
@@ -690,7 +690,7 @@ class DomainService:
             .filter(
                 and_(
                     DomainInvitation.status == "pending",
-                    DomainInvitation.expires_at > datetime.now(),
+                    DomainInvitation.expires_at > datetime.now(UTC),
                 ),
             )
             .count()
@@ -747,7 +747,10 @@ class DomainService:
             return True
 
         # Organization admins can access domains in their organization
-        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
+        return bool(
+            user.role == UserRole.ADMIN
+            and domain_group.organization_id == user.organization_id
+        )
 
     def _can_manage_domain_group(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain group."""
@@ -761,7 +764,10 @@ class DomainService:
             return True
 
         # Organization admins can manage domains in their organization
-        return bool(user.role == UserRole.ADMIN and domain_group.organization_id == user.organization_id)
+        return bool(
+            user.role == UserRole.ADMIN
+            and domain_group.organization_id == user.organization_id
+        )
 
     def _can_manage_domain_members(self, domain_group: DomainGroup, user: User) -> bool:
         """Check if user can manage domain members."""

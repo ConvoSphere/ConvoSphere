@@ -76,6 +76,7 @@ class UserBase(BaseModel):
     @classmethod
     def validate_email_field(cls, v):
         return validate_email(v)
+
     username: str = Field(..., min_length=3, max_length=100, description="Username")
     first_name: str | None = Field(None, max_length=100, description="First name")
     last_name: str | None = Field(None, max_length=100, description="Last name")
@@ -143,6 +144,7 @@ class UserUpdate(BaseModel):
         if v is None:
             return v
         return validate_email(v)
+
     username: str | None = Field(None, min_length=3, max_length=100)
     first_name: str | None = Field(None, max_length=100)
     last_name: str | None = Field(None, max_length=100)
@@ -287,6 +289,7 @@ class SSOUserCreate(BaseModel):
     @classmethod
     def validate_email_field(cls, v):
         return validate_email(v)
+
     username: str | None = None
     first_name: str | None = None
     last_name: str | None = None

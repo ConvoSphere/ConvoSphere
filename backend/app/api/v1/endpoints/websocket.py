@@ -411,7 +411,9 @@ async def websocket_endpoint(
                                 break
 
                             # Extract content from chunk
-                            if chunk.get("choices") and chunk["choices"][0].get("delta"):
+                            if chunk.get("choices") and chunk["choices"][0].get(
+                                "delta"
+                            ):
                                 delta = chunk["choices"][0]["delta"]
                                 content_chunk = delta.get("content", "")
 
@@ -436,7 +438,9 @@ async def websocket_endpoint(
                                     )
 
                                 # Check if response is complete
-                                if chunk.get("choices") and chunk["choices"][0].get("finish_reason"):
+                                if chunk.get("choices") and chunk["choices"][0].get(
+                                    "finish_reason"
+                                ):
                                     finish_reason = chunk["choices"][0]["finish_reason"]
 
                                     if finish_reason in ["stop", "length"]:
@@ -450,18 +454,22 @@ async def websocket_endpoint(
                                             content=full_response_content,
                                             role="assistant",
                                         )
-                                        ai_message_dict = conversation_service.add_message(
-                                            ai_message_data,
+                                        ai_message_dict = (
+                                            conversation_service.add_message(
+                                                ai_message_data,
+                                            )
                                         )
                                         message_id = str(ai_message_dict["id"])
 
                                         # Extract metadata
                                         if "usage" in chunk:
-                                            metadata["tokens_used"] = chunk["usage"].get(
-                                                "total_tokens", 0
-                                            )
+                                            metadata["tokens_used"] = chunk[
+                                                "usage"
+                                            ].get("total_tokens", 0)
                                         if "context_chunks" in chunk:
-                                            metadata["contextChunks"] = chunk["context_count"]
+                                            metadata["contextChunks"] = chunk[
+                                                "context_count"
+                                            ]
                                             metadata["searchQuery"] = search_query
 
                                         # Send completion message
@@ -471,10 +479,14 @@ async def websocket_endpoint(
                                                 "data": {
                                                     "id": message_id,
                                                     "conversation_id": conversation_id,
-                                                    "user_id": str(conversation.assistant_id),
+                                                    "user_id": str(
+                                                        conversation.assistant_id
+                                                    ),
                                                     "content": full_response_content,
                                                     "role": "assistant",
-                                                    "timestamp": ai_message_dict["created_at"],
+                                                    "timestamp": ai_message_dict[
+                                                        "created_at"
+                                                    ],
                                                     "messageType": (
                                                         "knowledge"
                                                         if knowledge_documents

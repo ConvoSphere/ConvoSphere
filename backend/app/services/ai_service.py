@@ -229,7 +229,7 @@ class AIService:
     ):
         """
         Stream chat completion responses.
-        
+
         Yields:
             dict: Streaming response chunks
         """
@@ -285,11 +285,19 @@ class AIService:
                             {
                                 "index": choice.index,
                                 "delta": {
-                                    "content": choice.delta.content if hasattr(choice.delta, "content") else None,
-                                    "role": choice.delta.role if hasattr(choice.delta, "role") else None,
-                                    "tool_calls": choice.delta.tool_calls if hasattr(choice.delta, "tool_calls") else None,
+                                    "content": choice.delta.content
+                                    if hasattr(choice.delta, "content")
+                                    else None,
+                                    "role": choice.delta.role
+                                    if hasattr(choice.delta, "role")
+                                    else None,
+                                    "tool_calls": choice.delta.tool_calls
+                                    if hasattr(choice.delta, "tool_calls")
+                                    else None,
                                 },
-                                "finish_reason": choice.finish_reason if hasattr(choice, "finish_reason") else None,
+                                "finish_reason": choice.finish_reason
+                                if hasattr(choice, "finish_reason")
+                                else None,
                             }
                         ],
                         "usage": chunk.usage if hasattr(chunk, "usage") else None,
@@ -477,7 +485,9 @@ class AIService:
             "status": "healthy" if self.enabled else "disabled",
             "enabled": self.enabled,
             "litellm_available": LITELLM_AVAILABLE,
-            "providers_count": len([p for p in self.providers.values() if p.get("enabled", True)]),
+            "providers_count": len(
+                [p for p in self.providers.values() if p.get("enabled", True)]
+            ),
             "models_count": len(self.models),
             "total_cost": self.cost_tracker.get_total_cost(),
         }
@@ -497,7 +507,7 @@ class AIService:
     ):
         """
         Stream chat completion with RAG (Retrieval-Augmented Generation).
-        
+
         Yields:
             dict: Streaming response chunks with context
         """

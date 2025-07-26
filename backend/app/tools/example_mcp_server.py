@@ -376,7 +376,7 @@ class ExampleMCPServer:
 
         elif tool_name == "get_time":
             timezone = arguments.get("timezone", "UTC")
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
             return f"Current time in {timezone}: {current_time}"
 

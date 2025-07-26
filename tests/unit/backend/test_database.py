@@ -1,4 +1,5 @@
 import pytest
+
 from backend.app.core.database import check_db_connection, get_db_info, init_db
 
 

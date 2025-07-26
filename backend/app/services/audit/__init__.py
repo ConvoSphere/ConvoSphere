@@ -13,4 +13,5 @@ def get_audit_service():
     db = next(get_db())
     return AuditService(db)
 
+
 __all__ = ["AuditService", "get_audit_service"]

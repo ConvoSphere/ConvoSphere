@@ -3,7 +3,6 @@ Integration tests for authentication flow.
 """
 
 
-
 class TestAuthFlow:
     """Test complete authentication flow."""
 
@@ -151,7 +150,9 @@ class TestAuthFlow:
             "new_password": "newpassword123",
         }
 
-        response = client.post("/api/auth/change-password", json=password_change_data, headers=headers)
+        response = client.post(
+            "/api/auth/change-password", json=password_change_data, headers=headers
+        )
         assert response.status_code == 200
 
         # Try to login with old password (should fail)
@@ -217,7 +218,9 @@ class TestUserProfileFlow:
             "bio": "Updated bio",
         }
 
-        response = client.put("/api/users/me", json=update_data, headers=test_user_headers)
+        response = client.put(
+            "/api/users/me", json=update_data, headers=test_user_headers
+        )
         assert response.status_code == 200
 
         updated_user = response.json()
@@ -241,7 +244,9 @@ class TestUserProfileFlow:
             "first_name": "Partially",
         }
 
-        response = client.put("/api/users/me", json=update_data, headers=test_user_headers)
+        response = client.put(
+            "/api/users/me", json=update_data, headers=test_user_headers
+        )
         assert response.status_code == 200
 
         updated_user = response.json()
@@ -255,7 +260,9 @@ class TestUserProfileFlow:
             "email": "invalid-email",
         }
 
-        response = client.put("/api/users/me", json=update_data, headers=test_user_headers)
+        response = client.put(
+            "/api/users/me", json=update_data, headers=test_user_headers
+        )
         assert response.status_code == 422  # Validation error
 
 
@@ -277,7 +284,9 @@ class TestAdminAuthFlow:
         response = client.get("/api/admin/users", headers=test_user_headers)
         assert response.status_code in [403, 404, 405, 501]
 
-    def test_user_role_verification(self, client, test_user_headers, test_admin_headers):
+    def test_user_role_verification(
+        self, client, test_user_headers, test_admin_headers
+    ):
         """Test user role verification."""
         # Check regular user role
         response = client.get("/api/users/me", headers=test_user_headers)

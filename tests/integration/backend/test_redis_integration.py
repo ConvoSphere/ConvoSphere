@@ -8,6 +8,7 @@ connection handling, graceful degradation, and error scenarios.
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
 from backend.app.core.redis_client import (
     add_to_blacklist,
     check_redis_connection,

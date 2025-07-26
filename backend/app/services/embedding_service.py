@@ -9,7 +9,7 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -159,7 +159,7 @@ class EmbeddingService:
         Returns:
             List of embedding results with metadata
         """
-        start_time = datetime.now()
+        start_time = datetime.now(UTC)
 
         try:
             if not texts:
@@ -220,7 +220,7 @@ class EmbeddingService:
                             embedding=new_embeddings[new_idx],
                             model=model_name,
                             dimension=len(new_embeddings[new_idx]),
-                            timestamp=datetime.now(),
+                            timestamp=datetime.now(UTC),
                             quality_score=self._calculate_quality_score(
                                 new_embeddings[new_idx],
                             ),
@@ -235,7 +235,7 @@ class EmbeddingService:
                     cached_idx += 1
 
             # Update statistics
-            processing_time = (datetime.now() - start_time).total_seconds()
+            processing_time = (datetime.now(UTC) - start_time).total_seconds()
             self.embedding_stats["total_embeddings"] += len(texts)
             self.embedding_stats["total_processing_time"] += processing_time
             self.embedding_stats["average_processing_time"] = (

@@ -9,8 +9,7 @@ This module tests the audit service functionality including:
 """
 
 import json
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.orm import Session
@@ -55,11 +54,11 @@ class TestAuditService:
                 ip_address=f"192.168.1.{i}",
                 user_agent="test-agent",
                 status="success" if i % 2 == 0 else "failure",
-                created_at=datetime.now() - timedelta(hours=i),
+                created_at=datetime.now(UTC) - timedelta(hours=i),
             )
             db_session.add(log)
             logs.append(log)
-        
+
         db_session.commit()
         return logs
 
@@ -67,7 +66,7 @@ class TestAuditService:
         """Test creating a new audit log entry."""
         # Act
         audit_log = audit_service.create_audit_log(**sample_audit_data)
-        
+
         # Assert
         assert audit_log is not None
         assert audit_log.user_id == sample_audit_data["user_id"]
@@ -82,10 +81,10 @@ class TestAuditService:
         """Test retrieving an audit log by ID."""
         # Arrange
         test_log = sample_audit_logs[0]
-        
+
         # Act
         retrieved_log = audit_service.get_audit_log_by_id(test_log.id)
-        
+
         # Assert
         assert retrieved_log is not None
         assert retrieved_log.id == test_log.id
@@ -95,7 +94,7 @@ class TestAuditService:
         """Test retrieving audit logs for a specific user."""
         # Act
         user_logs = audit_service.get_audit_logs_by_user(test_user.id)
-        
+
         # Assert
         assert len(user_logs) == 10
         assert all(log.user_id == test_user.id for log in user_logs)
@@ -104,7 +103,7 @@ class TestAuditService:
         """Test retrieving audit logs by action."""
         # Act
         action_logs = audit_service.get_audit_logs_by_action("test_action_0")
-        
+
         # Assert
         assert len(action_logs) == 1
         assert action_logs[0].action == "test_action_0"
@@ -113,7 +112,7 @@ class TestAuditService:
         """Test retrieving audit logs by resource."""
         # Act
         resource_logs = audit_service.get_audit_logs_by_resource("test_resource", "0")
-        
+
         # Assert
         assert len(resource_logs) == 1
         assert resource_logs[0].resource_type == "test_resource"
@@ -122,12 +121,12 @@ class TestAuditService:
     def test_get_audit_logs_by_date_range(self, audit_service, sample_audit_logs):
         """Test retrieving audit logs within a date range."""
         # Arrange
-        start_date = datetime.now() - timedelta(hours=5)
-        end_date = datetime.now() - timedelta(hours=2)
-        
+        start_date = datetime.now(UTC) - timedelta(hours=5)
+        end_date = datetime.now(UTC) - timedelta(hours=2)
+
         # Act
         date_logs = audit_service.get_audit_logs_by_date_range(start_date, end_date)
-        
+
         # Assert
         assert len(date_logs) == 4  # logs 2, 3, 4, 5
         assert all(start_date <= log.created_at <= end_date for log in date_logs)
@@ -137,7 +136,7 @@ class TestAuditService:
         # Act
         success_logs = audit_service.get_audit_logs_by_status("success")
         failure_logs = audit_service.get_audit_logs_by_status("failure")
-        
+
         # Assert
         assert len(success_logs) == 5
         assert len(failure_logs) == 5
@@ -148,11 +147,9 @@ class TestAuditService:
         """Test searching audit logs with multiple criteria."""
         # Act
         search_results = audit_service.search_audit_logs(
-            user_id=test_user.id,
-            action="test_action_0",
-            status="success"
+            user_id=test_user.id, action="test_action_0", status="success"
         )
-        
+
         # Assert
         assert len(search_results) == 1
         assert search_results[0].action == "test_action_0"
@@ -162,7 +159,7 @@ class TestAuditService:
         """Test getting audit statistics."""
         # Act
         stats = audit_service.get_audit_statistics()
-        
+
         # Assert
         assert stats["total_logs"] == 10
         assert stats["success_count"] == 5
@@ -170,11 +167,13 @@ class TestAuditService:
         assert "actions" in stats
         assert "users" in stats
 
-    def test_get_audit_statistics_by_user(self, audit_service, sample_audit_logs, test_user):
+    def test_get_audit_statistics_by_user(
+        self, audit_service, sample_audit_logs, test_user
+    ):
         """Test getting audit statistics for a specific user."""
         # Act
         user_stats = audit_service.get_audit_statistics_by_user(test_user.id)
-        
+
         # Assert
         assert user_stats["total_logs"] == 10
         assert user_stats["success_count"] == 5
@@ -184,10 +183,10 @@ class TestAuditService:
         """Test exporting audit logs to CSV format."""
         # Arrange
         export_path = tmp_path / "audit_logs.csv"
-        
+
         # Act
         result = audit_service.export_audit_logs_csv(export_path)
-        
+
         # Assert
         assert result is True
         assert export_path.exists()
@@ -197,16 +196,16 @@ class TestAuditService:
         """Test exporting audit logs to JSON format."""
         # Arrange
         export_path = tmp_path / "audit_logs.json"
-        
+
         # Act
         result = audit_service.export_audit_logs_json(export_path)
-        
+
         # Assert
         assert result is True
         assert export_path.exists()
-        
+
         # Verify JSON content
-        with open(export_path, 'r') as f:
+        with open(export_path) as f:
             data = json.load(f)
             assert len(data) == 10
             assert all("id" in log for log in data)
@@ -215,10 +214,10 @@ class TestAuditService:
         """Test cleaning up old audit logs."""
         # Arrange
         retention_days = 1
-        
+
         # Act
         deleted_count = audit_service.cleanup_old_audit_logs(retention_days)
-        
+
         # Assert
         assert deleted_count >= 0  # May be 0 if all logs are recent
 
@@ -227,7 +226,7 @@ class TestAuditService:
         # Act
         page1 = audit_service.get_audit_logs_paginated(page=1, size=5)
         page2 = audit_service.get_audit_logs_paginated(page=2, size=5)
-        
+
         # Assert
         assert len(page1["items"]) == 5
         assert len(page2["items"]) == 5
@@ -239,7 +238,7 @@ class TestAuditService:
         """Test retrieving audit logs by IP address."""
         # Act
         ip_logs = audit_service.get_audit_logs_by_ip_address("192.168.1.0")
-        
+
         # Assert
         assert len(ip_logs) == 1
         assert ip_logs[0].ip_address == "192.168.1.0"
@@ -248,7 +247,7 @@ class TestAuditService:
         """Test retrieving audit logs by user agent."""
         # Act
         agent_logs = audit_service.get_audit_logs_by_user_agent("test-agent")
-        
+
         # Assert
         assert len(agent_logs) == 10
         assert all(log.user_agent == "test-agent" for log in agent_logs)
@@ -258,7 +257,7 @@ class TestAuditService:
         """Test creating audit log asynchronously."""
         # Act
         audit_log = await audit_service.create_audit_log_async(**sample_audit_data)
-        
+
         # Assert
         assert audit_log is not None
         assert audit_log.action == sample_audit_data["action"]
@@ -268,10 +267,10 @@ class TestAuditService:
         # Arrange
         invalid_data = {
             "user_id": None,  # Invalid user_id
-            "action": "",     # Empty action
+            "action": "",  # Empty action
             "resource_type": None,  # Invalid resource_type
         }
-        
+
         # Act & Assert
         with pytest.raises(ValueError):
             audit_service.create_audit_log(**invalid_data)
@@ -280,17 +279,14 @@ class TestAuditService:
         """Test that audit log details are properly serialized."""
         # Arrange
         complex_details = {
-            "nested": {
-                "data": [1, 2, 3],
-                "metadata": {"key": "value"}
-            },
-            "timestamp": datetime.now().isoformat()
+            "nested": {"data": [1, 2, 3], "metadata": {"key": "value"}},
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         sample_audit_data["details"] = complex_details
-        
+
         # Act
         audit_log = audit_service.create_audit_log(**sample_audit_data)
-        
+
         # Assert
         assert audit_log.details == complex_details
         # Verify it can be serialized to JSON
@@ -299,14 +295,14 @@ class TestAuditService:
     def test_audit_log_performance(self, audit_service, sample_audit_data):
         """Test audit log creation performance."""
         import time
-        
+
         # Act
         start_time = time.time()
         for i in range(100):
             sample_audit_data["action"] = f"performance_test_{i}"
             audit_service.create_audit_log(**sample_audit_data)
         end_time = time.time()
-        
+
         # Assert
         execution_time = end_time - start_time
         assert execution_time < 1.0  # Should complete within 1 second
@@ -314,11 +310,10 @@ class TestAuditService:
     def test_audit_log_concurrent_access(self, audit_service, sample_audit_data):
         """Test audit log creation with concurrent access."""
         import threading
-        import time
-        
+
         results = []
         errors = []
-        
+
         def create_log(thread_id):
             try:
                 sample_audit_data["action"] = f"concurrent_test_{thread_id}"
@@ -326,18 +321,18 @@ class TestAuditService:
                 results.append(log)
             except Exception as e:
                 errors.append(e)
-        
+
         # Create multiple threads
         threads = []
         for i in range(10):
             thread = threading.Thread(target=create_log, args=(i,))
             threads.append(thread)
             thread.start()
-        
+
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
-        
+
         # Assert
         assert len(results) == 10
         assert len(errors) == 0

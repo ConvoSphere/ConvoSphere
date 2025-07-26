@@ -12,17 +12,15 @@ This module tests the document processor functionality including:
 import io
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, List
+from unittest.mock import Mock, patch
 
 import pytest
 from docx import Document as DocxDocument
 
 from backend.app.services.document import (
-    DocumentProcessor,
     DocumentChunk,
     DocumentMetadata,
-    DocumentChunkingStrategy
+    DocumentProcessor,
 )
 
 
@@ -60,7 +58,7 @@ class TestDocumentProcessor:
         doc = DocxDocument()
         doc.add_paragraph("This is a test document.")
         doc.add_paragraph("It contains multiple paragraphs.")
-        
+
         # Save to bytes
         docx_bytes = io.BytesIO()
         doc.save(docx_bytes)
@@ -102,7 +100,10 @@ Some content here.
     def test_detect_file_type_docx(self, processor, sample_docx_content):
         """Test DOCX file type detection."""
         file_type = processor.detect_file_type(sample_docx_content, "test.docx")
-        assert file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        assert (
+            file_type
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
 
     def test_detect_file_type_txt(self, processor, sample_txt_content):
         """Test TXT file type detection."""
@@ -116,13 +117,15 @@ Some content here.
 
     def test_extract_text_pdf(self, processor, sample_pdf_content):
         """Test PDF text extraction."""
-        with patch('backend.app.services.document_processor.pypdf.PdfReader') as mock_pdf:
+        with patch(
+            "backend.app.services.document_processor.pypdf.PdfReader"
+        ) as mock_pdf:
             mock_reader = Mock()
             mock_page = Mock()
             mock_page.extract_text.return_value = "Extracted PDF text"
             mock_reader.pages = [mock_page]
             mock_pdf.return_value = mock_reader
-            
+
             text = processor._extract_pdf_text(sample_pdf_content)
             assert text == "Extracted PDF text"
 
@@ -161,7 +164,7 @@ Some content here.
     def test_chunk_text_semantic(self, processor, sample_text):
         """Test semantic chunking strategy."""
         chunks = processor.chunk_text(sample_text, strategy="semantic")
-        
+
         assert len(chunks) > 0
         assert all(isinstance(chunk, DocumentChunk) for chunk in chunks)
         assert all(chunk.content for chunk in chunks)
@@ -170,7 +173,7 @@ Some content here.
     def test_chunk_text_fixed(self, processor, sample_text):
         """Test fixed chunking strategy."""
         chunks = processor.chunk_text(sample_text, strategy="fixed", chunk_size=100)
-        
+
         assert len(chunks) > 0
         assert all(isinstance(chunk, DocumentChunk) for chunk in chunks)
         assert all(len(chunk.content) <= 100 for chunk in chunks)
@@ -178,14 +181,14 @@ Some content here.
     def test_chunk_text_paragraph(self, processor, sample_text):
         """Test paragraph chunking strategy."""
         chunks = processor.chunk_text(sample_text, strategy="paragraph")
-        
+
         assert len(chunks) > 0
         assert all(isinstance(chunk, DocumentChunk) for chunk in chunks)
 
     def test_chunk_text_sentence(self, processor, sample_text):
         """Test sentence chunking strategy."""
         chunks = processor.chunk_text(sample_text, strategy="sentence")
-        
+
         assert len(chunks) > 0
         assert all(isinstance(chunk, DocumentChunk) for chunk in chunks)
 
@@ -196,8 +199,10 @@ Some content here.
 
     def test_chunk_text_with_overlap(self, processor, sample_text):
         """Test chunking with overlap."""
-        chunks = processor.chunk_text(sample_text, strategy="fixed", chunk_size=50, overlap=10)
-        
+        chunks = processor.chunk_text(
+            sample_text, strategy="fixed", chunk_size=50, overlap=10
+        )
+
         assert len(chunks) > 0
         # Check that consecutive chunks have some overlap
         for i in range(len(chunks) - 1):
@@ -223,10 +228,10 @@ Some content here.
         """Test language detection."""
         english_text = "This is English text."
         german_text = "Das ist deutscher Text."
-        
+
         lang_en = processor._detect_language(english_text)
         lang_de = processor._detect_language(german_text)
-        
+
         assert lang_en in ["en", "unknown"]
         assert lang_de in ["de", "unknown"]
 
@@ -247,12 +252,14 @@ Some content here.
                 start_position=0,
                 end_position=10,
                 token_count=5,
-                word_count=2
+                word_count=2,
             )
         ]
-        
-        metadata = processor._create_enhanced_metadata(file_type, file_content, sample_text, chunks)
-        
+
+        metadata = processor._create_enhanced_metadata(
+            file_type, file_content, sample_text, chunks
+        )
+
         assert metadata["file_type"] == file_type
         assert metadata["file_size"] == len(file_content)
         assert metadata["text_length"] == len(sample_text)
@@ -274,19 +281,19 @@ Some content here.
                 start_position=0,
                 end_position=50,
                 token_count=10,
-                word_count=8
+                word_count=8,
             )
         ]
-        
+
         topics = processor._extract_topics(chunks)
         assert isinstance(topics, list)
 
     def test_process_document_pdf(self, processor, sample_pdf_content):
         """Test complete document processing for PDF."""
-        with patch.object(processor, '_extract_pdf_text') as mock_extract:
+        with patch.object(processor, "_extract_pdf_text") as mock_extract:
             mock_extract.return_value = "Extracted text from PDF"
-            
-            with patch.object(processor, 'chunk_text') as mock_chunk:
+
+            with patch.object(processor, "chunk_text") as mock_chunk:
                 mock_chunk.return_value = [
                     DocumentChunk(
                         content="chunk 1",
@@ -294,12 +301,12 @@ Some content here.
                         start_position=0,
                         end_position=10,
                         token_count=5,
-                        word_count=2
+                        word_count=2,
                     )
                 ]
-                
+
                 result = processor.process_document(sample_pdf_content, "test.pdf")
-                
+
                 assert "text" in result
                 assert "chunks" in result
                 assert "metadata" in result
@@ -307,7 +314,7 @@ Some content here.
 
     def test_process_document_docx(self, processor, sample_docx_content):
         """Test complete document processing for DOCX."""
-        with patch.object(processor, 'chunk_text') as mock_chunk:
+        with patch.object(processor, "chunk_text") as mock_chunk:
             mock_chunk.return_value = [
                 DocumentChunk(
                     content="chunk 1",
@@ -315,19 +322,19 @@ Some content here.
                     start_position=0,
                     end_position=10,
                     token_count=5,
-                    word_count=2
+                    word_count=2,
                 )
             ]
-            
+
             result = processor.process_document(sample_docx_content, "test.docx")
-            
+
             assert "text" in result
             assert "chunks" in result
             assert "metadata" in result
 
     def test_process_document_txt(self, processor, sample_txt_content):
         """Test complete document processing for TXT."""
-        with patch.object(processor, 'chunk_text') as mock_chunk:
+        with patch.object(processor, "chunk_text") as mock_chunk:
             mock_chunk.return_value = [
                 DocumentChunk(
                     content="chunk 1",
@@ -335,19 +342,19 @@ Some content here.
                     start_position=0,
                     end_position=10,
                     token_count=5,
-                    word_count=2
+                    word_count=2,
                 )
             ]
-            
+
             result = processor.process_document(sample_txt_content, "test.txt")
-            
+
             assert "text" in result
             assert "chunks" in result
             assert "metadata" in result
 
     def test_process_document_markdown(self, processor, sample_markdown_content):
         """Test complete document processing for Markdown."""
-        with patch.object(processor, 'chunk_text') as mock_chunk:
+        with patch.object(processor, "chunk_text") as mock_chunk:
             mock_chunk.return_value = [
                 DocumentChunk(
                     content="chunk 1",
@@ -355,12 +362,12 @@ Some content here.
                     start_position=0,
                     end_position=10,
                     token_count=5,
-                    word_count=2
+                    word_count=2,
                 )
             ]
-            
+
             result = processor.process_document(sample_markdown_content, "test.md")
-            
+
             assert "text" in result
             assert "chunks" in result
             assert "metadata" in result
@@ -368,7 +375,7 @@ Some content here.
     def test_process_document_unsupported_type(self, processor):
         """Test document processing for unsupported file type."""
         unsupported_content = b"some binary content"
-        
+
         with pytest.raises(ValueError):
             processor.process_document(unsupported_content, "test.xyz")
 
@@ -386,11 +393,15 @@ Some content here.
         """Test overlap validation."""
         # Test negative overlap
         with pytest.raises(ValueError):
-            processor.chunk_text(sample_text, strategy="fixed", chunk_size=100, overlap=-10)
+            processor.chunk_text(
+                sample_text, strategy="fixed", chunk_size=100, overlap=-10
+            )
 
         # Test overlap larger than chunk size
         with pytest.raises(ValueError):
-            processor.chunk_text(sample_text, strategy="fixed", chunk_size=100, overlap=150)
+            processor.chunk_text(
+                sample_text, strategy="fixed", chunk_size=100, overlap=150
+            )
 
     def test_document_chunk_creation(self, processor):
         """Test DocumentChunk creation and properties."""
@@ -405,9 +416,9 @@ Some content here.
             metadata={"source": "test"},
             importance_score=0.8,
             language="en",
-            entities=["test"]
+            entities=["test"],
         )
-        
+
         assert chunk.content == "Test content"
         assert chunk.chunk_id == "test_1"
         assert chunk.token_count == 3
@@ -433,9 +444,9 @@ Some content here.
             reading_time_minutes=2.5,
             complexity_score=0.7,
             topics=["technology", "testing"],
-            entities=["test", "document"]
+            entities=["test", "document"],
         )
-        
+
         assert metadata.file_type == "text/plain"
         assert metadata.file_size == 1024
         assert metadata.text_length == 500
@@ -462,11 +473,13 @@ Some content here.
     def test_process_pdf_file(self, processor):
         """Test processing PDF file from path."""
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
-            temp_file.write(b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n")
+            temp_file.write(
+                b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
+            )
             temp_file_path = temp_file.name
-        
+
         try:
-            with patch.object(processor, '_extract_pdf_text') as mock_extract:
+            with patch.object(processor, "_extract_pdf_text") as mock_extract:
                 mock_extract.return_value = "Extracted PDF text"
                 result = processor.process_pdf(temp_file_path)
                 assert result == "Extracted PDF text"
@@ -477,11 +490,11 @@ Some content here.
         """Test processing DOCX file from path."""
         doc = DocxDocument()
         doc.add_paragraph("Test document content.")
-        
+
         with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as temp_file:
             doc.save(temp_file.name)
             temp_file_path = temp_file.name
-        
+
         try:
             result = processor.process_docx(temp_file_path)
             assert "Test document content" in result
@@ -493,7 +506,7 @@ Some content here.
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as temp_file:
             temp_file.write(b"Test text content.")
             temp_file_path = temp_file.name
-        
+
         try:
             result = processor.process_txt(temp_file_path)
             assert "Test text content" in result
@@ -508,36 +521,38 @@ Some content here.
     def test_error_handling_corrupted_pdf(self, processor):
         """Test error handling for corrupted PDF files."""
         corrupted_pdf = b"This is not a valid PDF file"
-        
+
         with pytest.raises(Exception):
             processor._extract_pdf_text(corrupted_pdf)
 
     def test_error_handling_corrupted_docx(self, processor):
         """Test error handling for corrupted DOCX files."""
         corrupted_docx = b"This is not a valid DOCX file"
-        
+
         with pytest.raises(Exception):
             processor._extract_docx_text(corrupted_docx)
 
     def test_chunking_strategies_comparison(self, processor, sample_text):
         """Test different chunking strategies produce different results."""
         semantic_chunks = processor.chunk_text(sample_text, strategy="semantic")
-        fixed_chunks = processor.chunk_text(sample_text, strategy="fixed", chunk_size=100)
+        fixed_chunks = processor.chunk_text(
+            sample_text, strategy="fixed", chunk_size=100
+        )
         paragraph_chunks = processor.chunk_text(sample_text, strategy="paragraph")
         sentence_chunks = processor.chunk_text(sample_text, strategy="sentence")
-        
+
         # All strategies should produce chunks
         assert len(semantic_chunks) > 0
         assert len(fixed_chunks) > 0
         assert len(paragraph_chunks) > 0
         assert len(sentence_chunks) > 0
-        
+
         # Different strategies should produce different numbers of chunks
         chunk_counts = [
             len(semantic_chunks),
             len(fixed_chunks),
             len(paragraph_chunks),
-            len(sentence_chunks)
+            len(sentence_chunks),
         ]
         assert len(set(chunk_counts)) > 1  # At least some strategies should differ
 
@@ -552,16 +567,24 @@ Some content here.
                 start_position=0,
                 end_position=10,
                 token_count=5,
-                word_count=2
+                word_count=2,
             )
         ]
-        
-        metadata = processor._create_enhanced_metadata(file_type, file_content, sample_text, chunks)
-        
+
+        metadata = processor._create_enhanced_metadata(
+            file_type, file_content, sample_text, chunks
+        )
+
         required_fields = [
-            "file_type", "file_size", "text_length", "word_count", "chunk_count",
-            "processing_engine", "processing_success", "language"
+            "file_type",
+            "file_size",
+            "text_length",
+            "word_count",
+            "chunk_count",
+            "processing_engine",
+            "processing_success",
+            "language",
         ]
-        
+
         for field in required_fields:
             assert field in metadata
