@@ -636,7 +636,19 @@
     }
   },
   "sso": {
+    "title": "SSO Provider Management",
+    "description": "Configure and manage Single Sign-On providers for your application.",
+    "load_failed": "Failed to load SSO providers",
+    "update_failed": "Failed to update provider",
+    "config_load_failed": "Failed to load provider configuration",
+    "enabled": "enabled",
+    "disabled": "disabled",
+    "successfully": "successfully",
+    "updating": "Updating...",
+    "no_providers": "No SSO providers are currently configured.",
+    "configuration": "Configuration",
     "status": {
+      "label": "Status",
       "not_configured": "Not Configured",
       "active": "Active",
       "disabled": "Disabled"
@@ -648,6 +660,18 @@
       "scopes": "Scopes:",
       "metadata_url": "Metadata URL:"
     },
+    "actions": {
+      "view_config": "View Config",
+      "test_login": "Test Login",
+      "edit_config": "Edit Configuration"
+    },
+    "guide": {
+      "title": "Provider Management Guide",
+      "enable_disable": "Enable/disable providers using the toggle switch",
+      "view_config": "View configuration details for each provider",
+      "test_login": "Test login flows to verify provider setup",
+      "configure_env": "Configure providers in your environment variables"
+    },
     "help": {
       "enable_disable": "• Enable/disable providers using the toggle switch",
       "view_config": "• View configuration details for each provider",
@@ -656,6 +680,17 @@
     }
   },
   "performance": {
+    "title": "Performance Monitor",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Memory Usage",
+    "heap_used": "Heap Used",
+    "cache_performance": "Cache Performance",
+    "network_status": "Network Status",
+    "workers": "Workers",
+    "resources": "Resources",
+    "last_update": "Last update",
+    "online": "Online",
+    "offline": "Offline",
     "metrics": {
       "fcp": "FCP",
       "lcp": "LCP",

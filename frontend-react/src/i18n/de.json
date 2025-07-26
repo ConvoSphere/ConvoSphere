@@ -636,7 +636,19 @@
     }
   },
   "sso": {
+    "title": "SSO Provider Verwaltung",
+    "description": "Konfigurieren und verwalten Sie Single Sign-On Provider für Ihre Anwendung.",
+    "load_failed": "SSO Provider konnten nicht geladen werden",
+    "update_failed": "Provider konnte nicht aktualisiert werden",
+    "config_load_failed": "Provider-Konfiguration konnte nicht geladen werden",
+    "enabled": "aktiviert",
+    "disabled": "deaktiviert",
+    "successfully": "erfolgreich",
+    "updating": "Aktualisiere...",
+    "no_providers": "Derzeit sind keine SSO Provider konfiguriert.",
+    "configuration": "Konfiguration",
     "status": {
+      "label": "Status",
       "not_configured": "Nicht konfiguriert",
       "active": "Aktiv",
       "disabled": "Deaktiviert"
@@ -648,6 +660,18 @@
       "scopes": "Bereiche:",
       "metadata_url": "Metadaten-URL:"
     },
+    "actions": {
+      "view_config": "Konfiguration anzeigen",
+      "test_login": "Login testen",
+      "edit_config": "Konfiguration bearbeiten"
+    },
+    "guide": {
+      "title": "Provider Verwaltungsanleitung",
+      "enable_disable": "Provider mit dem Umschalter aktivieren/deaktivieren",
+      "view_config": "Konfigurationsdetails für jeden Provider anzeigen",
+      "test_login": "Login-Flows testen, um Provider-Setup zu verifizieren",
+      "configure_env": "Provider in Ihren Umgebungsvariablen konfigurieren"
+    },
     "help": {
       "enable_disable": "• Provider mit dem Umschalter aktivieren/deaktivieren",
       "view_config": "• Konfigurationsdetails für jeden Provider anzeigen",
@@ -656,6 +680,17 @@
     }
   },
   "performance": {
+    "title": "Performance Monitor",
+    "web_vitals": "Web Vitals",
+    "memory_usage": "Speichernutzung",
+    "heap_used": "Heap verwendet",
+    "cache_performance": "Cache Performance",
+    "network_status": "Netzwerkstatus",
+    "workers": "Worker",
+    "resources": "Ressourcen",
+    "last_update": "Letzte Aktualisierung",
+    "online": "Online",
+    "offline": "Offline",
     "metrics": {
       "fcp": "FCP",
       "lcp": "LCP",
