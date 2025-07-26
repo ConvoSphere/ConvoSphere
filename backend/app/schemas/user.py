@@ -6,9 +6,19 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+import re
 
 from ..models.user import AuthProvider, UserRole, UserStatus
+
+
+def validate_email(email: str) -> str:
+    """Custom email validator that allows local domains for development."""
+    # Basic email regex pattern
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(pattern, email):
+        raise ValueError('Invalid email format')
+    return email
 
 
 class UserGroupBase(BaseModel):
@@ -60,7 +70,12 @@ class UserGroupResponse(UserGroupBase):
 class UserBase(BaseModel):
     """Base schema for users."""
 
-    email: EmailStr = Field(..., description="User email address")
+    email: str = Field(..., description="User email address")
+    
+    @field_validator("email")
+    @classmethod
+    def validate_email_field(cls, v):
+        return validate_email(v)
     username: str = Field(..., min_length=3, max_length=100, description="Username")
     first_name: str | None = Field(None, max_length=100, description="First name")
     last_name: str | None = Field(None, max_length=100, description="Last name")
@@ -120,7 +135,14 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for updating a user."""
 
-    email: EmailStr | None = None
+    email: str | None = None
+    
+    @field_validator("email")
+    @classmethod
+    def validate_email_field(cls, v):
+        if v is None:
+            return v
+        return validate_email(v)
     username: str | None = Field(None, min_length=3, max_length=100)
     first_name: str | None = Field(None, max_length=100)
     last_name: str | None = Field(None, max_length=100)
@@ -259,7 +281,12 @@ class UserStats(BaseModel):
 class SSOUserCreate(BaseModel):
     """Schema for creating users via SSO."""
 
-    email: EmailStr
+    email: str
+    
+    @field_validator("email")
+    @classmethod
+    def validate_email_field(cls, v):
+        return validate_email(v)
     username: str | None = None
     first_name: str | None = None
     last_name: str | None = None

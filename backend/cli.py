@@ -15,6 +15,24 @@ from app.models.user import UserRole, UserStatus
 from app.schemas.user import UserCreate
 from app.services.user_service import UserService
 
+
+def get_redis_client():
+    """Get Redis client."""
+    try:
+        import redis
+        return redis.from_url(settings.redis_url)
+    except ImportError:
+        raise ImportError("Redis client not available")
+
+
+def get_weaviate_client():
+    """Get Weaviate client."""
+    try:
+        import weaviate
+        return weaviate.connect_to_weaviate(settings.weaviate_url)
+    except ImportError:
+        raise ImportError("Weaviate client not available")
+
 # DB-Session vorbereiten
 engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -22,14 +40,17 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def print_success(message):
     """Print success message."""
+    print(f"✅ {message}")
 
 
 def print_error(message):
     """Print error message."""
+    print(f"❌ {message}")
 
 
 def print_info(message):
     """Print info message."""
+    print(f"ℹ️  {message}")
 
 
 def db_migrate():
@@ -72,6 +93,8 @@ def db_status():
     if result.returncode != 0:
         print_error(result.stderr)
         sys.exit(result.returncode)
+    else:
+        print_info(f"Current migration: {result.stdout.strip()}")
 
 
 def db_test_connection():
@@ -91,7 +114,8 @@ def db_info():
         with engine.connect() as conn:
             # Get database name
             result = conn.execute(text("SELECT current_database()"))
-            result.scalar()
+            db_name = result.scalar()
+            print_info(f"Database: {db_name}")
 
             # Get table count
             result = conn.execute(
@@ -102,11 +126,13 @@ def db_info():
             """
                 ),
             )
-            result.scalar()
+            table_count = result.scalar()
+            print_info(f"Tables: {table_count}")
 
             # Get user count
             result = conn.execute(text("SELECT COUNT(*) FROM users"))
-            result.scalar()
+            user_count = result.scalar()
+            print_info(f"Users: {user_count}")
 
     except Exception as e:
         print_error(f"Error getting database info: {e}")
@@ -177,8 +203,12 @@ def user_list():
             },
         )()
         users = user_service.list_users(search_params, DummyUser()).users
-        for _user in users:
-            pass
+        if not users:
+            print_info("No users found")
+        else:
+            print_info(f"Found {len(users)} users:")
+            for user in users:
+                print_info(f"  - {user.email} ({user.username}) - {user.role} - {user.status}")
     except Exception as e:
         print_error(f"Error: {e}")
         sys.exit(1)
@@ -366,27 +396,31 @@ def backup_list(backup_dir="."):
 
 def monitoring_health():
     """Check system health."""
+    print_info("Checking system health...")
 
     # Database health
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-    except Exception:
-        pass
+        print_success("Database: Healthy")
+    except Exception as e:
+        print_error(f"Database: Unhealthy - {e}")
 
     # Redis health
     try:
         redis_client = get_redis_client()
         redis_client.ping()
-    except Exception:
-        pass
+        print_success("Redis: Healthy")
+    except Exception as e:
+        print_error(f"Redis: Unhealthy - {e}")
 
-    # Weaviate health
+    # Weaviate health (temporarily disabled due to v4 API changes)
     try:
-        weaviate_client = get_weaviate_client()
-        weaviate_client.is_ready()
-    except Exception:
-        pass
+        # weaviate_client = get_weaviate_client()
+        # weaviate_client.is_ready()
+        print_info("Weaviate: Health check temporarily disabled")
+    except Exception as e:
+        print_error(f"Weaviate: Unhealthy - {e}")
 
     # Backend API health
     try:
@@ -394,11 +428,11 @@ def monitoring_health():
 
         response = requests.get(f"{settings.backend_url}/health", timeout=5)
         if response.status_code == 200:
-            pass
+            print_success("Backend API: Healthy")
         else:
-            pass
-    except Exception:
-        pass
+            print_error(f"Backend API: Unhealthy - Status {response.status_code}")
+    except Exception as e:
+        print_error(f"Backend API: Unhealthy - {e}")
 
 
 def monitoring_logs(lines=50, level="INFO"):
@@ -525,6 +559,7 @@ def dev_quality_check():
 
 def dev_api_test(url="http://localhost:8000"):
     """Run basic API tests."""
+    print_info("Running API tests...")
 
     try:
         import requests
@@ -532,16 +567,16 @@ def dev_api_test(url="http://localhost:8000"):
         # Health check
         response = requests.get(f"{url}/health", timeout=5)
         if response.status_code == 200:
-            pass
+            print_success("Health endpoint: OK")
         else:
-            pass
+            print_error(f"Health endpoint: Failed - Status {response.status_code}")
 
         # API docs
         response = requests.get(f"{url}/docs", timeout=5)
         if response.status_code == 200:
-            pass
+            print_success("API docs: OK")
         else:
-            pass
+            print_error(f"API docs: Failed - Status {response.status_code}")
 
     except Exception as e:
         print_error(f"API test failed: {e}")
