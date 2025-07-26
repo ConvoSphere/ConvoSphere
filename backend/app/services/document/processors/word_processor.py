@@ -24,7 +24,7 @@ class WordProcessor:
             return {
                 "text": text_content,
                 "file_path": file_path,
-                "paragraph_count": len(doc.paragraphs)
+                "paragraph_count": len(doc.paragraphs),
             }
         except Exception as e:
             raise Exception(f"Error processing Word document: {str(e)}")

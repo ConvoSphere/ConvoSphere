@@ -8,7 +8,7 @@ priority management, and background task execution.
 import asyncio
 import time
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import uuid4
@@ -170,7 +170,7 @@ class TaskHandler:
         task_result = TaskResult(
             task_id=task_request.task_id,
             status=TaskStatus.RUNNING,
-            start_time=datetime.now(),
+            start_time=datetime.now(UTC),
         )
 
         try:
@@ -179,7 +179,7 @@ class TaskHandler:
 
             task_result.status = TaskStatus.COMPLETED
             task_result.result = result
-            task_result.end_time = datetime.now()
+            task_result.end_time = datetime.now(UTC)
             task_result.execution_time = (
                 task_result.end_time - task_result.start_time
             ).total_seconds()
@@ -191,7 +191,7 @@ class TaskHandler:
         except Exception as e:
             task_result.status = TaskStatus.FAILED
             task_result.error = str(e)
-            task_result.end_time = datetime.now()
+            task_result.end_time = datetime.now(UTC)
             task_result.execution_time = (
                 task_result.end_time - task_result.start_time
             ).total_seconds()
@@ -218,7 +218,7 @@ class PriorityQueue:
             task_type=task_request.task_type,
             priority=task_request.priority,
             status=TaskStatus.PENDING,
-            created_at=datetime.now(),
+            created_at=datetime.now(UTC),
             scheduled_at=task_request.scheduled_at,
             user_id=task_request.user_id,
             conversation_id=task_request.conversation_id,
@@ -244,7 +244,7 @@ class PriorityQueue:
                 # Update task info
                 if task_request.task_id in self.task_info:
                     self.task_info[task_request.task_id].status = TaskStatus.RUNNING
-                    self.task_info[task_request.task_id].started_at = datetime.now()
+                    self.task_info[task_request.task_id].started_at = datetime.now(UTC)
 
                 return task_request
 

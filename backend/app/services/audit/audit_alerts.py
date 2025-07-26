@@ -26,7 +26,7 @@ class AlertManager:
                 message=message,
                 severity=severity,
                 created_at=datetime.utcnow(),
-                is_resolved=False
+                is_resolved=False,
             )
             self.db.add(alert)
             self.db.commit()
@@ -35,7 +35,9 @@ class AlertManager:
             self.db.rollback()
             return False
 
-    def get_alerts(self, resolved: bool = None, severity: str = None) -> list[AuditAlert]:
+    def get_alerts(
+        self, resolved: bool = None, severity: str = None
+    ) -> list[AuditAlert]:
         """Get audit alerts with optional filtering."""
         query = self.db.query(AuditAlert)
 
@@ -64,7 +66,9 @@ class AlertManager:
     def get_alert_summary(self) -> dict[str, Any]:
         """Get a summary of alerts."""
         total_alerts = self.db.query(AuditAlert).count()
-        unresolved_alerts = self.db.query(AuditAlert).filter(AuditAlert.is_resolved == False).count()
+        unresolved_alerts = (
+            self.db.query(AuditAlert).filter(AuditAlert.is_resolved == False).count()
+        )
 
         severity_counts = {}
         for alert in self.db.query(AuditAlert).all():
@@ -73,5 +77,5 @@ class AlertManager:
         return {
             "total_alerts": total_alerts,
             "unresolved_alerts": unresolved_alerts,
-            "severity_counts": severity_counts
+            "severity_counts": severity_counts,
         }

@@ -5,7 +5,7 @@ This module provides API endpoints for managing hybrid chat/agent mode
 switching, configuration, and status queries.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.database import get_db
@@ -31,9 +31,7 @@ class ModeChangeRequestModel(BaseModel):
     """Request model for mode change."""
 
     target_mode: ConversationMode = Field(..., description="Target conversation mode")
-    reason: str | None = Field(
-        None, description="User-provided reason for mode change"
-    )
+    reason: str | None = Field(None, description="User-provided reason for mode change")
     force_change: bool = Field(
         default=False, description="Force mode change ignoring recommendations"
     )
@@ -87,9 +85,7 @@ class ModeDecisionRequest(BaseModel):
     context: dict[str, Any] | None = Field(
         default_factory=dict, description="Conversation context"
     )
-    force_mode: ConversationMode | None = Field(
-        None, description="Force specific mode"
-    )
+    force_mode: ConversationMode | None = Field(None, description="Force specific mode")
 
 
 @router.post(
@@ -269,7 +265,6 @@ async def decide_conversation_mode(
             force_mode=request.force_mode,
         )
 
-
     except Exception as e:
         logger.error(f"Error deciding conversation mode: {e}")
         raise HTTPException(
@@ -310,7 +305,7 @@ async def update_conversation_config(
         # Update configuration
         config_schema = HybridModeConfig(**config.dict())
         state.config = config_schema
-        state.updated_at = datetime.now()
+        state.updated_at = datetime.now(UTC)
 
         logger.info(f"Updated hybrid mode config for conversation {conversation_id}")
         return config

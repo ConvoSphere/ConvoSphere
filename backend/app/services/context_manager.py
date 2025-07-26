@@ -8,7 +8,7 @@ message history, and context optimization for AI assistants.
 import asyncio
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
 
@@ -134,7 +134,7 @@ class ContextManager:
                 "user_id": user_id,
                 **(metadata or {}),
             },
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             token_count=token_count,
         )
 
@@ -151,7 +151,7 @@ class ContextManager:
         # Add item to context
         context.items.append(item)
         context.current_tokens += token_count
-        context.updated_at = datetime.now()
+        context.updated_at = datetime.now(UTC)
 
         return True
 
@@ -188,7 +188,7 @@ class ContextManager:
                     "chunk_id": chunk.get("id"),
                     **(chunk.get("metadata", {})),
                 },
-                timestamp=datetime.now(),
+                timestamp=datetime.now(UTC),
                 token_count=token_count,
                 importance_score=chunk.get("score", 0.5),
             )
@@ -204,7 +204,7 @@ class ContextManager:
             context.items.append(item)
             context.current_tokens += token_count
 
-        context.updated_at = datetime.now()
+        context.updated_at = datetime.now(UTC)
         return True
 
     async def add_tool_result(
@@ -247,7 +247,7 @@ class ContextManager:
                 "result_type": type(result).__name__,
                 **(metadata or {}),
             },
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             token_count=token_count,
             importance_score=0.8,  # Tool results are moderately important
         )
@@ -262,7 +262,7 @@ class ContextManager:
 
         context.items.append(item)
         context.current_tokens += token_count
-        context.updated_at = datetime.now()
+        context.updated_at = datetime.now(UTC)
 
         return True
 
@@ -400,7 +400,7 @@ class ContextManager:
             # Higher importance score = higher priority
             # More recent = higher priority
             recency_score = (
-                datetime.now() - item.timestamp
+                datetime.now(UTC) - item.timestamp
             ).total_seconds() / 3600  # Hours ago
             return (item.importance_score, -recency_score)
 
@@ -457,7 +457,7 @@ class ContextManager:
         """Clean up old contexts periodically."""
         while True:
             try:
-                current_time = datetime.now()
+                current_time = datetime.now(UTC)
                 contexts_to_remove = []
 
                 for conversation_id, context in self.contexts.items():

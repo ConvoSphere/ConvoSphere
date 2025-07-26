@@ -21,7 +21,7 @@ class MetadataExtractor:
             "file_size": file_stat.st_size,
             "created_time": datetime.fromtimestamp(file_stat.st_ctime),
             "modified_time": datetime.fromtimestamp(file_stat.st_mtime),
-            "file_path": file_path
+            "file_path": file_path,
         }
 
         # Add content-specific metadata

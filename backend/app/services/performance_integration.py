@@ -5,7 +5,7 @@ This module integrates all Phase 3 services (caching, async processing, monitori
 into a unified interface for easy use throughout the application.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from loguru import logger
@@ -78,7 +78,7 @@ class PerformanceIntegration:
     def __init__(self, config: PerformanceConfig):
         self.config = config
         self.initialized = False
-        self.startup_time = datetime.now()
+        self.startup_time = datetime.now(UTC)
 
         # Service status
         self.services_status = {
@@ -592,7 +592,7 @@ class PerformanceIntegration:
         health_status = {
             "overall": "healthy",
             "services": {},
-            "uptime": (datetime.now() - self.startup_time).total_seconds(),
+            "uptime": (datetime.now(UTC) - self.startup_time).total_seconds(),
             "initialized": self.initialized,
         }
 

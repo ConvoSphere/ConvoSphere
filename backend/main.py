@@ -6,7 +6,7 @@ configuring middleware, routes, and application lifecycle events.
 """
 
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.api.v1.api import api_router
 from app.core.config import get_settings
@@ -170,7 +170,9 @@ def create_application() -> FastAPI:
 
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*"] if get_settings().debug else ["localhost", "127.0.0.1", "yourdomain.com"],
+        allowed_hosts=["*"]
+        if get_settings().debug
+        else ["localhost", "127.0.0.1", "yourdomain.com"],
     )
 
     # Add i18n middleware
@@ -237,7 +239,7 @@ def create_application() -> FastAPI:
             "app_name": get_settings().app_name,
             "version": get_settings().app_version,
             "environment": get_settings().environment,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "services": {"redis": {"status": redis_status, "info": redis_info}},
         }
 

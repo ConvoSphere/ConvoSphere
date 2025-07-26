@@ -6,24 +6,21 @@ This script analyzes the current test coverage of the AI Assistant Platform
 and generates a detailed report with recommendations for improvement.
 """
 
-import os
-import sys
 import json
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Tuple, Set
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
+from pathlib import Path
 
 
 @dataclass
 class CoverageItem:
     """Represents a coverage item with its details."""
+
     name: str
     path: str
     lines: int
     has_tests: bool
-    test_files: List[str]
+    test_files: list[str]
     priority: str
     estimated_coverage: float
 
@@ -31,16 +28,17 @@ class CoverageItem:
 @dataclass
 class CoverageReport:
     """Represents a complete coverage report."""
-    backend_apis: List[CoverageItem]
-    backend_services: List[CoverageItem]
-    backend_models: List[CoverageItem]
-    backend_utils: List[CoverageItem]
-    frontend_components: List[CoverageItem]
-    frontend_services: List[CoverageItem]
-    frontend_pages: List[CoverageItem]
-    frontend_store: List[CoverageItem]
+
+    backend_apis: list[CoverageItem]
+    backend_services: list[CoverageItem]
+    backend_models: list[CoverageItem]
+    backend_utils: list[CoverageItem]
+    frontend_components: list[CoverageItem]
+    frontend_services: list[CoverageItem]
+    frontend_pages: list[CoverageItem]
+    frontend_store: list[CoverageItem]
     total_coverage: float
-    recommendations: List[str]
+    recommendations: list[str]
 
 
 class TestCoverageAnalyzer:
@@ -53,7 +51,7 @@ class TestCoverageAnalyzer:
         self.tests_path = self.project_root / "tests"
         self.backend_tests_path = self.backend_path / "tests"
 
-    def analyze_backend_apis(self) -> List[CoverageItem]:
+    def analyze_backend_apis(self) -> list[CoverageItem]:
         """Analyze backend API endpoints coverage."""
         api_path = self.backend_path / "app" / "api" / "v1" / "endpoints"
         if not api_path.exists():
@@ -70,19 +68,21 @@ class TestCoverageAnalyzer:
             priority = self._determine_priority(name, lines, has_tests)
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return sorted(items, key=lambda x: (x.priority == "HOCH", -x.lines))
 
-    def analyze_backend_services(self) -> List[CoverageItem]:
+    def analyze_backend_services(self) -> list[CoverageItem]:
         """Analyze backend services coverage."""
         services_path = self.backend_path / "app" / "services"
         if not services_path.exists():
@@ -99,19 +99,21 @@ class TestCoverageAnalyzer:
             priority = self._determine_priority(name, lines, has_tests)
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return sorted(items, key=lambda x: (x.priority == "HOCH", -x.lines))
 
-    def analyze_backend_models(self) -> List[CoverageItem]:
+    def analyze_backend_models(self) -> list[CoverageItem]:
         """Analyze backend models coverage."""
         models_path = self.backend_path / "app" / "models"
         if not models_path.exists():
@@ -128,19 +130,21 @@ class TestCoverageAnalyzer:
             priority = "MITTEL" if has_tests else "NIEDRIG"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return items
 
-    def analyze_backend_utils(self) -> List[CoverageItem]:
+    def analyze_backend_utils(self) -> list[CoverageItem]:
         """Analyze backend utilities coverage."""
         utils_path = self.backend_path / "app" / "utils"
         if not utils_path.exists():
@@ -157,19 +161,21 @@ class TestCoverageAnalyzer:
             priority = "MITTEL" if has_tests else "NIEDRIG"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return items
 
-    def analyze_frontend_components(self) -> List[CoverageItem]:
+    def analyze_frontend_components(self) -> list[CoverageItem]:
         """Analyze frontend components coverage."""
         components_path = self.frontend_path / "src" / "components"
         if not components_path.exists():
@@ -186,19 +192,21 @@ class TestCoverageAnalyzer:
             priority = "MITTEL" if has_tests else "HOCH"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return sorted(items, key=lambda x: (x.priority == "HOCH", -x.lines))
 
-    def analyze_frontend_services(self) -> List[CoverageItem]:
+    def analyze_frontend_services(self) -> list[CoverageItem]:
         """Analyze frontend services coverage."""
         services_path = self.frontend_path / "src" / "services"
         if not services_path.exists():
@@ -212,19 +220,21 @@ class TestCoverageAnalyzer:
             priority = "MITTEL" if has_tests else "HOCH"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return sorted(items, key=lambda x: (x.priority == "HOCH", -x.lines))
 
-    def analyze_frontend_pages(self) -> List[CoverageItem]:
+    def analyze_frontend_pages(self) -> list[CoverageItem]:
         """Analyze frontend pages coverage."""
         pages_path = self.frontend_path / "src" / "pages"
         if not pages_path.exists():
@@ -238,19 +248,21 @@ class TestCoverageAnalyzer:
             priority = "NIEDRIG" if has_tests else "MITTEL"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return items
 
-    def analyze_frontend_store(self) -> List[CoverageItem]:
+    def analyze_frontend_store(self) -> list[CoverageItem]:
         """Analyze frontend store coverage."""
         store_path = self.frontend_path / "src" / "store"
         if not store_path.exists():
@@ -264,27 +276,31 @@ class TestCoverageAnalyzer:
             priority = "MITTEL" if has_tests else "HOCH"
             estimated_coverage = 100.0 if has_tests else 0.0
 
-            items.append(CoverageItem(
-                name=name,
-                path=str(file_path.relative_to(self.project_root)),
-                lines=lines,
-                has_tests=has_tests,
-                test_files=test_files,
-                priority=priority,
-                estimated_coverage=estimated_coverage
-            ))
+            items.append(
+                CoverageItem(
+                    name=name,
+                    path=str(file_path.relative_to(self.project_root)),
+                    lines=lines,
+                    has_tests=has_tests,
+                    test_files=test_files,
+                    priority=priority,
+                    estimated_coverage=estimated_coverage,
+                )
+            )
 
         return sorted(items, key=lambda x: (x.priority == "HOCH", -x.lines))
 
     def _count_lines(self, file_path: Path) -> int:
         """Count lines in a file."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 return len(f.readlines())
         except Exception:
             return 0
 
-    def _find_test_files(self, name: str, test_types: List[str]) -> Tuple[bool, List[str]]:
+    def _find_test_files(
+        self, name: str, test_types: list[str]
+    ) -> tuple[bool, list[str]]:
         """Find test files for a given component name."""
         test_files = []
         has_tests = False
@@ -307,7 +323,9 @@ class TestCoverageAnalyzer:
 
         return has_tests, test_files
 
-    def _find_frontend_test_files(self, name: str, component_type: str) -> Tuple[bool, List[str]]:
+    def _find_frontend_test_files(
+        self, name: str, component_type: str
+    ) -> tuple[bool, list[str]]:
         """Find frontend test files for a given component name."""
         test_files = []
         has_tests = False
@@ -328,9 +346,21 @@ class TestCoverageAnalyzer:
 
         # High priority items
         high_priority_keywords = [
-            "audit", "auth", "security", "rbac", "sso", "saml",
-            "ai", "chat", "conversation", "assistant", "rag",
-            "document", "embedding", "knowledge", "tool"
+            "audit",
+            "auth",
+            "security",
+            "rbac",
+            "sso",
+            "saml",
+            "ai",
+            "chat",
+            "conversation",
+            "assistant",
+            "rag",
+            "document",
+            "embedding",
+            "knowledge",
+            "tool",
         ]
 
         if any(keyword in name.lower() for keyword in high_priority_keywords):
@@ -342,24 +372,28 @@ class TestCoverageAnalyzer:
 
         return "NIEDRIG"
 
-    def calculate_total_coverage(self, items: List[CoverageItem]) -> float:
+    def calculate_total_coverage(self, items: list[CoverageItem]) -> float:
         """Calculate total coverage percentage."""
         if not items:
             return 0.0
 
         total_lines = sum(item.lines for item in items)
-        covered_lines = sum(item.lines * (item.estimated_coverage / 100.0) for item in items)
+        covered_lines = sum(
+            item.lines * (item.estimated_coverage / 100.0) for item in items
+        )
 
         return (covered_lines / total_lines * 100.0) if total_lines > 0 else 0.0
 
-    def generate_recommendations(self, report: CoverageReport) -> List[str]:
+    def generate_recommendations(self, report: CoverageReport) -> list[str]:
         """Generate recommendations based on coverage analysis."""
         recommendations = []
 
         # Backend API recommendations
         untested_apis = [item for item in report.backend_apis if not item.has_tests]
         if untested_apis:
-            high_priority_apis = [item for item in untested_apis if item.priority == "HOCH"]
+            high_priority_apis = [
+                item for item in untested_apis if item.priority == "HOCH"
+            ]
             if high_priority_apis:
                 recommendations.append(
                     f"🔴 KRITISCH: {len(high_priority_apis)} hochprioritäre API-Endpoints haben keine Tests: "
@@ -367,9 +401,13 @@ class TestCoverageAnalyzer:
                 )
 
         # Backend Services recommendations
-        untested_services = [item for item in report.backend_services if not item.has_tests]
+        untested_services = [
+            item for item in report.backend_services if not item.has_tests
+        ]
         if untested_services:
-            high_priority_services = [item for item in untested_services if item.priority == "HOCH"]
+            high_priority_services = [
+                item for item in untested_services if item.priority == "HOCH"
+            ]
             if high_priority_services:
                 recommendations.append(
                     f"🔴 KRITISCH: {len(high_priority_services)} hochprioritäre Services haben keine Tests: "
@@ -377,7 +415,9 @@ class TestCoverageAnalyzer:
                 )
 
         # Frontend recommendations
-        untested_components = [item for item in report.frontend_components if not item.has_tests]
+        untested_components = [
+            item for item in report.frontend_components if not item.has_tests
+        ]
         if untested_components:
             recommendations.append(
                 f"🟡 WARNUNG: {len(untested_components)} Frontend-Komponenten haben keine Tests"
@@ -405,8 +445,16 @@ class TestCoverageAnalyzer:
         frontend_store = self.analyze_frontend_store()
 
         # Calculate total coverage
-        all_items = (backend_apis + backend_services + backend_models + backend_utils +
-                    frontend_components + frontend_services + frontend_pages + frontend_store)
+        all_items = (
+            backend_apis
+            + backend_services
+            + backend_models
+            + backend_utils
+            + frontend_components
+            + frontend_services
+            + frontend_pages
+            + frontend_store
+        )
         total_coverage = self.calculate_total_coverage(all_items)
 
         report = CoverageReport(
@@ -419,7 +467,7 @@ class TestCoverageAnalyzer:
             frontend_pages=frontend_pages,
             frontend_store=frontend_store,
             total_coverage=total_coverage,
-            recommendations=[]
+            recommendations=[],
         )
 
         report.recommendations = self.generate_recommendations(report)
@@ -427,10 +475,10 @@ class TestCoverageAnalyzer:
 
     def print_report(self, report: CoverageReport):
         """Print a formatted coverage report."""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("📊 TEST COVERAGE ANALYSE BERICHT")
-        print("="*80)
-        print(f"📅 Generiert am: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("=" * 80)
+        print(f"📅 Generiert am: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"🎯 Gesamt-Testabdeckung: {report.total_coverage:.1f}%")
         print()
 
@@ -469,35 +517,63 @@ class TestCoverageAnalyzer:
         # Summary
         print("📈 ZUSAMMENFASSUNG")
         print("-" * 40)
-        print(f"  Backend APIs: {len([i for i in report.backend_apis if i.has_tests])}/{len(report.backend_apis)} getestet")
-        print(f"  Backend Services: {len([i for i in report.backend_services if i.has_tests])}/{len(report.backend_services)} getestet")
-        print(f"  Frontend Components: {len([i for i in report.frontend_components if i.has_tests])}/{len(report.frontend_components)} getestet")
-        print(f"  Frontend Services: {len([i for i in report.frontend_services if i.has_tests])}/{len(report.frontend_services)} getestet")
+        print(
+            f"  Backend APIs: {len([i for i in report.backend_apis if i.has_tests])}/{len(report.backend_apis)} getestet"
+        )
+        print(
+            f"  Backend Services: {len([i for i in report.backend_services if i.has_tests])}/{len(report.backend_services)} getestet"
+        )
+        print(
+            f"  Frontend Components: {len([i for i in report.frontend_components if i.has_tests])}/{len(report.frontend_components)} getestet"
+        )
+        print(
+            f"  Frontend Services: {len([i for i in report.frontend_services if i.has_tests])}/{len(report.frontend_services)} getestet"
+        )
 
-    def _print_coverage_section(self, items: List[CoverageItem]):
+    def _print_coverage_section(self, items: list[CoverageItem]):
         """Print a coverage section."""
         for item in items:
             status = "✅" if item.has_tests else "❌"
-            priority_emoji = {"HOCH": "🔴", "MITTEL": "🟡", "NIEDRIG": "🟢"}[item.priority]
-            print(f"  {status} {priority_emoji} {item.name:<30} ({item.lines:>4} Zeilen)")
+            priority_emoji = {"HOCH": "🔴", "MITTEL": "🟡", "NIEDRIG": "🟢"}[
+                item.priority
+            ]
+            print(
+                f"  {status} {priority_emoji} {item.name:<30} ({item.lines:>4} Zeilen)"
+            )
 
-    def save_report_json(self, report: CoverageReport, output_path: str = "test_coverage_report.json"):
+    def save_report_json(
+        self, report: CoverageReport, output_path: str = "test_coverage_report.json"
+    ):
         """Save the report as JSON."""
         report_data = {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "total_coverage": report.total_coverage,
             "backend_apis": [self._item_to_dict(item) for item in report.backend_apis],
-            "backend_services": [self._item_to_dict(item) for item in report.backend_services],
-            "backend_models": [self._item_to_dict(item) for item in report.backend_models],
-            "backend_utils": [self._item_to_dict(item) for item in report.backend_utils],
-            "frontend_components": [self._item_to_dict(item) for item in report.frontend_components],
-            "frontend_services": [self._item_to_dict(item) for item in report.frontend_services],
-            "frontend_pages": [self._item_to_dict(item) for item in report.frontend_pages],
-            "frontend_store": [self._item_to_dict(item) for item in report.frontend_store],
-            "recommendations": report.recommendations
+            "backend_services": [
+                self._item_to_dict(item) for item in report.backend_services
+            ],
+            "backend_models": [
+                self._item_to_dict(item) for item in report.backend_models
+            ],
+            "backend_utils": [
+                self._item_to_dict(item) for item in report.backend_utils
+            ],
+            "frontend_components": [
+                self._item_to_dict(item) for item in report.frontend_components
+            ],
+            "frontend_services": [
+                self._item_to_dict(item) for item in report.frontend_services
+            ],
+            "frontend_pages": [
+                self._item_to_dict(item) for item in report.frontend_pages
+            ],
+            "frontend_store": [
+                self._item_to_dict(item) for item in report.frontend_store
+            ],
+            "recommendations": report.recommendations,
         }
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2, ensure_ascii=False)
 
         print(f"📄 Bericht gespeichert: {output_path}")
@@ -511,7 +587,7 @@ class TestCoverageAnalyzer:
             "has_tests": item.has_tests,
             "test_files": item.test_files,
             "priority": item.priority,
-            "estimated_coverage": item.estimated_coverage
+            "estimated_coverage": item.estimated_coverage,
         }
 
 

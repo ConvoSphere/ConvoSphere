@@ -7,7 +7,7 @@ validation, caching, monitoring, and dependency management.
 
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -116,7 +116,7 @@ class ToolCache:
         cached_time = cached_data.get("cached_at")
 
         # Check if cache is expired
-        if cached_time and datetime.now() - cached_time > timedelta(
+        if cached_time and datetime.now(UTC) - cached_time > timedelta(
             hours=self.ttl_hours,
         ):
             del self.cache[cache_key]
@@ -124,7 +124,7 @@ class ToolCache:
             return None
 
         # Update access time for LRU
-        self.access_times[cache_key] = datetime.now()
+        self.access_times[cache_key] = datetime.now(UTC)
         return cached_data.get("result")
 
     def set(self, tool_name: str, arguments: dict[str, Any], result: Any) -> None:
@@ -137,11 +137,11 @@ class ToolCache:
 
         self.cache[cache_key] = {
             "result": result,
-            "cached_at": datetime.now(),
+            "cached_at": datetime.now(UTC),
             "tool_name": tool_name,
             "arguments": arguments,
         }
-        self.access_times[cache_key] = datetime.now()
+        self.access_times[cache_key] = datetime.now(UTC)
 
     def _evict_lru(self) -> None:
         """Evict least recently used cache entry."""
@@ -289,7 +289,7 @@ class EnhancedToolExecutor:
                     result.result = cached_result
                     result.status = "completed"
                     result.cache_hit = True
-                    result.end_time = datetime.now()
+                    result.end_time = datetime.now(UTC)
                     result.execution_time = 0.0
                     logger.info(f"Cache hit for tool {request.tool_name}")
                     return result
@@ -301,7 +301,7 @@ class EnhancedToolExecutor:
         except Exception as e:
             result.status = "failed"
             result.error = str(e)
-            result.end_time = datetime.now()
+            result.end_time = datetime.now(UTC)
             if result.start_time:
                 result.execution_time = (
                     result.end_time - result.start_time
@@ -327,7 +327,7 @@ class EnhancedToolExecutor:
     ) -> ToolExecutionResult:
         """Internal tool execution with timeout and retry logic."""
         result.status = "running"
-        result.start_time = datetime.now()
+        result.start_time = datetime.now(UTC)
 
         # Try to execute tool with retries
         last_error = None
@@ -341,7 +341,7 @@ class EnhancedToolExecutor:
 
                 result.result = tool_result
                 result.status = "completed"
-                result.end_time = datetime.now()
+                result.end_time = datetime.now(UTC)
                 result.execution_time = (
                     result.end_time - result.start_time
                 ).total_seconds()
@@ -373,7 +373,7 @@ class EnhancedToolExecutor:
         # All attempts failed
         result.status = "failed"
         result.error = last_error
-        result.end_time = datetime.now()
+        result.end_time = datetime.now(UTC)
         result.execution_time = (result.end_time - result.start_time).total_seconds()
 
         raise ToolError(
@@ -446,8 +446,8 @@ class EnhancedToolExecutor:
                     conversation_id=request.conversation_id,
                     status="failed",
                     error=str(e),
-                    start_time=datetime.now(),
-                    end_time=datetime.now(),
+                    start_time=datetime.now(UTC),
+                    end_time=datetime.now(UTC),
                 )
                 results.append(failed_result)
 

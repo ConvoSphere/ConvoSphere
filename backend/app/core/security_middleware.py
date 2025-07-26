@@ -31,10 +31,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
         response.headers["Content-Security-Policy"] = self._get_csp_header()
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+        )
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
         response.headers["X-Download-Options"] = "noopen"
         response.headers["X-DNS-Prefetch-Control"] = "off"
@@ -63,7 +67,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "upgrade-insecure-requests;"
         )
 
-    async def _log_security_event(self, request: Request, response: Response, process_time: float):
+    async def _log_security_event(
+        self, request: Request, response: Response, process_time: float
+    ):
         """Log security-relevant events."""
         # Log suspicious requests
         if response.status_code >= 400:
@@ -104,7 +110,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return Response(
                 content="Rate limit exceeded",
                 status_code=429,
-                headers={"Retry-After": "60"}
+                headers={"Retry-After": "60"},
             )
 
         # Process request
@@ -145,7 +151,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def _cleanup_old_entries(self, current_time: int):
         """Clean up old rate limit entries."""
         keys_to_remove = [
-            key for key in self.request_counts.keys()
+            key
+            for key in self.request_counts.keys()
             if int(key.split(":")[1]) < current_time - 1
         ]
         for key in keys_to_remove:
@@ -163,26 +170,17 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
         # Check for suspicious headers
         if self._has_suspicious_headers(request):
             logger.warning(f"Suspicious headers from {request.client.host}")
-            return Response(
-                content="Invalid request",
-                status_code=400
-            )
+            return Response(content="Invalid request", status_code=400)
 
         # Check for suspicious user agents
         if self._has_suspicious_user_agent(request):
             logger.warning(f"Suspicious user agent from {request.client.host}")
-            return Response(
-                content="Invalid request",
-                status_code=400
-            )
+            return Response(content="Invalid request", status_code=400)
 
         # Check for path traversal attempts
         if self._has_path_traversal(request):
             logger.warning(f"Path traversal attempt from {request.client.host}")
-            return Response(
-                content="Invalid request",
-                status_code=400
-            )
+            return Response(content="Invalid request", status_code=400)
 
         # Process request
         response = await call_next(request)
@@ -191,11 +189,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
 
     def _has_suspicious_headers(self, request: Request) -> bool:
         """Check for suspicious headers."""
-        suspicious_headers = [
-            "X-Forwarded-Host",
-            "X-Original-URL",
-            "X-Rewrite-URL"
-        ]
+        suspicious_headers = ["X-Forwarded-Host", "X-Original-URL", "X-Rewrite-URL"]
 
         for header in suspicious_headers:
             if header in request.headers:
@@ -214,7 +208,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
             "scanner",
             "bot",
             "crawler",
-            "spider"
+            "spider",
         ]
 
         return any(pattern in user_agent for pattern in suspicious_patterns)
@@ -232,7 +226,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
             "/dev/",
             "cmd",
             "exec",
-            "system"
+            "system",
         ]
 
         return any(pattern in path for pattern in suspicious_patterns)

@@ -25,7 +25,7 @@ class AuditLogger:
                 event_type=event_type,
                 user_id=user_id,
                 details=details,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
             )
             self.db.add(audit_log)
             self.db.commit()
@@ -46,18 +46,21 @@ class AuditLogger:
 
         return query.order_by(AuditLog.timestamp.desc()).all()
 
-    def generate_report(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def generate_report(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Generate an audit report for the specified period."""
-        events = self.db.query(AuditLog).filter(
-            AuditLog.timestamp >= start_date,
-            AuditLog.timestamp <= end_date
-        ).all()
+        events = (
+            self.db.query(AuditLog)
+            .filter(AuditLog.timestamp >= start_date, AuditLog.timestamp <= end_date)
+            .all()
+        )
 
         return {
             "period": {"start": start_date, "end": end_date},
             "total_events": len(events),
             "event_types": self._count_event_types(events),
-            "users": self._count_users(events)
+            "users": self._count_users(events),
         }
 
     def _count_event_types(self, events: list[AuditLog]) -> dict[str, int]:

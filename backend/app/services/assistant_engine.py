@@ -8,7 +8,7 @@ capabilities, structured output, and integration with the HybridModeManager.
 import asyncio
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from loguru import logger
@@ -122,7 +122,7 @@ class AssistantEngine:
             Processing result with structured response
         """
         # Create processing request
-        request_id = f"req_{len(self.processing_requests)}_{datetime.now().timestamp()}"
+        request_id = f"req_{len(self.processing_requests)}_{datetime.now(UTC).timestamp()}"
 
         request = ProcessingRequest(
             request_id=request_id,
@@ -165,7 +165,7 @@ class AssistantEngine:
 
     async def _process_request(self, request: ProcessingRequest) -> ProcessingResult:
         """Process a single request with hybrid mode support."""
-        start_time = datetime.now()
+        start_time = datetime.now(UTC)
 
         try:
             # Initialize hybrid mode if not already done
@@ -231,13 +231,13 @@ class AssistantEngine:
                     if ai_response.metadata
                     else 0
                 ),
-                processing_time=(datetime.now() - start_time).total_seconds(),
+                processing_time=(datetime.now(UTC) - start_time).total_seconds(),
             )
 
             # Save response to conversation
             await self._save_response_to_conversation(request, structured_response)
 
-            processing_time = (datetime.now() - start_time).total_seconds()
+            processing_time = (datetime.now(UTC) - start_time).total_seconds()
 
             return ProcessingResult(
                 request_id=request.request_id,
@@ -301,7 +301,6 @@ class AssistantEngine:
                 "message_count": len(messages),
                 "assistant_id": request.assistant_id,
             }
-
 
         except Exception as e:
             logger.error(f"Error getting conversation context: {e}")

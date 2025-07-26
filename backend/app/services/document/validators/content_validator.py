@@ -28,7 +28,7 @@ class ContentValidator:
             r"<script[^>]*>",
             r"javascript:",
             r"data:text/html",
-            r"vbscript:"
+            r"vbscript:",
         ]
 
         for pattern in suspicious_patterns:

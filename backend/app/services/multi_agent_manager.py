@@ -5,7 +5,7 @@ This module provides multi-agent conversation management with
 agent handoff, collaboration, and performance monitoring.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from loguru import logger
@@ -256,9 +256,9 @@ class MultiAgentManager:
                     current_step=0,
                     total_steps=1,
                     status="idle",
-                    last_activity=datetime.now(),
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
+                    last_activity=datetime.now(UTC),
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
                 )
 
             self.active_conversations[conversation_id] = conversation
@@ -310,7 +310,7 @@ class MultiAgentManager:
             # Update conversation
             old_agent = conversation.current_agent
             conversation.current_agent = request.to_agent_id
-            conversation.updated_at = datetime.now()
+            conversation.updated_at = datetime.now(UTC)
 
             # Add to conversation flow
             handoff_event = {
@@ -319,7 +319,7 @@ class MultiAgentManager:
                 "to_agent": request.to_agent_id,
                 "reason": request.reason,
                 "context": request.context,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
             conversation.conversation_flow.append(handoff_event)
 
@@ -329,12 +329,12 @@ class MultiAgentManager:
 
             if from_state_key in self.agent_states:
                 self.agent_states[from_state_key].status = "idle"
-                self.agent_states[from_state_key].updated_at = datetime.now()
+                self.agent_states[from_state_key].updated_at = datetime.now(UTC)
 
             if to_state_key in self.agent_states:
                 self.agent_states[to_state_key].status = "active"
-                self.agent_states[to_state_key].last_activity = datetime.now()
-                self.agent_states[to_state_key].updated_at = datetime.now()
+                self.agent_states[to_state_key].last_activity = datetime.now(UTC)
+                self.agent_states[to_state_key].updated_at = datetime.now(UTC)
 
             # Record handoff
             self.handoff_history.append(
@@ -343,7 +343,7 @@ class MultiAgentManager:
                     "from_agent": request.from_agent_id,
                     "to_agent": request.to_agent_id,
                     "reason": request.reason,
-                    "timestamp": datetime.now(),
+                    "timestamp": datetime.now(UTC),
                 },
             )
 
@@ -386,7 +386,7 @@ class MultiAgentManager:
             # Update conversation for collaboration
             conversation.collaboration_mode = True
             conversation.shared_context.update(request.shared_context)
-            conversation.updated_at = datetime.now()
+            conversation.updated_at = datetime.now(UTC)
 
             # Add collaboration event to flow
             collaboration_event = {
@@ -394,7 +394,7 @@ class MultiAgentManager:
                 "agents": request.agent_ids,
                 "collaboration_type": request.collaboration_type,
                 "coordination_strategy": request.coordination_strategy,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
             conversation.conversation_flow.append(collaboration_event)
 
@@ -403,7 +403,7 @@ class MultiAgentManager:
                 state_key = f"{request.conversation_id}:{agent_id}"
                 if state_key in self.agent_states:
                     self.agent_states[state_key].status = "collaborating"
-                    self.agent_states[state_key].updated_at = datetime.now()
+                    self.agent_states[state_key].updated_at = datetime.now(UTC)
 
             # Record collaboration
             self.collaboration_history.append(
@@ -411,7 +411,7 @@ class MultiAgentManager:
                     "conversation_id": request.conversation_id,
                     "agents": request.agent_ids,
                     "collaboration_type": request.collaboration_type,
-                    "timestamp": datetime.now(),
+                    "timestamp": datetime.now(UTC),
                 },
             )
 
@@ -464,16 +464,16 @@ class MultiAgentManager:
             state_key = f"{conversation_id}:{agent_id}"
             if state_key in self.agent_states:
                 self.agent_states[state_key].status = "processing"
-                self.agent_states[state_key].last_activity = datetime.now()
-                self.agent_states[state_key].updated_at = datetime.now()
+                self.agent_states[state_key].last_activity = datetime.now(UTC)
+                self.agent_states[state_key].updated_at = datetime.now(UTC)
 
             # Generate response (simplified - in real implementation, this would call AI service)
-            start_time = datetime.now()
+            start_time = datetime.now(UTC)
 
             # Simulate AI response generation
             response_content = f"Response from {agent_config.name}: {user_message}"
 
-            end_time = datetime.now()
+            end_time = datetime.now(UTC)
             processing_time = (end_time - start_time).total_seconds()
 
             # Create response
@@ -488,7 +488,7 @@ class MultiAgentManager:
             # Update agent state
             if state_key in self.agent_states:
                 self.agent_states[state_key].status = "idle"
-                self.agent_states[state_key].updated_at = datetime.now()
+                self.agent_states[state_key].updated_at = datetime.now(UTC)
 
             # Record performance metrics
             metrics = AgentPerformanceMetrics(
@@ -509,7 +509,7 @@ class MultiAgentManager:
                 "user_message": user_message,
                 "agent_response": response_content,
                 "processing_time": processing_time,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
             conversation.conversation_flow.append(flow_event)
 
