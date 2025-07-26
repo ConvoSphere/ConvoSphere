@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains the comprehensive test suite for the ChatAssistant project. The tests are organized by type and follow best practices for maintainability and scalability.
+This directory contains the comprehensive test suite for the ConvoSphere project. The tests are organized by type and follow best practices for maintainability and scalability.
 
 ## Test Structure
 

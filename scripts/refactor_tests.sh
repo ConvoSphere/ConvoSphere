@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ChatAssistant Test Consolidation Script
+# ConvoSphere Test Consolidation Script
 # This script consolidates the test structure by moving backend tests to the main tests directory
 
 set -e  # Exit on any error
@@ -115,7 +115,7 @@ from backend.app.models.user import User
 from backend.main import app
 
 # Test configuration - Using PostgreSQL for all tests
-TEST_DATABASE_URL = "postgresql://test_user:test_password@localhost:5434/chatassistant_test"
+TEST_DATABASE_URL = "postgresql://test_user:test_password@localhost:5434/convosphere_test"
 TEST_REDIS_URL = "redis://localhost:6380"
 TEST_WEAVIATE_URL = "http://localhost:8081"
 
@@ -543,7 +543,7 @@ print_status "Creating unified test runner..."
 cat > scripts/run_tests.sh << 'EOF'
 #!/bin/bash
 
-# Unified Test Runner for ChatAssistant
+# Unified Test Runner for ConvoSphere
 # This script runs tests from the consolidated test structure
 
 set -e
@@ -675,103 +675,7 @@ cat > tests/README_CONSOLIDATED.md << 'EOF'
 # Consolidated Test Structure
 
 ## Overview
-This directory contains all tests for the ChatAssistant project, including both backend and frontend tests.
+This directory contains all tests for the ConvoSphere project, including both backend and frontend tests.
 
 ## Structure
 ```
-tests/
-├── unit/                 # Unit tests (fast, isolated)
-│   ├── backend/         # Backend unit tests
-│   └── frontend/        # Frontend unit tests
-├── integration/         # Integration tests (component interaction)
-│   ├── backend/         # Backend integration tests
-│   └── frontend/        # Frontend integration tests
-├── e2e/                # End-to-end tests (full workflows)
-├── performance/        # Performance and load tests
-├── security/           # Security and authentication tests
-├── blackbox/           # Black box testing
-├── fixtures/           # Test data and fixtures
-├── conftest.py         # Consolidated test configuration
-└── README.md           # This file
-```
-
-## Running Tests
-
-### All Tests
-```bash
-./scripts/run_tests.sh
-```
-
-### Specific Test Types
-```bash
-# Unit tests only
-./scripts/run_tests.sh --type unit
-
-# Backend tests only
-./scripts/run_tests.sh --type backend
-
-# Integration tests only
-./scripts/run_tests.sh --type integration
-
-# Performance tests only
-./scripts/run_tests.sh --type performance
-```
-
-### Options
-- `--parallel`: Run tests in parallel
-- `--no-coverage`: Disable coverage reporting
-- `--verbose`: Verbose output
-
-## Test Configuration
-- Database: PostgreSQL (test database)
-- Redis: Mocked for testing
-- Weaviate: Mocked for testing
-- All fixtures are available in `conftest.py`
-
-## Writing Tests
-1. Place tests in the appropriate directory based on type
-2. Use fixtures from `conftest.py`
-3. Follow naming convention: `test_*.py`
-4. Use descriptive test names
-5. Add appropriate markers for test categorization
-
-## Migration Notes
-- All backend tests have been moved from `backend/tests/` to `tests/`
-- Import paths have been updated automatically
-- Original test structure is backed up in `tests_backup_*`
-EOF
-
-# Step 9: Clean up old backend tests directory
-print_status "Cleaning up old backend tests directory..."
-if [ -d "backend/tests" ]; then
-    mv backend/tests backend/tests_old
-    print_warning "Old backend tests moved to backend/tests_old (can be deleted after verification)"
-fi
-
-# Step 10: Run a quick test to verify everything works
-print_status "Running verification test..."
-if python -m pytest tests/unit/backend/ -v --tb=short --maxfail=1; then
-    print_success "Verification test passed!"
-else
-    print_warning "Verification test failed. Check the output above."
-    print_warning "You may need to manually fix some import issues."
-fi
-
-print_success "Test consolidation completed!"
-echo ""
-echo "📋 Summary:"
-echo "✅ Backend tests moved to tests/"
-echo "✅ conftest.py consolidated"
-echo "✅ pytest.ini updated"
-echo "✅ Test runner script created"
-echo "✅ Documentation updated"
-echo "✅ Backup created in $BACKUP_DIR"
-echo ""
-echo "🚀 Next steps:"
-echo "1. Review the changes in tests/"
-echo "2. Run tests: ./scripts/run_tests.sh"
-echo "3. Fix any remaining import issues"
-echo "4. Delete backup when satisfied: rm -rf $BACKUP_DIR"
-echo "5. Delete old backend tests: rm -rf backend/tests_old"
-echo ""
-echo "📚 Documentation: tests/README_CONSOLIDATED.md"

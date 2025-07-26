@@ -113,9 +113,9 @@ def backup_create(output=None):
             parsed = urllib.parse.urlparse(db_url)
             host = parsed.hostname or "localhost"
             port = parsed.port or 5432
-            database = parsed.path[1:] if parsed.path else "chatassistant"
-            username = parsed.username or "chatassistant"
-            password = parsed.password or "chatassistant_password"
+            database = parsed.path[1:] if parsed.path else "convosphere"
+            username = parsed.username or "convosphere"
+            password = parsed.password or "convosphere_password"
 
             # Set PGPASSWORD environment variable
             env = os.environ.copy()
@@ -182,9 +182,9 @@ def backup_restore(backup_file, confirm=False):
             parsed = urllib.parse.urlparse(db_url)
             host = parsed.hostname or "localhost"
             port = parsed.port or 5432
-            database = parsed.path[1:] if parsed.path else "chatassistant"
-            username = parsed.username or "chatassistant"
-            password = parsed.password or "chatassistant_password"
+            database = parsed.path[1:] if parsed.path else "convosphere"
+            username = parsed.username or "convosphere"
+            password = parsed.password or "convosphere_password"
 
             env = os.environ.copy()
             env["PGPASSWORD"] = password
@@ -755,7 +755,7 @@ def show_help():
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(description="ChatAssistant Admin CLI")
+    parser = argparse.ArgumentParser(description="ConvoSphere Admin CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Database commands

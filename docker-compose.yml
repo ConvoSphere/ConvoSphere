@@ -10,7 +10,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://chatassistant:chatassistant_password@postgres:5432/chatassistant
+      - DATABASE_URL=postgresql://convosphere:convosphere_password@postgres:5432/convosphere
       - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=http://weaviate:8080
       - OPENAI_API_KEY=sk-3dd4I14gJ4rqM3mWsVbGRw
@@ -45,7 +45,7 @@ services:
         condition: service_started
     restart: unless-stopped
     networks:
-      - chatassistant-network
+      - convosphere-network
 
   frontend:
     build:
@@ -60,14 +60,14 @@ services:
       - backend
     restart: unless-stopped
     networks:
-      - chatassistant-network
+      - convosphere-network
 
   postgres:
     image: postgres:15
     environment:
-      - POSTGRES_DB=chatassistant
-      - POSTGRES_USER=chatassistant
-      - POSTGRES_PASSWORD=chatassistant_password
+      - POSTGRES_DB=convosphere
+      - POSTGRES_USER=convosphere
+      - POSTGRES_PASSWORD=convosphere_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -75,9 +75,9 @@ services:
       - "5432:5432"
     restart: unless-stopped
     networks:
-      - chatassistant-network
+      - convosphere-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chatassistant -d chatassistant"]
+      test: ["CMD-SHELL", "pg_isready -U convosphere -d convosphere"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -93,7 +93,7 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
     restart: unless-stopped
     networks:
-      - chatassistant-network
+      - convosphere-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -116,7 +116,7 @@ services:
       - weaviate_data:/var/lib/weaviate
     restart: unless-stopped
     networks:
-      - chatassistant-network
+      - convosphere-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/.well-known/ready"]
       interval: 30s
@@ -130,5 +130,5 @@ volumes:
   redis_data:
 
 networks:
-  chatassistant-network:
+  convosphere-network:
     driver: bridge 

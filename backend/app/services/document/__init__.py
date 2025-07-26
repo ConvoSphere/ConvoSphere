@@ -1,7 +1,7 @@
 """
 document service module.
 
-This module provides document functionality for the ChatAssistant platform.
+This module provides document functionality for the ConvoSphere platform.
 """
 
 from .document_service import DocumentService

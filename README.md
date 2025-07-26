@@ -10,9 +10,9 @@ A modern, full-stack AI chat application built with **FastAPI** (Backend) and **
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-[![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://your-org.github.io/convosphere/)
-[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/your-org/convosphere/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/your-org/convosphere/actions)
+[![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://convosphere.github.io/convosphere/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/convosphere/convosphere/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/convosphere/convosphere/actions)
 
 </div>
 
@@ -22,7 +22,7 @@ Get up and running in under 10 minutes:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/convosphere.git
+git clone https://github.com/convosphere/convosphere.git
 cd convosphere
 
 # Quick setup with Docker (recommended)
@@ -34,7 +34,7 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](https://your-org.github.io/convosphere/) for detailed guides.
+**Ready to dive deeper?** Check out our [📚 Documentation](https://convosphere.github.io/convosphere/) for detailed guides.
 
 ## ✨ Key Features
 

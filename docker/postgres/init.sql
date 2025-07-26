@@ -1,4 +1,4 @@
--- Initialize chatassistant database
+-- Initialize convosphere database
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create extensions
