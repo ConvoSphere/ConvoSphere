@@ -35,7 +35,7 @@ async def cleanup_expired_logs(
             db=db,
             current_user=current_user,
         )
-        
+
         return {
             "message": "Cleanup completed successfully",
             "details": result,
@@ -67,7 +67,7 @@ async def audit_health_check(
             db=db,
             current_user=current_user,
         )
-        
+
         return {
             "status": "healthy",
             "timestamp": result.get("timestamp"),

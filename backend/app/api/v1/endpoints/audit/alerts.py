@@ -44,7 +44,7 @@ async def get_audit_alerts(
             size=size,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving audit alerts: {e}")
@@ -78,7 +78,7 @@ async def create_audit_alert(
             alert_data=alert_data,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error creating audit alert: {e}")
@@ -108,13 +108,13 @@ async def get_audit_alert(
             alert_id=alert_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit alert not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -148,13 +148,13 @@ async def update_audit_alert(
             alert_update=alert_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit alert not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -186,7 +186,7 @@ async def delete_audit_alert(
             alert_id=alert_id,
             current_user=current_user,
         )
-        
+
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

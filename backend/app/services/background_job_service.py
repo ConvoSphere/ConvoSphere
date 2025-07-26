@@ -14,10 +14,11 @@ from datetime import datetime
 from queue import Empty, PriorityQueue
 from typing import Any
 
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.models.knowledge import Document, DocumentProcessingJob, DocumentStatus
 from backend.app.services.knowledge_service import KnowledgeService
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

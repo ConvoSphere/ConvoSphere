@@ -44,7 +44,7 @@ async def get_retention_rules(
             size=size,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving retention rules: {e}")
@@ -78,7 +78,7 @@ async def create_retention_rule(
             rule_data=rule_data,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error creating retention rule: {e}")
@@ -108,13 +108,13 @@ async def get_retention_rule(
             rule_id=rule_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Retention rule not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -148,13 +148,13 @@ async def update_retention_rule(
             rule_update=rule_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Retention rule not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -186,7 +186,7 @@ async def delete_retention_rule(
             rule_id=rule_id,
             current_user=current_user,
         )
-        
+
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

@@ -8,16 +8,17 @@ for Google, Microsoft, and GitHub SSO providers.
 from datetime import datetime
 from typing import Any
 
-from backend.app.core.config import get_settings
-from backend.app.core.security import create_access_token, create_refresh_token
-from backend.app.models.user import AuthProvider, User
-from backend.app.schemas.user import SSOUserCreate
-from backend.app.services.user_service import UserService
 from authlib.integrations.starlette_client import OAuth
 from fastapi import HTTPException, Request, status
 from loguru import logger
 from starlette.config import Config
 from starlette.responses import RedirectResponse
+
+from backend.app.core.config import get_settings
+from backend.app.core.security import create_access_token, create_refresh_token
+from backend.app.models.user import AuthProvider, User
+from backend.app.schemas.user import SSOUserCreate
+from backend.app.services.user_service import UserService
 
 
 class OAuthService:

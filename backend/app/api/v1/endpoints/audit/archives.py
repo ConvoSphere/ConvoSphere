@@ -43,7 +43,7 @@ async def get_audit_archives(
             size=size,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving audit archives: {e}")
@@ -73,13 +73,13 @@ async def get_audit_archive(
             archive_id=archive_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit archive not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -113,13 +113,13 @@ async def update_audit_archive(
             archive_update=archive_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit archive not found",
             )
-        
+
         return result
     except HTTPException:
         raise

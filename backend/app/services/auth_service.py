@@ -5,7 +5,6 @@ This module provides authentication-specific functionality,
 wrapping the UserService for authentication operations.
 """
 
-from typing import Optional
 
 from backend.app.core.security import get_password_hash, verify_password
 from backend.app.models.user import User
@@ -37,14 +36,14 @@ class AuthService:
         # Check if user already exists
         if self.user_service.get_user_by_email(user_create.email):
             raise ValueError("Email already registered")
-            
+
         if self.user_service.get_user_by_username(user_create.username):
             raise ValueError("Username already taken")
-            
+
         # Create user using UserService
         return self.user_service.create_user(user_data=user_create)
 
-    def authenticate_user(self, email: str, password: str) -> Optional[User]:
+    def authenticate_user(self, email: str, password: str) -> User | None:
         """
         Authenticate a user with email and password.
         
@@ -57,7 +56,7 @@ class AuthService:
         """
         return self.user_service.authenticate_user(email, password)
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         """
         Get user by email.
         
@@ -69,7 +68,7 @@ class AuthService:
         """
         return self.user_service.get_user_by_email(email)
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
+    def get_user_by_username(self, username: str) -> User | None:
         """
         Get user by username.
         
@@ -95,7 +94,7 @@ class AuthService:
         current_user = self.user_service.get_user_by_id(user_id)
         if not current_user:
             raise ValueError("User not found")
-            
+
         return self.user_service.update_user(user_id, user_update, current_user)
 
     def change_password(self, user_id: str, current_password: str, new_password: str) -> bool:
@@ -116,10 +115,10 @@ class AuthService:
         user = self.user_service.get_user_by_id(user_id)
         if not user:
             raise ValueError("User not found")
-            
+
         if not verify_password(current_password, user.hashed_password):
             raise ValueError("Current password is incorrect")
-            
+
         # Update password
         user.hashed_password = get_password_hash(new_password)
         self.db_session.commit()
@@ -138,7 +137,7 @@ class AuthService:
         user = self.user_service.get_user_by_id(user_id)
         if not user:
             raise ValueError("User not found")
-            
+
         user.is_active = False
         self.db_session.commit()
         return True
@@ -156,7 +155,7 @@ class AuthService:
         user = self.user_service.get_user_by_id(user_id)
         if not user:
             raise ValueError("User not found")
-            
+
         user.is_active = True
         self.db_session.commit()
         return True

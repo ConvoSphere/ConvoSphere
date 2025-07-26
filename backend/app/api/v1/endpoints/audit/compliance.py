@@ -54,7 +54,7 @@ async def get_compliance_reports(
             size=size,
             current_user=current_user,
         )
-        
+
         return result
     except (AuditError, ComplianceError) as e:
         logger.error(f"Error retrieving compliance reports: {e}")
@@ -88,7 +88,7 @@ async def create_compliance_report(
             report_data=report_data,
             current_user=current_user,
         )
-        
+
         return result
     except (AuditError, ComplianceError) as e:
         logger.error(f"Error creating compliance report: {e}")
@@ -118,7 +118,7 @@ async def generate_compliance_report(
             report_params=report_params,
             current_user=current_user,
         )
-        
+
         return result
     except (AuditError, ComplianceError) as e:
         logger.error(f"Error generating compliance report: {e}")
@@ -148,13 +148,13 @@ async def get_compliance_report(
             report_id=report_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Compliance report not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -188,13 +188,13 @@ async def update_compliance_report(
             report_update=report_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Compliance report not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -229,7 +229,7 @@ async def delete_compliance_report(
             report_id=report_id,
             current_user=current_user,
         )
-        
+
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

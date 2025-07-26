@@ -2,12 +2,12 @@
 Pydantic schemas for user management with enterprise features.
 """
 
+import re
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-import re
 
 from ..models.user import AuthProvider, UserRole, UserStatus
 
@@ -15,9 +15,9 @@ from ..models.user import AuthProvider, UserRole, UserStatus
 def validate_email(email: str) -> str:
     """Custom email validator that allows local domains for development."""
     # Basic email regex pattern
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if not re.match(pattern, email):
-        raise ValueError('Invalid email format')
+        raise ValueError("Invalid email format")
     return email
 
 
@@ -71,7 +71,7 @@ class UserBase(BaseModel):
     """Base schema for users."""
 
     email: str = Field(..., description="User email address")
-    
+
     @field_validator("email")
     @classmethod
     def validate_email_field(cls, v):
@@ -136,7 +136,7 @@ class UserUpdate(BaseModel):
     """Schema for updating a user."""
 
     email: str | None = None
-    
+
     @field_validator("email")
     @classmethod
     def validate_email_field(cls, v):
@@ -282,7 +282,7 @@ class SSOUserCreate(BaseModel):
     """Schema for creating users via SSO."""
 
     email: str
-    
+
     @field_validator("email")
     @classmethod
     def validate_email_field(cls, v):

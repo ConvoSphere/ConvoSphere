@@ -12,11 +12,12 @@ This module provides advanced user provisioning features including:
 from datetime import datetime
 from typing import Any
 
+from loguru import logger
+from sqlalchemy.orm import Session
+
 from backend.app.models.user import AuthProvider, User
 from backend.app.schemas.user import SSOUserCreate
 from backend.app.services.user_service import UserService
-from loguru import logger
-from sqlalchemy.orm import Session
 
 
 class AttributeMapper:

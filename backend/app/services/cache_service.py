@@ -11,10 +11,11 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import redis.asyncio as redis
-from backend.app.core.config import settings
-from backend.app.core.exceptions import ConfigurationError
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
+
+from backend.app.core.config import settings
+from backend.app.core.exceptions import ConfigurationError
 
 
 class CacheConfig(BaseModel):

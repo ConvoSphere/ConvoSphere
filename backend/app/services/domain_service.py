@@ -9,6 +9,9 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Any
 
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session, joinedload
+
 from backend.app.models.domain_groups import (
     AccessLevel,
     DomainActivity,
@@ -37,8 +40,6 @@ from backend.app.utils.exceptions import (
     ResourceNotFoundError,
     UserNotFoundError,
 )
-from sqlalchemy import and_, func, or_
-from sqlalchemy.orm import Session, joinedload
 
 
 class DomainService:

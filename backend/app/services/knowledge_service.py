@@ -13,6 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
 from backend.app.models.knowledge import (
@@ -24,8 +27,6 @@ from backend.app.models.knowledge import (
     SearchQuery,
     Tag,
 )
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
 
 from .ai_service import AIService
 from .document.document_service import DocumentService

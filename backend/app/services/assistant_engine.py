@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from loguru import logger
+
 from backend.app.core.config import get_settings
 from backend.app.schemas.hybrid_mode import (
     ConversationMode,
@@ -23,7 +25,6 @@ from backend.app.services.conversation_service import conversation_service
 from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
 from backend.app.services.knowledge_service import knowledge_service
 from backend.app.services.tool_executor_v2 import tool_executor
-from loguru import logger
 
 
 @dataclass

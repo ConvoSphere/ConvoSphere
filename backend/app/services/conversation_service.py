@@ -374,5 +374,4 @@ class ConversationService:
 
 
 # Global conversation service instance (for static access, e.g. in AIService)
-from app.core.database import get_db
 conversation_service = ConversationService(next(get_db()))

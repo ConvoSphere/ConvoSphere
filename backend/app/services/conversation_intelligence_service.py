@@ -11,6 +11,8 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
+from loguru import logger
+
 from backend.app.core.exceptions import AIError, ConfigurationError
 from backend.app.core.exceptions import ValidationError as AppValidationError
 from backend.app.schemas.conversation_intelligence import (
@@ -29,7 +31,6 @@ from backend.app.schemas.conversation_intelligence import (
     TopicInfo,
 )
 from backend.app.services.cache_service import cache_service
-from loguru import logger
 
 
 class ConversationIntelligenceService:

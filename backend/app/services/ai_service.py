@@ -266,33 +266,33 @@ class AIService:
             async for chunk in acompletion(**completion_params):
                 if chunk and chunk.choices:
                     choice = chunk.choices[0]
-                    
+
                     # Track cost if available
-                    if hasattr(chunk, 'usage') and chunk.usage:
+                    if hasattr(chunk, "usage") and chunk.usage:
                         self._track_cost(
                             {"usage": chunk.usage},
                             model,
                             user_id,
                             conversation_id,
                         )
-                    
+
                     yield {
-                        "id": chunk.id if hasattr(chunk, 'id') else None,
-                        "object": chunk.object if hasattr(chunk, 'object') else None,
-                        "created": chunk.created if hasattr(chunk, 'created') else None,
-                        "model": chunk.model if hasattr(chunk, 'model') else model,
+                        "id": chunk.id if hasattr(chunk, "id") else None,
+                        "object": chunk.object if hasattr(chunk, "object") else None,
+                        "created": chunk.created if hasattr(chunk, "created") else None,
+                        "model": chunk.model if hasattr(chunk, "model") else model,
                         "choices": [
                             {
                                 "index": choice.index,
                                 "delta": {
-                                    "content": choice.delta.content if hasattr(choice.delta, 'content') else None,
-                                    "role": choice.delta.role if hasattr(choice.delta, 'role') else None,
-                                    "tool_calls": choice.delta.tool_calls if hasattr(choice.delta, 'tool_calls') else None,
+                                    "content": choice.delta.content if hasattr(choice.delta, "content") else None,
+                                    "role": choice.delta.role if hasattr(choice.delta, "role") else None,
+                                    "tool_calls": choice.delta.tool_calls if hasattr(choice.delta, "tool_calls") else None,
                                 },
-                                "finish_reason": choice.finish_reason if hasattr(choice, 'finish_reason') else None,
+                                "finish_reason": choice.finish_reason if hasattr(choice, "finish_reason") else None,
                             }
                         ],
-                        "usage": chunk.usage if hasattr(chunk, 'usage') else None,
+                        "usage": chunk.usage if hasattr(chunk, "usage") else None,
                     }
 
         except Exception as e:
@@ -555,7 +555,7 @@ class AIService:
                 if context_chunks:
                     chunk["context_chunks"] = context_chunks
                     chunk["context_count"] = len(context_chunks)
-                
+
                 yield chunk
 
         except Exception as e:
@@ -980,7 +980,9 @@ class AIService:
             # Get conversation history
             conversation_history = []
             if db:
-                from backend.app.services.conversation_service import ConversationService
+                from backend.app.services.conversation_service import (
+                    ConversationService,
+                )
 
                 conv_service = ConversationService(db)
                 conversation_history = conv_service.get_conversation_history(
