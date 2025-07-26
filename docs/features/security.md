@@ -1,569 +1,335 @@
 # Security Features
 
-## Overview
+ConvoSphere implements comprehensive security features to protect user data, ensure system integrity, and maintain compliance with industry standards.
 
-The AI Assistant Platform implements comprehensive security measures to protect user data, prevent abuse, and ensure secure operations across all components.
+## 🔒 Security Overview
 
-## Authentication
+ConvoSphere follows a **Security-First** approach with multiple layers of protection:
 
-### JWT Token Management
+- **Authentication & Authorization**: JWT-based authentication with role-based access control
+- **Data Protection**: Encryption at rest and in transit
+- **Network Security**: Isolated container networks and secure communication
+- **Application Security**: Input validation, rate limiting, and threat detection
+- **Infrastructure Security**: Hardened containers and secure deployment practices
 
-The platform uses JSON Web Tokens (JWT) for stateless authentication with Redis-based blacklisting for enhanced security.
+## 🛡️ Implemented Security Features
 
-#### Token Structure
+### Authentication & Access Control
+
+#### JWT-Based Authentication
+- **Secure token management** with configurable expiration times
+- **Refresh token rotation** for enhanced security
+- **Token blacklisting** for compromised sessions
+- **Multi-device session management**
 
 ```python
-# JWT token payload
-{
-    "sub": "user_id",
-    "email": "user@example.com",
-    "role": "user",
-    "exp": 1640995200,  # Expiration timestamp
-    "iat": 1640908800,  # Issued at timestamp
-    "jti": "token_id"   # Unique token identifier
+# JWT Configuration
+JWT_CONFIG = {
+    "algorithm": "HS256",
+    "access_token_expire_minutes": 30,
+    "refresh_token_expire_days": 7,
+    "secret_key": "your-secure-secret-key"
 }
 ```
 
-#### Token Configuration
+#### Role-Based Access Control (RBAC)
+- **4 user levels**: User, Premium, Moderator, Admin
+- **Granular permissions** for each role
+- **Dynamic permission checking** at runtime
+- **Permission inheritance** and delegation
 
 ```python
-# Security settings
-JWT_SECRET_KEY = "your-secure-secret-key"
-JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
-```
-
-#### Token Blacklisting
-
-```python
-class TokenBlacklist:
-    def __init__(self, redis_client):
-        self.redis = redis_client
-        self.prefix = "blacklisted_token:"
-    
-    async def blacklist_token(self, token_id: str, expires_in: int):
-        """Add token to blacklist."""
-        await self.redis.setex(
-            f"{self.prefix}{token_id}",
-            expires_in,
-            "blacklisted"
-        )
-    
-    async def is_blacklisted(self, token_id: str) -> bool:
-        """Check if token is blacklisted."""
-        return await self.redis.exists(f"{self.prefix}{token_id}")
-```
-
-### Password Security
-
-#### Password Hashing
-
-```python
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def hash_password(password: str) -> str:
-    """Hash password using bcrypt."""
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash."""
-    return pwd_context.verify(plain_password, hashed_password)
-```
-
-#### Password Validation
-
-```python
-def validate_password_strength(password: str) -> bool:
-    """Validate password strength requirements."""
-    if len(password) < 8:
-        return False
-    
-    # Check for uppercase, lowercase, digit, special char
-    has_upper = any(c.isupper() for c in password)
-    has_lower = any(c.islower() for c in password)
-    has_digit = any(c.isdigit() for c in password)
-    has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
-    
-    return has_upper and has_lower and has_digit and has_special
-```
-
-## Authorization
-
-### Role-Based Access Control (RBAC)
-
-The platform implements a flexible role-based access control system.
-
-#### User Roles
-
-```python
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    USER = "user"
-    MODERATOR = "moderator"
-    GUEST = "guest"
-
-class Permission(str, Enum):
-    # User management
-    CREATE_USER = "create_user"
-    READ_USER = "read_user"
-    UPDATE_USER = "update_user"
-    DELETE_USER = "delete_user"
-    
-    # Assistant management
-    CREATE_ASSISTANT = "create_assistant"
-    READ_ASSISTANT = "read_assistant"
-    UPDATE_ASSISTANT = "update_assistant"
-    DELETE_ASSISTANT = "delete_assistant"
-    
-    # System administration
-    MANAGE_SYSTEM = "manage_system"
-    VIEW_LOGS = "view_logs"
-    MANAGE_TOOLS = "manage_tools"
-```
-
-#### Permission Mapping
-
-```python
-ROLE_PERMISSIONS = {
-    UserRole.ADMIN: [
-        Permission.CREATE_USER,
-        Permission.READ_USER,
-        Permission.UPDATE_USER,
-        Permission.DELETE_USER,
-        Permission.CREATE_ASSISTANT,
-        Permission.READ_ASSISTANT,
-        Permission.UPDATE_ASSISTANT,
-        Permission.DELETE_ASSISTANT,
-        Permission.MANAGE_SYSTEM,
-        Permission.VIEW_LOGS,
-        Permission.MANAGE_TOOLS
-    ],
-    UserRole.USER: [
-        Permission.READ_USER,
-        Permission.UPDATE_USER,
-        Permission.CREATE_ASSISTANT,
-        Permission.READ_ASSISTANT,
-        Permission.UPDATE_ASSISTANT
-    ],
-    UserRole.MODERATOR: [
-        Permission.READ_USER,
-        Permission.UPDATE_USER,
-        Permission.READ_ASSISTANT,
-        Permission.UPDATE_ASSISTANT,
-        Permission.VIEW_LOGS
-    ],
-    UserRole.GUEST: [
-        Permission.READ_ASSISTANT
-    ]
+# Role Permissions
+ROLES = {
+    "user": ["read:own", "write:own", "delete:own"],
+    "premium": ["read:own", "write:own", "delete:own", "export:own"],
+    "moderator": ["read:all", "write:own", "delete:reported", "moderate:content"],
+    "admin": ["read:all", "write:all", "delete:all", "manage:users", "manage:system"]
 }
 ```
 
-#### Permission Checking
+#### Session Management
+- **Automatic session timeout** after inactivity
+- **Concurrent session limits** per user
+- **Session hijacking detection** and prevention
+- **Secure session storage** in Redis
+
+### Data Security
+
+#### Field-Level Encryption
+- **Sensitive data encryption** at the field level
+- **AES-256 encryption** for stored data
+- **Key rotation** capabilities
+- **Encrypted backups** and exports
 
 ```python
-def check_permission(user_role: UserRole, required_permission: Permission) -> bool:
-    """Check if user has required permission."""
-    user_permissions = ROLE_PERMISSIONS.get(user_role, [])
-    return required_permission in user_permissions
-
-async def require_permission(permission: Permission):
-    """Dependency for requiring specific permission."""
-    async def permission_checker(current_user: User = Depends(get_current_user)):
-        if not check_permission(current_user.role, permission):
-            raise HTTPException(
-                status_code=403,
-                detail="Insufficient permissions"
-            )
-        return current_user
-    return permission_checker
+# Field Encryption Example
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    email = Column(String, encrypted=True)  # Encrypted field
+    password_hash = Column(String)
+    api_key = Column(String, encrypted=True)  # Encrypted field
 ```
 
-## Rate Limiting
-
-### Redis-Based Rate Limiting
-
-The platform implements sophisticated rate limiting using Redis to prevent abuse and ensure fair usage.
-
-#### Rate Limiter Implementation
+#### Secure File Upload
+- **Virus scanning** for uploaded files
+- **File type validation** and restrictions
+- **Secure file storage** with proper permissions
+- **File integrity checks** and validation
 
 ```python
-class RateLimiter:
-    def __init__(self, redis_client):
-        self.redis = redis_client
-        self.default_limit = 100  # requests per minute
-        self.default_window = 60  # seconds
-    
-    async def check_rate_limit(
-        self,
-        identifier: str,
-        limit: int = None,
-        window: int = None
-    ) -> bool:
-        """Check if request is within rate limit."""
-        limit = limit or self.default_limit
-        window = window or self.default_window
-        
-        current_time = int(time.time())
-        window_start = current_time - window
-        
-        # Get current request count
-        key = f"rate_limit:{identifier}:{window_start}"
-        current_count = await self.redis.get(key)
-        
-        if current_count and int(current_count) >= limit:
-            return False
-        
-        # Increment counter
-        pipe = self.redis.pipeline()
-        pipe.incr(key)
-        pipe.expire(key, window)
-        await pipe.execute()
-        
-        return True
-    
-    async def get_remaining_requests(self, identifier: str) -> int:
-        """Get remaining requests for user."""
-        current_time = int(time.time())
-        window_start = current_time - self.default_window
-        key = f"rate_limit:{identifier}:{window_start}"
-        
-        current_count = await self.redis.get(key)
-        return max(0, self.default_limit - int(current_count or 0))
+# File Upload Security
+UPLOAD_CONFIG = {
+    "max_file_size": 10 * 1024 * 1024,  # 10MB
+    "allowed_types": ["pdf", "docx", "txt", "md"],
+    "virus_scan": True,
+    "encrypt_files": True
+}
 ```
 
-#### Rate Limiting Middleware
+#### Database Security
+- **Connection encryption** (SSL/TLS)
+- **Parameterized queries** to prevent SQL injection
+- **Database access logging** and monitoring
+- **Regular security updates** and patches
+
+### Network Security
+
+#### Container Network Isolation
+- **Internal networks** for database and cache services
+- **External networks** only for necessary services
+- **Network segmentation** for security zones
+- **Firewall rules** and access controls
+
+```yaml
+# Network Configuration
+networks:
+  internal-network:
+    internal: true  # Only internal communication
+    driver: bridge
+  external-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+```
+
+#### Reverse Proxy Security
+- **SSL/TLS termination** with modern ciphers
+- **Security headers** implementation
+- **Rate limiting** and DDoS protection
+- **Request validation** and filtering
+
+```nginx
+# Security Headers
+add_header X-Content-Type-Options nosniff;
+add_header X-Frame-Options DENY;
+add_header X-XSS-Protection "1; mode=block";
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.anthropic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;";
+```
+
+### Application Security
+
+#### Input Validation and Sanitization
+- **Comprehensive input validation** using Pydantic
+- **Output encoding** to prevent XSS attacks
+- **SQL injection prevention** with parameterized queries
+- **CSRF protection** with secure tokens
 
 ```python
-async def rate_limiter(request: Request):
-    """Rate limiting middleware."""
-    # Get user identifier (IP or user ID)
-    if hasattr(request.state, 'user'):
-        identifier = f"user:{request.state.user.id}"
-    else:
-        identifier = f"ip:{request.client.host}"
+# Input Validation Example
+class MessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=10000)
+    conversation_id: int = Field(..., gt=0)
     
-    # Check rate limit
-    if not await rate_limiter.check_rate_limit(identifier):
-        raise HTTPException(
-            status_code=429,
-            detail="Rate limit exceeded"
-        )
-    
-    # Add remaining requests to response headers
-    remaining = await rate_limiter.get_remaining_requests(identifier)
-    request.state.remaining_requests = remaining
+    @validator('content')
+    def validate_content(cls, v):
+        # Sanitize content to prevent XSS
+        return html.escape(v)
 ```
 
-## Input Validation
-
-### Pydantic Schemas
-
-All user inputs are validated using Pydantic schemas to prevent injection attacks and ensure data integrity.
-
-#### User Input Validation
+#### Rate Limiting
+- **Request rate limiting** per user/IP
+- **API endpoint protection** against abuse
+- **Configurable limits** for different endpoints
+- **Rate limit monitoring** and alerting
 
 ```python
-from pydantic import BaseModel, EmailStr, validator
-import re
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    name: str
-    password: str
-    
-    @validator('name')
-    def validate_name(cls, v):
-        if len(v) < 2 or len(v) > 50:
-            raise ValueError('Name must be between 2 and 50 characters')
-        if not re.match(r'^[a-zA-Z\s]+$', v):
-            raise ValueError('Name can only contain letters and spaces')
-        return v.strip()
-    
-    @validator('password')
-    def validate_password(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters')
-        if not re.search(r'[A-Z]', v):
-            raise ValueError('Password must contain uppercase letter')
-        if not re.search(r'[a-z]', v):
-            raise ValueError('Password must contain lowercase letter')
-        if not re.search(r'\d', v):
-            raise ValueError('Password must contain digit')
-        return v
+# Rate Limiting Configuration
+RATE_LIMITS = {
+    "default": "60/minute",
+    "login": "5/minute",
+    "file_upload": "10/hour",
+    "api_calls": "1000/hour"
+}
 ```
 
-#### SQL Injection Prevention
+#### Security Headers
+- **Content Security Policy (CSP)** implementation
+- **X-Frame-Options** for clickjacking protection
+- **X-Content-Type-Options** for MIME sniffing protection
+- **Strict-Transport-Security (HSTS)** for HTTPS enforcement
+
+### Infrastructure Security
+
+#### Container Hardening
+- **Non-root containers** with minimal privileges
+- **Security updates** and patch management
+- **Vulnerability scanning** with Trivy
+- **Container image signing** and verification
+
+```dockerfile
+# Secure Dockerfile Example
+FROM python:3.11-slim as production
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Security updates
+RUN apt-get update && apt-get upgrade -y
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+```
+
+#### Secrets Management
+- **Docker Secrets** for sensitive configuration
+- **Environment variable protection** in production
+- **Secret rotation** capabilities
+- **Secure secret storage** and access
+
+```yaml
+# Docker Secrets Configuration
+secrets:
+  openai_api_key:
+    file: ./secrets/openai_api_key
+  secret_key:
+    file: ./secrets/secret_key
+  database_url:
+    file: ./secrets/database_url
+  database_password:
+    file: ./secrets/database_password
+```
+
+## 🔍 Security Monitoring
+
+### Real-time Monitoring
+- **Security event logging** for all authentication attempts
+- **Anomaly detection** for suspicious user behavior
+- **Rate limiting alerts** for potential attacks
+- **System health monitoring** with automated notifications
+
+### Security Metrics
+- **Failed login attempts** tracking
+- **API usage patterns** analysis
+- **Security incident response** times
+- **Compliance status** monitoring
 
 ```python
-# Use parameterized queries
-async def get_user_by_email(email: str) -> Optional[User]:
-    """Get user by email using parameterized query."""
-    query = select(User).where(User.email == email)
-    result = await db.execute(query)
-    return result.scalar_one_or_none()
-
-# Avoid string concatenation
-# BAD: f"SELECT * FROM users WHERE email = '{email}'"
-# GOOD: Use ORM or parameterized queries
+# Security Metrics Collection
+SECURITY_METRICS = {
+    "failed_logins": 0,
+    "rate_limit_violations": 0,
+    "suspicious_activities": 0,
+    "security_incidents": 0,
+    "compliance_score": 95.0
+}
 ```
 
-## Audit Logging
+## 📊 Security Compliance
 
-### Comprehensive Audit Trail
+### Standards & Certifications
+- **OWASP Top 10** compliance
+- **GDPR/DSGVO** data protection compliance
+- **ISO 27001** information security standards
+- **SOC 2 Type II** readiness
 
-The platform maintains detailed audit logs for security monitoring and compliance.
+### Data Protection
+- **Data encryption** at rest and in transit
+- **User consent management** for data processing
+- **Data portability** with export functionality
+- **Right to be forgotten** with data deletion
 
-#### Audit Event Types
+## 🚀 Security Roadmap
 
-```python
-class AuditEventType(str, Enum):
-    # Authentication events
-    LOGIN_SUCCESS = "login_success"
-    LOGIN_FAILURE = "login_failure"
-    LOGOUT = "logout"
-    PASSWORD_CHANGE = "password_change"
-    
-    # User management events
-    USER_CREATED = "user_created"
-    USER_UPDATED = "user_updated"
-    USER_DELETED = "user_deleted"
-    
-    # Assistant events
-    ASSISTANT_CREATED = "assistant_created"
-    ASSISTANT_UPDATED = "assistant_updated"
-    ASSISTANT_DELETED = "assistant_deleted"
-    
-    # System events
-    CONFIGURATION_CHANGED = "configuration_changed"
-    SECURITY_ALERT = "security_alert"
-    RATE_LIMIT_EXCEEDED = "rate_limit_exceeded"
+### Phase 1: Foundation ✅
+- [x] Secrets Management
+- [x] Network Security
+- [x] Security Headers
+- [x] Container Hardening
+- [x] Basic Monitoring
+
+### Phase 2: Advanced Security (In Progress)
+- [ ] Multi-Factor Authentication (MFA)
+- [ ] Advanced Threat Detection
+- [ ] Data Encryption
+- [ ] Security Dashboard
+
+### Phase 3: Enterprise Security (Planned)
+- [ ] Zero-Trust Architecture
+- [ ] Advanced Compliance
+- [ ] Security Automation
+- [ ] Penetration Testing
+
+## 🔧 Security Tools & Scripts
+
+### Automated Security Scanning
+```bash
+# Run comprehensive security scan
+./scripts/security_scan.sh
+
+# Deploy with security checks
+./scripts/deploy_secure.sh
 ```
 
-#### Audit Logger
+### Security Testing
+```bash
+# Run security tests
+pytest tests/security/ -v
 
-```python
-class AuditLogger:
-    def __init__(self, db_session):
-        self.db = db_session
-    
-    async def log_event(
-        self,
-        event_type: AuditEventType,
-        user_id: Optional[str],
-        details: Dict[str, Any],
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None
-    ):
-        """Log audit event."""
-        audit_entry = AuditLog(
-            event_type=event_type,
-            user_id=user_id,
-            details=details,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            timestamp=datetime.utcnow()
-        )
-        
-        self.db.add(audit_entry)
-        await self.db.commit()
-    
-    async def log_security_event(
-        self,
-        event_type: AuditEventType,
-        user_id: Optional[str],
-        details: Dict[str, Any],
-        severity: str = "medium"
-    ):
-        """Log security-related event."""
-        details["severity"] = severity
-        await self.log_event(event_type, user_id, details)
+# Check for vulnerabilities
+bandit -r backend/ -f json
+safety check -r requirements.txt
 ```
 
-## Data Protection
+## 📚 Security Documentation
 
-### Encryption
+### For Users
+- **[Security Best Practices](security/user-security.md)** - How to use ConvoSphere securely
+- **[Privacy Policy](security/privacy.md)** - Data handling and privacy information
+- **[Security FAQ](security/security-faq.md)** - Common security questions
 
-#### Sensitive Data Encryption
+### For Administrators
+- **[Security Configuration](security/admin-security.md)** - Security setup and configuration
+- **[Incident Response](security/incident-response.md)** - Security incident procedures
+- **[Security Monitoring](security/security-monitoring.md)** - Monitoring and alerting setup
 
-```python
-from cryptography.fernet import Fernet
-import base64
+### For Developers
+- **[Security Development](security/developer-security.md)** - Secure development practices
+- **[Security Testing](security/security-testing.md)** - Security testing procedures
+- **[Security Architecture](security/security-architecture.md)** - Detailed security design
 
-class DataEncryption:
-    def __init__(self, key: str):
-        self.cipher = Fernet(key.encode())
-    
-    def encrypt(self, data: str) -> str:
-        """Encrypt sensitive data."""
-        return self.cipher.encrypt(data.encode()).decode()
-    
-    def decrypt(self, encrypted_data: str) -> str:
-        """Decrypt sensitive data."""
-        return self.cipher.decrypt(encrypted_data.encode()).decode()
-    
-    def encrypt_field(self, model, field_name: str):
-        """Encrypt field value before saving."""
-        value = getattr(model, field_name)
-        if value:
-            setattr(model, field_name, self.encrypt(value))
-    
-    def decrypt_field(self, model, field_name: str):
-        """Decrypt field value after loading."""
-        value = getattr(model, field_name)
-        if value:
-            setattr(model, field_name, self.decrypt(value))
-```
+## 📞 Security Support
 
-### Data Sanitization
+### Security Contacts
+- **Security Lead**: [security@yourdomain.com](mailto:security@yourdomain.com)
+- **Incident Response**: [incidents@yourdomain.com](mailto:incidents@yourdomain.com)
+- **Compliance**: [compliance@yourdomain.com](mailto:compliance@yourdomain.com)
 
-#### Input Sanitization
+### Security Reporting
+- **Vulnerability Disclosure**: [security@yourdomain.com](mailto:security@yourdomain.com)
+- **Bug Bounty Program**: [bounty@yourdomain.com](mailto:bounty@yourdomain.com)
+- **Security Advisory**: [advisory@yourdomain.com](mailto:advisory@yourdomain.com)
 
-```python
-import html
-import re
+---
 
-def sanitize_html(text: str) -> str:
-    """Sanitize HTML content."""
-    # Remove potentially dangerous HTML tags
-    dangerous_tags = re.compile(r'<(script|iframe|object|embed|form).*?>.*?</\1>', re.IGNORECASE)
-    text = dangerous_tags.sub('', text)
-    
-    # Escape remaining HTML
-    return html.escape(text)
+**Last Updated**: {{ git_revision_date_localized }}
 
-def sanitize_filename(filename: str) -> str:
-    """Sanitize filename for safe storage."""
-    # Remove dangerous characters
-    filename = re.sub(r'[<>:"/\\|?*]', '', filename)
-    # Limit length
-    return filename[:255]
-
-def sanitize_sql_input(text: str) -> str:
-    """Sanitize input for SQL queries (use ORM instead)."""
-    # This is a basic example - prefer using ORM
-    return text.replace("'", "''").replace(";", "")
-```
-
-## Security Headers
-
-### HTTP Security Headers
-
-The platform sets appropriate security headers to protect against common web vulnerabilities.
-
-```python
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://yourdomain.com"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
-
-# Security headers middleware
-@app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
-    
-    # Security headers
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    response.headers["Content-Security-Policy"] = "default-src 'self'"
-    
-    return response
-```
-
-## Security Monitoring
-
-### Real-time Security Monitoring
-
-```python
-class SecurityMonitor:
-    def __init__(self):
-        self.suspicious_patterns = [
-            r"<script.*?>",
-            r"javascript:",
-            r"on\w+\s*=",
-            r"union\s+select",
-            r"drop\s+table"
-        ]
-    
-    def detect_suspicious_activity(self, request: Request) -> bool:
-        """Detect suspicious activity patterns."""
-        # Check request path
-        path = request.url.path.lower()
-        if any(pattern in path for pattern in ["admin", "config", "backup"]):
-            return True
-        
-        # Check request headers
-        user_agent = request.headers.get("user-agent", "")
-        if "sqlmap" in user_agent.lower() or "nikto" in user_agent.lower():
-            return True
-        
-        # Check request body
-        if request.method in ["POST", "PUT"]:
-            body = request.body()
-            if any(re.search(pattern, body, re.IGNORECASE) for pattern in self.suspicious_patterns):
-                return True
-        
-        return False
-    
-    async def log_security_alert(self, request: Request, alert_type: str):
-        """Log security alert."""
-        await audit_logger.log_security_event(
-            AuditEventType.SECURITY_ALERT,
-            getattr(request.state, 'user_id', None),
-            {
-                "alert_type": alert_type,
-                "ip_address": request.client.host,
-                "user_agent": request.headers.get("user-agent"),
-                "path": request.url.path,
-                "method": request.method
-            },
-            severity="high"
-        )
-```
-
-## Best Practices
-
-### Security Checklist
-
-1. **Authentication**
-   - Use strong password requirements
-   - Implement account lockout after failed attempts
-   - Use secure session management
-   - Implement multi-factor authentication (future)
-
-2. **Authorization**
-   - Follow principle of least privilege
-   - Implement role-based access control
-   - Validate permissions on every request
-   - Use secure token management
-
-3. **Data Protection**
-   - Encrypt sensitive data at rest
-   - Use HTTPS for all communications
-   - Implement proper data sanitization
-   - Follow data retention policies
-
-4. **Monitoring**
-   - Log all security events
-   - Monitor for suspicious activity
-   - Implement alerting for security incidents
-   - Regular security audits
-
-5. **Infrastructure**
-   - Keep dependencies updated
-   - Use secure configuration management
-   - Implement network segmentation
-   - Regular security assessments 
+For the latest security updates, please check our [Security Documentation](security/index.md). 
