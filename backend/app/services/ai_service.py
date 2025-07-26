@@ -215,6 +215,98 @@ class AIService:
             },
         }
 
+    async def chat_completion_stream(
+        self,
+        messages: list[dict[str, str]],
+        model: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int | None = None,
+        tools: list[dict] | None = None,
+        tool_choice: str = "auto",
+        user_id: str | None = None,
+        conversation_id: str | None = None,
+        **kwargs,
+    ):
+        """
+        Stream chat completion responses.
+        
+        Yields:
+            dict: Streaming response chunks
+        """
+        if not self.enabled:
+            logger.error("AI service is disabled")
+            return
+
+        try:
+            # Get default model if none specified
+            if not model:
+                model = self.default_model
+
+            # Prepare completion parameters
+            completion_params = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "stream": True,  # Enable streaming
+            }
+
+            if max_tokens:
+                completion_params["max_tokens"] = max_tokens
+
+            if tools:
+                completion_params["tools"] = tools
+                completion_params["tool_choice"] = tool_choice
+
+            # Add any additional parameters
+            completion_params.update(kwargs)
+
+            logger.info(f"Starting streaming completion with model: {model}")
+
+            # Stream the response
+            async for chunk in acompletion(**completion_params):
+                if chunk and chunk.choices:
+                    choice = chunk.choices[0]
+                    
+                    # Track cost if available
+                    if hasattr(chunk, 'usage') and chunk.usage:
+                        self._track_cost(
+                            {"usage": chunk.usage},
+                            model,
+                            user_id,
+                            conversation_id,
+                        )
+                    
+                    yield {
+                        "id": chunk.id if hasattr(chunk, 'id') else None,
+                        "object": chunk.object if hasattr(chunk, 'object') else None,
+                        "created": chunk.created if hasattr(chunk, 'created') else None,
+                        "model": chunk.model if hasattr(chunk, 'model') else model,
+                        "choices": [
+                            {
+                                "index": choice.index,
+                                "delta": {
+                                    "content": choice.delta.content if hasattr(choice.delta, 'content') else None,
+                                    "role": choice.delta.role if hasattr(choice.delta, 'role') else None,
+                                    "tool_calls": choice.delta.tool_calls if hasattr(choice.delta, 'tool_calls') else None,
+                                },
+                                "finish_reason": choice.finish_reason if hasattr(choice, 'finish_reason') else None,
+                            }
+                        ],
+                        "usage": chunk.usage if hasattr(chunk, 'usage') else None,
+                    }
+
+        except Exception as e:
+            logger.error(f"Streaming completion error: {e}")
+            yield {
+                "error": str(e),
+                "choices": [
+                    {
+                        "delta": {"content": f"Error: {str(e)}"},
+                        "finish_reason": "error",
+                    }
+                ],
+            }
+
     async def chat_completion(
         self,
         messages: list[dict[str, str]],
@@ -389,6 +481,94 @@ class AIService:
             "models_count": len(self.models),
             "total_cost": self.cost_tracker.get_total_cost(),
         }
+
+    async def chat_completion_with_rag_stream(
+        self,
+        messages: list[dict[str, str]],
+        user_id: str,
+        conversation_id: str | None = None,
+        model: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int | None = None,
+        use_knowledge_base: bool = True,
+        use_tools: bool = True,
+        max_context_chunks: int = 5,
+        **kwargs,
+    ):
+        """
+        Stream chat completion with RAG (Retrieval-Augmented Generation).
+        
+        Yields:
+            dict: Streaming response chunks with context
+        """
+        if not self.enabled:
+            logger.error("AI service is disabled")
+            return
+
+        try:
+            # Get the last user message for context search
+            last_user_message = None
+            for msg in reversed(messages):
+                if msg.get("role") == "user":
+                    last_user_message = msg.get("content", "")
+                    break
+
+            context_chunks = []
+            if use_knowledge_base and last_user_message:
+                # Search knowledge base for relevant context
+                context_chunks = await self._search_knowledge_for_context(
+                    last_user_message,
+                    user_id,
+                    max_context_chunks,
+                )
+
+            # Prepare tools if enabled
+            tools = None
+            if use_tools and last_user_message:
+                tools = await self._prepare_tools_for_completion(last_user_message)
+
+            # Create enhanced messages with context
+            enhanced_messages = messages.copy()
+            if context_chunks:
+                # Add system context message
+                system_context = self._create_system_context(context_chunks)
+                enhanced_messages.insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": system_context,
+                    },
+                )
+
+            # Stream the response
+            async for chunk in self.chat_completion_stream(
+                messages=enhanced_messages,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                tools=tools,
+                user_id=user_id,
+                conversation_id=conversation_id,
+                **kwargs,
+            ):
+                # Add context information to the chunk
+                if context_chunks:
+                    chunk["context_chunks"] = context_chunks
+                    chunk["context_count"] = len(context_chunks)
+                
+                yield chunk
+
+        except Exception as e:
+            logger.error(f"RAG streaming error: {e}")
+            yield {
+                "error": str(e),
+                "choices": [
+                    {
+                        "delta": {"content": f"Error: {str(e)}"},
+                        "finish_reason": "error",
+                    }
+                ],
+            }
 
     async def chat_completion_with_rag(
         self,

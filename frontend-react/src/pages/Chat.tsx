@@ -31,6 +31,8 @@ const Chat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState(false);
   
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
@@ -127,7 +129,9 @@ const Chat: React.FC = () => {
         conversationId,
         handleMessage,
         handleKnowledgeUpdate,
-        handleProcessingJobUpdate
+        handleProcessingJobUpdate,
+        handleStreamChunk,
+        handleStreamComplete
       );
     } catch {
       setError(t('chat.error'));
@@ -165,6 +169,21 @@ const Chat: React.FC = () => {
     // Update processing job status in knowledge store
     // This could be used to show upload progress or processing status
     console.log(`Job ${jobId}: ${status} (${progress}%)`);
+  };
+
+  const handleStreamChunk = (content: string, conversationId: string) => {
+    // Handle streaming content chunks
+    setStreamingMessage((prev) => prev + content);
+    setIsStreaming(true);
+  };
+
+  const handleStreamComplete = (msg: ChatMessage) => {
+    // Handle completed streaming message
+    setMessages((prev) => [...prev, { ...msg, timestamp: msg.timestamp || new Date() }]);
+    setStreamingMessage('');
+    setIsStreaming(false);
+    setIsTyping(false);
+    setLoading(false);
   };
 
   const handleSend = () => {
@@ -322,6 +341,16 @@ const Chat: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
           <div style={bubbleStyle} className="message-bubble">
             {msg.text}
+            {isStreaming && index === messages.length - 1 && (
+              <span style={{ 
+                display: 'inline-block',
+                width: '8px',
+                height: '16px',
+                backgroundColor: colors.colorPrimary,
+                animation: 'blink 1s infinite',
+                marginLeft: '4px'
+              }} />
+            )}
             {msg.metadata && (
               <div style={{ 
                 fontSize: '11px', 
@@ -483,6 +512,58 @@ const Chat: React.FC = () => {
             ) : (
               <div className="stagger-children">
                 {messages.map(renderMessage)}
+                {isStreaming && streamingMessage && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    marginBottom: '20px',
+                    maxWidth: '85%',
+                    marginLeft: '0',
+                    marginRight: 'auto',
+                    animation: 'fadeInUp 0.3s ease-out',
+                  }}>
+                    <div style={{
+                      backgroundColor: colors.colorChatAIBubble,
+                      color: colors.colorChatAIText,
+                      padding: '16px 20px',
+                      borderRadius: '20px',
+                      boxShadow: colors.boxShadow,
+                      position: 'relative',
+                      wordWrap: 'break-word',
+                      maxWidth: '100%',
+                      transition: 'all 0.3s ease',
+                    }}>
+                      <div style={{
+                        backgroundColor: colors.colorPrimary,
+                        flexShrink: 0,
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      }}>
+                        <RobotOutlined style={{ color: '#fff' }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                        <div className="message-bubble">
+                          {streamingMessage}
+                          <span style={{ 
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '16px',
+                            backgroundColor: colors.colorPrimary,
+                            animation: 'blink 1s infinite',
+                            marginLeft: '4px'
+                          }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
