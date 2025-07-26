@@ -13,6 +13,7 @@ from app.core.config import get_settings
 from app.core.database import check_db_connection, init_db
 from app.core.i18n import I18nMiddleware, i18n_manager, t
 from app.core.redis_client import close_redis, init_redis
+from app.core.security_middleware import setup_security_middleware
 from app.core.weaviate_client import (
     check_weaviate_connection,
     close_weaviate,
@@ -157,18 +158,21 @@ def create_application() -> FastAPI:
     #     from app.core.redis_client import redis_client
     #     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
-    # Add middleware
+    # Setup security middleware first
+    setup_security_middleware(app)
+
+    # Add CORS middleware with secure configuration
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"] if get_settings().debug else ["http://localhost:3000"],
+        allow_origins=get_settings().cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*"] if get_settings().debug else ["localhost", "127.0.0.1"],
+        allowed_hosts=["*"] if get_settings().debug else ["localhost", "127.0.0.1", "yourdomain.com"],
     )
 
     # Add i18n middleware

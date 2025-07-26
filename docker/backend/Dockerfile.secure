@@ -1,0 +1,61 @@
+# Multi-stage build für optimale Sicherheit
+FROM python:3.11-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install dependencies
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-prod.txt
+
+# Production stage
+FROM python:3.11-slim as production
+
+# Security: Non-root user erstellen
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Security: System-Updates und minimale Pakete
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Security: Arbeitsverzeichnis mit korrekten Berechtigungen
+WORKDIR /app
+
+# Security: Virtual environment aus Builder kopieren
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Security: Application Code kopieren
+COPY backend/ ./backend/
+
+# Security: Berechtigungen setzen
+RUN chown -R appuser:appuser /app && \
+    chmod -R 755 /app
+
+# Security: Non-root User aktivieren
+USER appuser
+
+# Security: Health Check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Security: Port exponieren
+EXPOSE 8000
+
+# Security: Read-only Filesystem (außer für notwendige Verzeichnisse)
+VOLUME ["/app/uploads", "/app/logs"]
+
+# Security: Application starten
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

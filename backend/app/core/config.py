@@ -41,11 +41,10 @@ class Settings(BaseSettings):
     )
     cors_origins: list[str] = Field(
         default=[
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost:8081",
+            "https://yourdomain.com",
+            "https://www.yourdomain.com",
         ],
-        description="List of allowed CORS origins",
+        description="List of allowed CORS origins - restrict in production",
     )
 
     # Database
@@ -59,8 +58,8 @@ class Settings(BaseSettings):
 
     # Security
     secret_key: str = Field(
-        default="dev-secret-key-for-development-only-change-in-production",
-        description="Secret key",
+        default=None,  # Kein Default für Production
+        description="Secret key - must be set in production",
     )
     jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
     jwt_access_token_expire_minutes: int = Field(
@@ -263,7 +262,11 @@ class Settings(BaseSettings):
     @field_validator("secret_key")
     @classmethod
     def validate_secret_key(cls, v):
-        """Validate secret key length."""
+        """Validate secret key."""
+        if not v:
+            raise ValueError("Secret key must be set in production")
+        if v == "dev-secret-key-for-development-only-change-in-production":
+            raise ValueError("Secret key must be properly configured in production")
         if len(v) < 32:
             raise ValueError("Secret key must be at least 32 characters long")
         return v

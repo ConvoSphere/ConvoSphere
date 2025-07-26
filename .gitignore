@@ -137,12 +137,22 @@ celerybeat.pid
 # Environments
 .env
 .envrc
+.env.production
+.env.*.local
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Security & Secrets
+secrets/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
 
 # Spyder project settings
 .spyderproject
