@@ -14,8 +14,9 @@ from enum import Enum
 from typing import Any
 
 import numpy as np
-from backend.app.core.config import get_settings
 from litellm import completion
+
+from backend.app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 

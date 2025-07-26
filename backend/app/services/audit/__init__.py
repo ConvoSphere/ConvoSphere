@@ -4,8 +4,9 @@ audit service module.
 This module provides audit functionality for the ConvoSphere platform.
 """
 
-from .audit_service import AuditService
 from ...core.database import get_db
+from .audit_service import AuditService
+
 
 def get_audit_service():
     """Get an audit service instance with database connection."""

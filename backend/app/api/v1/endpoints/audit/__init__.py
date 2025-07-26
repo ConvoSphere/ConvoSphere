@@ -12,13 +12,13 @@ This module provides comprehensive audit functionality including:
 
 from fastapi import APIRouter
 
-from .logs import router as logs_router
-from .policies import router as policies_router
-from .compliance import router as compliance_router
 from .alerts import router as alerts_router
-from .retention import router as retention_router
 from .archives import router as archives_router
+from .compliance import router as compliance_router
+from .logs import router as logs_router
 from .maintenance import router as maintenance_router
+from .policies import router as policies_router
+from .retention import router as retention_router
 
 # Create main audit router
 router = APIRouter(prefix="/audit", tags=["audit"])

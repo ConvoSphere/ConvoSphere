@@ -6,11 +6,10 @@ for protecting the ConvoSphere application.
 """
 
 import time
-from typing import Callable
+
 from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
 from loguru import logger
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -21,13 +20,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         """Add security headers to response."""
         start_time = time.time()
-        
+
         # Process request
         response = await call_next(request)
-        
+
         # Calculate response time
         process_time = time.time() - start_time
-        
+
         # Add security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -39,16 +38,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
         response.headers["X-Download-Options"] = "noopen"
         response.headers["X-DNS-Prefetch-Control"] = "off"
-        
+
         # Add performance headers
         response.headers["X-Response-Time"] = f"{process_time:.4f}"
         response.headers["Server"] = "ConvoSphere/1.0"
-        
+
         # Log security events
         await self._log_security_event(request, response, process_time)
-        
+
         return response
-    
+
     def _get_csp_header(self) -> str:
         """Get Content Security Policy header."""
         return (
@@ -72,7 +71,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 f"Security event: {request.method} {request.url.path} "
                 f"returned {response.status_code} from {request.client.host}"
             )
-        
+
         # Log slow requests
         if process_time > 5.0:
             logger.warning(
@@ -95,10 +94,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """Apply rate limiting to requests."""
         client_ip = self._get_client_ip(request)
         current_time = int(time.time() / 60)  # Minute-based window
-        
+
         # Clean old entries
         self._cleanup_old_entries(current_time)
-        
+
         # Check rate limit
         if not self._check_rate_limit(client_ip, current_time):
             logger.warning(f"Rate limit exceeded for IP: {client_ip}")
@@ -107,42 +106,42 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 status_code=429,
                 headers={"Retry-After": "60"}
             )
-        
+
         # Process request
         response = await call_next(request)
-        
+
         # Add rate limit headers
         response.headers["X-RateLimit-Limit"] = str(self.requests_per_minute)
         response.headers["X-RateLimit-Remaining"] = str(
             self._get_remaining_requests(client_ip, current_time)
         )
-        
+
         return response
-    
+
     def _get_client_ip(self, request: Request) -> str:
         """Get client IP address."""
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
             return forwarded.split(",")[0].strip()
         return request.client.host
-    
+
     def _check_rate_limit(self, client_ip: str, current_time: int) -> bool:
         """Check if request is within rate limit."""
         key = f"{client_ip}:{current_time}"
         count = self.request_counts.get(key, 0)
-        
+
         if count >= self.requests_per_minute:
             return False
-        
+
         self.request_counts[key] = count + 1
         return True
-    
+
     def _get_remaining_requests(self, client_ip: str, current_time: int) -> int:
         """Get remaining requests for client."""
         key = f"{client_ip}:{current_time}"
         count = self.request_counts.get(key, 0)
         return max(0, self.requests_per_minute - count)
-    
+
     def _cleanup_old_entries(self, current_time: int):
         """Clean up old rate limit entries."""
         keys_to_remove = [
@@ -160,7 +159,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         """Validate request for security issues."""
-        
+
         # Check for suspicious headers
         if self._has_suspicious_headers(request):
             logger.warning(f"Suspicious headers from {request.client.host}")
@@ -168,7 +167,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
                 content="Invalid request",
                 status_code=400
             )
-        
+
         # Check for suspicious user agents
         if self._has_suspicious_user_agent(request):
             logger.warning(f"Suspicious user agent from {request.client.host}")
@@ -176,7 +175,7 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
                 content="Invalid request",
                 status_code=400
             )
-        
+
         # Check for path traversal attempts
         if self._has_path_traversal(request):
             logger.warning(f"Path traversal attempt from {request.client.host}")
@@ -184,12 +183,12 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
                 content="Invalid request",
                 status_code=400
             )
-        
+
         # Process request
         response = await call_next(request)
-        
+
         return response
-    
+
     def _has_suspicious_headers(self, request: Request) -> bool:
         """Check for suspicious headers."""
         suspicious_headers = [
@@ -197,17 +196,17 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
             "X-Original-URL",
             "X-Rewrite-URL"
         ]
-        
+
         for header in suspicious_headers:
             if header in request.headers:
                 return True
-        
+
         return False
-    
+
     def _has_suspicious_user_agent(self, request: Request) -> bool:
         """Check for suspicious user agents."""
         user_agent = request.headers.get("user-agent", "").lower()
-        
+
         suspicious_patterns = [
             "sqlmap",
             "nikto",
@@ -217,13 +216,13 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
             "crawler",
             "spider"
         ]
-        
+
         return any(pattern in user_agent for pattern in suspicious_patterns)
-    
+
     def _has_path_traversal(self, request: Request) -> bool:
         """Check for path traversal attempts."""
         path = request.url.path.lower()
-        
+
         suspicious_patterns = [
             "..",
             "~",
@@ -235,20 +234,20 @@ class SecurityValidationMiddleware(BaseHTTPMiddleware):
             "exec",
             "system"
         ]
-        
+
         return any(pattern in path for pattern in suspicious_patterns)
 
 
 def setup_security_middleware(app):
     """Setup all security middleware for the application."""
-    
+
     # Add security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
-    
+
     # Add rate limiting middleware
     app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
-    
+
     # Add security validation middleware
     app.add_middleware(SecurityValidationMiddleware)
-    
+
     logger.info("Security middleware configured successfully")

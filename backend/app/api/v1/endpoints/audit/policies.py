@@ -44,7 +44,7 @@ async def get_audit_policies(
             size=size,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving audit policies: {e}")
@@ -78,7 +78,7 @@ async def create_audit_policy(
             policy_data=policy_data,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error creating audit policy: {e}")
@@ -108,13 +108,13 @@ async def get_audit_policy(
             policy_id=policy_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit policy not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -148,13 +148,13 @@ async def update_audit_policy(
             policy_update=policy_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit policy not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -186,7 +186,7 @@ async def delete_audit_policy(
             policy_id=policy_id,
             current_user=current_user,
         )
-        
+
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

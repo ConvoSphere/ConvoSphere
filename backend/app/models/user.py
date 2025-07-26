@@ -15,7 +15,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .audit_extended import ExtendedAuditLog
 
 
 class UserRole(str, Enum):

@@ -8,6 +8,9 @@ into a unified interface for easy use throughout the application.
 from datetime import datetime, timedelta
 from typing import Any
 
+from loguru import logger
+from pydantic import BaseModel, Field
+
 from backend.app.core.exceptions import ConfigurationError
 from backend.app.services.async_processor import (
     TaskPriority,
@@ -30,8 +33,6 @@ from backend.app.services.performance_monitor import (
     database_optimizer,
     performance_monitor,
 )
-from loguru import logger
-from pydantic import BaseModel, Field
 
 
 class PerformanceConfig(BaseModel):

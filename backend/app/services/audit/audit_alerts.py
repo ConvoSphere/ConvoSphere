@@ -4,8 +4,9 @@ Audit alert management.
 This module handles audit alert creation and management.
 """
 
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from ...models.audit_extended import AuditAlert
@@ -13,10 +14,10 @@ from ...models.audit_extended import AuditAlert
 
 class AlertManager:
     """Manages audit alerts."""
-    
+
     def __init__(self, db: Session):
         self.db = db
-    
+
     def create_alert(self, alert_type: str, message: str, severity: str) -> bool:
         """Create a new audit alert."""
         try:
@@ -30,22 +31,22 @@ class AlertManager:
             self.db.add(alert)
             self.db.commit()
             return True
-        except Exception as e:
+        except Exception:
             self.db.rollback()
             return False
-    
-    def get_alerts(self, resolved: bool = None, severity: str = None) -> List[AuditAlert]:
+
+    def get_alerts(self, resolved: bool = None, severity: str = None) -> list[AuditAlert]:
         """Get audit alerts with optional filtering."""
         query = self.db.query(AuditAlert)
-        
+
         if resolved is not None:
             query = query.filter(AuditAlert.is_resolved == resolved)
-        
+
         if severity:
             query = query.filter(AuditAlert.severity == severity)
-        
+
         return query.order_by(AuditAlert.created_at.desc()).all()
-    
+
     def resolve_alert(self, alert_id: int) -> bool:
         """Mark an alert as resolved."""
         try:
@@ -56,19 +57,19 @@ class AlertManager:
                 self.db.commit()
                 return True
             return False
-        except Exception as e:
+        except Exception:
             self.db.rollback()
             return False
-    
-    def get_alert_summary(self) -> Dict[str, Any]:
+
+    def get_alert_summary(self) -> dict[str, Any]:
         """Get a summary of alerts."""
         total_alerts = self.db.query(AuditAlert).count()
         unresolved_alerts = self.db.query(AuditAlert).filter(AuditAlert.is_resolved == False).count()
-        
+
         severity_counts = {}
         for alert in self.db.query(AuditAlert).all():
             severity_counts[alert.severity] = severity_counts.get(alert.severity, 0) + 1
-        
+
         return {
             "total_alerts": total_alerts,
             "unresolved_alerts": unresolved_alerts,

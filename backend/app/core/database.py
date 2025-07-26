@@ -67,7 +67,6 @@ def get_db() -> Generator[Session, None, None]:
 def create_default_admin_user():
     """Create default admin user if none exist."""
     logger.info("Admin user creation should be done via CLI tool for security")
-    return None
 
 
 def create_default_assistant():

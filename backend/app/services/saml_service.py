@@ -10,11 +10,6 @@ import tempfile
 from datetime import datetime
 from typing import Any
 
-from backend.app.core.config import get_settings
-from backend.app.core.security import create_access_token, create_refresh_token
-from backend.app.models.user import AuthProvider, User
-from backend.app.schemas.user import SSOUserCreate
-from backend.app.services.user_service import UserService
 from fastapi import HTTPException, Request, status
 from loguru import logger
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
@@ -25,6 +20,12 @@ from saml2.config import Config as Saml2Config
 from saml2.metadata import create_metadata_string
 from saml2.saml import NAMEID_FORMAT_EMAILADDRESS
 from saml2.sigver import get_xmlsec_binary
+
+from backend.app.core.config import get_settings
+from backend.app.core.security import create_access_token, create_refresh_token
+from backend.app.models.user import AuthProvider, User
+from backend.app.schemas.user import SSOUserCreate
+from backend.app.services.user_service import UserService
 
 
 class SAMLService:

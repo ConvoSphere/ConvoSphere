@@ -414,10 +414,10 @@ async def websocket_endpoint(
                             if chunk.get("choices") and chunk["choices"][0].get("delta"):
                                 delta = chunk["choices"][0]["delta"]
                                 content_chunk = delta.get("content", "")
-                                
+
                                 if content_chunk:
                                     full_response_content += content_chunk
-                                    
+
                                     # Send streaming chunk to client
                                     stream_message = json.dumps(
                                         {
@@ -438,10 +438,12 @@ async def websocket_endpoint(
                                 # Check if response is complete
                                 if chunk.get("choices") and chunk["choices"][0].get("finish_reason"):
                                     finish_reason = chunk["choices"][0]["finish_reason"]
-                                    
+
                                     if finish_reason in ["stop", "length"]:
                                         # Response is complete, save to database
-                                        from app.schemas.conversation import MessageCreate
+                                        from app.schemas.conversation import (
+                                            MessageCreate,
+                                        )
 
                                         ai_message_data = MessageCreate(
                                             conversation_id=conversation_id,

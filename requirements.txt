@@ -95,9 +95,9 @@ numpy>=1.24.0
 # Production monitoring
 opentelemetry-api>=1.21.0
 opentelemetry-sdk>=1.21.0
-opentelemetry-instrumentation>=0.42.0
-opentelemetry-instrumentation-fastapi>=0.42.0
-opentelemetry-instrumentation-sqlalchemy>=0.42.0
+opentelemetry-instrumentation>=0.56b0
+opentelemetry-instrumentation-fastapi>=0.56b0
+opentelemetry-instrumentation-sqlalchemy>=0.56b0
 # opentelemetry-instrumentation-redis>=0.42.0
 # opentelemetry-exporter-otlp>=1.21.0
 

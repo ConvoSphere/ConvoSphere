@@ -9,6 +9,9 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
+from loguru import logger
+from pydantic import BaseModel
+
 from backend.app.core.exceptions import ConversationError
 from backend.app.schemas.hybrid_mode import (
     AgentMemory,
@@ -21,9 +24,9 @@ from backend.app.schemas.hybrid_mode import (
     ModeDecision,
     ModeDecisionReason,
 )
-from backend.app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
-from loguru import logger
-from pydantic import BaseModel
+from backend.app.services.tool_executor_v2 import (
+    enhanced_tool_executor as tool_executor,
+)
 
 
 class ComplexityAnalyzer(BaseModel):

@@ -4,20 +4,22 @@ Audit retention policy management.
 This module handles retention policies for audit logs.
 """
 
-from typing import Dict, Any, List
 from datetime import datetime, timedelta
+from typing import Any
+
 from sqlalchemy.orm import Session
 
-from ...models.audit_extended import ExtendedAuditLog as AuditLog, AuditRetentionRule as AuditRetentionPolicy
+from ...models.audit_extended import AuditRetentionRule as AuditRetentionPolicy
+from ...models.audit_extended import ExtendedAuditLog as AuditLog
 
 
 class RetentionManager:
     """Manages retention policies for audit logs."""
-    
+
     def __init__(self, db: Session):
         self.db = db
-    
-    def create_retention_policy(self, name: str, retention_days: int, event_types: List[str] = None) -> bool:
+
+    def create_retention_policy(self, name: str, retention_days: int, event_types: list[str] = None) -> bool:
         """Create a new retention policy."""
         try:
             policy = AuditRetentionPolicy(
@@ -29,40 +31,40 @@ class RetentionManager:
             self.db.add(policy)
             self.db.commit()
             return True
-        except Exception as e:
+        except Exception:
             self.db.rollback()
             return False
-    
+
     def apply_policies(self) -> int:
         """Apply all active retention policies."""
         policies = self.db.query(AuditRetentionPolicy).filter(AuditRetentionPolicy.is_active == True).all()
         total_deleted = 0
-        
+
         for policy in policies:
             deleted_count = self._apply_policy(policy)
             total_deleted += deleted_count
-        
+
         return total_deleted
-    
+
     def _apply_policy(self, policy: AuditRetentionPolicy) -> int:
         """Apply a specific retention policy."""
         cutoff_date = datetime.utcnow() - timedelta(days=policy.retention_days)
-        
+
         query = self.db.query(AuditLog).filter(AuditLog.timestamp < cutoff_date)
-        
+
         if policy.event_types:
             query = query.filter(AuditLog.event_type.in_(policy.event_types))
-        
+
         # Get count before deletion
         count = query.count()
-        
+
         # Delete old logs
         query.delete()
         self.db.commit()
-        
+
         return count
-    
-    def get_retention_summary(self) -> Dict[str, Any]:
+
+    def get_retention_summary(self) -> dict[str, Any]:
         """Get a summary of retention policies and their impact."""
         policies = self.db.query(AuditRetentionPolicy).all()
         summary = {
@@ -70,14 +72,14 @@ class RetentionManager:
             "active_policies": len([p for p in policies if p.is_active]),
             "policy_details": []
         }
-        
+
         for policy in policies:
             cutoff_date = datetime.utcnow() - timedelta(days=policy.retention_days)
             query = self.db.query(AuditLog).filter(AuditLog.timestamp < cutoff_date)
-            
+
             if policy.event_types:
                 query = query.filter(AuditLog.event_type.in_(policy.event_types))
-            
+
             summary["policy_details"].append({
                 "name": policy.name,
                 "retention_days": policy.retention_days,
@@ -85,5 +87,5 @@ class RetentionManager:
                 "is_active": policy.is_active,
                 "logs_to_delete": query.count()
             })
-        
+
         return summary

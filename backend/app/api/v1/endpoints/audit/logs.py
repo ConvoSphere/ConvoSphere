@@ -89,7 +89,7 @@ async def get_audit_logs(
             "start_date": start_date,
             "end_date": end_date,
         }
-        
+
         result = await audit_service.get_audit_logs(
             db=db,
             filters=filters,
@@ -99,7 +99,7 @@ async def get_audit_logs(
             include_metadata=include_metadata,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving audit logs: {e}")
@@ -129,13 +129,13 @@ async def get_audit_log(
             log_id=log_id,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit log not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -169,13 +169,13 @@ async def update_audit_log(
             log_update=log_update,
             current_user=current_user,
         )
-        
+
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audit log not found",
             )
-        
+
         return result
     except HTTPException:
         raise
@@ -217,7 +217,7 @@ async def get_audit_statistics(
             organization_id=organization_id,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error retrieving audit statistics: {e}")
@@ -247,7 +247,7 @@ async def export_audit_logs(
             export_params=export_params,
             current_user=current_user,
         )
-        
+
         return result
     except AuditError as e:
         logger.error(f"Error exporting audit logs: {e}")
