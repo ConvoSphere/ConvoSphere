@@ -200,6 +200,11 @@ nav:
     - Refactoring Guide: development/refactoring-guide.md
   - API: api.md
   - Architecture: architecture.md
+  - Security:
+    - Overview: security/index.md
+    - User Security: security/user-security.md
+    - Admin Security: security/admin-security.md
+    - Developer Security: security/developer-security.md
   - Project:
     - Status: project/status.md
     - Refactoring Status: project/refactoring-status.md

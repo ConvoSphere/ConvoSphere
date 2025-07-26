@@ -55,6 +55,7 @@ make dev
 - **[API Reference](api.md)** - Complete API Documentation
 - **[Features Documentation](features/ai-integration.md)** - Detailed feature specifications
 - **[Architecture Guide](architecture.md)** - System design and components
+- **[Security Documentation](security/index.md)** - Comprehensive security guide
 
 ## ✨ Current Feature Set
 
@@ -156,6 +157,7 @@ make dev
 - **Multi-Factor Authentication (MFA)** options
 - **Advanced session management** with device tracking
 - **Security audit dashboard** with threat detection
+- **Zero-Trust Architecture** implementation
 
 ### 📱 **Offline & Mobile** (Planned)
 - **True offline functionality** with service workers *(currently: intelligent caching only)*
