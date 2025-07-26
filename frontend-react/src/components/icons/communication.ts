@@ -14,6 +14,7 @@ import {
   LogoutOutlined,
   LoginOutlined,
   KeyOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import type { IconMapping } from './types';
 
@@ -27,4 +28,5 @@ export const communicationIcons: IconMapping = {
   logout: LogoutOutlined,
   login: LoginOutlined,
   key: KeyOutlined,
+  book: BookOutlined,
 };

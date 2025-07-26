@@ -19,3 +19,4 @@ export * from './media';
 export * from './system';
 export * from './data';
 export * from './feedback';
+export * from './text-format';

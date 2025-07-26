@@ -15,6 +15,7 @@ import { mediaIcons } from './media';
 import { systemIcons } from './system';
 import { dataIcons } from './data';
 import { feedbackIcons } from './feedback';
+import { textFormatIcons } from './text-format';
 
 // Combine all icon mappings
 const allIcons = {
@@ -25,6 +26,7 @@ const allIcons = {
   ...systemIcons,
   ...dataIcons,
   ...feedbackIcons,
+  ...textFormatIcons,
 };
 
 const Icon: React.FC<IconProps> = ({ 
