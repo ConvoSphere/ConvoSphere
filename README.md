@@ -34,7 +34,7 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](https://convosphere.github.io/convosphere/) for detailed guides.
+**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides.
 
 ## ✨ Key Features
 
@@ -528,6 +528,8 @@ Die aktuelle und geplante Entwicklung ist in der [Roadmap](docs/project/roadmap.
 - **Deployment & Betrieb:** [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
 - **Feature-Details:** [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
 - **Roadmap & Status:** [docs/project/roadmap.md](docs/project/roadmap.md)
+- **Refactoring Status:** [docs/project/refactoring-status.md](docs/project/refactoring-status.md)
+- **Entwickler-Guide:** [docs/development/refactoring-guide.md](docs/development/refactoring-guide.md)
 
 ## 🔌 Frontend-Backend-Kommunikation testen
 
