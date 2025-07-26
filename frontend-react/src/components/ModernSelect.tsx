@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Select as AntSelect, SelectProps as AntSelectProps } from "antd";
-import { DownOutlined, SearchOutlined, CloseOutlined } from "@ant-design/icons";
-import { useThemeStore } from "../store/themeStore";
+import { DownOutlined, CloseOutlined } from "@ant-design/icons";
+
 import "./ModernSelect.css";
 
 export interface ModernSelectProps extends Omit<AntSelectProps, "size"> {
@@ -31,8 +31,7 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
   children,
   ...props
 }) => {
-  const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors();
+
   const [isOpen, setIsOpen] = useState(false);
   const [hasValue, setHasValue] = useState(!!props.value);
 

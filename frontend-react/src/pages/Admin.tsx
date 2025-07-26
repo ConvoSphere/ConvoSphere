@@ -2,29 +2,19 @@ import React, { useEffect, useState } from "react";
 import {
   Typography,
   Space,
-  Divider,
   Row,
   Col,
   Statistic,
   Progress,
   Switch,
-  Select,
-  Button,
   message,
   Spin,
   Avatar,
   Tooltip,
   Popconfirm,
-  Badge,
   Tabs,
-  Alert,
   Modal,
   Form,
-  Input,
-  DatePicker,
-  Descriptions,
-  List,
-  Timeline,
   Tag,
   Table,
 } from "antd";
@@ -34,9 +24,6 @@ import {
   TeamOutlined,
   DashboardOutlined,
   SecurityScanOutlined,
-  GlobalOutlined,
-  BellOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   ReloadOutlined,
@@ -44,39 +31,27 @@ import {
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  LockOutlined,
-  UnlockOutlined,
   ExportOutlined,
-  ImportOutlined,
   DownloadOutlined,
-  UploadOutlined,
-  BarChartOutlined,
-  PieChartOutlined,
-  LineChartOutlined,
   CrownOutlined,
   MonitorOutlined,
-  DatabaseOutlined,
-  FileTextOutlined,
   MessageOutlined,
-  ToolOutlined,
   ShieldOutlined,
-  InfoCircleOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
 
-const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
+const { Title, Text } = Typography;
 const { TabPane } = Tabs;
-const { RangePicker } = DatePicker;
 
 interface User {
   id: number;
@@ -359,18 +334,7 @@ const Admin: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "green";
-      case "inactive":
-        return "orange";
-      case "suspended":
-        return "red";
-      default:
-        return "blue";
-    }
-  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("de-DE", {

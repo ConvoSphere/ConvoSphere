@@ -3,10 +3,8 @@ import {
   Spin,
   Alert,
   message,
-  Avatar,
   Row,
   Col,
-  Drawer,
   Typography,
   Badge,
   Tooltip,
@@ -55,9 +53,8 @@ const Chat: React.FC = () => {
   const [isStreaming, setIsStreaming] = useState(false);
 
   const token = useAuthStore((s) => s.token);
-  const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
-  const { searchDocuments, getDocuments } = useKnowledgeStore();
+  const { searchDocuments } = useKnowledgeStore();
   const colors = getCurrentColors();
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);

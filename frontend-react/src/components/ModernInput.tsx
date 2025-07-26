@@ -3,10 +3,9 @@ import { Input as AntInput, InputProps as AntInputProps } from "antd";
 import {
   EyeOutlined,
   EyeInvisibleOutlined,
-  SearchOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
-import { useThemeStore } from "../store/themeStore";
+
 import "./ModernInput.css";
 
 export interface ModernInputProps extends Omit<AntInputProps, "size"> {
@@ -43,8 +42,7 @@ const ModernInput = forwardRef<HTMLInputElement, ModernInputProps>(
     },
     ref,
   ) => {
-    const { getCurrentColors } = useThemeStore();
-    const colors = getCurrentColors();
+    
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [hasValue, setHasValue] = useState(!!value);

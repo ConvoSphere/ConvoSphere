@@ -15,14 +15,11 @@ import {
   Typography,
   Select,
   Switch,
-  Divider,
   Avatar,
   Tooltip,
   Popconfirm,
   Badge,
   Tabs,
-  Upload,
-  Progress,
 } from "antd";
 import {
   PlusOutlined,
@@ -33,18 +30,12 @@ import {
   BookOutlined,
   ToolOutlined,
   MessageOutlined,
-  CopyOutlined,
   PlayCircleOutlined,
   PauseCircleOutlined,
-  EyeOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../store/themeStore";
 import {
-  getAssistants,
-  addAssistant,
-  deleteAssistant,
   getDefaultAssistantId,
   setDefaultAssistant,
 } from "../services/assistants";
@@ -70,17 +61,7 @@ interface Assistant {
   tags: string[];
 }
 
-interface AssistantFormData {
-  name: string;
-  description: string;
-  personality: string;
-  model: string;
-  temperature: number;
-  isActive: boolean;
-  knowledgeBaseIds: string[];
-  toolIds: string[];
-  tags: string[];
-}
+
 
 const Assistants: React.FC = () => {
   const { t } = useTranslation();

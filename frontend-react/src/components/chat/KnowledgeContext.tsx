@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { List, Typography, Button, Tag, Select, Input, message } from "antd";
+import React, { useState } from "react";
+import { List, Typography, Button, Tag, Input, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { BookOutlined, SearchOutlined } from "@ant-design/icons";
 import { useKnowledgeStore } from "../../store/knowledgeStore";
@@ -7,18 +7,15 @@ import type { Document } from "../../services/knowledge";
 import { formatDocumentType } from "../../utils/formatters";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 
 interface KnowledgeContextProps {
   onDocumentSelect?: (document: Document) => void;
   selectedDocuments?: Document[];
-  maxDocuments?: number;
 }
 
 const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
   onDocumentSelect,
   selectedDocuments = [],
-  maxDocuments = 5,
 }) => {
   const { t } = useTranslation();
   const { documents } = useKnowledgeStore();
