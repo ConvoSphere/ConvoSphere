@@ -1,23 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
-import { Button, Form, Input, Alert, Spin } from 'antd';
+import { useThemeStore } from '../store/themeStore';
+import { Avatar, Typography, Space, Divider, Alert, Spin, Row, Col, Statistic } from 'antd';
+import { 
+  UserOutlined, 
+  MailOutlined, 
+  CalendarOutlined, 
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
+  CrownOutlined,
+  TeamOutlined,
+  ClockCircleOutlined,
+  SettingOutlined
+} from '@ant-design/icons';
+import ModernCard from '../components/ModernCard';
+import ModernButton from '../components/ModernButton';
+import ModernInput from '../components/ModernInput';
+import ModernForm, { ModernFormItem } from '../components/ModernForm';
+
+const { Title, Text } = Typography;
 
 const Profile: React.FC = () => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const updateProfile = useAuthStore((s) => s.updateProfile);
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
+  
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [form] = ModernForm.useForm();
 
   useEffect(() => {
     if (!user) fetchProfile();
-     
-  }, []);
+  }, [fetchProfile, user]);
 
-  if (!user) return <Spin style={{ marginTop: 64 }} />;
+  if (!user) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: colors.colorGradientPrimary
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const onFinish = async (values: { username: string; email: string }) => {
     setLoading(true);
@@ -25,33 +59,348 @@ const Profile: React.FC = () => {
     try {
       await updateProfile(values);
       setEditing(false);
-          } catch {
-      setError('Update failed.');
+    } catch {
+      setError(t('profile.update_failed', 'Update failed.'));
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    setEditing(false);
+    setError(null);
+    form.resetFields();
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'super_admin':
+        return <CrownOutlined style={{ color: '#FFD700' }} />;
+      case 'admin':
+        return <CrownOutlined style={{ color: '#FF6B6B' }} />;
+      case 'moderator':
+        return <TeamOutlined style={{ color: '#4ECDC4' }} />;
+      default:
+        return <UserOutlined style={{ color: colors.colorPrimary }} />;
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'super_admin':
+        return '#FFD700';
+      case 'admin':
+        return '#FF6B6B';
+      case 'moderator':
+        return '#4ECDC4';
+      default:
+        return colors.colorPrimary;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('de-DE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', marginTop: 64 }}>
-      <h2>{t('profile.title')}</h2>
-      {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-      {!editing ? (
-        <div>
-          <p><b>{t('profile.username')}:</b> {user.username}</p>
-          <p><b>{t('profile.email')}:</b> {user.email}</p>
-          <Button onClick={() => setEditing(true)}>{t('profile.edit')}</Button>
+    <div style={{ 
+      minHeight: '100vh',
+      background: colors.colorGradientPrimary,
+      padding: '24px'
+    }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        {/* Header Section */}
+        <ModernCard variant="gradient" size="lg" className="stagger-children">
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <Avatar 
+              size={120} 
+              icon={<UserOutlined />}
+              style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: '4px solid rgba(255, 255, 255, 0.3)',
+                marginBottom: 24
+              }}
+            />
+            <Title level={1} style={{ color: '#FFFFFF', marginBottom: 8, fontSize: '2.5rem' }}>
+              {t('profile.title', 'Profil')}
+            </Title>
+            <Text style={{ fontSize: '18px', color: 'rgba(255, 255, 255, 0.9)' }}>
+              {t('profile.subtitle', 'Verwalten Sie Ihre persönlichen Informationen')}
+            </Text>
+          </div>
+        </ModernCard>
+
+        <div style={{ marginTop: 32 }}>
+          <Row gutter={[24, 24]}>
+            {/* Profile Information */}
+            <Col xs={24} lg={16}>
+              <ModernCard 
+                variant="elevated" 
+                size="lg"
+                header={
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Title level={3} style={{ margin: 0 }}>
+                      {t('profile.personal_info', 'Persönliche Informationen')}
+                    </Title>
+                    {!editing && (
+                      <ModernButton
+                        variant="primary"
+                        size="md"
+                        icon={<EditOutlined />}
+                        onClick={() => setEditing(true)}
+                      >
+                        {t('profile.edit', 'Bearbeiten')}
+                      </ModernButton>
+                    )}
+                  </div>
+                }
+              >
+                {error && (
+                  <Alert 
+                    type="error" 
+                    message={error} 
+                    showIcon 
+                    style={{ 
+                      marginBottom: 24, 
+                      borderRadius: '12px',
+                      border: 'none'
+                    }} 
+                  />
+                )}
+
+                {!editing ? (
+                  <div className="stagger-children">
+                    <Row gutter={[24, 24]}>
+                      <Col xs={24} md={12}>
+                        <div style={{ 
+                          padding: '20px', 
+                          backgroundColor: colors.colorBgContainer,
+                          borderRadius: '12px',
+                          border: `1px solid ${colors.colorBorder}`
+                        }}>
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <UserOutlined style={{ color: colors.colorPrimary, fontSize: '18px' }} />
+                              <Text strong style={{ fontSize: '16px' }}>
+                                {t('profile.username', 'Benutzername')}
+                              </Text>
+                            </div>
+                            <Text style={{ fontSize: '18px', color: colors.colorTextBase }}>
+                              {user.username}
+                            </Text>
+                          </Space>
+                        </div>
+                      </Col>
+                      
+                      <Col xs={24} md={12}>
+                        <div style={{ 
+                          padding: '20px', 
+                          backgroundColor: colors.colorBgContainer,
+                          borderRadius: '12px',
+                          border: `1px solid ${colors.colorBorder}`
+                        }}>
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <MailOutlined style={{ color: colors.colorSecondary, fontSize: '18px' }} />
+                              <Text strong style={{ fontSize: '16px' }}>
+                                {t('profile.email', 'E-Mail')}
+                              </Text>
+                            </div>
+                            <Text style={{ fontSize: '18px', color: colors.colorTextBase }}>
+                              {user.email}
+                            </Text>
+                          </Space>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+                      <Col xs={24} md={12}>
+                        <div style={{ 
+                          padding: '20px', 
+                          backgroundColor: colors.colorBgContainer,
+                          borderRadius: '12px',
+                          border: `1px solid ${colors.colorBorder}`
+                        }}>
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              {getRoleIcon(user.role)}
+                              <Text strong style={{ fontSize: '16px' }}>
+                                {t('profile.role', 'Rolle')}
+                              </Text>
+                            </div>
+                            <Text style={{ 
+                              fontSize: '18px', 
+                              color: getRoleColor(user.role),
+                              fontWeight: 600
+                            }}>
+                              {t(`profile.roles.${user.role}`, user.role)}
+                            </Text>
+                          </Space>
+                        </div>
+                      </Col>
+                      
+                      <Col xs={24} md={12}>
+                        <div style={{ 
+                          padding: '20px', 
+                          backgroundColor: colors.colorBgContainer,
+                          borderRadius: '12px',
+                          border: `1px solid ${colors.colorBorder}`
+                        }}>
+                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <CalendarOutlined style={{ color: colors.colorAccent, fontSize: '18px' }} />
+                              <Text strong style={{ fontSize: '16px' }}>
+                                {t('profile.member_since', 'Mitglied seit')}
+                              </Text>
+                            </div>
+                            <Text style={{ fontSize: '18px', color: colors.colorTextBase }}>
+                              {user.createdAt ? formatDate(user.createdAt) : t('profile.unknown', 'Unbekannt')}
+                            </Text>
+                          </Space>
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                ) : (
+                  <ModernForm
+                    form={form}
+                    onFinish={onFinish}
+                    initialValues={{
+                      username: user.username,
+                      email: user.email
+                    }}
+                    layout="vertical"
+                  >
+                    <Row gutter={[24, 24]}>
+                      <Col xs={24} md={12}>
+                        <ModernFormItem
+                          name="username"
+                          label={t('profile.username', 'Benutzername')}
+                          rules={[{ required: true, message: t('profile.username_required', 'Benutzername ist erforderlich') }]}
+                        >
+                          <ModernInput
+                            prefix={<UserOutlined style={{ color: colors.colorPrimary }} />}
+                            placeholder={t('profile.username_placeholder', 'Ihr Benutzername')}
+                          />
+                        </ModernFormItem>
+                      </Col>
+                      
+                      <Col xs={24} md={12}>
+                        <ModernFormItem
+                          name="email"
+                          label={t('profile.email', 'E-Mail')}
+                          rules={[
+                            { required: true, message: t('profile.email_required', 'E-Mail ist erforderlich') },
+                            { type: 'email', message: t('profile.email_invalid', 'Ungültige E-Mail-Adresse') }
+                          ]}
+                        >
+                          <ModernInput
+                            prefix={<MailOutlined style={{ color: colors.colorSecondary }} />}
+                            placeholder={t('profile.email_placeholder', 'ihre.email@beispiel.de')}
+                          />
+                        </ModernFormItem>
+                      </Col>
+                    </Row>
+
+                    <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                      <ModernButton
+                        variant="primary"
+                        size="lg"
+                        icon={<SaveOutlined />}
+                        htmlType="submit"
+                        loading={loading}
+                      >
+                        {t('profile.save', 'Speichern')}
+                      </ModernButton>
+                      
+                      <ModernButton
+                        variant="outlined"
+                        size="lg"
+                        icon={<CloseOutlined />}
+                        onClick={handleCancel}
+                        disabled={loading}
+                      >
+                        {t('profile.cancel', 'Abbrechen')}
+                      </ModernButton>
+                    </div>
+                  </ModernForm>
+                )}
+              </ModernCard>
+            </Col>
+
+            {/* Statistics Sidebar */}
+            <Col xs={24} lg={8}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {/* User Stats */}
+                <ModernCard variant="interactive" size="md">
+                  <Title level={4} style={{ marginBottom: 24 }}>
+                    {t('profile.statistics', 'Statistiken')}
+                  </Title>
+                  
+                  <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <Statistic
+                      title={t('profile.total_conversations', 'Gespräche')}
+                      value={user.totalConversations || 0}
+                      prefix={<UserOutlined style={{ color: colors.colorPrimary }} />}
+                      valueStyle={{ color: colors.colorPrimary, fontSize: '1.5rem' }}
+                    />
+                    
+                    <Divider style={{ margin: '16px 0' }} />
+                    
+                    <Statistic
+                      title={t('profile.last_login', 'Letzter Login')}
+                      value={user.lastLogin ? formatDate(user.lastLogin) : t('profile.never', 'Nie')}
+                      prefix={<ClockCircleOutlined style={{ color: colors.colorSecondary }} />}
+                      valueStyle={{ color: colors.colorSecondary, fontSize: '1rem' }}
+                    />
+                  </Space>
+                </ModernCard>
+
+                {/* Quick Actions */}
+                <ModernCard variant="outlined" size="md">
+                  <Title level={4} style={{ marginBottom: 16 }}>
+                    {t('profile.quick_actions', 'Schnellaktionen')}
+                  </Title>
+                  
+                  <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <ModernButton
+                      variant="secondary"
+                      size="md"
+                      icon={<UserOutlined />}
+                      style={{ width: '100%', justifyContent: 'flex-start' }}
+                    >
+                      {t('profile.view_activity', 'Aktivität anzeigen')}
+                    </ModernButton>
+                    
+                    <ModernButton
+                      variant="secondary"
+                      size="md"
+                      icon={<MailOutlined />}
+                      style={{ width: '100%', justifyContent: 'flex-start' }}
+                    >
+                      {t('profile.change_password', 'Passwort ändern')}
+                    </ModernButton>
+                    
+                    <ModernButton
+                      variant="secondary"
+                      size="md"
+                      icon={<SettingOutlined />}
+                      style={{ width: '100%', justifyContent: 'flex-start' }}
+                    >
+                      {t('profile.preferences', 'Einstellungen')}
+                    </ModernButton>
+                  </Space>
+                </ModernCard>
+              </div>
+            </Col>
+          </Row>
         </div>
-      ) : (
-        <Form initialValues={user} onFinish={onFinish} layout="vertical">
-          <Form.Item name="username" label={t('profile.username')} rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item name="email" label={t('profile.email')} rules={[{ required: true, type: 'email' }]}> <Input /> </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>{t('profile.save')}</Button>
-            <Button style={{ marginLeft: 8 }} onClick={() => setEditing(false)}>{t('profile.cancel')}</Button>
-          </Form.Item>
-        </Form>
-      )}
+      </div>
     </div>
   );
 };
