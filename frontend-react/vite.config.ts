@@ -39,7 +39,6 @@ export default defineConfig({
             './src/components/Layout.tsx',
             './src/components/Sidebar.tsx',
             './src/components/HeaderBar.tsx',
-            './src/components/IconSystem.tsx',
             './src/components/ThemeSwitcher.tsx',
             './src/components/LanguageSwitcher.tsx',
             './src/components/LogoutButton.tsx',

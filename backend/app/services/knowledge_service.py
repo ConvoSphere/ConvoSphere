@@ -28,7 +28,10 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from .ai_service import AIService
-from .document_processor import document_processor
+from .document.document_service import DocumentService
+
+# Create a document processor instance
+document_processor = DocumentService(db=None)
 from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
 

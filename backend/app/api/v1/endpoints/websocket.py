@@ -333,107 +333,107 @@ async def websocket_endpoint(
                         conversation_id,
                     )
 
-                                            # Generate AI response with streaming
-                        try:
-                            # Get conversation context
-                            messages = conversation_service.get_messages(
-                                conversation_id,
-                                limit=10,
+                    # Generate AI response with streaming
+                    try:
+                        # Get conversation context
+                        messages = conversation_service.get_messages(
+                            conversation_id,
+                            limit=10,
+                        )
+
+                        # Prepare knowledge context for AI
+                        knowledge_documents = []
+                        if knowledge_context and knowledge_context.get("enabled"):
+                            # Search knowledge base for relevant documents
+                            search_query = knowledge_context.get("searchQuery", content)
+                            max_chunks = knowledge_context.get("maxChunks", 5)
+
+                            # Perform knowledge search
+                            search_results = await knowledge_service.search_documents(
+                                query=search_query,
+                                user_id=str(user.id),
+                                limit=max_chunks,
+                                filters=knowledge_context.get("filters", {}),
                             )
 
-                            # Prepare knowledge context for AI
-                            knowledge_documents = []
-                            if knowledge_context and knowledge_context.get("enabled"):
-                                # Search knowledge base for relevant documents
-                                search_query = knowledge_context.get("searchQuery", content)
-                                max_chunks = knowledge_context.get("maxChunks", 5)
+                            knowledge_documents = search_results.get("documents", [])
 
-                                # Perform knowledge search
-                                search_results = await knowledge_service.search_documents(
-                                    query=search_query,
-                                    user_id=str(user.id),
-                                    limit=max_chunks,
-                                    filters=knowledge_context.get("filters", {}),
+                            # Send knowledge update to client
+                            if knowledge_documents:
+                                await manager.send_knowledge_update(
+                                    str(user.id),
+                                    conversation_id,
+                                    knowledge_documents,
+                                    search_query,
                                 )
 
-                                knowledge_documents = search_results.get("documents", [])
+                        # Send typing indicator
+                        await manager.send_typing_indicator(
+                            conversation_id,
+                            str(user.id),
+                            True,
+                        )
 
-                                # Send knowledge update to client
-                                if knowledge_documents:
-                                    await manager.send_knowledge_update(
-                                        str(user.id),
-                                        conversation_id,
-                                        knowledge_documents,
-                                        search_query,
-                                    )
+                        # Start streaming AI response
+                        full_response_content = ""
+                        message_id = None
+                        metadata = {}
 
-                            # Send typing indicator
-                            await manager.send_typing_indicator(
-                                conversation_id,
-                                str(user.id),
-                                True,
-                            )
+                        # Generate streaming AI response with RAG
+                        async for chunk in ai_service.chat_completion_with_rag_stream(
+                            messages=messages,
+                            user_id=str(user.id),
+                            conversation_id=conversation_id,
+                            use_knowledge_base=bool(knowledge_documents),
+                            max_context_chunks=len(knowledge_documents),
+                            model=(
+                                str(conversation.assistant_id)
+                                if conversation.assistant_id
+                                else None
+                            ),
+                        ):
+                            if "error" in chunk:
+                                # Handle error
+                                error_message = json.dumps(
+                                    {
+                                        "type": "error",
+                                        "data": {
+                                            "message": "AI response generation failed",
+                                            "error": chunk["error"],
+                                        },
+                                    },
+                                )
+                                await manager.send_personal_message(
+                                    error_message,
+                                    str(user.id),
+                                    conversation_id,
+                                )
+                                break
 
-                            # Start streaming AI response
-                            full_response_content = ""
-                            message_id = None
-                            metadata = {}
-
-                            # Generate streaming AI response with RAG
-                            async for chunk in ai_service.chat_completion_with_rag_stream(
-                                messages=messages,
-                                user_id=str(user.id),
-                                conversation_id=conversation_id,
-                                use_knowledge_base=bool(knowledge_documents),
-                                max_context_chunks=len(knowledge_documents),
-                                model=(
-                                    str(conversation.assistant_id)
-                                    if conversation.assistant_id
-                                    else None
-                                ),
-                            ):
-                                if "error" in chunk:
-                                    # Handle error
-                                    error_message = json.dumps(
+                            # Extract content from chunk
+                            if chunk.get("choices") and chunk["choices"][0].get("delta"):
+                                delta = chunk["choices"][0]["delta"]
+                                content_chunk = delta.get("content", "")
+                                
+                                if content_chunk:
+                                    full_response_content += content_chunk
+                                    
+                                    # Send streaming chunk to client
+                                    stream_message = json.dumps(
                                         {
-                                            "type": "error",
+                                            "type": "stream_chunk",
                                             "data": {
-                                                "message": "AI response generation failed",
-                                                "error": chunk["error"],
+                                                "conversation_id": conversation_id,
+                                                "content": content_chunk,
+                                                "is_partial": True,
                                             },
                                         },
                                     )
                                     await manager.send_personal_message(
-                                        error_message,
+                                        stream_message,
                                         str(user.id),
                                         conversation_id,
                                     )
-                                    break
-
-                                # Extract content from chunk
-                                if chunk.get("choices") and chunk["choices"][0].get("delta"):
-                                    delta = chunk["choices"][0]["delta"]
-                                    content_chunk = delta.get("content", "")
-                                    
-                                    if content_chunk:
-                                        full_response_content += content_chunk
-                                        
-                                        # Send streaming chunk to client
-                                        stream_message = json.dumps(
-                                            {
-                                                "type": "stream_chunk",
-                                                "data": {
-                                                    "conversation_id": conversation_id,
-                                                    "content": content_chunk,
-                                                    "is_partial": True,
-                                                },
-                                            },
-                                        )
-                                        await manager.send_personal_message(
-                                            stream_message,
-                                            str(user.id),
-                                            conversation_id,
-                                        )
 
                                 # Check if response is complete
                                 if chunk.get("choices") and chunk["choices"][0].get("finish_reason"):

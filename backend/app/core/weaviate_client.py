@@ -96,8 +96,14 @@ def close_weaviate() -> None:
     global weaviate_client
 
     if weaviate_client:
-        weaviate_client = None
-        logger.info("Weaviate connection closed")
+        try:
+            # Properly close the client connection
+            weaviate_client.close()
+        except Exception as e:
+            logger.warning(f"Error closing Weaviate connection: {e}")
+        finally:
+            weaviate_client = None
+            logger.info("Weaviate connection closed")
 
 
 def check_weaviate_connection() -> bool:

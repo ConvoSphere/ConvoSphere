@@ -7,7 +7,7 @@ This module handles audit policy configuration and enforcement.
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 
-from ...models.audit import AuditPolicy
+from ...models.audit_extended import AuditPolicy
 
 
 class AuditPolicyManager:

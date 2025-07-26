@@ -133,11 +133,9 @@ def configure_opentelemetry(app, db_engine=None, redis_client=None):
 def create_application() -> FastAPI:
     """Create and configure the FastAPI application."""
 
-    # Configure logging
+    # Configure logging to console for now (file logging disabled due to permission issues)
     logger.add(
-        get_settings().log_file,
-        rotation="10 MB",
-        retention="7 days",
+        lambda msg: print(msg, end=""),
         level=get_settings().log_level,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
     )

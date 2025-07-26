@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Avatar, Spin } from 'antd';
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { useThemeStore } from '../store/themeStore';
-import Icon from './IconSystem';
+import Icon from './icons/Icon';
 
 interface ChatMessage {
   id: string;

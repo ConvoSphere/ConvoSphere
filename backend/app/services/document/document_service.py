@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any
 from pathlib import Path
 from sqlalchemy.orm import Session
 
-from ..core.database import get_db
+from ...core.database import get_db
 from .processors.pdf_processor import PDFProcessor
 from .processors.text_processor import TextProcessor
 from .processors.image_processor import ImageProcessor

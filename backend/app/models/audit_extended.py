@@ -255,7 +255,7 @@ class ExtendedAuditLog(Base):
             "resource_id",
             "timestamp",
         ),
-        Index("idx_audit_compliance_timestamp", "compliance_frameworks", "timestamp"),
+        # Index("idx_audit_compliance_timestamp", "compliance_frameworks", "timestamp"),  # Disabled due to JSON column indexing issues
         {"extend_existing": True},
     )
 

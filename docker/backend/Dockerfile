@@ -61,9 +61,9 @@ COPY backend/ ./backend/
 COPY pyproject.toml .
 
 # =============================================================================
-# UPLOADS DIRECTORY
+# UPLOADS AND LOGS DIRECTORY
 # =============================================================================
-RUN mkdir -p /app/uploads
+RUN mkdir -p /app/uploads /app/logs
 
 # =============================================================================
 # SECURITY - NON-ROOT USER

@@ -39,7 +39,7 @@ export const LazySystemStatus = lazy(() => import('../pages/SystemStatus'));
 
 // Lazy-Loaded Feature Components
 export const LazyVirtualizedChat = lazy(() => import('./VirtualizedChat'));
-export const LazyIconSystem = lazy(() => import('./IconSystem'));
+// IconSystem is not a component; use Icon from './icons' where needed
 
 // Lazy Component Wrapper
 interface LazyComponentProps {

@@ -2,15 +2,15 @@
 
 from typing import Any
 
-from backend.app.core.database import get_db
-from backend.app.core.exceptions import (
+from app.core.database import get_db
+from app.core.exceptions import (
     ConversationError,
     DatabaseError,
     NotFoundError,
     ValidationError,
 )
-from backend.app.models.conversation import Conversation, Message, MessageRole
-from backend.app.schemas.conversation import (
+from app.models.conversation import Conversation, Message, MessageRole
+from app.schemas.conversation import (
     ConversationCreate,
     MessageCreate,
 )
@@ -374,4 +374,5 @@ class ConversationService:
 
 
 # Global conversation service instance (for static access, e.g. in AIService)
-conversation_service = None  # Must be initialized with DB session, e.g. in FastAPI startup or via dependency injection
+from app.core.database import get_db
+conversation_service = ConversationService(next(get_db()))

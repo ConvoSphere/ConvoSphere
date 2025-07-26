@@ -64,6 +64,12 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def create_default_admin_user():
+    """Create default admin user if none exist."""
+    logger.info("Admin user creation should be done via CLI tool for security")
+    return None
+
+
 def create_default_assistant():
     """Create a default assistant if none exists."""
     try:
@@ -79,11 +85,14 @@ def create_default_assistant():
             logger.info("Assistants already exist, skipping default assistant creation")
             return
 
-        # Get the first user (admin) to be the creator
+        # Get or create admin user
         admin_user = db.query(User).filter(User.role == "admin").first()
         if not admin_user:
-            logger.warning("No admin user found, cannot create default assistant")
-            return
+            logger.info("No admin user found, creating default admin user")
+            admin_user = create_default_admin_user()
+            if not admin_user:
+                logger.warning("Failed to create admin user, cannot create default assistant")
+                return
 
         # Create default assistant
         default_assistant = Assistant(
@@ -125,7 +134,8 @@ def init_db() -> None:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
 
-        # Create default assistant
+        # Create default admin user and assistant
+        create_default_admin_user()
         create_default_assistant()
 
     except Exception as e:

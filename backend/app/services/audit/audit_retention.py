@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from ...models.audit import AuditLog, AuditRetentionPolicy
+from ...models.audit_extended import ExtendedAuditLog as AuditLog, AuditRetentionRule as AuditRetentionPolicy
 
 
 class RetentionManager:

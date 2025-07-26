@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from ..core.database import get_db
+from ...core.database import get_db
 from .audit_logger import AuditLogger
 from .audit_policy import AuditPolicyManager
 from .audit_compliance import ComplianceChecker

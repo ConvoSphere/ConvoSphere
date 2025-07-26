@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from ...models.audit import AuditAlert
+from ...models.audit_extended import AuditAlert
 
 
 class AlertManager:
