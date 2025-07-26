@@ -19,9 +19,11 @@ Examples:
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
+from pathlib import Path
 
 
 def print_success(message):
@@ -39,10 +41,15 @@ def print_info(message):
 def db_migrate():
     """Run Alembic migrations (upgrade head)."""
     try:
+        alembic_path = shutil.which("alembic")
+        if not alembic_path:
+            print_error("Alembic not found in PATH. Please install alembic or run in a virtual environment with backend dependencies.")
+            sys.exit(1)
+
         result = subprocess.run(
-            ["alembic", "upgrade", "head"],
+            [alembic_path, "upgrade", "head"],
             check=False,
-            cwd=os.path.dirname(__file__),
+            cwd=Path(__file__).parent,
             capture_output=True,
             text=True,
         )
@@ -59,10 +66,15 @@ def db_migrate():
 def db_status():
     """Show Alembic migration status."""
     try:
+        alembic_path = shutil.which("alembic")
+        if not alembic_path:
+            print_error("Alembic not found in PATH. Please install alembic or run in a virtual environment with backend dependencies.")
+            sys.exit(1)
+
         result = subprocess.run(
-            ["alembic", "current"],
+            [alembic_path, "current"],
             check=False,
-            cwd=os.path.dirname(__file__),
+            cwd=Path(__file__).parent,
             capture_output=True,
             text=True,
         )
@@ -79,10 +91,15 @@ def db_status():
 def db_downgrade(revision):
     """Downgrade DB to a specific revision."""
     try:
+        alembic_path = shutil.which("alembic")
+        if not alembic_path:
+            print_error("Alembic not found in PATH. Please install alembic or run in a virtual environment with backend dependencies.")
+            sys.exit(1)
+
         result = subprocess.run(
-            ["alembic", "downgrade", revision],
+            [alembic_path, "downgrade", revision],
             check=False,
-            cwd=os.path.dirname(__file__),
+            cwd=Path(__file__).parent,
             capture_output=True,
             text=True,
         )
@@ -99,7 +116,7 @@ def db_downgrade(revision):
 def backup_create(output=None):
     """Create database backup."""
     if not output:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         output = f"backup_{timestamp}.sql"
 
     try:
@@ -121,9 +138,14 @@ def backup_create(output=None):
             env = os.environ.copy()
             env["PGPASSWORD"] = password
 
+            pg_dump_path = shutil.which("pg_dump")
+            if not pg_dump_path:
+                print_error("pg_dump not found in PATH. Please install PostgreSQL client tools.")
+                sys.exit(1)
+
             result = subprocess.run(
                 [
-                    "pg_dump",
+                    pg_dump_path,
                     "-h",
                     host,
                     "-p",
@@ -161,7 +183,7 @@ def backup_create(output=None):
 
 def backup_restore(backup_file, confirm=False):
     """Restore database from backup."""
-    if not os.path.exists(backup_file):
+    if not Path(backup_file).exists():
         print_error(f"Backup file not found: {backup_file}")
         sys.exit(1)
 
@@ -189,9 +211,14 @@ def backup_restore(backup_file, confirm=False):
             env = os.environ.copy()
             env["PGPASSWORD"] = password
 
+            psql_path = shutil.which("psql")
+            if not psql_path:
+                print_error("psql not found in PATH. Please install PostgreSQL client tools.")
+                sys.exit(1)
+
             result = subprocess.run(
                 [
-                    "psql",
+                    psql_path,
                     "-h",
                     host,
                     "-p",
@@ -310,7 +337,7 @@ def config_validate():
 
     # Check file paths
     upload_dir = os.getenv("UPLOAD_DIR", "./uploads")
-    if not os.path.exists(upload_dir):
+    if not Path(upload_dir).exists():
         errors.append(f"Upload directory does not exist: {upload_dir}")
 
     if errors:

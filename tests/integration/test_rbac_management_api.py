@@ -10,7 +10,7 @@ This module tests the RBAC management API endpoints including:
 - Cache management
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -684,7 +684,7 @@ class TestRBACManagementAPI:
             mock_service.get_security_events.return_value = [
                 {
                     "id": "event_123",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "event_type": "permission_denied",
                     "user_id": "user_123",
                     "resource": "documents",

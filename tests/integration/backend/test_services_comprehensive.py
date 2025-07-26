@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -31,8 +31,8 @@ class TestUserServiceComprehensive:
             "full_name": "Test User",
             "role": "user",
             "is_active": True,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
     def test_create_user_success(self, user_service, sample_user_data):
@@ -187,8 +187,8 @@ class TestAssistantServiceComprehensive:
             "instructions": "You are a helpful assistant.",
             "user_id": str(uuid.uuid4()),
             "is_active": True,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
     def test_create_assistant(self, assistant_service, sample_assistant_data):
@@ -279,8 +279,8 @@ class TestConversationServiceComprehensive:
             "title": "Test Conversation",
             "user_id": str(uuid.uuid4()),
             "assistant_id": str(uuid.uuid4()),
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
     def test_create_conversation(self, conversation_service, sample_conversation_data):
@@ -391,8 +391,8 @@ class TestToolServiceComprehensive:
             "config": {"function_name": "test_function"},
             "user_id": str(uuid.uuid4()),
             "is_active": True,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
     def test_create_tool(self, tool_service, sample_tool_data):
@@ -472,8 +472,8 @@ class TestKnowledgeServiceComprehensive:
             "file_type": "application/pdf",
             "user_id": str(uuid.uuid4()),
             "status": "processed",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
     def test_process_document(self, knowledge_service, sample_document_data):

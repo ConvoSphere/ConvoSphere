@@ -7,7 +7,7 @@ MCP tools with validation, error handling, and result processing.
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
@@ -191,7 +191,7 @@ class ToolExecutor:
             )
 
         # Create execution instance
-        execution_id = f"exec_{len(self.executions)}_{datetime.now().timestamp()}"
+        execution_id = f"exec_{len(self.executions)}_{datetime.now(UTC).timestamp()}"
         execution = ToolExecution(
             id=execution_id,
             tool_id=tool_id,
@@ -199,7 +199,7 @@ class ToolExecutor:
             conversation_id=conversation_id,
             parameters=parameters,
             status=ToolExecutionStatus.PENDING,
-            start_time=datetime.now(),
+            start_time=datetime.now(UTC),
         )
 
         self.executions[execution_id] = execution
@@ -235,7 +235,7 @@ class ToolExecutor:
             logger.error(f"Tool execution failed: {e}")
 
         finally:
-            execution.end_time = datetime.now()
+            execution.end_time = datetime.now(UTC)
             if execution.start_time and execution.end_time:
                 execution.execution_time = (
                     execution.end_time - execution.start_time
@@ -475,7 +475,7 @@ class ToolExecutor:
 
         if execution.status == ToolExecutionStatus.RUNNING:
             execution.status = ToolExecutionStatus.CANCELLED
-            execution.end_time = datetime.now()
+            execution.end_time = datetime.now(UTC)
             return True
 
         return False

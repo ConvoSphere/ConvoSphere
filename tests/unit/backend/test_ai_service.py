@@ -10,7 +10,7 @@ This module tests the AI service functionality including:
 - Model management
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -36,7 +36,7 @@ class TestCostTracker:
             model="gpt-4",
             tokens_used=100,
             cost_usd=0.03,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             user_id="user123",
             conversation_id="conv123",
         )
@@ -52,13 +52,13 @@ class TestCostTracker:
         """Test getting total cost."""
         tracker = CostTracker()
         cost_info1 = CostInfo(
-            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now()
+            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now(UTC)
         )
         cost_info2 = CostInfo(
             model="gpt-3.5-turbo",
             tokens_used=50,
             cost_usd=0.01,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
         )
 
         tracker.add_cost(cost_info1)
@@ -70,13 +70,13 @@ class TestCostTracker:
         """Test getting total tokens."""
         tracker = CostTracker()
         cost_info1 = CostInfo(
-            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now()
+            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now(UTC)
         )
         cost_info2 = CostInfo(
             model="gpt-3.5-turbo",
             tokens_used=50,
             cost_usd=0.01,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
         )
 
         tracker.add_cost(cost_info1)
@@ -91,14 +91,14 @@ class TestCostTracker:
             model="gpt-4",
             tokens_used=100,
             cost_usd=0.03,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             user_id="user123",
         )
         cost_info2 = CostInfo(
             model="gpt-3.5-turbo",
             tokens_used=50,
             cost_usd=0.01,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             user_id="user456",
         )
 
@@ -116,14 +116,14 @@ class TestCostTracker:
             model="gpt-4",
             tokens_used=100,
             cost_usd=0.03,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             conversation_id="conv123",
         )
         cost_info2 = CostInfo(
             model="gpt-3.5-turbo",
             tokens_used=50,
             cost_usd=0.01,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(UTC),
             conversation_id="conv456",
         )
 
@@ -314,7 +314,7 @@ class TestAIService:
     def test_get_cost_summary(self, ai_service):
         """Test getting cost summary."""
         cost_info = CostInfo(
-            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now()
+            model="gpt-4", tokens_used=100, cost_usd=0.03, timestamp=datetime.now(UTC)
         )
         ai_service.cost_tracker.add_cost(cost_info)
 

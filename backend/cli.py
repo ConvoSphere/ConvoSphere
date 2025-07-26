@@ -3,7 +3,7 @@ import argparse
 import os
 import subprocess
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -246,7 +246,7 @@ def user_reset_password():
 def backup_create(output=None):
     """Create database backup."""
     if not output:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         output = f"backup_{timestamp}.sql"
 
     try:

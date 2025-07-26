@@ -9,7 +9,7 @@ This module tests the audit service functionality including:
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.orm import Session
@@ -54,7 +54,7 @@ class TestAuditService:
                 ip_address=f"192.168.1.{i}",
                 user_agent="test-agent",
                 status="success" if i % 2 == 0 else "failure",
-                created_at=datetime.now() - timedelta(hours=i),
+                created_at=datetime.now(UTC) - timedelta(hours=i),
             )
             db_session.add(log)
             logs.append(log)
@@ -121,8 +121,8 @@ class TestAuditService:
     def test_get_audit_logs_by_date_range(self, audit_service, sample_audit_logs):
         """Test retrieving audit logs within a date range."""
         # Arrange
-        start_date = datetime.now() - timedelta(hours=5)
-        end_date = datetime.now() - timedelta(hours=2)
+        start_date = datetime.now(UTC) - timedelta(hours=5)
+        end_date = datetime.now(UTC) - timedelta(hours=2)
 
         # Act
         date_logs = audit_service.get_audit_logs_by_date_range(start_date, end_date)
@@ -280,7 +280,7 @@ class TestAuditService:
         # Arrange
         complex_details = {
             "nested": {"data": [1, 2, 3], "metadata": {"key": "value"}},
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         sample_audit_data["details"] = complex_details
 

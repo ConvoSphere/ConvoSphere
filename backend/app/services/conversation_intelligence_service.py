@@ -7,7 +7,7 @@ with existing conversation and AI services.
 """
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -132,7 +132,7 @@ class ConversationIntelligenceService:
                 models_used=list(self._ai_models.values()),
                 analysis_completed=request.analysis_types
                 or ["summary", "topics", "sentiment", "analytics"],
-                created_at=datetime.now(),
+                created_at=datetime.now(UTC),
             )
 
             # Cache results if enabled
@@ -552,17 +552,17 @@ class ConversationIntelligenceService:
                 {
                     "content": "Hello, how can I help you?",
                     "user_id": "user1",
-                    "timestamp": datetime.now(),
+                    "timestamp": datetime.now(UTC),
                 },
                 {
                     "content": "I need help with the API",
                     "user_id": "user2",
-                    "timestamp": datetime.now(),
+                    "timestamp": datetime.now(UTC),
                 },
                 {
                     "content": "Sure, what specific issue are you facing?",
                     "user_id": "user1",
-                    "timestamp": datetime.now(),
+                    "timestamp": datetime.now(UTC),
                 },
             ],
         }
@@ -583,8 +583,8 @@ class ConversationIntelligenceService:
         if len(messages) < 2:
             return 0.0
 
-        start_time = messages[0].get("timestamp", datetime.now())
-        end_time = messages[-1].get("timestamp", datetime.now())
+        start_time = messages[0].get("timestamp", datetime.now(UTC))
+        end_time = messages[-1].get("timestamp", datetime.now(UTC))
 
         if isinstance(start_time, str):
             start_time = datetime.fromisoformat(start_time)
@@ -667,7 +667,7 @@ class ConversationIntelligenceService:
         if not messages:
             return topics
 
-        start_time = messages[0].get("timestamp", datetime.now())
+        start_time = messages[0].get("timestamp", datetime.now(UTC))
         if isinstance(start_time, str):
             start_time = datetime.fromisoformat(start_time)
 
@@ -713,8 +713,8 @@ class ConversationIntelligenceService:
         """Calculate response times between messages."""
         response_times = []
         for i in range(1, len(messages)):
-            prev_time = messages[i - 1].get("timestamp", datetime.now())
-            curr_time = messages[i].get("timestamp", datetime.now())
+            prev_time = messages[i - 1].get("timestamp", datetime.now(UTC))
+            curr_time = messages[i].get("timestamp", datetime.now(UTC))
 
             if isinstance(prev_time, str):
                 prev_time = datetime.fromisoformat(prev_time)
@@ -825,7 +825,7 @@ class ConversationIntelligenceService:
 
         # Return middle message timestamp as peak
         middle_index = len(messages) // 2
-        peak_time = messages[middle_index].get("timestamp", datetime.now())
+        peak_time = messages[middle_index].get("timestamp", datetime.now(UTC))
 
         if isinstance(peak_time, str):
             peak_time = datetime.fromisoformat(peak_time)
@@ -839,7 +839,7 @@ class ConversationIntelligenceService:
         """Identify periods of low activity."""
         # Simulated lull period identification
         return [
-            {"start": datetime.now(), "end": datetime.now(), "duration_minutes": 5.0},
+            {"start": datetime.now(UTC), "end": datetime.now(UTC), "duration_minutes": 5.0},
         ]
 
     def _validate_intelligence_request(

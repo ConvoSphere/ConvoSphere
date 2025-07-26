@@ -6,7 +6,7 @@ configuring middleware, routes, and application lifecycle events.
 """
 
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.api.v1.api import api_router
 from app.core.config import get_settings
@@ -239,7 +239,7 @@ def create_application() -> FastAPI:
             "app_name": get_settings().app_name,
             "version": get_settings().app_version,
             "environment": get_settings().environment,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "services": {"redis": {"status": redis_status, "info": redis_info}},
         }
 

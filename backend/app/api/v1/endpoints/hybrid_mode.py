@@ -5,7 +5,7 @@ This module provides API endpoints for managing hybrid chat/agent mode
 switching, configuration, and status queries.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.database import get_db
@@ -305,7 +305,7 @@ async def update_conversation_config(
         # Update configuration
         config_schema = HybridModeConfig(**config.dict())
         state.config = config_schema
-        state.updated_at = datetime.now()
+        state.updated_at = datetime.now(UTC)
 
         logger.info(f"Updated hybrid mode config for conversation {conversation_id}")
         return config

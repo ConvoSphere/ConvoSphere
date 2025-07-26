@@ -8,7 +8,7 @@ and generates a detailed report with recommendations for improvement.
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -478,7 +478,7 @@ class TestCoverageAnalyzer:
         print("\n" + "=" * 80)
         print("📊 TEST COVERAGE ANALYSE BERICHT")
         print("=" * 80)
-        print(f"📅 Generiert am: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"📅 Generiert am: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"🎯 Gesamt-Testabdeckung: {report.total_coverage:.1f}%")
         print()
 
@@ -546,7 +546,7 @@ class TestCoverageAnalyzer:
     ):
         """Save the report as JSON."""
         report_data = {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "total_coverage": report.total_coverage,
             "backend_apis": [self._item_to_dict(item) for item in report.backend_apis],
             "backend_services": [

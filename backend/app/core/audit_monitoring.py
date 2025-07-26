@@ -8,7 +8,7 @@ and performance tracking for the audit system.
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import redis
@@ -47,7 +47,7 @@ class AuditMetrics:
     ) -> None:
         """Record audit event metrics."""
         try:
-            timestamp = datetime.now()
+            timestamp = datetime.now(UTC)
             key = f"{self.metrics_prefix}events:{timestamp.strftime('%Y%m%d:%H')}"
 
             # Increment event counters
@@ -96,7 +96,7 @@ class AuditMetrics:
     ) -> None:
         """Record query performance metrics."""
         try:
-            timestamp = datetime.now()
+            timestamp = datetime.now(UTC)
             key = f"{self.performance_prefix}queries:{timestamp.strftime('%Y%m%d:%H')}"
 
             # Store query performance data
@@ -121,7 +121,7 @@ class AuditMetrics:
     ) -> None:
         """Record cache performance metrics."""
         try:
-            timestamp = datetime.now()
+            timestamp = datetime.now(UTC)
             key = f"{self.performance_prefix}cache:{timestamp.strftime('%Y%m%d:%H')}"
 
             # Increment cache counters
@@ -148,9 +148,9 @@ class AuditMetrics:
         """Get comprehensive performance metrics."""
         try:
             if not start_date:
-                start_date = datetime.now() - timedelta(hours=24)
+                start_date = datetime.now(UTC) - timedelta(hours=24)
             if not end_date:
-                end_date = datetime.now()
+                end_date = datetime.now(UTC)
 
             metrics = {
                 "period": {
@@ -199,10 +199,10 @@ class AuditMetrics:
     async def get_real_time_metrics(self) -> dict[str, Any]:
         """Get real-time performance metrics."""
         try:
-            current_hour = datetime.now().strftime("%Y%m%d:%H")
+            current_hour = datetime.now(UTC).strftime("%Y%m%d:%H")
 
             metrics = {
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "current_hour": {},
                 "rolling_averages": {},
                 "active_alerts": {},
@@ -253,7 +253,7 @@ class AuditMetrics:
         """Get performance alerts based on thresholds."""
         try:
             alerts = []
-            current_hour = datetime.now().strftime("%Y%m%d:%H")
+            current_hour = datetime.now(UTC).strftime("%Y%m%d:%H")
 
             # Check for high error rates
             for event_type in AuditEventType:
@@ -510,7 +510,7 @@ class AuditPerformanceMonitor:
         while True:
             try:
                 # Cleanup metrics older than 30 days
-                datetime.now() - timedelta(days=30)
+                datetime.now(UTC) - timedelta(days=30)
 
                 # This would implement actual cleanup logic
                 # For now, just log the cleanup
@@ -541,7 +541,7 @@ class AuditPerformanceMonitor:
         """Get comprehensive monitoring dashboard data."""
         try:
             return {
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "overview": await self._get_overview_metrics(),
                 "performance": await self._get_performance_overview(),
                 "alerts": await self.metrics.get_performance_alerts(),
@@ -556,7 +556,7 @@ class AuditPerformanceMonitor:
         """Get overview metrics for dashboard."""
         try:
             # Get current hour metrics
-            current_hour = datetime.now().strftime("%Y%m%d:%H")
+            current_hour = datetime.now(UTC).strftime("%Y%m%d:%H")
 
             total_events = 0
             total_errors = 0
@@ -629,7 +629,7 @@ class AuditPerformanceMonitor:
 
             # Get trends for the last 24 hours
             for hour in range(24):
-                timestamp = datetime.now() - timedelta(hours=hour)
+                timestamp = datetime.now(UTC) - timedelta(hours=hour)
                 hour_key = timestamp.strftime("%Y%m%d:%H")
 
                 # Calculate event volume for this hour

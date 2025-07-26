@@ -6,7 +6,7 @@ user attributes, resource attributes, and environmental conditions.
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -172,7 +172,7 @@ class ABACRule(Base):
     ) -> dict[str, Any]:
         """Extract environment attributes for ABAC evaluation."""
         return {
-            "current_time": context.get("current_time", datetime.now().isoformat()),
+            "current_time": context.get("current_time", datetime.now(UTC).isoformat()),
             "ip_address": context.get("ip_address"),
             "user_agent": context.get("user_agent"),
             "session_id": context.get("session_id"),
