@@ -1,11 +1,8 @@
 # =============================================================================
-# CHATASSISTANT - CONSOLIDATED REQUIREMENTS
+# PRODUCTION REQUIREMENTS
 # =============================================================================
-# This file contains all dependencies for the ChatAssistant project.
-# Use specific requirement files for different environments:
-# - requirements-dev.txt: Development dependencies
-# - requirements-test.txt: Testing dependencies
-# - requirements-prod.txt: Production dependencies (minimal)
+# Install with: pip install -r requirements-prod.txt
+# Minimal requirements for production deployment
 
 # =============================================================================
 # CORE FRAMEWORK
@@ -61,16 +58,11 @@ python-dotenv>=1.0.0
 loguru>=0.7.2
 
 # =============================================================================
-# FILE PROCESSING
+# FILE PROCESSING (MINIMAL)
 # =============================================================================
 python-magic>=0.4.27
 pypdf>=3.17.0
 markdown>=3.5.0
-pytesseract>=0.3.10
-Pillow>=10.0.0
-
-# Advanced Document Processing with Docling
-docling>=0.1.0
 
 # =============================================================================
 # WEB SCRAPING & SEARCH
@@ -84,44 +76,6 @@ requests>=2.32.2
 email-validator>=2.1.0
 
 # =============================================================================
-# MACHINE LEARNING (OPTIONAL)
-# =============================================================================
-# Uncomment for advanced features
-# umap-learn>=0.5.9
-# scikit-learn>=1.7.1
-numpy>=1.24.0
-
-# =============================================================================
-# OBSERVABILITY & MONITORING
-# =============================================================================
-# Uncomment for production monitoring
-# opentelemetry-api>=1.21.0
-# opentelemetry-sdk>=1.21.0
-# opentelemetry-instrumentation>=0.42.0
-# opentelemetry-instrumentation-fastapi>=0.42.0
-# opentelemetry-instrumentation-sqlalchemy>=0.42.0
-# opentelemetry-instrumentation-redis>=0.42.0
-# opentelemetry-exporter-otlp>=1.21.0
-
-# =============================================================================
 # WEBSOCKET SUPPORT
 # =============================================================================
 websockets>=12.0
-
-# =============================================================================
-# TESTING (OPTIONAL - use requirements-test.txt for testing)
-# =============================================================================
-# pytest>=7.4.3
-# pytest-asyncio>=0.21.1
-# pytest-cov>=4.0.0
-# pytest-mock>=3.10.0
-# pytest-xdist>=3.0.0
-# factory-boy>=3.2.0
-# faker>=18.0.0
-
-# =============================================================================
-# DEVELOPMENT (OPTIONAL - use requirements-dev.txt for development)
-# =============================================================================
-# ruff>=0.1.6
-# bandit>=1.7.5
-# mypy>=1.7.1 

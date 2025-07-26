@@ -1,199 +1,200 @@
-# Test Structure
+# Test Suite Documentation
 
-This directory contains all tests for the AI Assistant Platform, organized by type and component.
+## Overview
 
-## Structure
+This directory contains the comprehensive test suite for the ChatAssistant project. The tests are organized by type and follow best practices for maintainability and scalability.
+
+## Test Structure
 
 ```
 tests/
-├── unit/                    # Unit tests
-│   ├── backend/            # Backend unit tests
-│   └── frontend/           # Frontend unit tests
-├── integration/            # Integration tests
-│   ├── backend/           # Backend integration tests
-│   └── frontend/          # Frontend integration tests
-├── performance/           # Performance tests
-│   └── backend/          # Backend performance tests
-├── security/             # Security tests
-│   └── backend/          # Backend security tests
-├── e2e/                  # End-to-end tests
-│   └── cypress/          # Cypress E2E tests
-├── conftest.py           # Shared test configuration
-├── pytest.ini           # Pytest configuration
-├── vitest.config.ts      # Vitest configuration for frontend
-├── setup.ts              # Frontend test setup
-└── README.md            # This file
+├── unit/                 # Unit tests for individual components
+│   ├── backend/         # Backend unit tests
+│   │   ├── api/         # API endpoint tests
+│   │   ├── services/    # Service layer tests
+│   │   ├── models/      # Model tests
+│   │   └── utils/       # Utility function tests
+│   └── frontend/        # Frontend unit tests
+│       ├── components/  # React component tests
+│       ├── hooks/       # Custom hook tests
+│       ├── store/       # State management tests
+│       └── utils/       # Utility function tests
+├── integration/         # Integration tests
+│   ├── api/            # API integration tests
+│   ├── database/       # Database integration tests
+│   └── external/       # External service integration tests
+├── e2e/                # End-to-end tests
+│   ├── user-flows/     # Complete user workflow tests
+│   └── scenarios/      # Specific test scenarios
+├── performance/        # Performance and load tests
+├── security/           # Security and authentication tests
+├── blackbox/           # Black box testing
+├── fixtures/           # Test data and fixtures
+├── conftest.py         # Pytest configuration
+├── setup.ts            # Test setup for frontend
+└── vitest.config.ts    # Vitest configuration
 ```
 
-## Backend Tests
+## Test Categories
 
-Backend tests are also organized in `backend/tests/` with the same structure:
+### Unit Tests (`unit/`)
+- **Purpose**: Test individual components in isolation
+- **Scope**: Single function, class, or component
+- **Speed**: Fast execution
+- **Dependencies**: Mocked external dependencies
 
-```
-backend/tests/
-├── unit/                 # Unit tests
-├── integration/          # Integration tests
-├── performance/          # Performance tests
-└── security/            # Security tests
-```
+### Integration Tests (`integration/`)
+- **Purpose**: Test component interactions
+- **Scope**: Multiple components working together
+- **Speed**: Medium execution
+- **Dependencies**: Real database, mocked external services
+
+### End-to-End Tests (`e2e/`)
+- **Purpose**: Test complete user workflows
+- **Scope**: Full application stack
+- **Speed**: Slow execution
+- **Dependencies**: Real environment
+
+### Performance Tests (`performance/`)
+- **Purpose**: Test system performance under load
+- **Scope**: Load testing, stress testing
+- **Speed**: Variable execution time
+- **Dependencies**: Test environment
+
+### Security Tests (`security/`)
+- **Purpose**: Test security vulnerabilities
+- **Scope**: Authentication, authorization, data protection
+- **Speed**: Medium execution
+- **Dependencies**: Security testing tools
 
 ## Running Tests
 
-### All Tests
+### Backend Tests
 ```bash
-# Backend tests
+# Run all backend tests
 pytest
 
-# Frontend tests
-cd frontend-react
-npm run test:unit
-npm run test:integration
-```
-
-### Specific Test Types
-```bash
-# Backend tests by type
+# Run specific test categories
 pytest -m unit
 pytest -m integration
-pytest -m performance
-pytest -m security
 pytest -m e2e
 
-# Frontend tests by type
-npm run test:unit
-npm run test:integration
+# Run tests with coverage
+pytest --cov=backend/app --cov-report=html
+
+# Run tests in parallel
+pytest -n auto
 ```
 
-### Specific Components
+### Frontend Tests
 ```bash
-# Backend tests only
-pytest tests/unit/backend/ tests/integration/backend/ tests/performance/backend/ tests/security/backend/
-pytest backend/tests/
-
-# Frontend tests only
-npm run test:unit
-npm run test:integration
-```
-
-### Cypress E2E Tests
-```bash
+# Navigate to frontend directory
 cd frontend-react
-npm run cypress:run
+
+# Run all frontend tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage
+npm test -- --coverage
 ```
 
-### Performance Tests
+### E2E Tests
 ```bash
-# Fast performance tests (included in CI)
-pytest -m "performance and not slow"
+# Run E2E tests
+pytest tests/e2e/
 
-# All performance tests (separate workflow)
-pytest -m performance
+# Run specific E2E scenarios
+pytest tests/e2e/user-flows/
 ```
-
-## Test Markers
-
-### Backend Markers
-- `@pytest.mark.unit` - Unit tests
-- `@pytest.mark.integration` - Integration tests
-- `@pytest.mark.performance` - Performance tests
-- `@pytest.mark.security` - Security tests
-- `@pytest.mark.e2e` - End-to-end tests
-- `@pytest.mark.slow` - Slow running tests
-- `@pytest.mark.api` - API tests
-- `@pytest.mark.database` - Database tests
-- `@pytest.mark.redis` - Redis tests
-- `@pytest.mark.weaviate` - Weaviate tests
-
-### Frontend Markers
-- `@pytest.mark.unit` - Unit tests
-- `@pytest.mark.integration` - Integration tests
-- `@pytest.mark.e2e` - End-to-end tests
-
-## CI/CD Integration
-
-### Main CI/CD Pipeline
-The main pipeline runs:
-- Unit tests
-- Integration tests
-- Security tests
-- Fast performance tests (excluding slow tests)
-
-### Performance Tests Pipeline
-A separate pipeline runs:
-- All performance tests (including slow tests)
-- Load tests
-- Memory and CPU usage tests
-- Runs daily at 2 AM UTC
-
-### Test Execution Order
-1. **Unit Tests** - Fast, isolated tests
-2. **Integration Tests** - Component interaction tests
-3. **Security Tests** - Security vulnerability tests
-4. **Performance Tests** - Performance and load tests
-5. **E2E Tests** - Full application flow tests
 
 ## Test Configuration
 
-### Backend Configuration
-- `conftest.py` - Shared fixtures and configuration
-- `pytest.ini` - Pytest settings and markers
-- `backend/tests/conftest.py` - Backend-specific fixtures
+### Pytest Configuration (`pytest.ini`)
+- Test discovery paths
+- Markers for test categorization
+- Coverage settings
+- Parallel execution settings
 
-### Frontend Configuration
-- `vitest.config.ts` - Vitest configuration
-- `setup.ts` - Test environment setup
-- `frontend-react/package.json` - Test scripts
+### Vitest Configuration (`vitest.config.ts`)
+- Frontend test environment
+- Coverage settings
+- Test file patterns
 
-## Coverage Reports
+## Test Data Management
 
-### Backend Coverage
-```bash
-pytest --cov=backend --cov-report=html --cov-report=term-missing
-```
+### Fixtures (`fixtures/`)
+- Reusable test data
+- Database fixtures
+- Mock data for external services
 
-### Frontend Coverage
-```bash
-cd frontend-react
-npm run test:coverage
-```
+### Test Database
+- Separate test database
+- Automatic cleanup between tests
+- Isolated test environment
 
 ## Best Practices
 
 ### Writing Tests
-1. **Use descriptive test names** - Test names should clearly describe what is being tested
-2. **Follow AAA pattern** - Arrange, Act, Assert
-3. **Test one thing at a time** - Each test should focus on a single behavior
-4. **Use appropriate markers** - Mark tests with the correct category
-5. **Mock external dependencies** - Don't rely on external services in unit tests
+1. **Arrange-Act-Assert**: Structure tests clearly
+2. **Descriptive Names**: Use clear, descriptive test names
+3. **Single Responsibility**: Each test should test one thing
+4. **Independent**: Tests should not depend on each other
+5. **Fast**: Tests should run quickly
 
 ### Test Organization
-1. **Group related tests** - Use describe blocks to organize related tests
-2. **Use fixtures** - Share setup code between tests
-3. **Keep tests independent** - Tests should not depend on each other
-4. **Clean up after tests** - Use teardown functions to clean up state
+1. **Group Related Tests**: Use test classes or modules
+2. **Consistent Naming**: Follow naming conventions
+3. **Documentation**: Document complex test scenarios
+4. **Maintenance**: Keep tests up to date with code changes
 
-### Performance Considerations
-1. **Run fast tests first** - Unit tests should run quickly
-2. **Use test databases** - Don't use production databases for testing
-3. **Mock heavy operations** - Mock database calls, API calls, etc.
-4. **Use test factories** - Create test data efficiently
+### Coverage
+- **Target**: 80% minimum coverage
+- **Focus**: Critical business logic
+- **Exclude**: Generated code, configuration files
+
+## Continuous Integration
+
+### GitHub Actions
+- Automated test execution on pull requests
+- Coverage reporting
+- Test result notifications
+- Parallel test execution
+
+### Test Reports
+- HTML coverage reports
+- Test execution summaries
+- Performance metrics
+- Security scan results
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Import errors** - Make sure test paths are correct
-2. **Database connection issues** - Check test database configuration
-3. **Mock issues** - Ensure mocks are properly set up
-4. **Async test issues** - Use appropriate async/await patterns
+1. **Database Connection**: Ensure test database is running
+2. **Environment Variables**: Set required test environment variables
+3. **Dependencies**: Install all test dependencies
+4. **Permissions**: Ensure proper file permissions
 
 ### Debugging Tests
-```bash
-# Run tests with verbose output
-pytest -v
+1. **Verbose Output**: Use `-v` flag for detailed output
+2. **Debug Mode**: Use `--pdb` for interactive debugging
+3. **Logging**: Enable debug logging for troubleshooting
+4. **Isolation**: Run tests individually to isolate issues
 
-# Run specific test with debug output
-pytest -s tests/unit/backend/test_auth.py::test_login
+## Contributing
 
-# Run tests with coverage and stop on first failure
-pytest --cov=backend --tb=short -x
-```
+### Adding New Tests
+1. Follow the existing structure
+2. Use appropriate test categories
+3. Add proper documentation
+4. Ensure test independence
+5. Update coverage targets if needed
+
+### Test Maintenance
+1. Regular review of test quality
+2. Update tests when code changes
+3. Remove obsolete tests
+4. Optimize slow tests
+5. Maintain test data freshness
