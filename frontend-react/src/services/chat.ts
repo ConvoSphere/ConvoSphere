@@ -32,7 +32,7 @@ export interface KnowledgeContext {
 }
 
 export interface ChatWebSocketMessage {
-  type: 'message' | 'knowledge_search' | 'typing' | 'ping' | 'knowledge_update' | 'processing_job_update' | 'pong' | 'error';
+  type: 'message' | 'knowledge_search' | 'typing' | 'ping' | 'knowledge_update' | 'processing_job_update' | 'pong' | 'error' | 'stream_chunk' | 'stream_complete';
   data: {
     content?: string;
     knowledgeContext?: KnowledgeContext;
@@ -48,6 +48,8 @@ export interface ChatWebSocketMessage {
     status?: string;
     progress?: number;
     message?: string;
+    is_partial?: boolean;
+    conversation_id?: string;
   };
 }
 
@@ -78,12 +80,16 @@ export interface WorkerTask {
 type MessageHandler = (msg: ChatMessage) => void;
 type KnowledgeUpdateHandler = (documents: Document[], searchQuery: string) => void;
 type ProcessingJobHandler = (jobId: string, status: string, progress: number) => void;
+type StreamChunkHandler = (content: string, conversationId: string) => void;
+type StreamCompleteHandler = (message: ChatMessage) => void;
 
 class ChatWebSocket {
   private ws: WebSocket | null = null;
   private messageHandler: MessageHandler | null = null;
   private knowledgeUpdateHandler: KnowledgeUpdateHandler | null = null;
   private processingJobHandler: ProcessingJobHandler | null = null;
+  private streamChunkHandler: StreamChunkHandler | null = null;
+  private streamCompleteHandler: StreamCompleteHandler | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
@@ -94,10 +100,23 @@ class ChatWebSocket {
     return typeof data === 'object' && data !== null && 'type' in data && 'data' in data;
   }
 
-  connect(token: string, conversationId: string, onMessage: MessageHandler, onKnowledgeUpdate?: KnowledgeUpdateHandler, onProcessingJob?: ProcessingJobHandler) {
+  connect(
+    token: string, 
+    conversationId: string, 
+    onMessage: MessageHandler, 
+    onKnowledgeUpdate?: KnowledgeUpdateHandler, 
+    onProcessingJob?: ProcessingJobHandler,
+    onStreamChunk?: StreamChunkHandler,
+    onStreamComplete?: StreamCompleteHandler
+  ) {
     if (this.isConnecting) return;
     
     this.isConnecting = true;
+    this.messageHandler = onMessage;
+    this.knowledgeUpdateHandler = onKnowledgeUpdate || null;
+    this.processingJobHandler = onProcessingJob || null;
+    this.streamChunkHandler = onStreamChunk || null;
+    this.streamCompleteHandler = onStreamComplete || null;
     this.messageHandler = onMessage;
     this.knowledgeUpdateHandler = onKnowledgeUpdate || null;
     this.processingJobHandler = onProcessingJob || null;
@@ -179,6 +198,27 @@ class ChatWebSocket {
         
       case 'pong':
         // Handle ping response
+        break;
+        
+      case 'stream_chunk':
+        if (this.streamChunkHandler && messageData.content && messageData.conversation_id) {
+          this.streamChunkHandler(messageData.content, messageData.conversation_id);
+        }
+        break;
+        
+      case 'stream_complete':
+        if (this.streamCompleteHandler && messageData.content) {
+          const chatMessage: ChatMessage = {
+            id: messageData.id || undefined,
+            sender: messageData.role === 'user' ? 'You' : 'Assistant',
+            text: messageData.content,
+            timestamp: messageData.timestamp ? new Date(messageData.timestamp) : new Date(),
+            documents: messageData.documents || [],
+            messageType: (messageData.messageType as 'text' | 'knowledge' | 'error' | 'system') || 'text',
+            metadata: messageData.metadata
+          };
+          this.streamCompleteHandler(chatMessage);
+        }
         break;
         
       case 'error':

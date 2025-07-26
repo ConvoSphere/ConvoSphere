@@ -503,6 +503,11 @@ p {
   100% { left: 100%; }
 }
 
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
 /* Utility Classes */
 .text-primary { color: var(--colorPrimary); }
 .text-secondary { color: var(--colorTextSecondary); }

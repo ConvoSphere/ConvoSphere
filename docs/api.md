@@ -59,6 +59,24 @@ Logout user and invalidate tokens.
 #### POST /auth/register
 Register new user account.
 
+#### GET /auth/me
+Get current user information.
+
+#### GET /auth/sso/providers
+Get available SSO providers.
+
+#### GET /auth/sso/login/{provider}
+Initiate SSO login with specific provider.
+
+#### GET /auth/sso/callback/{provider}
+Handle SSO callback from provider.
+
+#### POST /auth/sso/link/{provider}
+Link SSO account to existing user.
+
+#### GET /auth/sso/metadata
+Get SAML metadata for SSO configuration.
+
 ### Users
 
 #### GET /users/me
@@ -180,7 +198,124 @@ Request:
 #### DELETE /conversations/{conversation_id}
 Delete conversation.
 
+### Chat
+
+#### POST /chat/conversations
+Create new conversation.
+
+#### GET /chat/conversations
+List user conversations.
+
+#### POST /chat/conversations/{conversation_id}/messages
+Send message to conversation.
+
+#### GET /chat/conversations/{conversation_id}/messages
+Get conversation messages.
+
+#### GET /chat/conversations/{conversation_id}/mode/status
+Get conversation mode status.
+
 ### Tools
+
+#### GET /tools
+List available tools.
+
+#### POST /tools/{tool_id}/execute
+Execute a specific tool.
+
+### MCP Tools
+
+#### GET /mcp/tools
+List available MCP tools.
+
+#### POST /mcp/tools/{tool_id}/execute
+Execute MCP tool.
+
+#### GET /mcp/providers
+List MCP providers.
+
+### Knowledge Base
+
+#### GET /knowledge/documents
+List knowledge base documents.
+
+#### POST /knowledge/documents
+Upload new document.
+
+#### GET /knowledge/documents/{document_id}
+Get document details.
+
+#### DELETE /knowledge/documents/{document_id}
+Delete document.
+
+### RAG (Retrieval-Augmented Generation)
+
+#### POST /rag/query
+Query knowledge base with RAG.
+
+#### GET /rag/context/{conversation_id}
+Get RAG context for conversation.
+
+### Search
+
+#### POST /search/semantic
+Perform semantic search.
+
+#### POST /search/hybrid
+Perform hybrid search.
+
+### Domain Groups
+
+#### GET /domain-groups
+List domain groups.
+
+#### POST /domain-groups
+Create domain group.
+
+#### GET /domain-groups/{group_id}
+Get domain group details.
+
+### Conversation Intelligence
+
+#### GET /intelligence/analytics/{conversation_id}
+Get conversation analytics.
+
+#### POST /intelligence/summarize
+Summarize conversation.
+
+### Hybrid Mode
+
+#### POST /hybrid-mode/switch
+Switch conversation mode.
+
+#### GET /hybrid-mode/status/{conversation_id}
+Get hybrid mode status.
+
+### Audit
+
+#### GET /audit/logs
+Get audit logs.
+
+#### GET /audit/logs/{user_id}
+Get user-specific audit logs.
+
+### Health
+
+#### GET /health
+System health check.
+
+#### GET /health/detailed
+Detailed system health information.
+
+### WebSocket
+
+#### WebSocket /ws/
+General WebSocket endpoint.
+
+#### WebSocket /ws/{conversation_id}
+Conversation-specific WebSocket endpoint.
+
+### Tools (Detailed)
 
 #### GET /tools
 List available tools.
