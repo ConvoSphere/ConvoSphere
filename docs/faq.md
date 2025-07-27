@@ -272,7 +272,7 @@ Planned features include:
 - **Custom themes** and branding
 
 ### When will new features be released?
-We release updates regularly. Check our [Roadmap](project/roadmap.md) for the latest timeline.
+We release updates regularly. Check our [GitHub repository](https://github.com/lichtbaer/ai-chat-app) for the latest updates.
 
 ### Can I suggest features?
 Absolutely! We welcome feature suggestions through:
@@ -282,4 +282,4 @@ Absolutely! We welcome feature suggestions through:
 
 ---
 
-**Still have questions?** [Contact Support](index.md) | [User Guide](user-guide.md) | [Developer Guide](developer-guide.md)
+**Still have questions?** [User Guide](user-guide.md) | [Developer Guide](developer-guide.md) | [GitHub Issues](https://github.com/lichtbaer/ai-chat-app/issues)

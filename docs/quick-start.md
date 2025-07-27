@@ -1,14 +1,16 @@
-# Quick Start - Get Started in 5 Minutes
+# Quick Start Guide
+
+Get the AI Chat Application running in under 5 minutes.
 
 ## 🚀 Quick Start with Docker
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-org/convosphere.git
-cd convosphere
+git clone https://github.com/your-org/ai-chat-app.git
+cd ai-chat-app
 ```
 
-### 2. Start with Docker
+### 2. Start Application
 ```bash
 docker-compose up --build
 ```
@@ -22,7 +24,7 @@ docker-compose up --build
 
 ### 1. Registration
 - Click "Register" in the top right corner
-- Fill out the form
+- Fill out the registration form
 - Confirm your email
 
 ### 2. First Conversation
@@ -35,7 +37,7 @@ docker-compose up --build
 - Upload a PDF or DOCX file
 - Ask the AI about the content
 
-## 🔧 Alternative: Manual Setup
+## 🔧 Manual Setup {#alternative-manual-setup}
 
 ### Prerequisites
 - Python 3.11+
@@ -43,9 +45,8 @@ docker-compose up --build
 - PostgreSQL
 - Redis
 
-### Start Backend
+### Backend Setup
 ```bash
-# Backend directory
 cd backend
 
 # Install dependencies
@@ -55,16 +56,12 @@ pip install -r requirements.txt
 cp env.example .env
 # Edit .env with your settings
 
-# Database migrations
-alembic upgrade head
-
 # Start backend
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
-### Start Frontend
+### Frontend Setup
 ```bash
-# Frontend directory
 cd frontend-react
 
 # Install dependencies
@@ -83,7 +80,7 @@ lsof -i :8000  # Backend
 lsof -i :5173  # Frontend
 
 # Use different ports
-docker-compose -f docker-compose.yml -p convosphere up
+docker-compose -f docker-compose.yml -p ai-chat-app up
 ```
 
 ### Docker Issues
@@ -109,6 +106,5 @@ docker-compose up --build
 
 ## 🆘 Need Help?
 
-- **GitHub Issues**: [Report Bug](https://github.com/your-org/convosphere/issues)
-- **Discord**: [Community Support](https://discord.gg/your-server)
+- **GitHub Issues**: [Report Bug](https://github.com/your-org/ai-chat-app/issues)
 - **Documentation**: [Complete Guides](index.md)
