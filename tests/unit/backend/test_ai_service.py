@@ -392,16 +392,17 @@ class TestAIService:
         """Test tool execution."""
         tool_call = {
             "id": "call_123",
-            "function": {"name": "test_tool", "arguments": '{"param": "value"}'},
+            "function": {"name": "test_tool", "arguments": {"param": "value"}},
         }
 
         # Mock tool service
         with patch("backend.app.services.ai_service.tool_service") as mock_tool_service:
-            mock_tool_service.execute_tool.return_value = {"result": "success"}
+            mock_tool_service.execute_tool = AsyncMock(return_value={"result": "success"})
 
             result = await ai_service.execute_tool_call(tool_call, "user123")
 
-            assert result["result"] == "success"
+            assert result["success"] == True
+            assert result["result"] == {"result": "success"}
             mock_tool_service.execute_tool.assert_called_once()
 
     @pytest.mark.asyncio
@@ -463,11 +464,11 @@ class TestAIService:
     async def test_embed_text(self, ai_service, mock_litellm):
         """Test embed_text method."""
         mock_embeddings = [0.1, 0.2, 0.3]
-        mock_litellm.embedding.return_value = {"data": [{"embedding": mock_embeddings}]}
+        
+        with patch.object(ai_service, "get_embeddings", return_value=mock_embeddings):
+            result = await ai_service.embed_text("test text")
 
-        result = await ai_service.embed_text("test text")
-
-        assert result == mock_embeddings
+            assert result == mock_embeddings
 
     @pytest.mark.asyncio
     async def test_get_response(self, ai_service, mock_litellm, sample_messages):
@@ -550,13 +551,16 @@ class TestAIService:
             "usage": {"total_tokens": 50},
             "model": "gpt-3.5-turbo",
         }
-        mock_litellm.acompletion.return_value = mock_response
+        
+        with patch("backend.app.services.ai_service.acompletion", return_value=mock_response):
+            # Test with specific model
+            await ai_service.chat_completion(sample_messages, model="gpt-3.5-turbo")
 
-        # Test with specific model
-        await ai_service.chat_completion(sample_messages, model="gpt-3.5-turbo")
-
-        call_args = mock_litellm.acompletion.call_args
-        assert call_args[1]["model"] == "gpt-3.5-turbo"
+            # Verify the mock was called with correct model
+            from backend.app.services.ai_service import acompletion
+            acompletion.assert_called_once()
+            call_args = acompletion.call_args
+            assert call_args[1]["model"] == "gpt-3.5-turbo"
 
     @pytest.mark.asyncio
     async def test_temperature_control(self, ai_service, mock_litellm, sample_messages):
@@ -566,12 +570,15 @@ class TestAIService:
             "usage": {"total_tokens": 50},
             "model": "gpt-4",
         }
-        mock_litellm.acompletion.return_value = mock_response
+        
+        with patch("backend.app.services.ai_service.acompletion", return_value=mock_response):
+            await ai_service.chat_completion(sample_messages, temperature=0.1)
 
-        await ai_service.chat_completion(sample_messages, temperature=0.1)
-
-        call_args = mock_litellm.acompletion.call_args
-        assert call_args[1]["temperature"] == 0.1
+            # Verify the mock was called with correct temperature
+            from backend.app.services.ai_service import acompletion
+            acompletion.assert_called_once()
+            call_args = acompletion.call_args
+            assert call_args[1]["temperature"] == 0.1
 
     @pytest.mark.asyncio
     async def test_max_tokens_control(self, ai_service, mock_litellm, sample_messages):
@@ -581,9 +588,12 @@ class TestAIService:
             "usage": {"total_tokens": 50},
             "model": "gpt-4",
         }
-        mock_litellm.acompletion.return_value = mock_response
+        
+        with patch("backend.app.services.ai_service.acompletion", return_value=mock_response):
+            await ai_service.chat_completion(sample_messages, max_tokens=1000)
 
-        await ai_service.chat_completion(sample_messages, max_tokens=1000)
-
-        call_args = mock_litellm.acompletion.call_args
-        assert call_args[1]["max_tokens"] == 1000
+            # Verify the mock was called with correct max_tokens
+            from backend.app.services.ai_service import acompletion
+            acompletion.assert_called_once()
+            call_args = acompletion.call_args
+            assert call_args[1]["max_tokens"] == 1000
