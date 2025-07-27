@@ -28,15 +28,15 @@ tests/conftest.py
 ```
 
 ### 1.2 Test-Datenbank einrichten
-**Ziel**: Integration-Tests ermöglichen
+**Ziel**: Schnelle und einfache Tests ermöglichen
 **Zeitaufwand**: 1 Tag
 
 #### Aufgaben:
-- [ ] PostgreSQL Test-Datenbank konfigurieren
-- [ ] Test-Datenbank-Migrations erstellen
-- [ ] Test-Fixtures für Datenbank-Daten erstellen
+- [ ] SQLite für Unit-Tests konfigurieren (Sofort)
+- [ ] Cross-database UUID-Support implementieren
+- [ ] Test-Fixtures für SQLite-Daten erstellen
 - [ ] Datenbank-Cleanup nach Tests implementieren
-- [ ] Docker-Compose für Test-Umgebung erstellen
+- [ ] Optional: PostgreSQL für Integration-Tests (Docker-Compose)
 
 ### 1.3 Mock-Infrastruktur verbessern
 **Ziel**: Externe Dienste zuverlässig mocken
@@ -286,9 +286,10 @@ tests/security/backend/
 - responses (für HTTP-Mocks)
 
 ### Test-Datenbank:
-- PostgreSQL (Docker)
-- pytest-postgresql
+- **SQLite** (Hauptsächlich für Unit-Tests)
+- **PostgreSQL** (Optional für Integration-Tests)
 - Factory Boy (für Test-Daten)
+- pytest-sqlite (für SQLite-spezifische Tests)
 
 ### Security-Testing:
 - bandit (Security-Scanner)

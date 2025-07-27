@@ -23,7 +23,52 @@ from backend.app.core.redis_client import redis
 
 ### 2. Test-Datenbank einrichten
 
-#### Docker-Compose für Tests erstellen
+#### SQLite für schnelle Tests (Empfohlen)
+```python
+# tests/conftest.py
+import pytest
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+@pytest.fixture(scope="session")
+def test_database_url():
+    """Get test database URL - SQLite for speed, PostgreSQL for compatibility"""
+    # Allow override for PostgreSQL testing
+    if os.getenv("TEST_USE_POSTGRESQL"):
+        return "postgresql://test_user:test_password@localhost:5435/test_db"
+    else:
+        return "sqlite:///./test.db"
+
+@pytest.fixture(scope="session")
+def test_engine(test_database_url):
+    """Create test database engine"""
+    engine = create_engine(
+        test_database_url,
+        connect_args={"check_same_thread": False} if "sqlite" in test_database_url else {}
+    )
+    
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+    
+    yield engine
+    
+    # Cleanup
+    Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture
+def db_session(test_engine):
+    """Create database session for each test"""
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+    session = TestingSessionLocal()
+    
+    yield session
+    
+    session.rollback()
+    session.close()
+```
+
+#### Optional: PostgreSQL für Integration-Tests
 ```yaml
 # docker-compose.test.yml
 version: '3.8'
@@ -41,28 +86,6 @@ services:
 
 volumes:
   test_data:
-```
-
-#### Test-Konfiguration
-```python
-# tests/conftest.py
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-@pytest.fixture(scope="session")
-def test_db():
-    """Test database setup"""
-    engine = create_engine("postgresql://test_user:test_password@localhost:5435/test_db")
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    
-    # Create tables
-    Base.metadata.create_all(bind=engine)
-    
-    yield TestingSessionLocal
-    
-    # Cleanup
-    Base.metadata.drop_all(bind=engine)
 ```
 
 ### 3. Erste Auth-Service Tests
