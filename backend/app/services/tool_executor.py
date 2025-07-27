@@ -78,9 +78,9 @@ class ToolExecution:
     conversation_id: str | None
     parameters: dict[str, Any]
     status: ToolExecutionStatus
+    start_time: datetime
     result: Any | None = None
     error: str | None = None
-    start_time: datetime
     end_time: datetime | None = None
     execution_time: float | None = None
     metadata: dict[str, Any] = field(default_factory=dict)

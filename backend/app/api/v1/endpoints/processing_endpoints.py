@@ -2,16 +2,16 @@
 Processing-related API endpoints (jobs, engines, supported formats, bulk import).
 """
 
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.user import User
-from app.schemas.knowledge import (
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user
+from backend.app.models.user import User
+from backend.app.schemas.knowledge import (
     BulkImportRequest,
     BulkImportResponse,
     DocumentProcessingJobList,
 )
-from app.services.docling_processor import docling_processor
-from app.services.knowledge_service import KnowledgeService
+from backend.app.services.docling_processor import docling_processor
+from backend.app.services.knowledge_service import KnowledgeService
 from fastapi import APIRouter, Depends, Form, Query
 from sqlalchemy.orm import Session
 

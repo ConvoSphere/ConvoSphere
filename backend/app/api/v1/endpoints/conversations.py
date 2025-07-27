@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.user import User
-from app.schemas.conversation import (
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user
+from backend.app.models.user import User
+from backend.app.schemas.conversation import (
     ConversationCreate,
     ConversationListResponse,
     ConversationResponse,
@@ -13,7 +13,7 @@ from app.schemas.conversation import (
     MessageCreate,
     MessageResponse,
 )
-from app.services.conversation_service import ConversationService
+from backend.app.services.conversation_service import ConversationService
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -184,7 +184,7 @@ async def add_message(
     if not service.has_conversation_access(conversation_id, str(current_user.id)):
         raise HTTPException(status_code=403, detail="Access denied")
     # Create MessageCreate object with conversation_id
-    from app.schemas.conversation import MessageCreate as SchemaMessageCreate
+    from backend.app.schemas.conversation import MessageCreate as SchemaMessageCreate
 
     message_create = SchemaMessageCreate(
         conversation_id=conversation_id,

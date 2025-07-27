@@ -8,7 +8,7 @@ permissions, ABAC rules, and policies.
 from datetime import datetime
 from typing import Any
 
-from app.models.permissions import PermissionAction, PermissionResource
+from backend.app.models.permissions import PermissionAction, PermissionResource
 from pydantic import BaseModel, Field
 
 

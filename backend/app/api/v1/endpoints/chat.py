@@ -7,11 +7,11 @@ management system for structured responses and mode switching.
 
 from typing import Any
 
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.schemas.hybrid_mode import ConversationMode
-from app.services.assistant_engine import assistant_engine
-from app.services.conversation_service import conversation_service
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.schemas.hybrid_mode import ConversationMode
+from backend.app.services.assistant_engine import assistant_engine
+from backend.app.services.conversation_service import conversation_service
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -116,7 +116,7 @@ async def create_conversation(
         )
 
         # Initialize hybrid mode for the new conversation
-        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
 
         hybrid_mode_manager.initialize_conversation(
             conversation_id=str(conversation.id),
@@ -172,7 +172,7 @@ async def get_conversations(
         )
 
         # Add hybrid mode status to each conversation
-        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
 
         enhanced_conversations = []
 
@@ -421,7 +421,7 @@ async def delete_conversation(
         await conversation_service.delete_conversation(conversation_id)
 
         # Clean up hybrid mode state
-        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
 
         hybrid_mode_manager.cleanup_conversation(conversation_id)
 
@@ -467,7 +467,7 @@ async def get_conversation_mode_status(
                 detail="Conversation not found or access denied",
             )
 
-        from app.services.hybrid_mode_manager import hybrid_mode_manager
+        from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
 
         state = hybrid_mode_manager.get_state(conversation_id)
 

@@ -7,7 +7,7 @@ import pytest
 from backend.app.services.ai_service import AIService
 from backend.app.services.assistant_service import AssistantService
 from backend.app.services.conversation_service import ConversationService
-from backend.app.services.document import DocumentProcessor
+from backend.app.services.document import DocumentService
 from backend.app.services.embedding_service import EmbeddingService
 from backend.app.services.knowledge_service import KnowledgeService
 from backend.app.services.performance_monitor import PerformanceMonitor
@@ -688,11 +688,11 @@ class TestEmbeddingServiceComprehensive:
 
 
 class TestDocumentProcessorComprehensive:
-    """Comprehensive tests for DocumentProcessor."""
+    """Comprehensive tests for DocumentService."""
 
     @pytest.fixture
     def document_processor(self):
-        return DocumentProcessor()
+        return DocumentService()
 
     def test_process_pdf(self, document_processor):
         """Test processing PDF document."""

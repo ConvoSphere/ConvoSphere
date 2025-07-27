@@ -298,7 +298,7 @@ class TestSSOEndpoints:
     @pytest.fixture
     def client(self):
         """Create test client."""
-        from main import app
+        from backend.main import app
 
         return TestClient(app)
 

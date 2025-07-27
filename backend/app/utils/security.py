@@ -3,7 +3,7 @@
 import html
 import re
 
-from app.core.redis_client import get_redis
+from backend.app.core.redis_client import get_redis
 from fastapi import HTTPException, Request, status
 
 RATE_LIMIT = 100  # requests

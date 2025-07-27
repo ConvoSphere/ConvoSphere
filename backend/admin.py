@@ -430,10 +430,10 @@ def user_create_admin():
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.models.user import UserRole, UserStatus
-        from app.schemas.user import UserCreate
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole, UserStatus
+        from backend.app.schemas.user import UserCreate
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -467,9 +467,9 @@ def user_list():
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.models.user import UserRole
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -524,8 +524,8 @@ def user_show(identifier):
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -569,10 +569,10 @@ def user_create(
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.models.user import UserRole, UserStatus
-        from app.schemas.user import UserCreate
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole, UserStatus
+        from backend.app.schemas.user import UserCreate
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -611,10 +611,10 @@ def user_update(identifier, **kwargs):
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.models.user import UserRole, UserStatus
-        from app.schemas.user import UserUpdate
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole, UserStatus
+        from backend.app.schemas.user import UserUpdate
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -691,9 +691,9 @@ def user_delete(identifier, confirm=False):
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.models.user import UserRole
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)
@@ -748,9 +748,9 @@ def user_reset_password():
     try:
         # Import backend dependencies
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-        from app.core.database import SessionLocal
-        from app.schemas.user import UserPasswordUpdate
-        from app.services.user_service import UserService
+        from backend.app.core.database import SessionLocal
+        from backend.app.schemas.user import UserPasswordUpdate
+        from backend.app.services.user_service import UserService
 
         db = SessionLocal()
         user_service = UserService(db)

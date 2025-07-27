@@ -10,11 +10,11 @@ This module handles all audit maintenance operations including:
 import logging
 from typing import Any
 
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.user import User
-from app.services.audit import get_audit_service
-from app.utils.exceptions import AuditError
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user
+from backend.app.models.user import User
+from backend.app.services.audit import get_audit_service
+from backend.app.utils.exceptions import AuditError
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 

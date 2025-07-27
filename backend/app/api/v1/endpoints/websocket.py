@@ -15,14 +15,14 @@ from sqlalchemy.orm import Session
 
 router = APIRouter()
 
-from app.core.database import get_db
+from backend.app.core.database import get_db
 
 # get_current_user_ws is defined in this file
-from app.models.conversation import Conversation
-from app.models.user import User
-from app.services.ai_service import AIService
-from app.services.conversation_service import ConversationService
-from app.services.knowledge_service import KnowledgeService
+from backend.app.models.conversation import Conversation
+from backend.app.models.user import User
+from backend.app.services.ai_service import AIService
+from backend.app.services.conversation_service import ConversationService
+from backend.app.services.knowledge_service import KnowledgeService
 from loguru import logger
 
 
@@ -304,7 +304,7 @@ async def websocket_endpoint(
                         continue
 
                     # Save message to database
-                    from app.schemas.conversation import MessageCreate
+                    from backend.app.schemas.conversation import MessageCreate
 
                     message_data = MessageCreate(
                         conversation_id=conversation_id,
@@ -445,7 +445,7 @@ async def websocket_endpoint(
 
                                     if finish_reason in ["stop", "length"]:
                                         # Response is complete, save to database
-                                        from app.schemas.conversation import (
+                                        from backend.app.schemas.conversation import (
                                             MessageCreate,
                                         )
 
@@ -638,7 +638,7 @@ async def get_current_user_ws(token: str, db: Session) -> User | None:
             return None
 
         # Proper JWT validation for WebSocket
-        from app.core.security import verify_token
+        from backend.app.core.security import verify_token
 
         user_id = await verify_token(token)
         if not user_id:

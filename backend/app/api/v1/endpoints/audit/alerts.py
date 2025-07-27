@@ -9,17 +9,17 @@ This module handles all audit alert related operations including:
 import logging
 from uuid import UUID
 
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.user import User
-from app.schemas.audit_extended import (
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user
+from backend.app.models.user import User
+from backend.app.schemas.audit_extended import (
     AuditAlertCreate,
     AuditAlertListResponse,
     AuditAlertResponse,
     AuditAlertUpdate,
 )
-from app.services.audit import get_audit_service
-from app.utils.exceptions import AuditError
+from backend.app.services.audit import get_audit_service
+from backend.app.utils.exceptions import AuditError
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 

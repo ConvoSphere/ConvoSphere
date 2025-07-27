@@ -5,8 +5,8 @@ This module provides API endpoints for advanced RAG functionality including
 configuration management, retrieval, and metrics.
 """
 
-from app.core.exceptions import AIError, ValidationError
-from app.schemas.rag import (
+from backend.app.core.exceptions import AIError, ValidationError
+from backend.app.schemas.rag import (
     RAGConfigCreate,
     RAGConfigList,
     RAGConfigResponse,
@@ -15,7 +15,7 @@ from app.schemas.rag import (
     RAGRequest,
     RAGResponse,
 )
-from app.services.rag_service import rag_service
+from backend.app.services.rag_service import rag_service
 from fastapi import APIRouter, HTTPException, Query
 from loguru import logger
 

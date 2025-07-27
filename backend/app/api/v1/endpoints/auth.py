@@ -6,10 +6,10 @@ This module provides the authentication API endpoints for the AI Assistant Platf
 
 from typing import Any
 
-from app.core.config import get_settings
-from app.core.database import get_db
-from app.core.dependencies import get_security_dep, get_settings_dep
-from app.core.security import (
+from backend.app.core.config import get_settings
+from backend.app.core.database import get_db
+from backend.app.core.dependencies import get_security_dep, get_settings_dep
+from backend.app.core.security import (
     create_access_token,
     create_refresh_token,
     get_current_user_id,
@@ -18,17 +18,17 @@ from app.core.security import (
     verify_password,
     verify_token,
 )
-from app.core.security_hardening import (
+from backend.app.core.security_hardening import (
     get_client_ip,
     sso_audit_logger,
     sso_security_validator,
     validate_sso_request,
 )
-from app.models.user import User, UserRole
-from app.services.advanced_user_provisioning import advanced_user_provisioning
-from app.services.oauth_service import oauth_service
-from app.services.saml_service import saml_service
-from app.services.user_service import UserService
+from backend.app.models.user import User, UserRole
+from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
+from backend.app.services.oauth_service import oauth_service
+from backend.app.services.saml_service import saml_service
+from backend.app.services.user_service import UserService
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
@@ -277,8 +277,8 @@ async def logout(
     """
     try:
         # Add token to blacklist
-        from app.core.redis_client import get_redis
-        from app.core.security import BLACKLIST_PREFIX
+        from backend.app.core.redis_client import get_redis
+        from backend.app.core.security import BLACKLIST_PREFIX
 
         redis = await get_redis()
         token = credentials.credentials
@@ -304,7 +304,7 @@ async def logout(
             logger.error(f"Token blacklisting error: {e}")
 
         # Log security event
-        from app.core.security import log_security_event
+        from backend.app.core.security import log_security_event
 
         log_security_event(
             event_type="user_logout",

@@ -3,9 +3,9 @@
 import uuid
 from typing import Any
 
-from app.core.database import get_db
-from app.models.tool import Tool, ToolCategory
-from app.models.user import User
+from backend.app.core.database import get_db
+from backend.app.models.tool import Tool, ToolCategory
+from backend.app.models.user import User
 from loguru import logger
 from sqlalchemy import and_
 

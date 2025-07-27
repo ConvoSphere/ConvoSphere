@@ -72,8 +72,8 @@ def create_default_admin_user():
 def create_default_assistant():
     """Create a default assistant if none exists."""
     try:
-        from app.models.assistant import Assistant, AssistantStatus
-        from app.models.user import User
+        from backend.app.models.assistant import Assistant, AssistantStatus
+        from backend.app.models.user import User
 
         # Get database session
         db = next(get_db())
@@ -129,7 +129,7 @@ def init_db() -> None:
     """Initialize database tables."""
     try:
         # Import all models to ensure they are registered
-        from app.models import Base
+        from backend.app.models import Base
 
         # Create all tables
         Base.metadata.create_all(bind=engine)

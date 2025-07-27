@@ -28,9 +28,12 @@ from backend.app.models.user import User
 # Import the main application
 from backend.main import app
 
-# Test configuration - Using PostgreSQL for all tests
-TEST_DATABASE_URL = (
-    "postgresql://test_user:test_password@localhost:5434/chatassistant_test"
+# Test configuration - Using SQLite for fast tests, PostgreSQL for compatibility
+import os
+
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL", 
+    "sqlite:///./test.db"
 )
 TEST_REDIS_URL = "redis://localhost:6380"
 TEST_WEAVIATE_URL = "http://localhost:8081"
@@ -106,7 +109,10 @@ def event_loop():
 @pytest.fixture(scope="session")
 def test_engine():
     """Create database engine for testing."""
-    engine = create_engine(TEST_DATABASE_URL)
+    engine = create_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in TEST_DATABASE_URL else {}
+)
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -119,7 +125,7 @@ def test_db_session_factory(test_engine):
 
 
 @pytest.fixture(scope="function")
-def test_db_session(test_db_session_factory):
+def test_db_session(test_db_session_factory, test_engine):
     """Create a new database session for a test."""
     connection = test_engine.connect()
     transaction = connection.begin()
@@ -166,7 +172,7 @@ async def async_client(override_get_db):
 @pytest.fixture(scope="session", autouse=True)
 def setup_redis_mock():
     """Mock Redis for testing."""
-    with patch("backend.app.core.cache.redis.Redis") as mock_redis:
+    with patch("backend.app.core.redis_client.redis.Redis") as mock_redis:
         mock_redis_instance = MagicMock()
         mock_redis.return_value = mock_redis_instance
         yield mock_redis_instance

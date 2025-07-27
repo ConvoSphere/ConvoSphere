@@ -8,19 +8,19 @@ configuring middleware, routes, and application lifecycle events.
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
-from app.api.v1.api import api_router
-from app.core.config import get_settings
-from app.core.database import check_db_connection, init_db
-from app.core.i18n import I18nMiddleware, i18n_manager, t
-from app.core.redis_client import close_redis, init_redis
-from app.core.security_middleware import setup_security_middleware
-from app.core.weaviate_client import (
+from backend.app.api.v1.api import api_router
+from backend.app.core.config import get_settings
+from backend.app.core.database import check_db_connection, init_db
+from backend.app.core.i18n import I18nMiddleware, i18n_manager, t
+from backend.app.core.redis_client import close_redis, init_redis
+from backend.app.core.security_middleware import setup_security_middleware
+from backend.app.core.weaviate_client import (
     check_weaviate_connection,
     close_weaviate,
     create_schema_if_not_exists,
     init_weaviate,
 )
-from app.services.performance_monitor import performance_monitor
+from backend.app.services.performance_monitor import performance_monitor
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -152,8 +152,8 @@ def create_application() -> FastAPI:
     )
     # OpenTelemetry initialisieren (disabled for testing)
     # if not get_settings().debug or os.getenv("DISABLE_OTEL", "false").lower() != "true":
-    #     from app.core.database import engine
-    #     from app.core.redis_client import redis_client
+    #     from backend.app.core.database import engine
+    #     from backend.app.core.redis_client import redis_client
     #     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Setup security middleware first
@@ -225,7 +225,7 @@ def create_application() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint with service status."""
-        from app.core.redis_client import check_redis_connection, get_redis_info
+        from backend.app.core.redis_client import check_redis_connection, get_redis_info
 
         # Check Redis status
         try:

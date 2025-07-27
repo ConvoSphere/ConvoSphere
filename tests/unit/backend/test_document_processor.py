@@ -17,20 +17,16 @@ from unittest.mock import Mock, patch
 import pytest
 from docx import Document as DocxDocument
 
-from backend.app.services.document import (
-    DocumentChunk,
-    DocumentMetadata,
-    DocumentProcessor,
-)
+from backend.app.services.document import DocumentService
 
 
 class TestDocumentProcessor:
-    """Test class for DocumentProcessor."""
+    """Test class for DocumentService."""
 
     @pytest.fixture
     def processor(self):
-        """Create DocumentProcessor instance for testing."""
-        return DocumentProcessor()
+        """Create DocumentService instance for testing."""
+        return DocumentService()
 
     @pytest.fixture
     def sample_text(self):

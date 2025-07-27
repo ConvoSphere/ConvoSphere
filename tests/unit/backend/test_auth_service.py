@@ -281,39 +281,41 @@ class TestAuthDependencies:
         user.role = "user"
         return user
 
-    @patch("backend.app.core.security.get_user_by_email")
-    def test_get_current_user_success(self, mock_get_user, mock_db_session, mock_user):
+    @patch("backend.app.core.security.verify_token")
+    def test_get_current_user_success(self, mock_verify_token, mock_db_session, mock_user):
         """Test successful current user retrieval."""
-        mock_get_user.return_value = mock_user
+        mock_verify_token.return_value = "test_user_id"
 
-        with patch("backend.app.core.security.create_access_token") as mock_token:
-            mock_token.return_value = "test_token"
+        with patch("backend.app.core.security.get_current_user") as mock_get_current:
+            mock_get_current.return_value = mock_user
 
             current_user = get_current_user(mock_db_session, "test_token")
 
             assert current_user == mock_user
-            mock_get_user.assert_called_once()
+            mock_verify_token.assert_called_once()
 
-    @patch("backend.app.core.security.get_user_by_email")
-    def test_get_current_user_invalid_token(self, mock_get_user, mock_db_session):
+    @patch("backend.app.core.security.verify_token")
+    def test_get_current_user_invalid_token(self, mock_verify_token, mock_db_session):
         """Test current user retrieval with invalid token."""
-        mock_get_user.return_value = None
+        mock_verify_token.return_value = None
 
         with pytest.raises(Exception):
             get_current_user(mock_db_session, "invalid_token")
 
-    def test_get_current_active_user_success(self, mock_user):
+    @pytest.mark.asyncio
+    async def test_get_current_active_user_success(self, mock_user):
         """Test successful active user retrieval."""
-        active_user = get_current_active_user(mock_user)
+        active_user = await get_current_active_user(mock_user)
 
         assert active_user == mock_user
 
-    def test_get_current_active_user_inactive(self, mock_user):
+    @pytest.mark.asyncio
+    async def test_get_current_active_user_inactive(self, mock_user):
         """Test active user retrieval with inactive user."""
         mock_user.is_active = False
 
         with pytest.raises(Exception):
-            get_current_active_user(mock_user)
+            await get_current_active_user(mock_user)
 
 
 class TestAuthValidation:

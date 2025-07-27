@@ -7,8 +7,8 @@ AI assistants with their personality profiles and tool configurations.
 
 from typing import Any
 
-from app.core.database import get_db
-from app.models.assistant import Assistant, AssistantStatus
+from backend.app.core.database import get_db
+from backend.app.models.assistant import Assistant, AssistantStatus
 from loguru import logger
 from sqlalchemy import and_, or_
 

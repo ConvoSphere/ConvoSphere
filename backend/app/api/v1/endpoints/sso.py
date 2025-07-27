@@ -8,13 +8,13 @@ LDAP, SAML, and OAuth providers with user management and group synchronization.
 import logging
 from datetime import UTC, datetime
 
-from app.core.database import get_db
-from app.core.security import create_access_token, get_current_user
-from app.core.sso_manager import get_sso_manager
-from app.models.user import AuthProvider, User
-from app.schemas.auth import SSOLoginRequest, SSOProviderInfo, TokenResponse
-from app.schemas.user import UserResponse
-from app.utils.exceptions import (
+from backend.app.core.database import get_db
+from backend.app.core.security import create_access_token, get_current_user
+from backend.app.core.sso_manager import get_sso_manager
+from backend.app.models.user import AuthProvider, User
+from backend.app.schemas.auth import SSOLoginRequest, SSOProviderInfo, TokenResponse
+from backend.app.schemas.user import UserResponse
+from backend.app.utils.exceptions import (
     AuthenticationError,
     GroupSyncError,
     SSOConfigurationError,

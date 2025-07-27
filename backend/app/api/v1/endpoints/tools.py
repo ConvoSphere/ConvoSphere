@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.models.tool import ToolCategory
-from app.services.tool_service import ToolService
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.models.tool import ToolCategory
+from backend.app.services.tool_service import ToolService
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
