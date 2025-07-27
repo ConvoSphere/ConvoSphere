@@ -3,8 +3,16 @@ name: Comprehensive Test Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
   schedule:
     # Run performance tests daily at 2 AM UTC
     - cron: '0 2 * * *'
