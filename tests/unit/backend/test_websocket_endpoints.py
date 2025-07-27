@@ -315,7 +315,7 @@ class TestWebSocketEndpoints:
         manager = ConnectionManager()
         
         # Test connection tracking
-        mock_websocket = MagicMock()
+        mock_websocket = AsyncMock()
         user_id = "user-123"
         conversation_id = "conv-123"
         
@@ -347,8 +347,8 @@ class TestWebSocketEndpoints:
         manager = ConnectionManager()
         
         # Create multiple connections to same conversation
-        mock_websocket1 = MagicMock()
-        mock_websocket2 = MagicMock()
+        mock_websocket1 = AsyncMock()
+        mock_websocket2 = AsyncMock()
         
         await manager.connect(mock_websocket1, "user-1", "conv-123")
         await manager.connect(mock_websocket2, "user-2", "conv-123")
@@ -376,7 +376,7 @@ class TestWebSocketEndpoints:
         
         manager = ConnectionManager()
         
-        mock_websocket = MagicMock()
+        mock_websocket = AsyncMock()
         await manager.connect(mock_websocket, "user-123", "conv-123")
         
         # Test typing indicator
@@ -402,7 +402,7 @@ class TestWebSocketEndpoints:
         
         manager = ConnectionManager()
         
-        mock_websocket = MagicMock()
+        mock_websocket = AsyncMock()
         await manager.connect(mock_websocket, "user-123", "conv-123")
         
         documents = [{"id": "doc-1", "title": "Test Doc"}]
@@ -431,7 +431,7 @@ class TestWebSocketEndpoints:
         
         manager = ConnectionManager()
         
-        mock_websocket = MagicMock()
+        mock_websocket = AsyncMock()
         await manager.connect(mock_websocket, "user-123", "conv-123")
         
         # Test processing job update
@@ -458,7 +458,7 @@ class TestWebSocketEndpoints:
         
         manager = ConnectionManager()
         
-        mock_websocket = MagicMock()
+        mock_websocket = AsyncMock()
         user_id = "user-123"
         conversation_id = "conv-123"
         
@@ -488,8 +488,8 @@ class TestWebSocketEndpoints:
         
         manager = ConnectionManager()
         
-        mock_websocket1 = MagicMock()
-        mock_websocket2 = MagicMock()
+        mock_websocket1 = AsyncMock()
+        mock_websocket2 = AsyncMock()
         
         # Connect to different conversations
         await manager.connect(mock_websocket1, "user-1", "conv-1")

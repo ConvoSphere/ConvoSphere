@@ -57,6 +57,16 @@ TEST_ADMIN_DATA = {
     "role": "admin",
 }
 
+@pytest.fixture
+def test_user_data():
+    """Test user data fixture."""
+    return TEST_USER_DATA.copy()
+
+@pytest.fixture
+def test_admin_data():
+    """Test admin data fixture."""
+    return TEST_ADMIN_DATA.copy()
+
 TEST_ASSISTANT_DATA = {
     "name": "Test Assistant",
     "description": "A test assistant for testing purposes",
@@ -181,11 +191,11 @@ def setup_redis_mock():
 @pytest.fixture(scope="session", autouse=True)
 def setup_weaviate_mock():
     """Mock Weaviate for testing."""
-    with patch(
-        "backend.app.services.weaviate_service.weaviate.Client"
-    ) as mock_weaviate:
+    # Mock the weaviate.connect_to_custom function used in weaviate_client.py
+    with patch("weaviate.connect_to_custom") as mock_connect:
         mock_client = MagicMock()
-        mock_weaviate.return_value = mock_client
+        mock_client.is_ready.return_value = True
+        mock_connect.return_value = mock_client
         yield mock_client
 
 
