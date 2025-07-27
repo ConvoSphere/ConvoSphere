@@ -178,16 +178,19 @@ class User(Base):
         secondary=user_group_association,
         back_populates="users",
     )
-    # domain_groups = relationship(
-    #     "DomainGroup",
-    #     secondary="domain_group_members",
-    #     primaryjoin="User.id == domain_group_members.c.user_id",
-    #     secondaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
-    #     back_populates="members",
-    # )
+    domain_groups = relationship(
+        "DomainGroup",
+        secondary="domain_group_members",
+        primaryjoin="User.id == domain_group_members.c.user_id",
+        secondaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
+        back_populates="members",
+    )
     # managed_domains = relationship(
     #     "DomainGroup",
     #     secondary="domain_group_managers",
+    #     primaryjoin="User.id == domain_group_managers.c.user_id",
+    #     secondaryjoin="DomainGroup.id == domain_group_managers.c.domain_group_id",
+    #     foreign_keys="[domain_group_managers.c.user_id]",
     #     back_populates="managers",
     # )
     assistants = relationship("Assistant", back_populates="creator")

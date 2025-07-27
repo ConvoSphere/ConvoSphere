@@ -90,6 +90,27 @@ domain_group_members = Table(
     extend_existing=True,
 )
 
+# Association table for domain group managers
+domain_group_managers = Table(
+    "domain_group_managers",
+    Base.metadata,
+    Column(
+        "domain_group_id",
+        UUID(as_uuid=True),
+        ForeignKey("domain_groups.id"),
+        primary_key=True,
+    ),
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
+    Column(
+        "manager_type",
+        String(50),
+        default="manager",
+        nullable=False,
+    ),  # manager, admin, owner
+    Column("assigned_at", DateTime(timezone=True), server_default=func.now()),
+    Column("assigned_by", UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
+    extend_existing=True,
+)
 
 # Association table for domain group resources
 domain_group_resources = Table(
@@ -202,6 +223,12 @@ class DomainGroup(Base):
         back_populates="domain_groups",
         lazy="dynamic",
     )
+    # managers = relationship(
+    #     "User",
+    #     secondary=domain_group_managers,
+    #     back_populates="managed_domains",
+    #     lazy="dynamic",
+    # )
 
     resources = relationship(
         "DomainResource",
@@ -291,26 +318,7 @@ class DomainGroup(Base):
         return permissions
 
 
-# Association table for domain group managers
-domain_group_managers = Table(
-    "domain_group_managers",
-    Base.metadata,
-    Column(
-        "domain_group_id",
-        UUID(as_uuid=True),
-        ForeignKey("domain_groups.id"),
-        primary_key=True,
-    ),
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
-    Column(
-        "manager_type",
-        String(50),
-        default="manager",
-        nullable=False,
-    ),  # manager, admin, owner
-    Column("assigned_at", DateTime(timezone=True), server_default=func.now()),
-    Column("assigned_by", UUID(as_uuid=True), ForeignKey("users.id"), nullable=True),
-)
+
 
 
 class DomainResource(Base):

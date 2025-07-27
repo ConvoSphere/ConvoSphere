@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy.orm import Session
 
-from backend.app.models.audit import AuditLog
+from backend.app.models.audit import AuditLog, AuditEventType, AuditSeverity
 from backend.app.services.audit import AuditService
 
 
@@ -47,14 +47,14 @@ class TestAuditService:
         for i in range(10):
             log = AuditLog(
                 user_id=test_user.id,
-                action=f"test_action_{i}",
+                event_type=AuditEventType.USER_UPDATE,
+                description=f"test_action_{i}",
                 resource_type="test_resource",
                 resource_id=str(i),
                 details={"test": f"value_{i}"},
                 ip_address=f"192.168.1.{i}",
                 user_agent="test-agent",
-                status="success" if i % 2 == 0 else "failure",
-                created_at=datetime.now(UTC) - timedelta(hours=i),
+                severity=AuditSeverity.INFO if i % 2 == 0 else AuditSeverity.WARNING,
             )
             test_db_session.add(log)
             logs.append(log)
