@@ -10,8 +10,8 @@ import time
 from functools import wraps
 from typing import Any
 
-from app.core.redis_client import get_redis_client
-from app.models.user import User, UserRole
+from backend.app.core.redis_client import get_redis_client
+from backend.app.models.user import User, UserRole
 from loguru import logger
 
 

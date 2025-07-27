@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from app.models.audit_extended import (
+from backend.app.models.audit_extended import (
     AuditEventCategory,
     AuditEventType,
     AuditSeverity,

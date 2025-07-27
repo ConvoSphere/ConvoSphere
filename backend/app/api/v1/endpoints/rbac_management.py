@@ -8,15 +8,15 @@ ABAC rules, security policies, and monitoring RBAC performance.
 from datetime import UTC, datetime
 from typing import Any
 
-from app.core.database import get_db
-from app.core.rbac_cache import rbac_cache, rbac_performance_monitor
-from app.core.security import get_current_user
-from app.models.permissions import (
+from backend.app.core.database import get_db
+from backend.app.core.rbac_cache import rbac_cache, rbac_performance_monitor
+from backend.app.core.security import get_current_user
+from backend.app.models.permissions import (
     PermissionAction,
     PermissionResource,
 )
-from app.models.user import User, UserRole
-from app.schemas.rbac import (
+from backend.app.models.user import User, UserRole
+from backend.app.schemas.rbac import (
     ABACPolicyCreate,
     ABACPolicyResponse,
     ABACRuleCreate,
@@ -29,8 +29,8 @@ from app.schemas.rbac import (
     PermissionUpdate,
     RBACStats,
 )
-from app.services.rbac_service import RBACService
-from app.utils.exceptions import PermissionDeniedError
+from backend.app.services.rbac_service import RBACService
+from backend.app.utils.exceptions import PermissionDeniedError
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 

@@ -7,11 +7,11 @@ including CRUD operations, member management, resource sharing, and invitation h
 
 from datetime import UTC, datetime
 
-from app.core.database import get_db
-from app.core.security import get_current_user
-from app.models.domain_groups import AccessLevel, DomainType, ResourceType
-from app.models.user import User
-from app.schemas.domain_groups import (
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user
+from backend.app.models.domain_groups import AccessLevel, DomainType, ResourceType
+from backend.app.models.user import User
+from backend.app.schemas.domain_groups import (
     DomainActivityResponse,
     DomainGroupCreate,
     DomainGroupListResponse,
@@ -29,8 +29,8 @@ from app.schemas.domain_groups import (
     DomainResourceUpdate,
     DomainSearchParams,
 )
-from app.services.domain_service import DomainService
-from app.utils.exceptions import (
+from backend.app.services.domain_service import DomainService
+from backend.app.utils.exceptions import (
     DomainGroupNotFoundError,
     InvitationNotFoundError,
     PermissionDeniedError,
@@ -473,7 +473,7 @@ async def list_domain_invitations(
             )
 
         # Get invitations with filtering
-        from app.models.domain_groups import DomainInvitation
+        from backend.app.models.domain_groups import DomainInvitation
 
         query = db.query(DomainInvitation).filter(
             DomainInvitation.domain_group_id == domain_id,
@@ -533,7 +533,7 @@ async def list_domain_activities(
             )
 
         # Get activities with filtering
-        from app.models.domain_groups import DomainActivity
+        from backend.app.models.domain_groups import DomainActivity
 
         query = db.query(DomainActivity).filter(
             DomainActivity.domain_group_id == domain_id,
@@ -674,8 +674,8 @@ def _get_member_response(
     db: Session,
 ) -> DomainMemberResponse:
     """Get member response with user information."""
-    from app.models.domain_groups import DomainGroup
-    from app.models.user import User
+    from backend.app.models.domain_groups import DomainGroup
+    from backend.app.models.user import User
 
     user = db.query(User).filter(User.id == user_id).first()
     domain_group = db.query(DomainGroup).filter(DomainGroup.id == domain_id).first()

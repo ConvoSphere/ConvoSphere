@@ -10,10 +10,10 @@ from sqlalchemy.orm import sessionmaker
 
 # Dynamisch Backend-App importieren
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
-from app.core.config import settings
-from app.models.user import UserRole, UserStatus
-from app.schemas.user import UserCreate
-from app.services.user_service import UserService
+from backend.app.core.config import settings
+from backend.app.models.user import UserRole, UserStatus
+from backend.app.schemas.user import UserCreate
+from backend.app.services.user_service import UserService
 
 
 def get_redis_client():
@@ -174,7 +174,7 @@ def user_list():
     user_service = UserService(db)
     try:
         # Dummy current_user mit Super-Admin-Rechten für vollständige Liste
-        from app.models.user import UserRole
+        from backend.app.models.user import UserRole
 
         class DummyUser:
             role = UserRole.SUPER_ADMIN

@@ -5,8 +5,8 @@ This module provides API endpoints for conversation intelligence features
 including summarization, topic detection, sentiment analysis, and analytics.
 """
 
-from app.core.exceptions import AIError, ValidationError
-from app.schemas.conversation_intelligence import (
+from backend.app.core.exceptions import AIError, ValidationError
+from backend.app.schemas.conversation_intelligence import (
     ConversationAnalytics,
     ConversationIntelligenceRequest,
     ConversationIntelligenceResponse,
@@ -18,7 +18,7 @@ from app.schemas.conversation_intelligence import (
     TopicDetectionRequest,
     TopicInfo,
 )
-from app.services.conversation_intelligence_service import (
+from backend.app.services.conversation_intelligence_service import (
     conversation_intelligence_service,
 )
 from fastapi import APIRouter, HTTPException, Query
@@ -192,7 +192,7 @@ async def get_conversation_summary(
         Conversation summary
     """
     try:
-        from app.schemas.conversation_intelligence import SummaryType
+        from backend.app.schemas.conversation_intelligence import SummaryType
 
         # Convert string to SummaryType enum
         try:

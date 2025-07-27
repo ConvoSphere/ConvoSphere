@@ -2,15 +2,15 @@
 
 from typing import Any
 
-from app.core.database import get_db
-from app.core.exceptions import (
+from backend.app.core.database import get_db
+from backend.app.core.exceptions import (
     ConversationError,
     DatabaseError,
     NotFoundError,
     ValidationError,
 )
-from app.models.conversation import Conversation, Message, MessageRole
-from app.schemas.conversation import (
+from backend.app.models.conversation import Conversation, Message, MessageRole
+from backend.app.schemas.conversation import (
     ConversationCreate,
     MessageCreate,
 )

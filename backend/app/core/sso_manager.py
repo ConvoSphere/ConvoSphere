@@ -11,9 +11,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 import requests
-from app.models.domain_groups import DomainGroup
-from app.models.user import AuthProvider, User, UserRole, UserStatus
-from app.utils.exceptions import (
+from backend.app.models.domain_groups import DomainGroup
+from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
+from backend.app.utils.exceptions import (
     AuthenticationError,
     GroupSyncError,
     SSOConfigurationError,

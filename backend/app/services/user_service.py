@@ -2,10 +2,10 @@
 
 from datetime import UTC, datetime, timedelta
 
-from app.core.database import get_db
-from app.core.security import get_password_hash, verify_password
-from app.models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
-from app.schemas.user import (
+from backend.app.core.database import get_db
+from backend.app.core.security import get_password_hash, verify_password
+from backend.app.models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
+from backend.app.schemas.user import (
     SSOUserCreate,
     UserBulkUpdate,
     UserCreate,
@@ -20,7 +20,7 @@ from app.schemas.user import (
     UserStats,
     UserUpdate,
 )
-from app.utils.exceptions import (
+from backend.app.utils.exceptions import (
     GroupNotFoundError,
     InvalidCredentialsError,
     PermissionDeniedError,
@@ -55,7 +55,7 @@ class UserService:
         # Handle both UserCreate object and individual parameters
         if user_data is None:
             # Create UserCreate object from individual parameters
-            from app.schemas.user import UserCreate
+            from backend.app.schemas.user import UserCreate
 
             user_data = UserCreate(
                 email=email,

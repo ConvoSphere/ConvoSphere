@@ -4,7 +4,7 @@ API v1 router configuration.
 This module configures the main API v1 router and includes all endpoint routers.
 """
 
-from app.api.v1.endpoints import (
+from backend.app.api.v1.endpoints import (
     ai,
     assistants_management,
     auth,
@@ -22,7 +22,7 @@ from app.api.v1.endpoints import (
     users,
     websocket,
 )
-from app.api.v1.endpoints.audit import router as audit_router
+from backend.app.api.v1.endpoints.audit import router as audit_router
 from fastapi import APIRouter
 
 # Main API v1 router

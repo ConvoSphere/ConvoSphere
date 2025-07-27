@@ -57,8 +57,8 @@ def test_ai_settings():
 def test_internationalization_settings():
     """Test i18n-related settings."""
     assert hasattr(settings, "default_language")  # noqa: S101
-    assert hasattr(settings, "supported_languages")  # noqa: S101
+    assert hasattr(settings, "languages")  # noqa: S101
     assert settings.default_language == "de"  # noqa: S101
-    assert isinstance(settings.supported_languages, list)  # noqa: S101
-    assert "de" in settings.supported_languages  # noqa: S101
-    assert "en" in settings.supported_languages  # noqa: S101
+    assert isinstance(settings.languages, list)  # noqa: S101
+    assert "de" in settings.languages  # noqa: S101
+    assert "en" in settings.languages  # noqa: S101

@@ -308,8 +308,8 @@ class User(Base):
             return True
 
         # Check if user is the creator of the assistant
-        from app.core.database import get_db
-        from app.models.assistant import Assistant
+        from backend.app.core.database import get_db
+        from backend.app.models.assistant import Assistant
 
         db = next(get_db())
         try:
@@ -342,7 +342,7 @@ class User(Base):
             return True
         if self.role == UserRole.MANAGER:
             # Managers can manage users in their groups
-            from app.core.database import get_db
+            from backend.app.core.database import get_db
 
             db = next(get_db())
             try:

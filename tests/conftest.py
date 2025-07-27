@@ -166,7 +166,7 @@ async def async_client(override_get_db):
 @pytest.fixture(scope="session", autouse=True)
 def setup_redis_mock():
     """Mock Redis for testing."""
-    with patch("backend.app.core.cache.redis.Redis") as mock_redis:
+    with patch("backend.app.core.redis_client.redis.Redis") as mock_redis:
         mock_redis_instance = MagicMock()
         mock_redis.return_value = mock_redis_instance
         yield mock_redis_instance

@@ -8,7 +8,7 @@ and security utilities for the AI Assistant Platform.
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from app.core.config import get_settings
+from backend.app.core.config import get_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -127,7 +127,7 @@ async def verify_token(token: str) -> str | None:
     try:
         # Check if token is blacklisted (only if Redis is available)
         try:
-            from app.core.redis_client import is_token_blacklisted
+            from backend.app.core.redis_client import is_token_blacklisted
 
             is_blacklisted = await is_token_blacklisted(token)
             if is_blacklisted:
@@ -199,8 +199,8 @@ async def get_current_user(
     Raises:
         HTTPException: If token is invalid or user not found
     """
-    from app.core.database import get_db
-    from app.models.user import User
+    from backend.app.core.database import get_db
+    from backend.app.models.user import User
 
     user_id = await get_current_user_id(credentials)
 
@@ -300,8 +300,8 @@ def log_security_event(
     """
     Log a security event to the audit log table.
     """
-    from app.core.database import get_db
-    from app.models.audit import AuditEventType, AuditLog, AuditSeverity
+    from backend.app.core.database import get_db
+    from backend.app.models.audit import AuditEventType, AuditLog, AuditSeverity
 
     db = next(get_db())
     try:

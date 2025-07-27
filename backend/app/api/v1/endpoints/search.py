@@ -8,9 +8,9 @@ This module provides endpoints for:
 
 from typing import Any
 
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.services.weaviate_service import weaviate_service
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.services.weaviate_service import weaviate_service
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from pydantic import BaseModel

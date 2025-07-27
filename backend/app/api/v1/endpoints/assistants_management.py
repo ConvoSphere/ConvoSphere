@@ -4,10 +4,10 @@ Assistant management API endpoints (CRUD, activate, deactivate, status).
 
 from uuid import UUID
 
-from app.core.database import get_db
-from app.core.security import get_current_user_id
-from app.models.assistant import AssistantStatus
-from app.services.assistant_service import AssistantService
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.models.assistant import AssistantStatus
+from backend.app.services.assistant_service import AssistantService
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
