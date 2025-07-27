@@ -29,61 +29,17 @@ theme:
     - header.autohide
     - toc.follow
     - toc.integrate
-    - content.action.edit
-    - content.action.view
+    - top
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme)"
+      scheme: default
       primary: indigo
       accent: indigo
       toggle:
         icon: material/brightness-auto
         name: Switch to dark mode
-    - scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to light mode
-  font:
-    text: Roboto
-    code: Roboto Mono
-  favicon: assets/favicon.png
-  logo: assets/logo.png
-
-# Internationalization
-extra:
-  alternate:
-    - name: English
-      link: /
-      lang: en
-    - name: Deutsch
-      link: /de/
-      lang: de
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - navigation.tracking
-    - search.suggest
-    - search.highlight
-    - search.share
-    - content.code.copy
-    - content.code.annotate
-    - content.code.select
-    - content.tabs.link
-    - content.tooltips
-    - header.autohide
-    - toc.follow
-    - toc.integrate
-  palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-auto
-        name: Switch to dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: indigo
       accent: indigo
       toggle:
@@ -96,73 +52,54 @@ extra:
   logo: assets/logo.png
 
 markdown_extensions:
+  - abbr
   - admonition
-  - codehilite:
-      guess_lang: false
-      use_pygments: true
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:mermaid2.fence_mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
       combine_header_slug: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
           case: lower
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.smartsymbols
-  - pymdownx.snippets:
-      check_paths: true
-      # auto_append:
-      #   - includes/abbreviations.md
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.arithmatex:
-      generic: true
-  - attr_list
-  - md_in_html
-  - def_list
-  - footnotes
-  - toc:
-      permalink: true
-      title: On this page
-  - pymdownx.caret
-  - pymdownx.keys
-  - pymdownx.magiclink
-  - pymdownx.smartsymbols
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.tilde
 
 plugins:
   - search
-  - mermaid2:
-      arguments:
-        theme: default
-        themeVariables:
-          primaryColor: '#3f51b5'
-          primaryTextColor: '#fff'
-          primaryBorderColor: '#3f51b5'
-          lineColor: '#3f51b5'
-          secondaryColor: '#f50057'
-          tertiaryColor: '#f0f0f0'
+  - mermaid2
   - git-revision-date-localized:
       enable_creation_date: true
-      type: datetime
-      fallback_to_build_date: true
-      enable_parallel_processing: false
   - minify:
       minify_html: true
   - awesome-pages
@@ -171,11 +108,9 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-org/ai-chat-app
+      link: https://github.com/lichtbaer/ai-chat-app
     - icon: fontawesome/brands/discord
       link: https://discord.gg/your-server
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/your-org
   version:
     provider: mike
   analytics:
@@ -194,39 +129,8 @@ nav:
   - Home: index.md
   - Quick Start: quick-start.md
   - User Guide: user-guide.md
-  - FAQ: faq.md
   - Developer Guide: developer-guide.md
-  - Development:
-    - Refactoring Guide: development/refactoring-guide.md
-  - API: api.md
   - Architecture: architecture.md
-  - Security:
-    - Overview: security/index.md
-    - User Security: security/user-security.md
-    - Admin Security: security/admin-security.md
-    - Developer Security: security/developer-security.md
-  - Project:
-    - Status: project/status.md
-    - Refactoring Status: project/refactoring-status.md
-    - Documentation Cleanup: project/documentation-cleanup.md
-    - Changelog: project/changelog.md
-    - Contributing: project/contributing.md
-  - Features:
-    - AI Integration: features/ai-integration.md
-    - Chat Integration: features/chat-integration-phase3.md
-    - File Upload: features/file-upload.md
-    - Hybrid Mode: features/hybrid-mode.md
-    - Internationalization: features/internationalization.md
-    - Knowledge Base: features/knowledge-base.md
-    - Performance: features/performance.md
-    - Real-time Chat: features/real-time-chat.md
-    - Security: features/security.md
-    - Tools: features/tools.md
-    - User Management: features/user-management.md
-    - WebSocket: features/websocket.md
-  - Deutsch:
-    - Startseite: de/index.md
-    - Quick Start: de/quick-start.md
-    - Benutzer-Guide: de/user-guide.md
-    - FAQ: de/faq.md
-    - Entwickler-Guide: de/developer-guide.md 
+  - API Reference: api.md
+  - Security: security.md
+  - FAQ: faq.md 
