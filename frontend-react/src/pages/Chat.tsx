@@ -16,8 +16,11 @@ import {
   BookOutlined,
   SearchOutlined,
   LoadingOutlined,
+  DownloadOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import { chatWebSocket } from "../services/chat";
 import type { ChatMessage, KnowledgeContext } from "../services/chat";
 import { useAuthStore } from "../store/authStore";
@@ -30,11 +33,14 @@ import { config } from "../config";
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
+import ChatExport from "../components/chat/ChatExport";
+import { exportService } from "../services/export";
 
 const { Title, Text } = Typography;
 
 const Chat: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -51,6 +57,8 @@ const Chat: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [conversationTitle, setConversationTitle] = useState<string>("");
 
   const token = useAuthStore((s) => s.token);
   const { getCurrentColors } = useThemeStore();
@@ -59,12 +67,21 @@ const Chat: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);
 
-  // Create or get conversation ID
+  // Get conversation ID from URL params or create/get conversation
   useEffect(() => {
     if (!token) return;
 
     const createOrGetConversation = async () => {
       try {
+        // Check if conversation ID is provided in URL params
+        const urlParams = new URLSearchParams(location.search);
+        const conversationParam = urlParams.get('conversation');
+        
+        if (conversationParam) {
+          setConversationId(conversationParam);
+          return;
+        }
+
         // Try to get existing conversations first
         const response = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
           headers: {
@@ -332,6 +349,16 @@ const Chat: React.FC = () => {
     }
   };
 
+  const handleExport = async (options: any) => {
+    try {
+      await exportService.exportChat(messages, options, conversationTitle);
+      message.success(t("chat.export.success"));
+    } catch (error) {
+      console.error("Export error:", error);
+      message.error(t("chat.export.error"));
+    }
+  };
+
   const formatTime = (timestamp: Date) => {
     return timestamp.toLocaleTimeString([], {
       hour: "2-digit",
@@ -569,28 +596,42 @@ const Chat: React.FC = () => {
                   </div>
                 )}
               </div>
-              <Tooltip
-                title={
-                  knowledgeContextEnabled
-                    ? t("knowledge.processing")
-                    : t("knowledge.title")
-                }
-              >
-                <ModernButton
-                  variant={knowledgeContextEnabled ? "primary" : "secondary"}
-                  size="md"
-                  icon={<BookOutlined />}
-                  onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {messages.length > 0 && (
+                  <Tooltip title={t("chat.export.title")}>
+                    <ModernButton
+                      variant="outlined"
+                      size="md"
+                      icon={<DownloadOutlined />}
+                      onClick={() => setShowExportModal(true)}
+                    >
+                      {t("chat.export.export")}
+                    </ModernButton>
+                  </Tooltip>
+                )}
+                <Tooltip
+                  title={
+                    knowledgeContextEnabled
+                      ? t("knowledge.processing")
+                      : t("knowledge.title")
+                  }
                 >
-                  {t("knowledge.title")}
-                  {selectedDocuments.length > 0 && (
-                    <Badge
-                      count={selectedDocuments.length}
-                      style={{ marginLeft: "8px" }}
-                    />
-                  )}
-                </ModernButton>
-              </Tooltip>
+                  <ModernButton
+                    variant={knowledgeContextEnabled ? "primary" : "secondary"}
+                    size="md"
+                    icon={<BookOutlined />}
+                    onClick={() => setShowKnowledgeDrawer(!showKnowledgeDrawer)}
+                  >
+                    {t("knowledge.title")}
+                    {selectedDocuments.length > 0 && (
+                      <Badge
+                        count={selectedDocuments.length}
+                        style={{ marginLeft: "8px" }}
+                      />
+                    )}
+                  </ModernButton>
+                </Tooltip>
+              </div>
             </div>
           }
           style={{ height: "100%", display: "flex", flexDirection: "column" }}
@@ -795,6 +836,14 @@ const Chat: React.FC = () => {
           </ModernCard>
         </Col>
       )}
+
+      <ChatExport
+        visible={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        messages={messages}
+        conversationTitle={conversationTitle}
+        onExport={handleExport}
+      />
     </Row>
   );
 };

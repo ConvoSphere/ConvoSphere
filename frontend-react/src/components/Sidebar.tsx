@@ -52,14 +52,24 @@ const Sidebar: React.FC = () => {
   };
 
   const items = [
-    {
-      key: "/",
-      icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />,
-      label: t("navigation.dashboard"),
-    },
+            {
+          key: "/",
+          icon: <MessageOutlined style={{ color: colors.colorPrimary }} />,
+          label: t("navigation.home"),
+        },
+        {
+          key: "/dashboard",
+          icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />,
+          label: t("navigation.dashboard"),
+        },
+        {
+          key: "/overview",
+          icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />,
+          label: t("navigation.overview"),
+        },
     {
       key: "/chat",
-      icon: <MessageOutlined style={{ color: colors.colorSecondary }} />,
+      icon: <MessageOutlined style={{ color: colors.colorAccent }} />,
       label: t("chat.title"),
     },
     {
