@@ -350,7 +350,24 @@
     "size_large": "Groß",
     "size_full": "Vollständig",
     "refresh_interval": "Aktualisierungsintervall",
-    "seconds": "Sekunden"
+    "seconds": "Sekunden",
+    "chart_widget": "Chart-Widget",
+    "chart_widget_description": "Interaktive Datenvisualisierung mit verschiedenen Chart-Typen",
+    "error_loading_chart_data": "Fehler beim Laden der Chart-Daten",
+    "chart": {
+      "line": "Linie",
+      "bar": "Balken",
+      "doughnut": "Ring",
+      "radar": "Radar",
+      "conversations": "Konversationen",
+      "messages": "Nachrichten",
+      "users": "Benutzer",
+      "performance": "Leistung",
+      "24h": "24h",
+      "7d": "7d",
+      "30d": "30d",
+      "90d": "90d"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -359,7 +376,12 @@
     "settings": "Einstellungen",
     "no_widgets": "Keine Widgets vorhanden",
     "no_widgets_description": "Fügen Sie Widgets hinzu, um Ihr Dashboard zu personalisieren",
-    "add_first_widget": "Erstes Widget hinzufügen"
+    "add_first_widget": "Erstes Widget hinzufügen",
+    "edit_mode": "Bearbeitungsmodus",
+    "exit_edit_mode": "Bearbeitung beenden",
+    "edit_mode_active": "Bearbeitungsmodus aktiv",
+    "edit_mode_description": "Ziehen Sie Widgets, um sie neu zu positionieren und zu ändern",
+    "drop_widgets_here": "Widgets hier ablegen"
   },
   "chat": {
     "title": "Chat",

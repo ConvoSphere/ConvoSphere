@@ -2,7 +2,7 @@ import React from "react";
 import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../store/themeStore";
-import DashboardGrid from "../components/dashboard/DashboardGrid";
+import DraggableDashboard from "../components/dashboard/DraggableDashboard";
 
 const { Title } = Typography;
 
@@ -13,7 +13,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div style={{ padding: "24px 0", minHeight: "100vh" }}>
-      <DashboardGrid />
+      <DraggableDashboard />
     </div>
   );
 };

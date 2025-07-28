@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { Button, Space, Typography, Modal, Select, Form, InputNumber, Switch } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { Button, Space, Typography, Modal, Select, Form, InputNumber, Switch, Alert } from "antd";
 import {
   PlusOutlined,
   SettingOutlined,
   SaveOutlined,
   ReloadOutlined,
+  DragOutlined,
+  GridOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
@@ -14,12 +18,13 @@ import ModernCard from "../ModernCard";
 import WidgetBase, { type WidgetConfig } from "../widgets/WidgetBase";
 import StatsWidget from "../widgets/StatsWidget";
 import ActivityWidget from "../widgets/ActivityWidget";
-import ChartWidget from "../widgets/ChartWidget";
+import DraggableWidget from "./DraggableWidget";
+import DroppableGrid from "./DroppableGrid";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-interface DashboardGridProps {
+interface DraggableDashboardProps {
   className?: string;
 }
 
@@ -32,7 +37,14 @@ interface WidgetTemplate {
   defaultSettings: Record<string, any>;
 }
 
-const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
+interface GridPosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) => {
   const { t } = useTranslation();
   const { token } = useAuthStore();
   const { getCurrentColors } = useThemeStore();
@@ -43,6 +55,8 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [gridLayout, setGridLayout] = useState<GridPosition[]>([]);
 
   // Widget templates
   const widgetTemplates: WidgetTemplate[] = [
@@ -77,21 +91,6 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
         refreshInterval: 60,
       },
     },
-    {
-      type: "chart",
-      name: t("widgets.chart_widget"),
-      description: t("widgets.chart_widget_description"),
-      icon: "📈",
-      defaultSize: "large",
-      defaultSettings: {
-        chartType: "line",
-        dataSource: "conversations",
-        timeRange: "7d",
-        showLegend: true,
-        showGrid: true,
-        refreshInterval: 60,
-      },
-    },
   ];
 
   useEffect(() => {
@@ -103,13 +102,14 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
 
     try {
       setLoading(true);
-      // TODO: Load dashboard configuration from API
       const savedWidgets = localStorage.getItem("dashboard-widgets");
+      const savedLayout = localStorage.getItem("dashboard-layout");
+      
       if (savedWidgets) {
         setWidgets(JSON.parse(savedWidgets));
       } else {
         // Default widgets
-        setWidgets([
+        const defaultWidgets = [
           {
             id: "default-stats",
             type: "stats",
@@ -132,7 +132,12 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
             isVisible: true,
             isCollapsed: false,
           },
-        ]);
+        ];
+        setWidgets(defaultWidgets);
+      }
+
+      if (savedLayout) {
+        setGridLayout(JSON.parse(savedLayout));
       }
     } catch (error) {
       console.error("Error loading dashboard:", error);
@@ -143,8 +148,8 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
 
   const saveDashboard = async () => {
     try {
-      // TODO: Save dashboard configuration to API
       localStorage.setItem("dashboard-widgets", JSON.stringify(widgets));
+      localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
     } catch (error) {
       console.error("Error saving dashboard:", error);
     }
@@ -177,7 +182,29 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
 
   const removeWidget = (widgetId: string) => {
     setWidgets(prevWidgets => prevWidgets.filter(widget => widget.id !== widgetId));
+    setGridLayout(prevLayout => prevLayout.filter(pos => pos.x !== widgetId));
   };
+
+  const handleWidgetMove = useCallback((widgetId: string, newPosition: { x: number; y: number }) => {
+    setWidgets(prevWidgets =>
+      prevWidgets.map(widget =>
+        widget.id === widgetId ? { ...widget, position: newPosition } : widget
+      )
+    );
+  }, []);
+
+  const handleWidgetResize = useCallback((widgetId: string, newSize: { width: number; height: number }) => {
+    setGridLayout(prevLayout => {
+      const existing = prevLayout.find(pos => pos.x === widgetId);
+      if (existing) {
+        return prevLayout.map(pos => 
+          pos.x === widgetId ? { ...pos, width: newSize.width, height: newSize.height } : pos
+        );
+      } else {
+        return [...prevLayout, { x: widgetId, y: 0, width: newSize.width, height: newSize.height }];
+      }
+    });
+  }, []);
 
   const renderWidget = (widget: WidgetConfig) => {
     const commonProps = {
@@ -192,8 +219,6 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
         return <StatsWidget {...commonProps} />;
       case "activity":
         return <ActivityWidget {...commonProps} />;
-      case "chart":
-        return <ChartWidget {...commonProps} />;
       default:
         return (
           <WidgetBase {...commonProps}>
@@ -338,90 +363,104 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
   );
 
   return (
-    <div className={`dashboard-grid ${className || ""}`}>
-      {/* Dashboard Header */}
-      <ModernCard
-        variant="outlined"
-        size="md"
-        style={{ marginBottom: 24 }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <Title level={3} style={{ margin: 0 }}>
-              {t("dashboard.title")}
-            </Title>
-            <Text type="secondary">{t("dashboard.subtitle")}</Text>
+    <DndProvider backend={HTML5Backend}>
+      <div className={`draggable-dashboard ${className || ""}`}>
+        {/* Dashboard Header */}
+        <ModernCard
+          variant="outlined"
+          size="md"
+          style={{ marginBottom: 24 }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <Title level={3} style={{ margin: 0 }}>
+                {t("dashboard.title")}
+              </Title>
+              <Text type="secondary">{t("dashboard.subtitle")}</Text>
+            </div>
+            <Space>
+              <ModernButton
+                variant={editMode ? "primary" : "outlined"}
+                icon={<DragOutlined />}
+                onClick={() => setEditMode(!editMode)}
+              >
+                {editMode ? t("dashboard.exit_edit_mode") : t("dashboard.edit_mode")}
+              </ModernButton>
+              <ModernButton
+                variant="outlined"
+                icon={<ReloadOutlined />}
+                onClick={loadDashboard}
+                loading={loading}
+              >
+                {t("dashboard.refresh")}
+              </ModernButton>
+              <ModernButton
+                variant="outlined"
+                icon={<SettingOutlined />}
+                onClick={() => setShowSettings(true)}
+              >
+                {t("dashboard.settings")}
+              </ModernButton>
+              <ModernButton
+                variant="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setShowAddWidget(true)}
+              >
+                {t("widgets.add_widget")}
+              </ModernButton>
+            </Space>
           </div>
-          <Space>
-            <ModernButton
-              variant="outlined"
-              icon={<ReloadOutlined />}
-              onClick={loadDashboard}
-              loading={loading}
-            >
-              {t("dashboard.refresh")}
-            </ModernButton>
-            <ModernButton
-              variant="outlined"
-              icon={<SettingOutlined />}
-              onClick={() => setShowSettings(true)}
-            >
-              {t("dashboard.settings")}
-            </ModernButton>
+        </ModernCard>
+
+        {/* Edit Mode Alert */}
+        {editMode && (
+          <Alert
+            message={t("dashboard.edit_mode_active")}
+            description={t("dashboard.edit_mode_description")}
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            closable
+          />
+        )}
+
+        {/* Draggable Widget Grid */}
+        <DroppableGrid
+          widgets={widgets}
+          onWidgetMove={handleWidgetMove}
+          onWidgetResize={handleWidgetResize}
+          editMode={editMode}
+          renderWidget={renderWidget}
+        />
+
+        {/* Empty State */}
+        {widgets.length === 0 && !loading && (
+          <ModernCard
+            variant="outlined"
+            size="lg"
+            style={{ textAlign: "center", padding: "60px" }}
+          >
+            <div style={{ marginBottom: 24 }}>
+              <Title level={4} style={{ color: colors.colorTextSecondary }}>
+                {t("dashboard.no_widgets")}
+              </Title>
+              <Text type="secondary">{t("dashboard.no_widgets_description")}</Text>
+            </div>
             <ModernButton
               variant="primary"
               icon={<PlusOutlined />}
               onClick={() => setShowAddWidget(true)}
             >
-              {t("widgets.add_widget")}
+              {t("widgets.add_first_widget")}
             </ModernButton>
-          </Space>
-        </div>
-      </ModernCard>
+          </ModernCard>
+        )}
 
-      {/* Widget Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: 24,
-          padding: "0 0 24px 0",
-        }}
-      >
-        {widgets.map((widget) => (
-          <div key={widget.id} style={{ display: "flex", justifyContent: "center" }}>
-            {renderWidget(widget)}
-          </div>
-        ))}
+        {renderAddWidgetModal()}
+        {renderSettingsModal()}
       </div>
-
-      {/* Empty State */}
-      {widgets.length === 0 && !loading && (
-        <ModernCard
-          variant="outlined"
-          size="lg"
-          style={{ textAlign: "center", padding: "60px" }}
-        >
-          <div style={{ marginBottom: 24 }}>
-            <Title level={4} style={{ color: colors.colorTextSecondary }}>
-              {t("dashboard.no_widgets")}
-            </Title>
-            <Text type="secondary">{t("dashboard.no_widgets_description")}</Text>
-          </div>
-          <ModernButton
-            variant="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setShowAddWidget(true)}
-          >
-            {t("widgets.add_first_widget")}
-          </ModernButton>
-        </ModernCard>
-      )}
-
-      {renderAddWidgetModal()}
-      {renderSettingsModal()}
-    </div>
+    </DndProvider>
   );
 };
 
-export default DashboardGrid;
+export default DraggableDashboard;
