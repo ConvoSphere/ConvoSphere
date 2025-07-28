@@ -10,6 +10,7 @@ import {
   Space,
   Typography,
   Divider,
+  Alert,
 } from "antd";
 import {
   MessageOutlined,
@@ -22,29 +23,16 @@ import {
   RiseOutlined,
   RobotOutlined,
   ApiOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
+import { useAuthStore } from "../../store/authStore";
 import ModernCard from "../ModernCard";
+import ModernButton from "../ModernButton";
+import { statisticsService, type OverviewStats, type ActivityItem } from "../../services/statistics";
 
 const { Title, Text } = Typography;
-
-interface OverviewStats {
-  totalConversations: number;
-  totalMessages: number;
-  totalDocuments: number;
-  totalAssistants: number;
-  totalTools: number;
-  activeUsers: number;
-  systemHealth: "healthy" | "warning" | "error";
-  recentActivity: Array<{
-    id: string;
-    type: "conversation" | "document" | "assistant" | "tool";
-    title: string;
-    timestamp: string;
-    user: string;
-  }>;
-}
 
 interface StatsOverviewProps {
   variant?: "full" | "compact" | "minimal";
@@ -61,77 +49,43 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
 }) => {
   const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
+  const { token } = useAuthStore();
   const colors = getCurrentColors();
 
-  const [stats, setStats] = useState<OverviewStats>({
-    totalConversations: 0,
-    totalMessages: 0,
-    totalDocuments: 0,
-    totalAssistants: 0,
-    totalTools: 0,
-    activeUsers: 0,
-    systemHealth: "healthy",
-    recentActivity: [],
-  });
-
+  const [stats, setStats] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    // Simulate loading overview data
-    const loadOverviewData = async () => {
-      setLoading(true);
-      try {
-        // TODO: Replace with actual API calls
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        setStats({
-          totalConversations: 156,
-          totalMessages: 2847,
-          totalDocuments: 89,
-          totalAssistants: 12,
-          totalTools: 8,
-          activeUsers: 23,
-          systemHealth: "healthy",
-          recentActivity: [
-            {
-              id: "1",
-              type: "conversation",
-              title: "Neue Konversation gestartet",
-              timestamp: "2024-01-15T10:30:00Z",
-              user: "Max Mustermann",
-            },
-            {
-              id: "2",
-              type: "document",
-              title: "Dokument hochgeladen: Projektplan.pdf",
-              timestamp: "2024-01-15T09:15:00Z",
-              user: "Anna Schmidt",
-            },
-            {
-              id: "3",
-              type: "assistant",
-              title: 'Assistent "Support Bot" erstellt',
-              timestamp: "2024-01-15T08:45:00Z",
-              user: "Admin",
-            },
-            {
-              id: "4",
-              type: "tool",
-              title: 'Tool "API Connector" aktiviert',
-              timestamp: "2024-01-15T08:30:00Z",
-              user: "Admin",
-            },
-          ],
-        });
-      } catch (error) {
-        console.error("Error loading overview data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadOverviewData();
-  }, []);
+  }, [token]);
+
+  const loadOverviewData = async (isRefresh = false) => {
+    if (!token) return;
+
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      const data = await statisticsService.getOverviewStats(token);
+      setStats(data);
+    } catch (error) {
+      console.error("Error loading overview data:", error);
+      setError(t("overview.error_loading_stats"));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    loadOverviewData(true);
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -162,28 +116,30 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
   };
 
   const renderStatsCards = () => {
+    if (!stats) return null;
+
     const statsData = [
       {
         title: t("overview.stats.conversations"),
-        value: stats.totalConversations,
+        value: stats.systemStats.totalConversations,
         icon: <MessageOutlined style={{ color: colors.colorPrimary }} />,
         color: colors.colorPrimary,
       },
       {
         title: t("overview.stats.messages"),
-        value: stats.totalMessages,
+        value: stats.systemStats.totalMessages,
         icon: <MessageOutlined style={{ color: colors.colorSecondary }} />,
         color: colors.colorSecondary,
       },
       {
         title: t("overview.stats.documents"),
-        value: stats.totalDocuments,
+        value: stats.systemStats.totalDocuments,
         icon: <BookOutlined style={{ color: colors.colorAccent }} />,
         color: colors.colorAccent,
       },
       {
         title: t("overview.stats.assistants"),
-        value: stats.totalAssistants,
+        value: stats.systemStats.totalAssistants,
         icon: <TeamOutlined style={{ color: colors.colorPrimary }} />,
         color: colors.colorPrimary,
       },
@@ -260,7 +216,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
   };
 
   const renderHealthSection = () => {
-    if (!showHealth || variant === "minimal") return null;
+    if (!showHealth || variant === "minimal" || !stats) return null;
 
     return (
       <ModernCard
@@ -277,12 +233,21 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
             <Title level={variant === "compact" ? 5 : 4} style={{ margin: 0 }}>
               {t("overview.system_health")}
             </Title>
-            <Tag
-              color={getHealthColor(stats.systemHealth)}
-              style={{ fontSize: "12px", padding: "4px 8px" }}
-            >
-              {t(`overview.health.${stats.systemHealth}`)}
-            </Tag>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Tag
+                color={getHealthColor(stats.systemStats.systemHealth)}
+                style={{ fontSize: "12px", padding: "4px 8px" }}
+              >
+                {t(`overview.health.${stats.systemStats.systemHealth}`)}
+              </Tag>
+              <ModernButton
+                type="text"
+                size="small"
+                icon={<ReloadOutlined spin={refreshing} />}
+                onClick={handleRefresh}
+                disabled={refreshing}
+              />
+            </div>
           </div>
         }
       >
@@ -290,7 +255,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
           <Col span={12}>
             <Statistic
               title={t("overview.stats.active_users")}
-              value={stats.activeUsers}
+              value={stats.systemStats.activeUsers}
               prefix={<UserOutlined style={{ color: colors.colorPrimary }} />}
               valueStyle={{ color: colors.colorPrimary }}
             />
@@ -298,7 +263,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
           <Col span={12}>
             <Statistic
               title={t("overview.stats.tools")}
-              value={stats.totalTools}
+              value={stats.systemStats.totalTools}
               prefix={<ToolOutlined style={{ color: colors.colorSecondary }} />}
               valueStyle={{ color: colors.colorSecondary }}
             />
@@ -309,20 +274,52 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
           <Text strong style={{ fontSize: "16px" }}>
             {t("overview.performance")}
           </Text>
-          <Progress
-            percent={85}
-            status="active"
-            strokeColor={colors.colorPrimary}
-            style={{ marginTop: 12 }}
-            strokeWidth={8}
-          />
+          <Row gutter={16} style={{ marginTop: 12 }}>
+            <Col span={12}>
+              <Progress
+                percent={stats.systemStats.performance.cpuUsage}
+                status="active"
+                strokeColor={colors.colorPrimary}
+                strokeWidth={8}
+                format={(percent) => `CPU: ${percent}%`}
+              />
+            </Col>
+            <Col span={12}>
+              <Progress
+                percent={stats.systemStats.performance.memoryUsage}
+                status="active"
+                strokeColor={colors.colorSecondary}
+                strokeWidth={8}
+                format={(percent) => `RAM: ${percent}%`}
+              />
+            </Col>
+          </Row>
+          <Row gutter={16} style={{ marginTop: 12 }}>
+            <Col span={12}>
+              <Statistic
+                title={t("overview.response_time")}
+                value={stats.systemStats.performance.responseTime}
+                suffix="ms"
+                valueStyle={{ fontSize: "14px" }}
+              />
+            </Col>
+            <Col span={12}>
+              <Statistic
+                title={t("overview.uptime")}
+                value={stats.systemStats.performance.uptime}
+                suffix="%"
+                precision={1}
+                valueStyle={{ fontSize: "14px" }}
+              />
+            </Col>
+          </Row>
         </div>
       </ModernCard>
     );
   };
 
   const renderActivitySection = () => {
-    if (!showActivity || variant === "minimal") return null;
+    if (!showActivity || variant === "minimal" || !stats) return null;
 
     return (
       <ModernCard
@@ -337,7 +334,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
         <List
           loading={loading}
           dataSource={stats.recentActivity.slice(0, variant === "compact" ? 3 : 5)}
-          renderItem={(item) => (
+          renderItem={(item: ActivityItem) => (
             <List.Item
               style={{
                 padding: "12px 0",
@@ -367,14 +364,21 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                   </Space>
                 }
                 description={
-                  <Space style={{ marginTop: 8 }}>
-                    <ClockCircleOutlined
-                      style={{ color: colors.colorTextSecondary }}
-                    />
-                    <Text type="secondary">
-                      {new Date(item.timestamp).toLocaleString()}
-                    </Text>
-                  </Space>
+                  <div>
+                    {item.description && (
+                      <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>
+                        {item.description}
+                      </Text>
+                    )}
+                    <Space>
+                      <ClockCircleOutlined
+                        style={{ color: colors.colorTextSecondary }}
+                      />
+                      <Text type="secondary">
+                        {new Date(item.timestamp).toLocaleString()}
+                      </Text>
+                    </Space>
+                  </div>
                 }
               />
             </List.Item>
@@ -386,6 +390,22 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
 
   return (
     <div className={className}>
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          style={{ marginBottom: 16 }}
+          action={
+            <ModernButton size="small" onClick={handleRefresh}>
+              {t("common.retry")}
+            </ModernButton>
+          }
+        />
+      )}
+      
       {renderStatsCards()}
       
       {variant === "full" && (

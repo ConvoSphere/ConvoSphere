@@ -268,6 +268,8 @@
       "error": "Fehler"
     },
     "performance": "Systemleistung",
+    "response_time": "Antwortzeit",
+    "uptime": "Betriebszeit",
     "quick_actions": {
       "title": "Schnellaktionen",
       "start_chat": "Chat starten",
@@ -282,11 +284,37 @@
       "total_users": "Benutzer gesamt",
       "system_load": "Systemlast",
       "uptime": "Betriebszeit"
-    }
+    },
+    "error_loading_stats": "Fehler beim Laden der Statistiken",
+    "refresh": "Aktualisieren"
   },
   "chat": {
     "title": "Chat",
     "newMessage": "Neue Nachricht",
+    "export": {
+      "title": "Chat exportieren",
+      "conversation": "Konversation",
+      "messages_count": "{{count}} Nachrichten",
+      "format": "Format",
+      "format_required": "Bitte wählen Sie ein Format",
+      "select_format": "Format auswählen...",
+      "json_description": "Strukturierte Daten im JSON-Format",
+      "pdf_description": "Druckfreundliches PDF-Dokument",
+      "markdown_description": "Markdown-Format für Dokumentation",
+      "txt_description": "Einfacher Text-Export",
+      "csv_description": "Tabellarische Daten für Excel",
+      "message_filter": "Nachrichtenfilter",
+      "filter_all": "Alle Nachrichten",
+      "filter_user": "Nur Benutzer-Nachrichten",
+      "filter_assistant": "Nur Assistenten-Nachrichten",
+      "include_metadata": "Metadaten einschließen",
+      "include_timestamps": "Zeitstempel einschließen",
+      "include_user_info": "Benutzerinformationen einschließen",
+      "export": "Exportieren",
+      "exporting": "Exportiere...",
+      "error": "Fehler beim Exportieren",
+      "success": "Export erfolgreich"
+    },
     "sendMessage": "Nachricht senden",
     "typeMessage": "Nachricht eingeben...",
     "conversation": "Konversation",
