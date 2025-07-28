@@ -36,6 +36,15 @@ from backend.app.services.document.error_handler import (
     ErrorSeverity,
     get_document_error_handler
 )
+from backend.app.services.document.recovery_manager import (
+    get_recovery_manager,
+    get_state_manager,
+    RecoveryStrategy
+)
+from backend.app.services.document.backup_manager import (
+    get_backup_manager,
+    BackupType
+)
 
 # Create a document processor instance
 document_processor = DocumentService(db=None)
@@ -206,6 +215,9 @@ class KnowledgeService:
         self.tag_service = TagService(self.db)
         self.metadata_extractor = MetadataExtractor()
         self.error_handler = get_document_error_handler(self.db)
+        self.recovery_manager = get_recovery_manager(self.db, self.error_handler)
+        self.state_manager = get_state_manager(self.db)
+        self.backup_manager = get_backup_manager(self.db)
 
         # Ensure upload directory exists
         self.upload_dir = Path(get_settings().upload_dir)
@@ -334,17 +346,18 @@ class KnowledgeService:
         return metadata
 
     async def process_document(self, document_id: str) -> bool:
-        """Process a document by extracting text and creating chunks."""
-        try:
+        """Process a document by extracting text and creating chunks with recovery mechanisms."""
+        
+        # Create rollback point before processing
+        rollback_id = self.state_manager.create_rollback_point(document_id)
+        
+        async def processing_operation():
+            """The main document processing operation."""
             document = (
                 self.db.query(Document).filter(Document.id == document_id).first()
             )
             if not document:
                 raise ValueError(f"Document {document_id} not found")
-
-            # Update status to processing
-            document.status = DocumentStatus.PROCESSING
-            self.db.commit()
 
             # Read file content
             with open(document.file_path, "rb") as f:
@@ -464,17 +477,40 @@ class KnowledgeService:
             )
             return True
 
-        except Exception as e:
-            logger.exception(f"Error processing document {document_id}: {e}")
-            # Update document status to error
-            document = (
-                self.db.query(Document).filter(Document.id == document_id).first()
-            )
-            if document:
-                document.status = DocumentStatus.ERROR
-                document.error_message = str(e)
-                self.db.commit()
-            return False
+        async def rollback_operation():
+            """Rollback operation in case of failure."""
+            if rollback_id:
+                self.state_manager.rollback_to_point(document_id, rollback_id)
+                logger.info(f"Rolled back document {document_id} to point {rollback_id}")
+
+        # Execute with recovery mechanisms
+        operation_id = f"process_document_{document_id}_{int(datetime.utcnow().timestamp())}"
+        
+        success = await self.recovery_manager.execute_with_recovery(
+            operation_id=operation_id,
+            document_id=document_id,
+            operation=processing_operation,
+            rollback_operation=rollback_operation,
+            max_retries=3,
+            recovery_strategies=[
+                RecoveryStrategy.RETRY,
+                RecoveryStrategy.ROLLBACK,
+                RecoveryStrategy.FALLBACK
+            ]
+        )
+
+        # Create backup after successful processing
+        if success:
+            try:
+                await self.backup_manager.create_backup(
+                    backup_type=BackupType.METADATA_ONLY,
+                    document_ids=[document_id],
+                    retention_days=7
+                )
+            except Exception as backup_error:
+                logger.warning(f"Failed to create backup for document {document_id}: {backup_error}")
+
+        return success
 
     def get_documents(
         self,
