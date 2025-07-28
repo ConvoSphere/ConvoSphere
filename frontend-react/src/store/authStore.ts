@@ -3,6 +3,8 @@ import {
   login as apiLogin,
   logout as apiLogout,
   register as apiRegister,
+  isTokenExpired,
+  refreshToken,
 } from "../services/auth";
 import { getProfile, updateProfile } from "../services/user";
 import type { UserProfileUpdate } from "../services/user";
@@ -28,6 +30,8 @@ interface AuthState {
   logout: () => void;
   fetchProfile: () => Promise<void>;
   updateProfile: (data: UserProfileUpdate) => Promise<void>;
+  validateToken: () => boolean;
+  refreshTokenIfNeeded: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -54,5 +58,28 @@ export const useAuthStore = create<AuthState>((set) => ({
   updateProfile: async (data) => {
     const user = await updateProfile(data);
     set({ user });
+  },
+  validateToken: () => {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+    
+    const isValid = !isTokenExpired();
+    if (!isValid) {
+      set({ token: null, isAuthenticated: false, user: null });
+    }
+    return isValid;
+  },
+  refreshTokenIfNeeded: async () => {
+    if (isTokenExpired()) {
+      const newToken = await refreshToken();
+      if (newToken) {
+        set({ token: newToken, isAuthenticated: true });
+        return true;
+      } else {
+        set({ token: null, isAuthenticated: false, user: null });
+        return false;
+      }
+    }
+    return true;
   },
 }));

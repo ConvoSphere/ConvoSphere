@@ -43,8 +43,9 @@ class Settings(BaseSettings):
     )
     cors_origins: list[str] = Field(
         default=[
-            "https://yourdomain.com",
-            "https://www.yourdomain.com",
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8081",
         ],
         description="List of allowed CORS origins - restrict in production",
     )
@@ -60,7 +61,7 @@ class Settings(BaseSettings):
 
     # Security
     secret_key: str = Field(
-        default=None,  # Kein Default für Production
+        default="dev-secret-key-for-development-only-change-in-production",
         description="Secret key - must be set in production",
     )
     jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
@@ -266,11 +267,23 @@ class Settings(BaseSettings):
     def validate_secret_key(cls, v):
         """Validate secret key."""
         if not v:
-            raise ValueError("Secret key must be set in production")
+            raise ValueError("Secret key must be set")
+        
+        # Allow development secret key only in debug mode
         if v == "dev-secret-key-for-development-only-change-in-production":
-            raise ValueError("Secret key must be properly configured in production")
+            # Check if we're in production mode
+            import os
+            if os.getenv("ENVIRONMENT", "development") == "production":
+                raise ValueError("Secret key must be properly configured in production")
+            return v
+        
         if len(v) < 32:
             raise ValueError("Secret key must be at least 32 characters long")
+        
+        # Additional security checks for production
+        if len(v) < 64 and os.getenv("ENVIRONMENT", "development") == "production":
+            raise ValueError("Production secret key should be at least 64 characters long")
+        
         return v
 
     @field_validator("litellm_temperature")
@@ -285,15 +298,31 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v):
         """Parse CORS origins from comma-separated string."""
+        import os
+        
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        if isinstance(v, list):
-            return v
-        return [
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost:8081",
-        ]
+            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+        elif isinstance(v, list):
+            origins = v
+        else:
+            origins = [
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:8081",
+            ]
+        
+        # Security check for production
+        if os.getenv("ENVIRONMENT", "development") == "production":
+            # In production, only allow HTTPS origins
+            insecure_origins = [origin for origin in origins if origin.startswith("http://")]
+            if insecure_origins:
+                raise ValueError(f"Insecure CORS origins not allowed in production: {insecure_origins}")
+            
+            # Check for wildcard origins
+            if "*" in origins:
+                raise ValueError("Wildcard CORS origins not allowed in production")
+        
+        return origins
 
     model_config = ConfigDict(
         case_sensitive=False,

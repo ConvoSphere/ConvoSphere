@@ -1,10 +1,65 @@
 import api from "./api";
 
-export async function login(username: string, password: string) {
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+export async function login(username: string, password: string): Promise<string> {
   const response = await api.post("/v1/auth/login", { username, password });
-  const { access_token } = response.data;
+  const { access_token, refresh_token } = response.data;
+  
+  // Store both tokens
   localStorage.setItem("token", access_token);
+  localStorage.setItem("refresh_token", refresh_token);
+  
+  // Set token expiry (default 30 minutes)
+  const expiresIn = response.data.expires_in || 30 * 60 * 1000;
+  const expiryTime = Date.now() + expiresIn;
+  localStorage.setItem("token_expiry", expiryTime.toString());
+  
   return access_token;
+}
+
+export async function refreshToken(): Promise<string | null> {
+  try {
+    const refresh_token = localStorage.getItem("refresh_token");
+    if (!refresh_token) {
+      return null;
+    }
+
+    const response = await api.post("/v1/auth/refresh", { refresh_token });
+    const { access_token, refresh_token: new_refresh_token } = response.data;
+    
+    // Update tokens
+    localStorage.setItem("token", access_token);
+    localStorage.setItem("refresh_token", new_refresh_token);
+    
+    // Update expiry
+    const expiresIn = response.data.expires_in || 30 * 60 * 1000;
+    const expiryTime = Date.now() + expiresIn;
+    localStorage.setItem("token_expiry", expiryTime.toString());
+    
+    return access_token;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    // Clear invalid tokens
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("token_expiry");
+    return null;
+  }
+}
+
+export function isTokenExpired(): boolean {
+  const expiryTime = localStorage.getItem("token_expiry");
+  if (!expiryTime) return true;
+  
+  // Add 5 minute buffer before expiry
+  const buffer = 5 * 60 * 1000;
+  return Date.now() + buffer > parseInt(expiryTime);
 }
 
 export async function register(
@@ -73,4 +128,6 @@ export async function bulkSyncUsers(provider: string, userList: any[]) {
 
 export function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("token_expiry");
 }

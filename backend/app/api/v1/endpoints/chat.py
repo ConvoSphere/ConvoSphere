@@ -12,6 +12,12 @@ from backend.app.core.security import get_current_user_id
 from backend.app.schemas.hybrid_mode import ConversationMode
 from backend.app.services.assistant_engine import assistant_engine
 from backend.app.services.conversation_service import conversation_service
+from backend.app.core.validation import (
+    SecureChatMessageRequest,
+    SecureConversationCreateRequest,
+    SecurityValidationError,
+    log_security_event,
+)
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -90,7 +96,7 @@ class ConversationListResponse(BaseModel):
 
 @router.post("/conversations", response_model=dict[str, Any])
 async def create_conversation(
-    request: ConversationCreateRequest,
+    request: SecureConversationCreateRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -113,6 +119,12 @@ async def create_conversation(
             title=request.title,
             assistant_id=request.assistant_id,
             description=request.description,
+        )
+    except SecurityValidationError as e:
+        log_security_event("validation_error", str(e), current_user_id)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Security validation failed: {str(e)}",
         )
 
         # Initialize hybrid mode for the new conversation
@@ -223,7 +235,7 @@ async def get_conversations(
 )
 async def send_message(
     conversation_id: str,
-    request: ChatMessageRequest,
+    request: SecureChatMessageRequest,
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
@@ -302,6 +314,12 @@ async def send_message(
             reasoning_process=reasoning_process,
         )
 
+    except SecurityValidationError as e:
+        log_security_event("validation_error", str(e), current_user_id)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Security validation failed: {str(e)}",
+        )
     except HTTPException:
         raise
     except Exception as e:
