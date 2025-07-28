@@ -23,6 +23,7 @@ from backend.app.api.v1.endpoints import (
     users,
     websocket,
 )
+from backend.app.api.v1.endpoints import monitoring_endpoints
 from backend.app.api.v1.endpoints.audit import router as audit_router
 from fastapi import APIRouter
 
@@ -62,4 +63,7 @@ api_router.include_router(audit_router, prefix="/audit", tags=["Audit"])
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(
     hybrid_mode.router, prefix="/hybrid-mode", tags=["Hybrid Mode"]
+)
+api_router.include_router(
+    monitoring_endpoints.router, prefix="/monitoring", tags=["Monitoring"]
 )

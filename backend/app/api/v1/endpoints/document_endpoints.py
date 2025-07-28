@@ -5,6 +5,9 @@ Document-related API endpoints (upload, download, get, update, delete, process).
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.core.rate_limiting import rate_limit_upload, rate_limit_search
+from backend.app.core.caching import cache
+from backend.app.core.pagination import PaginationParams, PaginationOptimizer
+from backend.app.monitoring.performance_monitor import monitor_performance
 from backend.app.models.user import User
 from backend.app.schemas.knowledge import (
     DocumentList,
@@ -13,6 +16,7 @@ from backend.app.schemas.knowledge import (
     ProcessingOptions,
 )
 from backend.app.services.knowledge_service import KnowledgeService
+from backend.app.services.search.advanced_search import get_advanced_search_service, SearchType, SearchFilter
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, Request
 from sqlalchemy.orm import Session
 
@@ -47,6 +51,8 @@ async def upload_document(
 # Get documents
 @router.get("/documents", response_model=DocumentList)
 @rate_limit_search
+@cache(ttl=300, key_prefix="documents")
+@monitor_performance
 async def get_documents(
     request: Request,
     skip: int = Query(0, ge=0),
@@ -57,11 +63,54 @@ async def get_documents(
     year: int | None = Query(None),
     language: str | None = Query(None),
     tag_names: str | None = Query(None),
+    search_type: str = Query("hybrid"),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get documents with filtering."""
+    """Get documents with filtering and advanced search."""
     service = KnowledgeService(db)
+    
+    # Use advanced search if search parameters are provided
+    if any([status, document_type, author, year, language, tag_names]):
+        search_service = get_advanced_search_service(db)
+        
+        # Build search filters
+        filters = []
+        if status:
+            filters.append(SearchFilter("status", "equals", status))
+        if document_type:
+            filters.append(SearchFilter("document_type", "equals", document_type))
+        if author:
+            filters.append(SearchFilter("author", "equals", author))
+        if year:
+            filters.append(SearchFilter("year", "equals", year))
+        if language:
+            filters.append(SearchFilter("language", "equals", language))
+        if tag_names:
+            filters.append(SearchFilter("tags", "in", tag_names.split(",")))
+        
+        # Perform advanced search
+        search_result = await search_service.search(
+            query="",  # Empty query for filtering only
+            user_id=str(current_user.id),
+            search_type=SearchType(search_type),
+            filters=filters,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            page=(skip // limit) + 1,
+            page_size=limit
+        )
+        
+        return DocumentList(
+            documents=search_result["results"],
+            total=search_result["total"],
+            page=search_result["page"],
+            page_size=search_result["page_size"]
+        )
+    
+    # Fallback to regular service method
     return await service.get_documents(
         current_user,
         skip,
