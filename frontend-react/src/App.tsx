@@ -238,11 +238,15 @@ const App: React.FC = () => {
                           <ErrorBoundary>
                             <Suspense fallback={<LoadingSpinner />}>
                               <Routes>
-                                <Route path="/" element={<LazyHomePage />} />
-                                <Route
-                                  path="/overview"
-                                  element={<LazyOverviewPage />}
-                                />
+                                                          <Route path="/" element={<LazyHomePage />} />
+                          <Route
+                            path="/dashboard"
+                            element={<LazyDashboardPage />}
+                          />
+                          <Route
+                            path="/overview"
+                            element={<LazyOverviewPage />}
+                          />
                                 <Route
                                   path="/chat"
                                   element={<LazyChatPage />}
