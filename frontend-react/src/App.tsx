@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import CriticalErrorBoundary from "./components/CriticalErrorBoundary";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import performanceMonitor from "./utils/performance";
+import { AccessibilityProvider } from "./components/AccessibilityProvider";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -186,15 +187,16 @@ const App: React.FC = () => {
       }}
     >
       <I18nextProvider i18n={i18n}>
-        <ConfigProvider
-          theme={{
-            algorithm:
-              mode === "dark"
-                ? antdTheme.darkAlgorithm
-                : antdTheme.defaultAlgorithm,
-            token: currentTheme.token,
-          }}
-        >
+        <AccessibilityProvider>
+          <ConfigProvider
+            theme={{
+              algorithm:
+                mode === "dark"
+                  ? antdTheme.darkAlgorithm
+                  : antdTheme.defaultAlgorithm,
+              token: currentTheme.token,
+            }}
+          >
           <Router>
             <ErrorBoundary
               onError={(error, errorInfo) => {
@@ -317,6 +319,7 @@ const App: React.FC = () => {
             onClose={() => setShowPerformanceMonitor(false)}
           />
         </ConfigProvider>
+        </AccessibilityProvider>
       </I18nextProvider>
     </ErrorBoundary>
   );

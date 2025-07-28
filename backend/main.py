@@ -21,6 +21,8 @@ from backend.app.core.weaviate_client import (
     init_weaviate,
 )
 from backend.app.services.performance_monitor import performance_monitor
+from backend.app.services.audit_service import audit_service
+from backend.app.services.enhanced_background_job_service import job_manager
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -81,6 +83,14 @@ async def lifespan(_):
         create_schema_if_not_exists()
         logger.info("Weaviate initialized successfully")
 
+        # Start audit service
+        await audit_service.start()
+        logger.info("Audit service started")
+
+        # Start enhanced job manager
+        job_manager.start()
+        logger.info("Enhanced job manager started")
+
         logger.info("All services initialized successfully")
 
     except Exception as exc:  # noqa: BLE001
@@ -96,6 +106,8 @@ async def lifespan(_):
     # Shutdown
     logger.info("Shutting down AI Assistant Platform...")
     try:
+        await audit_service.stop()
+        job_manager.stop()
         await close_redis()
         close_weaviate()
         logger.info("All services closed successfully")

@@ -4,6 +4,7 @@ Authentication endpoints for user login, registration, and token management.
 This module provides the authentication API endpoints for the AI Assistant Platform.
 """
 
+import uuid
 from typing import Any
 
 from backend.app.core.config import get_settings
@@ -29,6 +30,8 @@ from backend.app.services.advanced_user_provisioning import advanced_user_provis
 from backend.app.services.oauth_service import oauth_service
 from backend.app.services.saml_service import saml_service
 from backend.app.services.user_service import UserService
+from backend.app.services.audit_service import audit_service
+from backend.app.models.audit import AuditEventType, AuditSeverity
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 # Workaround gegen Import-Zyklen: security wird erst hier importiert
@@ -77,6 +80,7 @@ class UserResponse(BaseModel):
 @router.post("/login", response_model=TokenResponse)
 async def login(
     user_credentials: UserLogin,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """
@@ -92,6 +96,11 @@ async def login(
     Raises:
         HTTPException: If credentials are invalid
     """
+    # Get client information
+    client_ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+    session_id = str(uuid.uuid4())
+
     # Find user by email or username
     if user_credentials.email:
         user = db.query(User).filter(User.email == user_credentials.email).first()
@@ -100,12 +109,30 @@ async def login(
         user = db.query(User).filter(User.username == user_credentials.username).first()
         identifier = user_credentials.username
     else:
+        # Log failed login attempt
+        await audit_service.log_user_login(
+            user_id=None,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            session_id=session_id,
+            success=False,
+            details={"error": "Missing email or username"}
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Either email or username must be provided",
         )
 
     if not user or not verify_password(user_credentials.password, user.hashed_password):
+        # Log failed login attempt
+        await audit_service.log_user_login(
+            user_id=str(user.id) if user else None,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            session_id=session_id,
+            success=False,
+            details={"error": "Invalid credentials", "identifier": identifier}
+        )
         logger.warning(f"Failed login attempt for identifier: {identifier}")
         log_security_event(
             event_type="user_login",
@@ -120,6 +147,15 @@ async def login(
         )
 
     if not user.is_active:
+        # Log failed login attempt
+        await audit_service.log_user_login(
+            user_id=str(user.id),
+            ip_address=client_ip,
+            user_agent=user_agent,
+            session_id=session_id,
+            success=False,
+            details={"error": "Account disabled", "identifier": identifier}
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is disabled",
@@ -135,6 +171,16 @@ async def login(
 
     user.last_login = datetime.now(UTC)
     db.commit()
+
+    # Log successful login
+    await audit_service.log_user_login(
+        user_id=str(user.id),
+        ip_address=client_ip,
+        user_agent=user_agent,
+        session_id=session_id,
+        success=True,
+        details={"identifier": identifier}
+    )
 
     log_security_event(
         event_type="user_login",
