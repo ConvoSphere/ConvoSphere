@@ -15,7 +15,7 @@ from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import Base, TimestampMixin
 
 
 class MessageRole(str, Enum):
@@ -37,7 +37,7 @@ class MessageType(str, Enum):
     VIDEO = "video"
 
 
-class Conversation(Base):
+class Conversation(Base, TimestampMixin):
     """Conversation model for chat sessions."""
 
     __tablename__ = "conversations"
@@ -132,7 +132,7 @@ class Conversation(Base):
         return result
 
 
-class Message(Base):
+class Message(Base, TimestampMixin):
     """Message model for individual chat messages."""
 
     __tablename__ = "messages"

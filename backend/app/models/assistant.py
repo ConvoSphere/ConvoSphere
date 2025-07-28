@@ -15,7 +15,7 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import Base, TimestampMixin
 
 
 class AssistantStatus(str, Enum):
@@ -27,7 +27,7 @@ class AssistantStatus(str, Enum):
     MAINTENANCE = "maintenance"
 
 
-class Assistant(Base):
+class Assistant(Base, TimestampMixin):
     """Assistant model for AI assistants with personality profiles."""
 
     __tablename__ = "assistants"

@@ -15,7 +15,7 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import Base, TimestampMixin
 
 
 class AuditEventType(str, Enum):
@@ -71,7 +71,7 @@ class AuditSeverity(str, Enum):
     CRITICAL = "critical"
 
 
-class AuditLog(Base):
+class AuditLog(Base, TimestampMixin):
     """Audit log model for tracking all activities."""
 
     __tablename__ = "audit_logs"

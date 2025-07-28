@@ -15,7 +15,7 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import Base, TimestampMixin
 
 
 class ToolCategory(str, Enum):
@@ -31,7 +31,7 @@ class ToolCategory(str, Enum):
     AUTOMATION = "automation"
 
 
-class Tool(Base):
+class Tool(Base, TimestampMixin):
     """Tool model for managing available tools."""
 
     __tablename__ = "tools"

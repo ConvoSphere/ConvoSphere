@@ -23,9 +23,9 @@ import {
   ExclamationCircleOutlined,
   ClockCircleOutlined,
   ReloadOutlined,
-  ActivityOutlined,
-  MemoryOutlined,
-  ServerOutlined,
+  LineChartOutlined,
+  HddOutlined,
+  CloudServerOutlined,
   SafetyOutlined,
 } from "@ant-design/icons";
 
@@ -228,7 +228,7 @@ const SystemStatus: React.FC = () => {
                 }}
               >
                 <Title level={3} style={{ margin: 0 }}>
-                  <ActivityOutlined
+                  <LineChartOutlined
                     style={{ marginRight: 8, color: colors.colorPrimary }}
                   />
                   {t("system.real_time_metrics")}
@@ -258,7 +258,7 @@ const SystemStatus: React.FC = () => {
                         marginBottom: 16,
                       }}
                     >
-                      <ActivityOutlined
+                      <LineChartOutlined
                         style={{ color: colors.colorPrimary, marginRight: 8 }}
                       />
                       <Text strong>{t("system.metrics.cpu_usage")}</Text>
@@ -303,7 +303,7 @@ const SystemStatus: React.FC = () => {
                         marginBottom: 16,
                       }}
                     >
-                      <MemoryOutlined
+                      <HddOutlined
                         style={{ color: colors.colorSuccess, marginRight: 8 }}
                       />
                       <Text strong>{t("system.metrics.ram_usage")}</Text>
@@ -343,7 +343,7 @@ const SystemStatus: React.FC = () => {
 
             <ModernCard variant="elevated" size="lg">
               <Title level={3} style={{ marginBottom: 24 }}>
-                <ServerOutlined
+                <CloudServerOutlined
                   style={{ marginRight: 8, color: colors.colorPrimary }}
                 />
                 {t("system.service_status")}

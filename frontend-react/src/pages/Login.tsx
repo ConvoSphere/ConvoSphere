@@ -130,7 +130,7 @@ const Login: React.FC = () => {
             {t("auth.login.title")}
           </Title>
           <Text type="secondary" style={{ fontSize: "16px" }}>
-            {t("auth.login.subtitle")}
+            {t("auth.login.subtitle2")}
           </Text>
         </div>
 
@@ -188,10 +188,18 @@ const Login: React.FC = () => {
           size="lg"
           onFinish={onFinish}
           aria-label={t("auth.login.title")}
+          name="login-form"
         >
-          <ModernFormItem label={t("auth.login.username")} required>
+          <ModernFormItem 
+            label={t("auth.login.username")} 
+            required
+            name="username"
+            rules={[
+              { required: true, message: t("auth.login.username_required") },
+              { min: 3, message: t("auth.login.username_min_length") }
+            ]}
+          >
             <ModernInput
-              name="username"
               variant="filled"
               size="lg"
               autoFocus
@@ -200,9 +208,16 @@ const Login: React.FC = () => {
             />
           </ModernFormItem>
 
-          <ModernFormItem label={t("auth.login.password")} required>
+          <ModernFormItem 
+            label={t("auth.login.password")} 
+            required
+            name="password"
+            rules={[
+              { required: true, message: t("auth.login.password_required") },
+              { min: 6, message: t("auth.login.password_min_length") }
+            ]}
+          >
             <ModernInput
-              name="password"
               type="password"
               variant="filled"
               size="lg"

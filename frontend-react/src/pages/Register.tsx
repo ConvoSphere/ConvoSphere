@@ -125,10 +125,18 @@ const Register: React.FC = () => {
               size="lg"
               onFinish={onFinish}
               aria-label={t("auth.register.title")}
+              name="register-form"
             >
-              <ModernFormItem label={t("auth.login.username")} required>
+              <ModernFormItem 
+                label={t("auth.login.username")} 
+                required
+                name="username"
+                rules={[
+                  { required: true, message: t("auth.login.username_required") },
+                  { min: 3, message: t("auth.login.username_min_length") }
+                ]}
+              >
                 <ModernInput
-                  name="username"
                   variant="filled"
                   size="lg"
                   autoFocus
@@ -137,9 +145,16 @@ const Register: React.FC = () => {
                 />
               </ModernFormItem>
 
-              <ModernFormItem label={t("auth.register.email")} required>
+              <ModernFormItem 
+                label={t("auth.register.email")} 
+                required
+                name="email"
+                rules={[
+                  { required: true, message: t("auth.register.email_required") },
+                  { type: "email", message: t("auth.register.email_invalid") }
+                ]}
+              >
                 <ModernInput
-                  name="email"
                   type="email"
                   variant="filled"
                   size="lg"
@@ -148,9 +163,24 @@ const Register: React.FC = () => {
                 />
               </ModernFormItem>
 
-              <ModernFormItem label={t("auth.register.confirm_email")} required>
+              <ModernFormItem 
+                label={t("auth.register.confirm_email")} 
+                required
+                name="confirmEmail"
+                rules={[
+                  { required: true, message: t("auth.register.confirm_email_required") },
+                  { type: "email", message: t("auth.register.email_invalid") },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('email') === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error(t("auth.register.email_mismatch")));
+                    },
+                  }),
+                ]}
+              >
                 <ModernInput
-                  name="confirmEmail"
                   type="email"
                   variant="filled"
                   size="lg"
@@ -159,9 +189,16 @@ const Register: React.FC = () => {
                 />
               </ModernFormItem>
 
-              <ModernFormItem label={t("auth.login.password")} required>
+              <ModernFormItem 
+                label={t("auth.login.password")} 
+                required
+                name="password"
+                rules={[
+                  { required: true, message: t("auth.login.password_required") },
+                  { min: 6, message: t("auth.login.password_min_length") }
+                ]}
+              >
                 <ModernInput
-                  name="password"
                   type="password"
                   variant="filled"
                   size="lg"

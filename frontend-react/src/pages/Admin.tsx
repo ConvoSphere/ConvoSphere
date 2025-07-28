@@ -36,7 +36,7 @@ import {
   CrownOutlined,
   MonitorOutlined,
   MessageOutlined,
-  ShieldOutlined,
+  SafetyOutlined,
   MailOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -315,7 +315,7 @@ const Admin: React.FC = () => {
       case "admin":
         return <CrownOutlined style={{ color: "#FF6B6B" }} />;
       case "moderator":
-        return <ShieldOutlined style={{ color: "#4ECDC4" }} />;
+        return <SafetyOutlined style={{ color: "#4ECDC4" }} />;
       default:
         return <UserOutlined style={{ color: colors.colorPrimary }} />;
     }

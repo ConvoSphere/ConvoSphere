@@ -20,6 +20,8 @@ export interface ModernFormItemProps {
   validateStatus?: "success" | "warning" | "error" | "validating";
   children: React.ReactNode;
   className?: string;
+  name?: string;
+  rules?: any[];
 }
 
 const ModernForm: React.FC<ModernFormProps> = ({
@@ -95,6 +97,8 @@ export const ModernFormItem: React.FC<ModernFormItemProps> = ({
   validateStatus,
   children,
   className = "",
+  name,
+  rules,
 }) => {
   const itemClasses = [
     "modern-form-item",
@@ -104,6 +108,24 @@ export const ModernFormItem: React.FC<ModernFormItemProps> = ({
     .filter(Boolean)
     .join(" ");
 
+  // If name and rules are provided, use Ant Design Form.Item
+  if (name && rules) {
+    return (
+      <AntForm.Item
+        name={name}
+        rules={rules}
+        label={label}
+        required={required}
+        help={help}
+        validateStatus={validateStatus}
+        className={itemClasses}
+      >
+        {children}
+      </AntForm.Item>
+    );
+  }
+
+  // Otherwise, use custom styling
   return (
     <div className={itemClasses}>
       {label && (

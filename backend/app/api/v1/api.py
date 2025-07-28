@@ -54,6 +54,7 @@ api_router.include_router(
     domain_groups.router, prefix="/domain-groups", tags=["Domain Groups"]
 )
 api_router.include_router(audit_router, prefix="/audit", tags=["Audit"])
+
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(
     hybrid_mode.router, prefix="/hybrid-mode", tags=["Hybrid Mode"]

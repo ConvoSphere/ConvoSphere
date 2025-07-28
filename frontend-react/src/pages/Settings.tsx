@@ -14,7 +14,7 @@ import {
   GlobalOutlined,
   BellOutlined,
   SecurityScanOutlined,
-  PaletteOutlined,
+  BgColorsOutlined,
   UserOutlined,
   LockOutlined,
   MonitorOutlined,
@@ -225,7 +225,7 @@ const Settings: React.FC = () => {
                     <div
                       style={{ display: "flex", alignItems: "center", gap: 12 }}
                     >
-                      <PaletteOutlined
+                      <BgColorsOutlined
                         style={{
                           color: colors.colorSecondary,
                           fontSize: "20px",
