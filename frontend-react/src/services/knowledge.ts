@@ -1,4 +1,5 @@
 import api from "./api";
+import { handleError, createAppError, ErrorCodes } from "../utils/errorHandler";
 
 // Types
 export interface Document {
@@ -128,21 +129,31 @@ export interface KnowledgeStats {
 export async function getDocuments(
   filters?: DocumentFilter,
 ): Promise<Document[]> {
-  const params = new URLSearchParams();
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach((v) => params.append(key, v.toString()));
-        } else {
-          params.append(key, value.toString());
+  try {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            value.forEach((v) => params.append(key, v.toString()));
+          } else {
+            params.append(key, value.toString());
+          }
         }
-      }
-    });
-  }
+      });
+    }
 
-  const response = await api.get(`/knowledge/documents?${params.toString()}`);
-  return response.data;
+    const response = await api.get(`/knowledge/documents?${params.toString()}`);
+    return response.data.documents || response.data;
+  } catch (error) {
+    throw createAppError(
+      "Failed to fetch documents",
+      ErrorCodes.API_ERROR,
+      undefined,
+      "/knowledge/documents",
+      "fetch_documents"
+    );
+  }
 }
 
 export async function getDocument(documentId: string): Promise<Document> {
@@ -154,17 +165,58 @@ export async function uploadDocument(
   file: File,
   metadata?: Partial<Document>,
 ): Promise<Document> {
-  const formData = new FormData();
-  formData.append("file", file);
+  try {
+    // Validate file
+    if (!file) {
+      throw createAppError(
+        "No file provided",
+        ErrorCodes.VALIDATION_ERROR,
+        undefined,
+        undefined,
+        "upload_document"
+      );
+    }
 
-  if (metadata) {
-    formData.append("metadata", JSON.stringify(metadata));
+    // Check file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      throw createAppError(
+        "File too large",
+        ErrorCodes.FILE_TOO_LARGE,
+        `File size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Max: 50MB`,
+        undefined,
+        "upload_document"
+      );
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Add required fields
+    formData.append("title", metadata?.title || file.name);
+    if (metadata?.description) {
+      formData.append("description", metadata.description);
+    }
+    if (metadata?.tags) {
+      formData.append("tags", JSON.stringify(metadata.tags));
+    }
+
+    const response = await api.post("/knowledge/documents", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("File too large")) {
+      throw error; // Re-throw our custom error
+    }
+    throw createAppError(
+      "Failed to upload document",
+      ErrorCodes.UPLOAD_FAILED,
+      undefined,
+      "/knowledge/documents",
+      "upload_document"
+    );
   }
-
-  const response = await api.post("/knowledge/documents", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return response.data;
 }
 
 export async function updateDocument(

@@ -1,0 +1,113 @@
+{
+  "errors": {
+    "general": {
+      "unknown": "Ein unbekannter Fehler ist aufgetreten",
+      "network_error": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung",
+      "timeout": "Zeitüberschreitung. Bitte versuchen Sie es erneut",
+      "connection_error": "Verbindungsfehler. Bitte versuchen Sie es erneut",
+      "server_error": "Serverfehler. Bitte versuchen Sie es später erneut",
+      "service_unavailable": "Dienst vorübergehend nicht verfügbar"
+    },
+    "auth": {
+      "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszuführen",
+      "forbidden": "Zugriff verweigert",
+      "token_expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an",
+      "invalid_credentials": "Ungültige Anmeldedaten",
+      "login_required": "Anmeldung erforderlich"
+    },
+    "api": {
+      "bad_request": "Ungültige Anfrage",
+      "not_found": "Ressource nicht gefunden",
+      "conflict": "Ressourcenkonflikt",
+      "validation_error": "Validierungsfehler",
+      "rate_limit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut"
+    },
+    "files": {
+      "file_too_large": "Datei ist zu groß",
+      "invalid_file_type": "Ungültiger Dateityp",
+      "upload_failed": "Upload fehlgeschlagen",
+      "download_failed": "Download fehlgeschlagen",
+      "file_not_found": "Datei nicht gefunden"
+    },
+    "documents": {
+      "fetch_failed": "Dokumente konnten nicht geladen werden",
+      "upload_failed": "Dokument-Upload fehlgeschlagen",
+      "delete_failed": "Dokument konnte nicht gelöscht werden",
+      "update_failed": "Dokument konnte nicht aktualisiert werden",
+      "download_failed": "Dokument-Download fehlgeschlagen",
+      "reprocess_failed": "Dokument-Neuverarbeitung fehlgeschlagen"
+    },
+    "tools": {
+      "fetch_failed": "Tools konnten nicht geladen werden",
+      "create_failed": "Tool konnte nicht erstellt werden",
+      "update_failed": "Tool konnte nicht aktualisiert werden",
+      "delete_failed": "Tool konnte nicht gelöscht werden",
+      "run_failed": "Tool-Ausführung fehlgeschlagen"
+    },
+    "mcp": {
+      "server_connection_failed": "MCP-Server-Verbindung fehlgeschlagen",
+      "tool_execution_failed": "MCP-Tool-Ausführung fehlgeschlagen",
+      "server_not_found": "MCP-Server nicht gefunden"
+    },
+    "validation": {
+      "required_field": "Dieses Feld ist erforderlich",
+      "invalid_email": "Ungültige E-Mail-Adresse",
+      "invalid_url": "Ungültige URL",
+      "min_length": "Mindestlänge nicht erreicht",
+      "max_length": "Maximale Länge überschritten",
+      "invalid_format": "Ungültiges Format"
+    }
+  },
+  "recovery": {
+    "login": "Anmelden",
+    "login_desc": "Bitte melden Sie sich erneut an",
+    "retry": "Wiederholen",
+    "retry_desc": "Versuchen Sie es in wenigen Momenten erneut",
+    "wait": "Warten",
+    "wait_desc": "Bitte warten Sie einige Minuten, bevor Sie es erneut versuchen",
+    "check_connection": "Verbindung prüfen",
+    "check_connection_desc": "Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut",
+    "contact_admin": "Admin kontaktieren",
+    "contact_admin_desc": "Kontaktieren Sie Ihren Administrator für den Zugriff",
+    "refresh": "Aktualisieren",
+    "refresh_desc": "Laden Sie die Seite neu"
+  },
+  "api_test": {
+    "title": "API-Gesundheitscheck",
+    "description": "Testen Sie die Gesundheit und Konnektivität aller API-Endpunkte",
+    "run_all": "Alle Tests ausführen",
+    "running": "Läuft...",
+    "clear": "Ergebnisse löschen",
+    "test": "Testen",
+    "endpoint": "Endpunkt",
+    "method": "Methode",
+    "status": "Status",
+    "response_time": "Antwortzeit",
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "failed": "Fehlgeschlagen",
+    "healthy": "Gesund",
+    "unhealthy": "Ungesund",
+    "total_endpoints": "Gesamt-Endpunkte",
+    "successful": "Erfolgreich",
+    "failed_count": "Fehlgeschlagen",
+    "success_rate": "Erfolgsrate",
+    "avg_response_time": "Durchschn. Antwortzeit",
+    "overall_health": "Gesamtgesundheit",
+    "test_categories": "Test-Kategorien",
+    "detailed_results": "Detaillierte Ergebnisse",
+    "issues_detected": "Probleme erkannt",
+    "issues_description": "Einige API-Endpunkte antworten nicht korrekt",
+    "categories": {
+      "knowledge": "Wissensdatenbank",
+      "knowledge_desc": "Testen Sie Dokument- und Such-Endpunkte",
+      "tools": "Tools",
+      "tools_desc": "Testen Sie Tool-Management-Endpunkte",
+      "mcp": "MCP-Tools",
+      "mcp_desc": "Testen Sie MCP-Server- und Tool-Endpunkte",
+      "auth": "Authentifizierung",
+      "auth_desc": "Testen Sie Authentifizierungs-Endpunkte"
+    },
+    "summary": "API-Test-Zusammenfassung"
+  }
+}

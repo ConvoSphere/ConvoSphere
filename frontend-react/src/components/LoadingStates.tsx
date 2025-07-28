@@ -1,244 +1,392 @@
 import React from "react";
-import { Spin, Progress, Skeleton } from "antd";
+import { Spin, Skeleton, Card, Space, Typography } from "antd";
+import { LoadingOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useThemeStore } from "../store/themeStore";
-import "./LoadingStates.css";
 
-export interface SkeletonCardProps {
-  rows?: number;
-  avatar?: boolean;
-  title?: boolean;
-  className?: string;
-}
+const { Title, Text } = Typography;
 
-export interface LoadingSpinnerProps {
+interface LoadingSpinnerProps {
   size?: "small" | "default" | "large";
   text?: string;
-  className?: string;
+  tip?: string;
 }
 
-export interface ProgressIndicatorProps {
-  percent?: number;
-  status?: "active" | "exception" | "normal" | "success";
-  size?: "small" | "default" | "large";
-  showInfo?: boolean;
-  className?: string;
-}
-
-// Modern Skeleton Card Component
-export const SkeletonCard: React.FC<SkeletonCardProps> = ({
-  rows = 3,
-  avatar = false,
-  title = true,
-  className = "",
-}) => {
-  const skeletonClasses = ["skeleton-card", className]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <div className={skeletonClasses}>
-      <Skeleton
-        active
-        avatar={avatar}
-        title={title}
-        paragraph={{ rows }}
-        className="skeleton-card__content"
-      />
-    </div>
-  );
-};
-
-// Modern Loading Spinner Component
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = "default",
   text,
-  className = "",
+  tip,
 }) => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
-  const spinnerClasses = [
-    "loading-spinner",
-    `loading-spinner--${size}`,
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const spinnerStyle: React.CSSProperties = {
-    color: colors.colorPrimary,
-  };
-
   return (
-    <div className={spinnerClasses}>
-      <Spin size={size} style={spinnerStyle} />
-      {text && <div className="loading-spinner__text">{text}</div>}
-    </div>
-  );
-};
-
-// Modern Progress Indicator Component
-export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
-  percent = 0,
-  status = "active",
-  size = "default",
-  showInfo = true,
-  className = "",
-}) => {
-  const progressClasses = [
-    "progress-indicator",
-    `progress-indicator--${size}`,
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <div className={progressClasses}>
-      <Progress
-        percent={percent}
-        status={status}
-        showInfo={showInfo}
-        strokeColor={{
-          "0%": "var(--colorPrimary)",
-          "100%": "var(--colorSecondary)",
-        }}
-        className="progress-indicator__bar"
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 20px",
+        gap: 16,
+      }}
+    >
+      <Spin
+        size={size}
+        indicator={<LoadingOutlined style={{ fontSize: 24, color: colors.colorPrimary }} spin />}
+        tip={tip}
       />
-    </div>
-  );
-};
-
-// Skeleton List Component
-export const SkeletonList: React.FC<{
-  count?: number;
-  className?: string;
-}> = ({ count = 5, className = "" }) => {
-  const listClasses = ["skeleton-list", className].filter(Boolean).join(" ");
-
-  return (
-    <div className={listClasses}>
-      {Array.from({ length: count }).map((_, index) => (
-        <SkeletonCard
-          key={index}
-          rows={2}
-          avatar={true}
-          title={false}
-          className="skeleton-list__item"
-        />
-      ))}
-    </div>
-  );
-};
-
-// Skeleton Grid Component
-export const SkeletonGrid: React.FC<{
-  rows?: number;
-  cols?: number;
-  className?: string;
-}> = ({ rows = 3, cols = 3, className = "" }) => {
-  const gridClasses = ["skeleton-grid", className].filter(Boolean).join(" ");
-
-  return (
-    <div className={gridClasses}>
-      {Array.from({ length: rows * cols }).map((_, index) => (
-        <SkeletonCard
-          key={index}
-          rows={2}
-          avatar={false}
-          title={true}
-          className="skeleton-grid__item"
-        />
-      ))}
-    </div>
-  );
-};
-
-// Loading Overlay Component
-export const LoadingOverlay: React.FC<{
-  visible: boolean;
-  text?: string;
-  children: React.ReactNode;
-  className?: string;
-}> = ({ visible, text, children, className = "" }) => {
-  const overlayClasses = [
-    "loading-overlay",
-    visible && "loading-overlay--visible",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <div className={overlayClasses}>
-      {children}
-      {visible && (
-        <div className="loading-overlay__content">
-          <LoadingSpinner text={text} />
-        </div>
+      {text && (
+        <Text type="secondary" style={{ textAlign: "center" }}>
+          {text}
+        </Text>
       )}
     </div>
   );
 };
 
-// Pulse Loading Component
-export const PulseLoading: React.FC<{
-  size?: "small" | "default" | "large";
-  className?: string;
-}> = ({ size = "default", className = "" }) => {
-  const pulseClasses = ["pulse-loading", `pulse-loading--${size}`, className]
-    .filter(Boolean)
-    .join(" ");
+interface LoadingCardProps {
+  title?: string;
+  rows?: number;
+  avatar?: boolean;
+  paragraph?: boolean;
+  active?: boolean;
+}
 
+export const LoadingCard: React.FC<LoadingCardProps> = ({
+  title = true,
+  rows = 3,
+  avatar = false,
+  paragraph = true,
+  active = true,
+}) => {
   return (
-    <div className={pulseClasses}>
-      <div className="pulse-loading__dot" />
-      <div className="pulse-loading__dot" />
-      <div className="pulse-loading__dot" />
-    </div>
+    <Card>
+      <Skeleton
+        active={active}
+        avatar={avatar}
+        paragraph={paragraph ? { rows } : false}
+        title={title}
+      />
+    </Card>
   );
 };
 
-// Wave Loading Component
-export const WaveLoading: React.FC<{
-  bars?: number;
-  className?: string;
-}> = ({ bars = 5, className = "" }) => {
-  const waveClasses = ["wave-loading", className].filter(Boolean).join(" ");
+interface LoadingGridProps {
+  count?: number;
+  columns?: number;
+  cardProps?: LoadingCardProps;
+}
 
+export const LoadingGrid: React.FC<LoadingGridProps> = ({
+  count = 6,
+  columns = 3,
+  cardProps,
+}) => {
   return (
-    <div className={waveClasses}>
-      {Array.from({ length: bars }).map((_, index) => (
-        <div
-          key={index}
-          className="wave-loading__bar"
-          style={{ animationDelay: `${index * 0.1}s` }}
-        />
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: 16,
+      }}
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <LoadingCard key={index} {...cardProps} />
       ))}
     </div>
   );
 };
 
-// Shimmer Loading Component
-export const ShimmerLoading: React.FC<{
-  width?: string;
-  height?: string;
-  className?: string;
-}> = ({ width = "100%", height = "20px", className = "" }) => {
-  const shimmerClasses = ["shimmer-loading", className]
-    .filter(Boolean)
-    .join(" ");
+interface LoadingTableProps {
+  columns?: number;
+  rows?: number;
+  showHeader?: boolean;
+}
 
-  const shimmerStyle: React.CSSProperties = {
-    width,
-    height,
-  };
-
+export const LoadingTable: React.FC<LoadingTableProps> = ({
+  columns = 5,
+  rows = 5,
+  showHeader = true,
+}) => {
   return (
-    <div className={shimmerClasses} style={shimmerStyle}>
-      <div className="shimmer-loading__content" />
+    <div style={{ width: "100%" }}>
+      {showHeader && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${columns}, 1fr)`,
+            gap: 16,
+            padding: "12px 16px",
+            borderBottom: "1px solid #f0f0f0",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          {Array.from({ length: columns }).map((_, index) => (
+            <Skeleton.Input key={index} size="small" style={{ height: 20 }} />
+          ))}
+        </div>
+      )}
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div
+          key={rowIndex}
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${columns}, 1fr)`,
+            gap: 16,
+            padding: "12px 16px",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
+          {Array.from({ length: columns }).map((_, colIndex) => (
+            <Skeleton.Input key={colIndex} size="small" style={{ height: 16 }} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 };
 
-export default LoadingSpinner;
+interface LoadingListProps {
+  count?: number;
+  avatar?: boolean;
+  title?: boolean;
+  paragraph?: boolean;
+}
+
+export const LoadingList: React.FC<LoadingListProps> = ({
+  count = 5,
+  avatar = true,
+  title = true,
+  paragraph = true,
+}) => {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} style={{ padding: "16px", border: "1px solid #f0f0f0", borderRadius: 8 }}>
+          <Skeleton
+            active
+            avatar={avatar}
+            title={title}
+            paragraph={paragraph ? { rows: 1 } : false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+interface LoadingOverlayProps {
+  visible: boolean;
+  text?: string;
+  children: React.ReactNode;
+}
+
+export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  visible,
+  text = "Loading...",
+  children,
+}) => {
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
+
+  if (!visible) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div style={{ position: "relative" }}>
+      {children}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          borderRadius: 8,
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <Spin
+            size="large"
+            indicator={<LoadingOutlined style={{ fontSize: 32, color: colors.colorPrimary }} spin />}
+          />
+          <div style={{ marginTop: 16 }}>
+            <Text type="secondary">{text}</Text>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface LoadingButtonProps {
+  loading?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: "primary" | "default" | "dashed" | "link" | "text";
+  size?: "large" | "middle" | "small";
+  icon?: React.ReactNode;
+}
+
+export const LoadingButton: React.FC<LoadingButtonProps> = ({
+  loading = false,
+  children,
+  onClick,
+  disabled,
+  type = "default",
+  size = "middle",
+  icon,
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      style={{
+        padding: size === "large" ? "12px 24px" : size === "small" ? "6px 12px" : "8px 16px",
+        border: type === "primary" ? "none" : "1px solid #d9d9d9",
+        borderRadius: 6,
+        backgroundColor: type === "primary" ? "#1890ff" : "#fff",
+        color: type === "primary" ? "#fff" : "#000",
+        cursor: disabled || loading ? "not-allowed" : "pointer",
+        opacity: disabled || loading ? 0.6 : 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+      }}
+    >
+      {loading ? (
+        <LoadingOutlined style={{ fontSize: 14 }} />
+      ) : (
+        icon
+      )}
+      {children}
+    </button>
+  );
+};
+
+interface LoadingStateProps {
+  loading: boolean;
+  error?: string | null;
+  empty?: boolean;
+  emptyText?: string;
+  onRetry?: () => void;
+  children: React.ReactNode;
+  loadingComponent?: React.ReactNode;
+  errorComponent?: React.ReactNode;
+  emptyComponent?: React.ReactNode;
+}
+
+export const LoadingState: React.FC<LoadingStateProps> = ({
+  loading,
+  error,
+  empty = false,
+  emptyText = "No data available",
+  onRetry,
+  children,
+  loadingComponent,
+  errorComponent,
+  emptyComponent,
+}) => {
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
+
+  if (loading) {
+    return loadingComponent ? (
+      <>{loadingComponent}</>
+    ) : (
+      <LoadingSpinner text="Loading data..." />
+    );
+  }
+
+  if (error) {
+    return errorComponent ? (
+      <>{errorComponent}</>
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "40px 20px",
+          gap: 16,
+        }}
+      >
+        <Text type="danger" style={{ textAlign: "center" }}>
+          {error}
+        </Text>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            style={{
+              padding: "8px 16px",
+              border: "1px solid #d9d9d9",
+              borderRadius: 6,
+              backgroundColor: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <ReloadOutlined />
+            Retry
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (empty) {
+    return emptyComponent ? (
+      <>{emptyComponent}</>
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "40px 20px",
+          gap: 16,
+        }}
+      >
+        <Text type="secondary" style={{ textAlign: "center" }}>
+          {emptyText}
+        </Text>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+// HOC for adding loading state to components
+export const withLoading = <P extends object>(
+  Component: React.ComponentType<P>,
+  loadingProps: {
+    loadingKey: keyof P;
+    errorKey?: keyof P;
+    emptyKey?: keyof P;
+  }
+) => {
+  return React.forwardRef<any, P>((props, ref) => {
+    const loading = props[loadingProps.loadingKey] as boolean;
+    const error = loadingProps.errorKey ? (props[loadingProps.errorKey] as string) : null;
+    const empty = loadingProps.emptyKey ? (props[loadingProps.emptyKey] as boolean) : false;
+
+    return (
+      <LoadingState loading={loading} error={error} empty={empty}>
+        <Component {...props} ref={ref} />
+      </LoadingState>
+    );
+  });
+};

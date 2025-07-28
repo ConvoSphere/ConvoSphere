@@ -11,6 +11,7 @@ import {
   Avatar,
   Tag,
   Empty,
+  Tabs,
 } from "antd";
 import { getMcpTools, runMcpTool } from "../services/mcpTools";
 import { useThemeStore } from "../store/themeStore";
@@ -18,6 +19,7 @@ import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
+import McpServerManager from "../components/mcp/McpServerManager";
 import {
   ToolOutlined,
   PlayCircleOutlined,
@@ -31,6 +33,7 @@ import {
   CodeOutlined,
   ApiOutlined,
   DatabaseOutlined,
+  ServerOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
@@ -61,6 +64,7 @@ const McpTools: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [executionHistory, setExecutionHistory] = useState<ToolExecution[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("tools");
 
   useEffect(() => {
     getMcpTools()
@@ -255,47 +259,63 @@ const McpTools: React.FC = () => {
         </ModernCard>
 
         <Row gutter={[24, 24]} style={{ marginTop: 32 }}>
-          <Col xs={24} lg={16}>
-            <ModernCard
-              variant="elevated"
-              size="md"
-              style={{ marginBottom: 24 }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <ModernInput
-                  placeholder={t("mcp_tools.search_placeholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  prefix={<ToolOutlined />}
-                  style={{ flex: 1 }}
-                />
-                <ModernButton
-                  variant="outlined"
-                  icon={<ReloadOutlined />}
-                  onClick={() => {
-                    setLoading(true);
-                    getMcpTools()
-                      .then(setTools)
-                      .catch(() => message.error(t("mcp_tools.load_failed")))
-                      .finally(() => setLoading(false));
-                  }}
-                >
-                  {t("common.refresh")}
-                </ModernButton>
-              </div>
-            </ModernCard>
-
+          <Col xs={24}>
             <ModernCard variant="elevated" size="lg">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 24,
-                }}
-              >
-                <Title level={3} style={{ margin: 0 }}>
-                  <ToolOutlined
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                type="card"
+                size="large"
+                items={[
+                  {
+                    key: "tools",
+                    label: (
+                      <Space>
+                        <ToolOutlined />
+                        {t("mcp_tools.tools", "Tools")}
+                      </Space>
+                    ),
+                    children: (
+                      <div style={{ padding: "24px 0" }}>
+                        <ModernCard
+                          variant="elevated"
+                          size="md"
+                          style={{ marginBottom: 24 }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            <ModernInput
+                              placeholder={t("mcp_tools.search_placeholder")}
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              prefix={<ToolOutlined />}
+                              style={{ flex: 1 }}
+                            />
+                            <ModernButton
+                              variant="outlined"
+                              icon={<ReloadOutlined />}
+                              onClick={() => {
+                                setLoading(true);
+                                getMcpTools()
+                                  .then(setTools)
+                                  .catch(() => message.error(t("mcp_tools.load_failed")))
+                                  .finally(() => setLoading(false));
+                              }}
+                            >
+                              {t("common.refresh")}
+                            </ModernButton>
+                          </div>
+                        </ModernCard>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 24,
+                          }}
+                        >
+                          <Title level={3} style={{ margin: 0 }}>
+                            <ToolOutlined
                     style={{ marginRight: 8, color: colors.colorPrimary }}
                   />
                   {t("mcp_tools.available_tools")}

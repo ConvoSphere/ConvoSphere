@@ -38,6 +38,7 @@ import {
   MessageOutlined,
   SafetyOutlined,
   MailOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
@@ -49,6 +50,7 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
+import ApiTestPanel from "../components/admin/ApiTestPanel";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -1095,6 +1097,18 @@ const Admin: React.FC = () => {
                   />
                 </ModernCard>
               </div>
+            </TabPane>
+
+            <TabPane
+              tab={
+                <Space>
+                  <ApiOutlined />
+                  {t("admin.tabs.api_test", "API Tests")}
+                </Space>
+              }
+              key="api_test"
+            >
+              <ApiTestPanel />
             </TabPane>
           </Tabs>
         </div>

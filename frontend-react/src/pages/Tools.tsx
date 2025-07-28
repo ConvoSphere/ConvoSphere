@@ -47,6 +47,7 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
+import CreateToolModal from "../components/tools/CreateToolModal";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -101,6 +102,7 @@ const Tools: React.FC = () => {
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [form] = Form.useForm();
 
   const categories = [
@@ -467,9 +469,7 @@ const Tools: React.FC = () => {
                         variant="primary"
                         size="md"
                         icon={<PlusOutlined />}
-                        onClick={() =>
-                          message.info(t("tools.add_tool", "Tool hinzufügen"))
-                        }
+                        onClick={() => setShowCreateModal(true)}
                       >
                         {t("tools.add", "Hinzufügen")}
                       </ModernButton>
@@ -1016,6 +1016,16 @@ const Tools: React.FC = () => {
             </div>
           </ModernForm>
         </Modal>
+
+        {/* Create Tool Modal */}
+        <CreateToolModal
+          visible={showCreateModal}
+          onCancel={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            loadTools(); // Reload tools after creation
+          }}
+        />
       </div>
     </div>
   );
