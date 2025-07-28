@@ -84,6 +84,7 @@ interface KnowledgeState {
   deleteDocument: (documentId: string) => Promise<void>;
   downloadDocument: (documentId: string) => Promise<void>;
   reprocessDocument: (documentId: string) => Promise<void>;
+  bulkUpdateDocuments: (documentIds: string[], updates: Partial<Document>) => Promise<void>;
 
   // Upload actions
   addToUploadQueue: (files: File[]) => void;
@@ -294,6 +295,19 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       await get().fetchDocuments();
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : "Reprocess failed");
+    }
+  },
+
+  bulkUpdateDocuments: async (documentIds: string[], updates: Partial<Document>) => {
+    try {
+      // Update each document individually
+      const updatePromises = documentIds.map(id => updateDocument(id, updates));
+      await Promise.all(updatePromises);
+      
+      // Refresh documents to get updated data
+      await get().fetchDocuments();
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Bulk update failed");
     }
   },
 

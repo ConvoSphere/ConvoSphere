@@ -4,6 +4,7 @@ Document-related API endpoints (upload, download, get, update, delete, process).
 
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
+from backend.app.core.rate_limiting import rate_limit_upload, rate_limit_search
 from backend.app.models.user import User
 from backend.app.schemas.knowledge import (
     DocumentList,
@@ -12,7 +13,7 @@ from backend.app.schemas.knowledge import (
     ProcessingOptions,
 )
 from backend.app.services.knowledge_service import KnowledgeService
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, Request
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -20,7 +21,9 @@ router = APIRouter()
 
 # Upload document
 @router.post("/documents", response_model=DocumentResponse)
+@rate_limit_upload
 async def upload_document(
+    request: Request,
     file: UploadFile = File(...),
     title: str = Form(...),
     description: str | None = Form(None),
@@ -43,7 +46,9 @@ async def upload_document(
 
 # Get documents
 @router.get("/documents", response_model=DocumentList)
+@rate_limit_search
 async def get_documents(
+    request: Request,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     status: str | None = Query(None),

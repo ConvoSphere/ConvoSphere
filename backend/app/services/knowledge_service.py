@@ -30,6 +30,12 @@ from backend.app.models.knowledge import (
 
 from .ai_service import AIService
 from .document.document_service import DocumentService
+from backend.app.services.document.error_handler import (
+    DocumentErrorHandler,
+    ErrorCategory,
+    ErrorSeverity,
+    get_document_error_handler
+)
 
 # Create a document processor instance
 document_processor = DocumentService(db=None)
@@ -199,6 +205,7 @@ class KnowledgeService:
         self.ai_service = AIService()
         self.tag_service = TagService(self.db)
         self.metadata_extractor = MetadataExtractor()
+        self.error_handler = get_document_error_handler(self.db)
 
         # Ensure upload directory exists
         self.upload_dir = Path(get_settings().upload_dir)
