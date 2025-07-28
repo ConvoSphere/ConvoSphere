@@ -41,6 +41,7 @@ import UploadArea from "../components/knowledge/UploadArea";
 import TagManager from "../components/knowledge/TagManager";
 import BulkActions from "../components/knowledge/BulkActions";
 import SystemStats from "../components/admin/SystemStats";
+import type { Document } from "../services/knowledge";
 
 import { useThemeStore } from "../store/themeStore";
 import ModernCard from "../components/ModernCard";
@@ -66,6 +67,8 @@ const KnowledgeBase: React.FC = () => {
     currentFilters,
     setFilters,
     refreshDocuments,
+    deleteDocument,
+    downloadDocument,
   } = useKnowledgeStore();
   const { stats, statsLoading } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,25 +99,75 @@ const KnowledgeBase: React.FC = () => {
     clearFilters();
   };
 
-  const handleViewDocument = () => {
-    message.info("View functionality coming soon");
+  const handleViewDocument = (document: Document) => {
+    // Open document preview modal
+    Modal.info({
+      title: document.title,
+      width: 800,
+      content: (
+        <div>
+          <p><strong>Datei:</strong> {document.file_name}</p>
+          <p><strong>Typ:</strong> {document.file_type}</p>
+          <p><strong>Größe:</strong> {formatFileSize(document.file_size || 0)}</p>
+          <p><strong>Status:</strong> {document.status}</p>
+          {document.description && (
+            <p><strong>Beschreibung:</strong> {document.description}</p>
+          )}
+          {document.tags && document.tags.length > 0 && (
+            <div>
+              <strong>Tags:</strong>
+              <div style={{ marginTop: 8 }}>
+                {document.tags.map((tag) => (
+                  <Tag key={tag.id} color={tag.color}>
+                    {tag.name}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+    });
   };
 
-  const handleEditDocument = () => {
-    message.info("Edit functionality coming soon");
+  const handleEditDocument = (document: Document) => {
+    // Open edit modal
+    Modal.confirm({
+      title: `Dokument bearbeiten: ${document.title}`,
+      content: (
+        <div>
+          <p>Bearbeitungsfunktionalität wird implementiert...</p>
+        </div>
+      ),
+      onOk() {
+        message.info("Bearbeitung wird implementiert");
+      },
+    });
   };
 
-  const handleDeleteDocument = async () => {
+  const handleDeleteDocument = async (documentId: string) => {
+    Modal.confirm({
+      title: "Dokument löschen",
+      content: "Sind Sie sicher, dass Sie dieses Dokument löschen möchten?",
+      onOk: async () => {
+        try {
+          await deleteDocument(documentId);
+          message.success("Dokument erfolgreich gelöscht");
+          refreshDocuments();
+        } catch (error) {
+          message.error("Fehler beim Löschen des Dokuments");
+        }
+      },
+    });
+  };
+
+  const handleDownloadDocument = async (document: Document) => {
     try {
-      message.success("Document deleted successfully");
-      refreshDocuments();
-    } catch (_error) {
-      message.error("Failed to delete document");
+      await downloadDocument(document.id);
+      message.success("Download gestartet");
+    } catch (error) {
+      message.error("Fehler beim Download");
     }
-  };
-
-  const handleDownloadDocument = () => {
-    message.info("Download functionality coming soon");
   };
 
   const handleReprocessDocument = async () => {

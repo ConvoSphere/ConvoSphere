@@ -142,7 +142,7 @@ export async function getDocuments(
   }
 
   const response = await api.get(`/knowledge/documents?${params.toString()}`);
-  return response.data;
+  return response.data.documents || response.data;
 }
 
 export async function getDocument(documentId: string): Promise<Document> {
@@ -157,8 +157,13 @@ export async function uploadDocument(
   const formData = new FormData();
   formData.append("file", file);
 
-  if (metadata) {
-    formData.append("metadata", JSON.stringify(metadata));
+  // Add required fields
+  formData.append("title", metadata?.title || file.name);
+  if (metadata?.description) {
+    formData.append("description", metadata.description);
+  }
+  if (metadata?.tags) {
+    formData.append("tags", JSON.stringify(metadata.tags));
   }
 
   const response = await api.post("/knowledge/documents", formData, {

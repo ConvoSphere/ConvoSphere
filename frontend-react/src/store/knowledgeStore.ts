@@ -18,7 +18,11 @@ import {
   getKnowledgeStats,
   uploadDocumentWithProgress,
   bulkUploadWithProgress,
+  uploadDocument,
+  updateDocument,
+  deleteDocument,
 } from "../services/knowledge";
+import api from "../services/api";
 
 interface UploadItem {
   id: string;
@@ -73,6 +77,13 @@ interface KnowledgeState {
   fetchStats: () => Promise<void>;
   getTags: () => Promise<void>;
   getDocuments: () => Promise<void>;
+  
+  // Document actions
+  uploadDocument: (file: File, metadata?: Partial<Document>) => Promise<Document>;
+  updateDocument: (documentId: string, updates: Partial<Document>) => Promise<Document>;
+  deleteDocument: (documentId: string) => Promise<void>;
+  downloadDocument: (documentId: string) => Promise<void>;
+  reprocessDocument: (documentId: string) => Promise<void>;
 
   // Upload actions
   addToUploadQueue: (files: File[]) => void;
@@ -206,6 +217,83 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     } catch (error) {
       console.error("Failed to fetch stats:", error);
       set({ statsLoading: false });
+    }
+  },
+
+  getTags: async () => {
+    await get().fetchTags();
+  },
+
+  getDocuments: async () => {
+    await get().fetchDocuments();
+  },
+
+  // Document actions
+  uploadDocument: async (file: File, metadata?: Partial<Document>) => {
+    try {
+      const document = await uploadDocument(file, metadata);
+      // Refresh documents list
+      await get().fetchDocuments();
+      return document;
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Upload failed");
+    }
+  },
+
+  updateDocument: async (documentId: string, updates: Partial<Document>) => {
+    try {
+      const document = await updateDocument(documentId, updates);
+      // Update document in list
+      const { documents } = get();
+      const updatedDocuments = documents.map(doc =>
+        doc.id === documentId ? document : doc
+      );
+      set({ documents: updatedDocuments });
+      return document;
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Update failed");
+    }
+  },
+
+  deleteDocument: async (documentId: string) => {
+    try {
+      await deleteDocument(documentId);
+      // Remove document from list
+      const { documents } = get();
+      const updatedDocuments = documents.filter(doc => doc.id !== documentId);
+      set({ documents: updatedDocuments });
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Delete failed");
+    }
+  },
+
+  downloadDocument: async (documentId: string) => {
+    try {
+      const response = await api.get(`/knowledge/documents/${documentId}/download`, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `document-${documentId}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Download failed");
+    }
+  },
+
+  reprocessDocument: async (documentId: string) => {
+    try {
+      await api.post(`/knowledge/documents/${documentId}/reprocess`);
+      // Refresh documents to get updated status
+      await get().fetchDocuments();
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Reprocess failed");
     }
   },
 
