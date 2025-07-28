@@ -6,6 +6,7 @@ This module configures the main API v1 router and includes all endpoint routers.
 
 from backend.app.api.v1.endpoints import (
     ai,
+    agents,
     assistants_management,
     auth,
     chat,
@@ -33,6 +34,9 @@ api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["User Management"])
 api_router.include_router(
     assistants_management.router, prefix="/assistants", tags=["Assistant Management"]
+)
+api_router.include_router(
+    agents.router, prefix="/agents", tags=["Agent Management"]
 )
 api_router.include_router(
     conversations.router, prefix="/conversations", tags=["Conversations"]

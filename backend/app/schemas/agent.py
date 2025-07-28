@@ -447,3 +447,111 @@ class AgentListResponse(BaseModel):
         validate_assignment=True,
         extra="forbid",
     )
+
+
+class AgentHandoffRequest(BaseModel):
+    """Request for agent handoff."""
+
+    from_agent_id: str = Field(..., description="Current agent ID")
+    to_agent_id: str = Field(..., description="Target agent ID")
+    conversation_id: str = Field(..., description="Conversation ID")
+    user_id: str = Field(..., description="User ID")
+    reason: str = Field(..., min_length=1, max_length=500, description="Handoff reason")
+    context: dict[str, Any] = Field(default_factory=dict, description="Handoff context")
+    priority: int = Field(default=1, ge=1, le=10, description="Handoff priority")
+
+    @field_validator("from_agent_id")
+    @classmethod
+    def validate_from_agent(cls, v: str) -> str:
+        """Validate from agent ID."""
+        if not v or not v.strip():
+            raise ValueError("From agent ID cannot be empty")
+        return v.strip()
+
+    @field_validator("to_agent_id")
+    @classmethod
+    def validate_to_agent(cls, v: str) -> str:
+        """Validate to agent ID."""
+        if not v or not v.strip():
+            raise ValueError("To agent ID cannot be empty")
+        return v.strip()
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        extra="forbid",
+    )
+
+
+class AgentCollaborationRequest(BaseModel):
+    """Request for agent collaboration."""
+
+    agent_ids: list[str] = Field(
+        ...,
+        min_length=2,
+        max_length=5,
+        description="Agent IDs to collaborate",
+    )
+    conversation_id: str = Field(..., description="Conversation ID")
+    user_id: str = Field(..., description="User ID")
+    collaboration_type: str = Field(
+        default="parallel",
+        pattern="^(parallel|sequential|hierarchical)$",
+        description="Collaboration type",
+    )
+    coordination_strategy: str = Field(
+        default="round_robin",
+        pattern="^(round_robin|priority|expertise)$",
+        description="Coordination strategy",
+    )
+    shared_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Shared context",
+    )
+
+    @field_validator("agent_ids")
+    @classmethod
+    def validate_agent_ids(cls, v: list[str]) -> list[str]:
+        """Validate agent IDs."""
+        if len(set(v)) != len(v):
+            raise ValueError("Agent IDs must be unique")
+        return [aid.strip() for aid in v if aid.strip()]
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        extra="forbid",
+    )
+
+
+class AgentPerformanceMetrics(BaseModel):
+    """Agent performance metrics."""
+
+    agent_id: str = Field(..., description="Agent ID")
+    conversation_id: str = Field(..., description="Conversation ID")
+    response_time: float = Field(..., ge=0, description="Average response time")
+    success_rate: float = Field(
+        ...,
+        ge=0,
+        le=100,
+        description="Success rate percentage",
+    )
+    user_satisfaction: float = Field(
+        default=0.0,
+        ge=0,
+        le=5,
+        description="User satisfaction score",
+    )
+    tool_usage_count: int = Field(default=0, ge=0, description="Number of tools used")
+    tokens_used: int = Field(default=0, ge=0, description="Total tokens used")
+    error_count: int = Field(default=0, ge=0, description="Number of errors")
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="Metrics timestamp",
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        extra="forbid",
+    )
