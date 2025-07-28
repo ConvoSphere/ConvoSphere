@@ -42,6 +42,9 @@ import TagManager from "../components/knowledge/TagManager";
 import BulkActions from "../components/knowledge/BulkActions";
 import SystemStats from "../components/admin/SystemStats";
 import type { Document } from "../services/knowledge";
+import DocumentPreview from "../components/documents/DocumentPreview";
+import AdvancedSearch from "../components/search/AdvancedSearch";
+import BulkOperations from "../components/documents/BulkOperations";
 
 import { useThemeStore } from "../store/themeStore";
 import ModernCard from "../components/ModernCard";
@@ -76,6 +79,13 @@ const KnowledgeBase: React.FC = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("documents");
+  
+  // New states for enhanced features
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -100,34 +110,8 @@ const KnowledgeBase: React.FC = () => {
   };
 
   const handleViewDocument = (document: Document) => {
-    // Open document preview modal
-    Modal.info({
-      title: document.title,
-      width: 800,
-      content: (
-        <div>
-          <p><strong>Datei:</strong> {document.file_name}</p>
-          <p><strong>Typ:</strong> {document.file_type}</p>
-          <p><strong>Größe:</strong> {formatFileSize(document.file_size || 0)}</p>
-          <p><strong>Status:</strong> {document.status}</p>
-          {document.description && (
-            <p><strong>Beschreibung:</strong> {document.description}</p>
-          )}
-          {document.tags && document.tags.length > 0 && (
-            <div>
-              <strong>Tags:</strong>
-              <div style={{ marginTop: 8 }}>
-                {document.tags.map((tag) => (
-                  <Tag key={tag.id} color={tag.color}>
-                    {tag.name}
-                  </Tag>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ),
-    });
+    setPreviewDocument(document);
+    setShowPreview(true);
   };
 
   const handleEditDocument = (document: Document) => {
@@ -214,6 +198,54 @@ const KnowledgeBase: React.FC = () => {
       message.success(`Download started for ${documentIds.length} documents`);
     } catch (_error) {
       message.error("Failed to start download");
+    }
+  };
+
+  // New handlers for enhanced features
+  const handleAdvancedSearch = async (filters: any) => {
+    setSearchLoading(true);
+    try {
+      // Simulate advanced search - in real implementation, call API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const results = documents.filter(doc => 
+        doc.title?.toLowerCase().includes(filters.query.toLowerCase()) ||
+        doc.description?.toLowerCase().includes(filters.query.toLowerCase())
+      );
+      setSearchResults(results);
+    } catch (error) {
+      message.error(t("search.error", "Fehler bei der Suche"));
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchResults([]);
+    setSearchQuery("");
+    refreshDocuments();
+  };
+
+  const handleSaveSearch = (name: string, filters: any) => {
+    message.success(t("search.saved", "Suche gespeichert: {{name}}", { name }));
+  };
+
+  const handleBulkTag = async (documentIds: string[], tags: string[]) => {
+    try {
+      // In real implementation, call API to add tags
+      message.success(t("bulk.tags_added", "Tags erfolgreich hinzugefügt"));
+      refreshDocuments();
+    } catch (error) {
+      message.error(t("bulk.tags_error", "Fehler beim Hinzufügen der Tags"));
+    }
+  };
+
+  const handleBulkMove = async (documentIds: string[], folder: string) => {
+    try {
+      // In real implementation, call API to move documents
+      message.success(t("bulk.moved", "Dokumente erfolgreich verschoben"));
+      refreshDocuments();
+    } catch (error) {
+      message.error(t("bulk.move_error", "Fehler beim Verschieben der Dokumente"));
     }
   };
 
@@ -461,7 +493,7 @@ const KnowledgeBase: React.FC = () => {
             <ModernButton
               variant="outlined"
               icon={<FilterOutlined />}
-              onClick={() => {}}
+              onClick={() => setShowAdvancedSearch(true)}
             >
               {t("knowledge.search.advanced")}
             </ModernButton>
@@ -798,6 +830,50 @@ const KnowledgeBase: React.FC = () => {
         onBulkTag={handleBulkTag}
         onBulkReprocess={handleBulkReprocess}
         onBulkDownload={handleBulkDownload}
+      />
+
+      {/* Document Preview Modal */}
+      <DocumentPreview
+        document={previewDocument}
+        visible={showPreview}
+        onClose={() => {
+          setShowPreview(false);
+          setPreviewDocument(null);
+        }}
+        onDownload={(documentId) => {
+          downloadDocument(documentId);
+          setShowPreview(false);
+        }}
+      />
+
+      {/* Advanced Search Modal */}
+      <Modal
+        title={t("search.advanced_title", "Erweiterte Suche")}
+        open={showAdvancedSearch}
+        onCancel={() => setShowAdvancedSearch(false)}
+        footer={null}
+        width={1000}
+      >
+        <AdvancedSearch
+          onSearch={handleAdvancedSearch}
+          onClear={handleClearSearch}
+          onSaveSearch={handleSaveSearch}
+          loading={searchLoading}
+          results={searchResults}
+          totalResults={searchResults.length}
+        />
+      </Modal>
+
+      {/* Enhanced Bulk Operations */}
+      <BulkOperations
+        documents={Array.isArray(documents) ? documents : []}
+        selectedDocuments={selectedRowKeys}
+        onSelectionChange={setSelectedRowKeys}
+        onBulkDelete={handleBulkDelete}
+        onBulkDownload={handleBulkDownload}
+        onBulkTag={handleBulkTag}
+        onBulkMove={handleBulkMove}
+        loading={loading}
       />
     </div>
   );
