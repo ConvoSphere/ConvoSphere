@@ -232,7 +232,20 @@
     "toggle_failed": "Status konnte nicht geändert werden",
     "load_failed": "Assistenten konnten nicht geladen werden",
     "default_set_success": "Standard-Assistent erfolgreich gesetzt",
-    "default_set_failed": "Standard-Assistent konnte nicht gesetzt werden"
+    "default_set_failed": "Standard-Assistent konnte nicht gesetzt werden",
+    "select_template": "Template auswählen",
+    "search_templates": "Templates durchsuchen...",
+    "loading_templates": "Lade Templates...",
+    "error_loading_templates": "Fehler beim Laden der Templates",
+    "no_templates_found": "Keine Templates gefunden",
+    "no_templates_in_category": "Keine Templates in dieser Kategorie",
+    "all_templates": "Alle Templates",
+    "preview_template": "Template Vorschau",
+    "customize_template": "Template anpassen",
+    "create_custom_template": "Eigenes Template erstellen",
+    "examples": "Beispiele",
+    "personality": "Persönlichkeit",
+    "tools": "Tools"
   },
   "home": {
     "welcome": "Willkommen, {{username}}!",
@@ -286,7 +299,9 @@
       "uptime": "Betriebszeit"
     },
     "error_loading_stats": "Fehler beim Laden der Statistiken",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "realtime_connected": "Real-time Updates aktiv",
+    "realtime_disconnected": "Real-time Updates inaktiv"
   },
   "chat": {
     "title": "Chat",

@@ -24,6 +24,7 @@ import {
   RobotOutlined,
   ApiOutlined,
   ReloadOutlined,
+  WifiOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
@@ -31,6 +32,7 @@ import { useAuthStore } from "../../store/authStore";
 import ModernCard from "../ModernCard";
 import ModernButton from "../ModernButton";
 import { statisticsService, type OverviewStats, type ActivityItem } from "../../services/statistics";
+import { realtimeService, type StatsUpdate, type SystemHealthUpdate, type ActivityUpdate } from "../../services/realtime";
 
 const { Title, Text } = Typography;
 
@@ -56,10 +58,73 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   useEffect(() => {
     loadOverviewData();
+    setupRealtimeUpdates();
   }, [token]);
+
+  const setupRealtimeUpdates = () => {
+    if (!token) return;
+
+    // Connect to realtime service
+    realtimeService.connect(token)
+      .then(() => {
+        setRealtimeConnected(true);
+        console.log("Realtime updates connected");
+      })
+      .catch((error) => {
+        console.error("Failed to connect to realtime service:", error);
+        setRealtimeConnected(false);
+      });
+
+    // Subscribe to realtime updates
+    const unsubscribeStats = realtimeService.onStatsUpdate((statsUpdate: StatsUpdate) => {
+      setStats(prevStats => {
+        if (!prevStats) return prevStats;
+        return {
+          ...prevStats,
+          systemStats: {
+            ...prevStats.systemStats,
+            ...statsUpdate,
+          }
+        };
+      });
+    });
+
+    const unsubscribeHealth = realtimeService.onSystemHealth((healthUpdate: SystemHealthUpdate) => {
+      setStats(prevStats => {
+        if (!prevStats) return prevStats;
+        return {
+          ...prevStats,
+          systemStats: {
+            ...prevStats.systemStats,
+            systemHealth: healthUpdate.status,
+            performance: healthUpdate.performance,
+          }
+        };
+      });
+    });
+
+    const unsubscribeActivity = realtimeService.onActivity((activityUpdate: ActivityUpdate) => {
+      setStats(prevStats => {
+        if (!prevStats) return prevStats;
+        return {
+          ...prevStats,
+          recentActivity: [activityUpdate, ...prevStats.recentActivity.slice(0, 9)], // Keep max 10 activities
+        };
+      });
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribeStats();
+      unsubscribeHealth();
+      unsubscribeActivity();
+      realtimeService.disconnect();
+    };
+  };
 
   const loadOverviewData = async (isRefresh = false) => {
     if (!token) return;
@@ -240,6 +305,14 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
               >
                 {t(`overview.health.${stats.systemStats.systemHealth}`)}
               </Tag>
+              <Tooltip title={realtimeConnected ? t("overview.realtime_connected") : t("overview.realtime_disconnected")}>
+                <WifiOutlined 
+                  style={{ 
+                    color: realtimeConnected ? colors.colorSuccess : colors.colorTextSecondary,
+                    fontSize: "14px"
+                  }} 
+                />
+              </Tooltip>
               <ModernButton
                 type="text"
                 size="small"
