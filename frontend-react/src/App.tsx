@@ -8,6 +8,7 @@ import { useThemeStore } from "./store/themeStore";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import ErrorBoundary from "./components/ErrorBoundary";
+import CriticalErrorBoundary from "./components/CriticalErrorBoundary";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import performanceMonitor from "./utils/performance";
 
@@ -228,7 +229,7 @@ const App: React.FC = () => {
                 <Route
                   path="/*"
                   element={
-                    <ErrorBoundary>
+                    <CriticalErrorBoundary componentName="App" critical={true}>
                       <ProtectedRoute>
                         <Layout>
                           <ErrorBoundary>

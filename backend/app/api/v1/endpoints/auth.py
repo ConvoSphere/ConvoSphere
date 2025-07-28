@@ -8,7 +8,7 @@ from typing import Any
 
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
-from backend.app.core.dependencies import get_security_dep, get_settings_dep
+from backend.app.core.dependencies import get_security_dep, get_settings_dep, require_admin_role
 from backend.app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -795,21 +795,12 @@ async def get_user_provisioning_status(
 async def bulk_sync_users(
     provider: str,
     user_list: list[dict[str, Any]],
-    request: Request,
+    current_user: User = Depends(require_admin_role),
+    request: Request = Depends(),
     db: Session = Depends(get_db),
 ):
     """Bulk sync users from SSO provider (Admin only)."""
     try:
-        # Check if user has admin permissions
-        current_user_id = get_current_user_id(request)
-        if not current_user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required",
-            )
-
-        # TODO: Add proper admin authorization check
-        # For now, allow any authenticated user (for testing)
 
         # Security validation
         if not validate_sso_request(request, provider):
@@ -829,7 +820,7 @@ async def bulk_sync_users(
         client_ip = get_client_ip(request)
         sso_audit_logger.log_sso_event(
             event_type="bulk_sync_completed",
-            user_id=str(current_user_id),
+            user_id=str(current_user.id),
             provider=provider,
             details=results,
             severity="info",
