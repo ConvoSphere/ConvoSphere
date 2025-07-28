@@ -19,11 +19,13 @@ from backend.app.schemas.hybrid_mode import (
     HybridModeConfig,
     ModeChangeRequest,
     StructuredResponse,
+    AgentMemory,
 )
 from backend.app.services.ai_service import ai_service
 from backend.app.services.conversation_service import conversation_service
-from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
+from backend.app.services.hybrid_mode_manager import hybrid_mode_manager, AgentMemoryManager
 from backend.app.services.knowledge_service import knowledge_service
+from backend.app.services.multi_agent_manager import multi_agent_manager
 from backend.app.services.tool_executor_v2 import tool_executor
 
 
@@ -85,6 +87,9 @@ class AssistantEngine:
 
         # Processing semaphore to limit concurrent requests
         self.processing_semaphore = asyncio.Semaphore(self.max_concurrent_requests)
+        
+        # Multi-agent manager integration
+        self.multi_agent_manager = multi_agent_manager
 
     async def process_message(
         self,
@@ -190,6 +195,52 @@ class AssistantEngine:
                     request, mode_decision.recommended_mode
                 )
 
+            # Check for multi-agent conversation handling
+            multi_agent_result = await self._handle_multi_agent_conversation(request, mode_decision)
+            if multi_agent_result:
+                return multi_agent_result
+
+            # Check for agent handoff
+            handoff_needed, target_agent = await self._check_agent_handoff_needed(request, mode_decision)
+            if handoff_needed and target_agent:
+                handoff_success = await self._perform_agent_handoff(request, target_agent, mode_decision)
+                if handoff_success:
+                    # After handoff, get response from the new agent
+                    agent_response = await self.multi_agent_manager.get_agent_response(
+                        conversation_id=request.conversation_id,
+                        user_message=request.message,
+                        user_id=request.user_id,
+                        target_agent=target_agent
+                    )
+                    
+                    # Create structured response for handoff
+                    structured_response = StructuredResponse(
+                        content=agent_response.content,
+                        mode_decision=mode_decision,
+                        tool_calls=agent_response.tool_calls or [],
+                        memory_updates=await self._update_agent_memory(request, mode_decision, agent_response),
+                        reasoning_process=mode_decision.reasoning_steps,
+                        metadata=agent_response.metadata or {},
+                        model_used=agent_response.model_used,
+                        tokens_used=agent_response.tokens_used,
+                        processing_time=(datetime.now(UTC) - start_time).total_seconds(),
+                    )
+                    
+                    # Save response to conversation
+                    await self._save_response_to_conversation(request, structured_response)
+                    
+                    return ProcessingResult(
+                        request_id=request.request_id,
+                        success=True,
+                        content=structured_response.content,
+                        tool_calls=structured_response.tool_calls,
+                        metadata=structured_response.metadata,
+                        model_used=structured_response.model_used,
+                        tokens_used=structured_response.tokens_used,
+                        processing_time=structured_response.processing_time,
+                        structured_response=structured_response,
+                    )
+
             # Prepare knowledge base context if enabled
             knowledge_context = ""
             if (
@@ -220,11 +271,12 @@ class AssistantEngine:
                 tool_results = await self._execute_tools(ai_response.tool_calls)
 
             # Create structured response
+            memory_updates = await self._update_agent_memory(request, mode_decision, ai_response)
             structured_response = StructuredResponse(
                 content=ai_response.content,
                 mode_decision=mode_decision,
                 tool_calls=tool_results,
-                memory_updates=[],  # TODO: Implement memory updates
+                memory_updates=memory_updates,
                 reasoning_process=mode_decision.reasoning_steps,
                 metadata=ai_response.metadata or {},
                 model_used=request.model or self.default_model,
@@ -532,6 +584,90 @@ Confidence: {mode_decision.confidence:.2f}
 
         return results
 
+    async def _update_agent_memory(
+        self, 
+        request: ProcessingRequest, 
+        mode_decision, 
+        ai_response: AIResponse
+    ) -> list[AgentMemory]:
+        """Update agent memory with conversation context."""
+        try:
+            # Get hybrid mode state
+            state = hybrid_mode_manager.get_state(request.conversation_id)
+            if not state:
+                logger.warning(f"No hybrid mode state found for conversation {request.conversation_id}")
+                return []
+
+            # Create memory manager
+            memory_manager = AgentMemoryManager(state.config)
+            
+            # Determine memory importance based on mode decision
+            importance = 0.5  # Default importance
+            if mode_decision.recommended_mode == ConversationMode.AGENT:
+                importance = 0.8  # Higher importance for agent mode
+            if mode_decision.complexity_score > 0.7:
+                importance = 0.9  # Very high importance for complex queries
+            
+            # Create memory content
+            memory_content = {
+                "user_message": request.message,
+                "agent_response": ai_response.content,
+                "mode_decision": {
+                    "current_mode": mode_decision.current_mode.value,
+                    "recommended_mode": mode_decision.recommended_mode.value,
+                    "reason": mode_decision.reason.value,
+                    "complexity_score": mode_decision.complexity_score,
+                    "confidence": mode_decision.confidence
+                },
+                "tools_used": ai_response.tool_calls or [],
+                "processing_metadata": {
+                    "model_used": request.model or self.default_model,
+                    "temperature": request.temperature,
+                    "max_tokens": request.max_tokens
+                }
+            }
+            
+            # Add memory entry
+            memory = memory_manager.add_memory(
+                conversation_id=request.conversation_id,
+                user_id=request.user_id,
+                memory_type="conversation_context",
+                content=memory_content,
+                importance=importance
+            )
+            
+            logger.info(f"Added memory entry for conversation {request.conversation_id} with importance {importance}")
+            return [memory]
+            
+        except Exception as e:
+            logger.error(f"Error updating agent memory: {e}")
+            return []
+
+    async def _get_memory_context(
+        self, 
+        request: ProcessingRequest, 
+        user_message: str
+    ) -> list[AgentMemory]:
+        """Get relevant memory context for the current request."""
+        try:
+            state = hybrid_mode_manager.get_state(request.conversation_id)
+            if not state:
+                return []
+
+            memory_manager = AgentMemoryManager(state.config)
+            relevant_memories = memory_manager.get_relevant_memories(
+                conversation_id=request.conversation_id,
+                query=user_message,
+                limit=3
+            )
+            
+            logger.info(f"Retrieved {len(relevant_memories)} relevant memories for conversation {request.conversation_id}")
+            return relevant_memories
+            
+        except Exception as e:
+            logger.error(f"Error retrieving memory context: {e}")
+            return []
+
     async def _save_response_to_conversation(
         self, request: ProcessingRequest, structured_response: StructuredResponse
     ):
@@ -556,6 +692,117 @@ Confidence: {mode_decision.confidence:.2f}
 
         except Exception as e:
             logger.error(f"Error saving response to conversation: {e}")
+
+    async def _check_agent_handoff_needed(
+        self, 
+        request: ProcessingRequest, 
+        mode_decision
+    ) -> tuple[bool, str | None]:
+        """Check if agent handoff is needed based on query analysis."""
+        try:
+            # Komplexitäts-basierte Handoff-Entscheidung
+            if mode_decision.complexity_score > 0.8:
+                # Bei sehr komplexen Anfragen zu spezialisierten Agenten wechseln
+                if "code" in request.message.lower() or "programming" in request.message.lower():
+                    return True, "code_expert"
+                elif "data" in request.message.lower() or "analysis" in request.message.lower():
+                    return True, "data_analyst"
+                elif "creative" in request.message.lower() or "writing" in request.message.lower():
+                    return True, "creative_writer"
+            
+            # Tool-basierte Handoff-Entscheidung
+            if mode_decision.reason.value == "tools_available":
+                available_tools = mode_decision.available_tools
+                if any(tool in ["code_analyzer", "file_reader"] for tool in available_tools):
+                    return True, "code_expert"
+                elif any(tool in ["data_analyzer", "chart_generator"] for tool in available_tools):
+                    return True, "data_analyst"
+            
+            return False, None
+            
+        except Exception as e:
+            logger.error(f"Error checking agent handoff: {e}")
+            return False, None
+
+    async def _perform_agent_handoff(
+        self, 
+        request: ProcessingRequest, 
+        target_agent: str,
+        mode_decision
+    ) -> bool:
+        """Perform agent handoff."""
+        try:
+            # Prüfe ob Multi-Agent-Konversation existiert
+            conversation = self.multi_agent_manager.get_conversation_state(request.conversation_id)
+            
+            if not conversation:
+                # Erstelle neue Multi-Agent-Konversation
+                await self.multi_agent_manager.create_multi_agent_conversation(
+                    conversation_id=request.conversation_id,
+                    user_id=request.user_id,
+                    initial_agent="general_assistant",
+                    additional_agents=[target_agent]
+                )
+            
+            # Führe Handoff durch
+            from backend.app.schemas.agent import AgentHandoffRequest
+            
+            handoff_request = AgentHandoffRequest(
+                from_agent_id="general_assistant",  # Aktueller Agent
+                to_agent_id=target_agent,
+                conversation_id=request.conversation_id,
+                user_id=request.user_id,
+                reason=f"Query requires specialized expertise (complexity: {mode_decision.complexity_score:.2f})",
+                context={
+                    "complexity_score": mode_decision.complexity_score,
+                    "mode_decision_reason": mode_decision.reason.value,
+                    "available_tools": mode_decision.available_tools
+                }
+            )
+            
+            await self.multi_agent_manager.handoff_agent(handoff_request)
+            logger.info(f"Agent handoff completed: general_assistant -> {target_agent}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error performing agent handoff: {e}")
+            return False
+
+    async def _handle_multi_agent_conversation(
+        self, 
+        request: ProcessingRequest, 
+        mode_decision
+    ) -> ProcessingResult | None:
+        """Handle multi-agent conversation scenarios."""
+        try:
+            # Prüfe ob Multi-Agent-Konversation existiert
+            conversation = self.multi_agent_manager.get_conversation_state(request.conversation_id)
+            
+            if conversation and conversation.collaboration_mode:
+                # Hole Antwort vom aktuellen Agenten
+                agent_response = await self.multi_agent_manager.get_agent_response(
+                    conversation_id=request.conversation_id,
+                    user_message=request.message,
+                    user_id=request.user_id
+                )
+                
+                return ProcessingResult(
+                    request_id=request.request_id,
+                    success=True,
+                    content=agent_response.content,
+                    tool_calls=agent_response.tool_calls or [],
+                    metadata=agent_response.metadata or {},
+                    model_used=agent_response.model_used,
+                    tokens_used=agent_response.tokens_used,
+                    processing_time=agent_response.processing_time,
+                    structured_response=agent_response
+                )
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error handling multi-agent conversation: {e}")
+            return None
 
     def get_processing_status(self, request_id: str) -> dict[str, Any] | None:
         """Get processing status for a request."""
