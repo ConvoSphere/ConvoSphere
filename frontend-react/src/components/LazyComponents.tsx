@@ -25,7 +25,8 @@ const LoadingSpinner: React.FC<{ size?: "small" | "default" | "large" }> = ({
 };
 
 // Lazy-Loaded Page Components
-export const LazyDashboard = lazy(() => import("../pages/Dashboard"));
+export const LazyHome = lazy(() => import("../pages/Home"));
+export const LazyOverview = lazy(() => import("../pages/Overview"));
 export const LazyChat = lazy(() => import("../pages/Chat"));
 export const LazyAssistants = lazy(() => import("../pages/Assistants"));
 export const LazyKnowledgeBase = lazy(() => import("../pages/KnowledgeBase"));
@@ -57,9 +58,15 @@ export const LazyComponent: React.FC<LazyComponentProps> = ({
 };
 
 // Page-specific Lazy Components
-export const LazyDashboardPage: React.FC = () => (
+export const LazyHomePage: React.FC = () => (
   <LazyComponent>
-    <LazyDashboard />
+    <LazyHome />
+  </LazyComponent>
+);
+
+export const LazyOverviewPage: React.FC = () => (
+  <LazyComponent>
+    <LazyOverview />
   </LazyComponent>
 );
 

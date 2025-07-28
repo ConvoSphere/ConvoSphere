@@ -18,8 +18,9 @@ import "./styles/animations.css";
 import "./styles/chat.css";
 
 import {
+  LazyHomePage,
+  LazyOverviewPage,
   LazyChatPage,
-  LazyDashboardPage,
   LazyAssistantsPage,
   LazyKnowledgeBasePage,
   LazyToolsPage,
@@ -237,10 +238,14 @@ const App: React.FC = () => {
                           <ErrorBoundary>
                             <Suspense fallback={<LoadingSpinner />}>
                               <Routes>
-                                <Route path="/" element={<LazyChatPage />} />
+                                <Route path="/" element={<LazyHomePage />} />
                                 <Route
-                                  path="/dashboard"
-                                  element={<LazyDashboardPage />}
+                                  path="/overview"
+                                  element={<LazyOverviewPage />}
+                                />
+                                <Route
+                                  path="/chat"
+                                  element={<LazyChatPage />}
                                 />
                                 <Route
                                   path="/assistants"

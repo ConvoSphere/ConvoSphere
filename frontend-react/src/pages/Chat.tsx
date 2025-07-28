@@ -18,6 +18,7 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import { chatWebSocket } from "../services/chat";
 import type { ChatMessage, KnowledgeContext } from "../services/chat";
 import { useAuthStore } from "../store/authStore";
@@ -35,6 +36,7 @@ const { Title, Text } = Typography;
 
 const Chat: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -59,12 +61,21 @@ const Chat: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);
 
-  // Create or get conversation ID
+  // Get conversation ID from URL params or create/get conversation
   useEffect(() => {
     if (!token) return;
 
     const createOrGetConversation = async () => {
       try {
+        // Check if conversation ID is provided in URL params
+        const urlParams = new URLSearchParams(location.search);
+        const conversationParam = urlParams.get('conversation');
+        
+        if (conversationParam) {
+          setConversationId(conversationParam);
+          return;
+        }
+
         // Try to get existing conversations first
         const response = await fetch(`${config.apiUrl}/v1/chat/conversations`, {
           headers: {

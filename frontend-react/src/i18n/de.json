@@ -169,7 +169,8 @@
     "confirm_password": "E-Mail-Adressen stimmen nicht überein"
   },
   "navigation": {
-    "dashboard": "Dashboard",
+    "home": "Startseite",
+    "overview": "Übersicht",
     "assistants": "Assistenten",
     "conversations": "Unterhaltungen",
     "mcp_tools": "MCP-Tools",
@@ -232,6 +233,56 @@
     "load_failed": "Assistenten konnten nicht geladen werden",
     "default_set_success": "Standard-Assistent erfolgreich gesetzt",
     "default_set_failed": "Standard-Assistent konnte nicht gesetzt werden"
+  },
+  "home": {
+    "welcome": "Willkommen, {{username}}!",
+    "subtitle": "Starten Sie eine neue Konversation mit Ihrem KI-Assistenten",
+    "start_chat": "Chat starten",
+    "select_assistant": "Assistent auswählen",
+    "assistant_placeholder": "Wählen Sie einen Assistenten...",
+    "assistant_required": "Bitte wählen Sie einen Assistenten",
+    "initial_message": "Ihre Nachricht",
+    "message_placeholder": "Beschreiben Sie, womit Ihnen der Assistent helfen soll...",
+    "message_required": "Bitte geben Sie eine Nachricht ein",
+    "start_chat_button": "Chat starten",
+    "quick_start": "Schnellstart",
+    "view_recent_conversations": "Letzte Konversationen anzeigen",
+    "error_loading_assistants": "Fehler beim Laden der Assistenten",
+    "error_starting_chat": "Fehler beim Starten des Chats"
+  },
+  "overview": {
+    "title": "Systemübersicht",
+    "subtitle": "Übersicht über Ihre Aktivitäten und Systemstatistiken",
+    "stats": {
+      "conversations": "Konversationen",
+      "messages": "Nachrichten",
+      "documents": "Dokumente",
+      "assistants": "Assistenten",
+      "active_users": "Aktive Benutzer",
+      "tools": "Tools"
+    },
+    "system_health": "Systemstatus",
+    "health": {
+      "healthy": "Gesund",
+      "warning": "Warnung",
+      "error": "Fehler"
+    },
+    "performance": "Systemleistung",
+    "quick_actions": {
+      "title": "Schnellaktionen",
+      "start_chat": "Chat starten",
+      "upload_document": "Dokument hochladen",
+      "manage_assistants": "Assistenten verwalten",
+      "view_tools": "Tools anzeigen"
+    },
+    "recent_activity": "Letzte Aktivitäten",
+    "admin_section": "Administration",
+    "admin_dashboard": "Admin-Dashboard",
+    "admin": {
+      "total_users": "Benutzer gesamt",
+      "system_load": "Systemlast",
+      "uptime": "Betriebszeit"
+    }
   },
   "chat": {
     "title": "Chat",

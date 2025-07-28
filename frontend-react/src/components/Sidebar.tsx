@@ -54,12 +54,17 @@ const Sidebar: React.FC = () => {
   const items = [
     {
       key: "/",
-      icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />,
-      label: t("navigation.dashboard"),
+      icon: <MessageOutlined style={{ color: colors.colorPrimary }} />,
+      label: t("navigation.home"),
+    },
+    {
+      key: "/overview",
+      icon: <DashboardOutlined style={{ color: colors.colorSecondary }} />,
+      label: t("navigation.overview"),
     },
     {
       key: "/chat",
-      icon: <MessageOutlined style={{ color: colors.colorSecondary }} />,
+      icon: <MessageOutlined style={{ color: colors.colorAccent }} />,
       label: t("chat.title"),
     },
     {
