@@ -104,36 +104,6 @@ graph TB
     AI --> Storage
 ```
 
-## 📊 Performance Metrics
-
-### Backend Performance
-- **Response Time**: < 100ms for health checks, < 500ms for API calls
-- **Concurrent Users**: Supports 100+ concurrent connections
-- **Memory Usage**: < 50MB increase under load
-- **Database Queries**: Optimized with connection pooling
-- **File Upload**: Handles 1MB+ files efficiently
-
-### Frontend Performance
-- **Page Load**: < 3 seconds for initial load
-- **Bundle Size**: Optimized with code splitting
-- **Real-time Updates**: < 100ms message delivery
-- **Memory Management**: Efficient component lifecycle
-- **Accessibility**: WCAG 2.1 AA compliant
-
-## 🧪 Test Coverage
-
-### Backend Test Coverage: **90%+**
-- **Unit Tests**: 200+ tests covering all services and utilities
-- **Integration Tests**: API endpoint testing with database integration
-- **Performance Tests**: Load testing, memory monitoring, response time validation
-- **Security Tests**: Authentication, authorization, and input validation
-
-### Frontend Test Coverage: **95%+**
-- **Component Tests**: React component testing with user interactions
-- **Store Tests**: Zustand state management testing
-- **Service Tests**: API service layer testing with mocking
-- **E2E Tests**: Complete user flow testing with Cypress
-
 ## 🛠️ Technology Stack
 
 ### Backend
@@ -170,72 +140,37 @@ graph TB
 - PostgreSQL 13+
 - Git
 
-### Backend Setup
+### Quick Setup with Docker (Recommended)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd ai-chat-app
-   ```
+```bash
+# Clone and start
+git clone <repository-url>
+cd convosphere
+docker-compose up --build
+```
 
-2. **Set up Python environment**
-   ```bash
-   cd backend
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   pip install -r requirements-test.txt
-   ```
+### Manual Setup
 
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+#### Backend Setup
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env with your configuration
+alembic upgrade head
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-4. **Set up database**
-   ```bash
-   # Create PostgreSQL database
-   createdb ai_chat_app
-   
-   # Run migrations
-   alembic upgrade head
-   ```
-
-5. **Run backend tests**
-   ```bash
-   pytest --cov=app --cov-report=html
-   ```
-
-6. **Start backend server**
-   ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-### Frontend Setup
-
-1. **Install dependencies**
-   ```bash
-   cd frontend-react
-   npm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your backend API URL
-   ```
-
-3. **Run frontend tests**
-   ```bash
-   npm test
-   npm run test:coverage
-   ```
-
-4. **Start development server**
-   ```bash
-   npm start
-   ```
+#### Frontend Setup
+```bash
+cd frontend-react
+npm install
+cp .env.example .env
+# Edit .env with your backend API URL
+npm start
+```
 
 ## 🧪 Testing
 
@@ -250,10 +185,6 @@ pytest --cov=app --cov-report=html
 # Run specific test categories
 pytest tests/test_auth.py
 pytest tests/test_performance.py
-pytest tests/test_endpoints_comprehensive.py
-
-# Run load tests
-pytest tests/test_performance.py::TestLoadTesting
 ```
 
 ### Frontend Testing
@@ -265,37 +196,19 @@ npm test
 npm run test:coverage
 
 # Run E2E tests
-npm run cypress:open
 npm run cypress:run
-
-# Run specific test suites
-npm test -- --testPathPattern=HeaderBar
-npm test -- --testPathPattern=auth
 ```
 
-### E2E Testing
-```bash
-# Open Cypress
-npx cypress open
+## 📊 Performance Metrics
 
-# Run all E2E tests
-npx cypress run
-
-# Run specific test files
-npx cypress run --spec "cypress/e2e/auth.cy.ts"
-npx cypress run --spec "cypress/e2e/chat.cy.ts"
-```
-
-## 📈 Performance
-
-### Backend Performance Metrics
+### Backend Performance
 - **Response Time**: < 100ms for health checks, < 500ms for API calls
 - **Concurrent Users**: Supports 100+ concurrent connections
 - **Memory Usage**: < 50MB increase under load
 - **Database Queries**: Optimized with connection pooling
 - **File Upload**: Handles 1MB+ files efficiently
 
-### Frontend Performance Metrics
+### Frontend Performance
 - **Page Load**: < 3 seconds for initial load
 - **Bundle Size**: Optimized with code splitting
 - **Real-time Updates**: < 100ms message delivery
@@ -461,90 +374,3 @@ For support and questions:
 ---
 
 **Built with ❤️ by the AI Chat Team**
-
-## 🚦 DevOps, CI/CD & Workflows
-
-Die Entwicklung und der Betrieb werden durch eine moderne CI/CD-Pipeline und automatisierte Workflows unterstützt:
-
-- **GitHub Actions** für Tests, Code-Qualität, Security-Scans, Doku-Deployment und Multi-Stage-Deployments
-- **Workflows:**
-  - Dokumentations-Deployment (MkDocs, GitHub Pages)
-  - Code-Quality-Checks (Ruff, Bandit, MyPy, Pytest)
-  - CI/CD-Pipeline (Build, Test, Docker, Staging/Production Deploy, Security, Performance)
-- **Monitoring & Reports:**
-  - Coverage, Security, Performance, Build- und Test-Reports als Artefakte
-- **Lokale Entwicklung:**
-  - `make install`, `make test`, `make code-quality`, `make docs-build`, `make docs-serve`
-  - Pre-commit Hooks: `make pre-commit-install`, `make pre-commit-run`, `make pre-commit-update`
-- **Troubleshooting:**
-  - Detaillierte Hinweise zu häufigen Fehlern, Debugging und Workflow-Logs in [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
-
-Weitere Details und Beispiele siehe [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md) und [docs/development/setup.md](docs/development/setup.md).
-
-## 📚 Knowledge Base & UI Features
-
-Die Knowledge Base bietet:
-- **Dokumenten-Management**: Upload, Metadaten, Bulk-Import, Tagging, Status, Download, Reprocessing
-- **Erweiterte Suche**: Volltext, Filter, Tag-Filter, Advanced Search, History
-- **Tag-Management**: Tag-Cloud, Tag-Statistiken, System- und User-Tags, Bulk-Tagging
-- **Statistiken**: Dashboard, Chunks, Tokens, Speicher, Dokumenten-Typen
-- **Rollenbasierte Berechtigungen**: User, Premium, Moderator, Admin (siehe Tabelle unten)
-- **Chat-Integration**: Dokumente im Chat-Kontext, Suche, Auswahl, Einstellungen
-- **Performance**: Virtualisierung, Lazy Loading, Caching, Debouncing, Responsive Design
-
-**Rollenmatrix:**
-
-| Funktion                    | User | Premium | Moderator | Admin |
-|----------------------------|------|---------|-----------|-------|
-| Dokumente hochladen         | ✓    | ✓       | ✓         | ✓     |
-| Eigene Dokumente verwalten  | ✓    | ✓       | ✓         | ✓     |
-| Bulk-Import                 | ✗    | ✓       | ✓         | ✓     |
-| Tag-Management              | ✗    | ✓       | ✓         | ✓     |
-| System-Tags erstellen       | ✗    | ✗       | ✗         | ✓     |
-| Alle Dokumente einsehen     | ✗    | ✗       | ✓         | ✓     |
-| Benutzer-Management         | ✗    | ✗       | ✗         | ✓     |
-| System-Statistiken          | ✗    | ✗       | ✗         | ✓     |
-
-**Technische Verbesserungen:**
-- Performance-Optimierungen (Virtualisierung, Caching, Debouncing)
-- Responsive Design (Mobile, Tablet, Desktop)
-- Benutzerfreundlichkeit (Tooltips, Badges, Dialoge)
-- Fehlerbehandlung und visuelles Feedback
-
-**Weitere Details und Screenshots:** Siehe [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
-
-## 🗺️ Roadmap & Nächste Schritte
-
-Die aktuelle und geplante Entwicklung ist in der [Roadmap](docs/project/roadmap.md) dokumentiert. Wichtige Punkte:
-- **Internationalisierung (i18n)**
-- **Performance Monitoring**
-- **Voice Integration, Multi-Chat, Code Interpreter, Advanced Agents, Enterprise Features**
-- **Refactoring der Teststruktur**: Migration aller alten zentralen Tests in komponentennahe `__tests__`-Ordner
-
-## 📝 Weitere Dokumentation
-
-- **Vollständige User- und Entwicklerdokumentation:** [docs/index.md](docs/index.md)
-- **API-Referenz:** [docs/api/overview.md](docs/api/overview.md)
-- **Deployment & Betrieb:** [docs/deployment/ci-cd.md](docs/deployment/ci-cd.md)
-- **Feature-Details:** [docs/features/knowledge-base.md](docs/features/knowledge-base.md)
-- **Roadmap & Status:** [docs/project/roadmap.md](docs/project/roadmap.md)
-- **Refactoring Status:** [docs/project/refactoring-status.md](docs/project/refactoring-status.md)
-- **Entwickler-Guide:** [docs/development/refactoring-guide.md](docs/development/refactoring-guide.md)
-
-## 🔌 Frontend-Backend-Kommunikation testen
-
-Um die Verbindung zwischen Frontend und Backend zu prüfen, steht ein Hilfsskript zur Verfügung:
-
-```bash
-make test-communication
-```
-
-Das Skript `scripts/test-communication.sh` prüft:
-- Erreichbarkeit von Backend, WebSocket und Frontend
-- Wichtige API-Endpunkte
-- CORS-Konfiguration
-- WebSocket-Verbindung (optional mit websocat)
-- Docker Compose-Konfiguration
-- Korrekte Umgebungsvariablen
-
-**Hinweis:** Bei Problemen siehe die Hinweise im Skript und die Dokumentation unter [docs/development/setup.md](docs/development/setup.md).

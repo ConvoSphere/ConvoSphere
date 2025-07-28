@@ -100,6 +100,8 @@ plugins:
   - mermaid2
   - git-revision-date-localized:
       enable_creation_date: true
+      fallback_to_build_date: true
+      enable_parallel_processing: false
   - minify:
       minify_html: true
   - awesome-pages
@@ -133,4 +135,13 @@ nav:
   - Architecture: architecture.md
   - API Reference: api.md
   - Security: security.md
-  - FAQ: faq.md 
+  - FAQ: faq.md
+  - Development:
+    - Test Coverage: development/test_coverage_improvement_plan.md
+    - Test Quick Start: development/test_coverage_quick_start.md
+  - Analysis:
+    - Database Analysis: analysis/sqlite_vs_postgresql_analysis.md
+    - Translation Analysis: analysis/translation_analysis_report.md
+    - Translation Improvements: analysis/translation_improvements_summary.md
+  - Reports:
+    - Test Results: reports/test_results_summary.md 
