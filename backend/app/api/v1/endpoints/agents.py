@@ -5,23 +5,24 @@ This module provides API endpoints for managing AI agents, including
 agent creation, handoffs, collaboration, and performance monitoring.
 """
 
-from typing import Any, List
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user_id
 from backend.app.schemas.agent import (
-    AgentCreate,
-    AgentUpdate,
-    AgentResponse,
-    AgentHandoffRequest,
     AgentCollaborationRequest,
+    AgentCreate,
+    AgentHandoffRequest,
     AgentPerformanceMetrics,
+    AgentResponse,
+    AgentUpdate,
 )
 from backend.app.services.agent_service import AgentService
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -62,7 +63,7 @@ class AgentCollaborationRequestModel(BaseModel):
 
 
 # Get all available agents
-@router.get("/", response_model=List[dict[str, Any]])
+@router.get("/", response_model=list[dict[str, Any]])
 async def get_available_agents(
     current_user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db),
@@ -211,7 +212,7 @@ async def start_collaboration(
 
 
 # Get agent performance metrics
-@router.get("/{agent_id}/performance", response_model=List[AgentPerformanceMetrics])
+@router.get("/{agent_id}/performance", response_model=list[AgentPerformanceMetrics])
 async def get_agent_performance(
     agent_id: str,
     conversation_id: str = Query(None, description="Filter by conversation ID"),

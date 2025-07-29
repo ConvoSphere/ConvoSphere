@@ -4,8 +4,9 @@ Authentication schemas for user login, registration, and SSO.
 
 from typing import Any
 
-from backend.app.models.user import UserRole
 from pydantic import BaseModel, EmailStr, Field
+
+from backend.app.models.user import UserRole
 
 
 class Token(BaseModel):

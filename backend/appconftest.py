@@ -6,7 +6,6 @@ This module provides test data and configuration for all test modules.
 
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
 
 # Test User Credentials
 TEST_USER_CREDENTIALS = {
@@ -187,7 +186,10 @@ TEST_TOOL_DATA = {
         "parameters": {
             "type": "object",
             "properties": {
-                "operation": {"type": "string", "enum": ["add", "subtract", "multiply", "divide"]},
+                "operation": {
+                    "type": "string",
+                    "enum": ["add", "subtract", "multiply", "divide"],
+                },
                 "a": {"type": "number"},
                 "b": {"type": "number"},
             },

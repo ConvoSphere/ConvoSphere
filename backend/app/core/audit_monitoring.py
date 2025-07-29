@@ -12,14 +12,15 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import redis
+from sqlalchemy import func, text
+from sqlalchemy.orm import Session
+
 from backend.app.core.config import settings
 from backend.app.models.audit_extended import (
     AuditEventType,
     ExtendedAuditLog,
 )
 from backend.app.utils.exceptions import AuditError
-from sqlalchemy import func, text
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

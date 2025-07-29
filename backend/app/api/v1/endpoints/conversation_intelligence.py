@@ -5,6 +5,9 @@ This module provides API endpoints for conversation intelligence features
 including summarization, topic detection, sentiment analysis, and analytics.
 """
 
+from fastapi import APIRouter, HTTPException, Query
+from loguru import logger
+
 from backend.app.core.exceptions import AIError, ValidationError
 from backend.app.schemas.conversation_intelligence import (
     ConversationAnalytics,
@@ -21,8 +24,6 @@ from backend.app.schemas.conversation_intelligence import (
 from backend.app.services.conversation_intelligence_service import (
     conversation_intelligence_service,
 )
-from fastapi import APIRouter, HTTPException, Query
-from loguru import logger
 
 router = APIRouter()
 

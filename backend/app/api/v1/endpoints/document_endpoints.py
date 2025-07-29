@@ -2,13 +2,15 @@
 Document-related API endpoints (upload, download, get, update, delete, process).
 """
 
-from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user
-from backend.app.core.rate_limiting import rate_limit_upload, rate_limit_search
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+from sqlalchemy.orm import Session
+
 from backend.app.core.caching import cache
-from backend.app.core.pagination import PaginationParams, PaginationOptimizer
-from backend.app.monitoring.performance_monitor import monitor_performance
+from backend.app.core.database import get_db
+from backend.app.core.rate_limiting import rate_limit_search, rate_limit_upload
+from backend.app.core.security import get_current_user
 from backend.app.models.user import User
+from backend.app.monitoring.performance_monitor import monitor_performance
 from backend.app.schemas.knowledge import (
     DocumentList,
     DocumentResponse,
@@ -16,9 +18,11 @@ from backend.app.schemas.knowledge import (
     ProcessingOptions,
 )
 from backend.app.services.knowledge_service import KnowledgeService
-from backend.app.services.search.advanced_search import get_advanced_search_service, SearchType, SearchFilter
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, Request
-from sqlalchemy.orm import Session
+from backend.app.services.search.advanced_search import (
+    SearchFilter,
+    SearchType,
+    get_advanced_search_service,
+)
 
 router = APIRouter()
 
@@ -71,11 +75,11 @@ async def get_documents(
 ):
     """Get documents with filtering and advanced search."""
     service = KnowledgeService(db)
-    
+
     # Use advanced search if search parameters are provided
     if any([status, document_type, author, year, language, tag_names]):
         search_service = get_advanced_search_service(db)
-        
+
         # Build search filters
         filters = []
         if status:
@@ -90,7 +94,7 @@ async def get_documents(
             filters.append(SearchFilter("language", "equals", language))
         if tag_names:
             filters.append(SearchFilter("tags", "in", tag_names.split(",")))
-        
+
         # Perform advanced search
         search_result = await search_service.search(
             query="",  # Empty query for filtering only
@@ -100,16 +104,16 @@ async def get_documents(
             sort_by=sort_by,
             sort_order=sort_order,
             page=(skip // limit) + 1,
-            page_size=limit
+            page_size=limit,
         )
-        
+
         return DocumentList(
             documents=search_result["results"],
             total=search_result["total"],
             page=search_result["page"],
-            page_size=search_result["page_size"]
+            page_size=search_result["page_size"],
         )
-    
+
     # Fallback to regular service method
     return await service.get_documents(
         current_user,

@@ -7,13 +7,14 @@ through the web interface.
 
 from typing import Any
 
-from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user_id
-from backend.app.tools.mcp_tool import mcp_manager
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.tools.mcp_tool import mcp_manager
 
 router = APIRouter()
 

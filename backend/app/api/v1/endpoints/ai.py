@@ -4,9 +4,10 @@ AI service endpoints.
 This module provides endpoints for AI model management and configuration.
 """
 
+from fastapi import APIRouter, Depends
+
 from backend.app.core.security import get_current_user_id
 from backend.app.services.ai_service import ai_service
-from fastapi import APIRouter, Depends
 
 router = APIRouter()
 

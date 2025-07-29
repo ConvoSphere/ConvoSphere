@@ -8,12 +8,12 @@ and other shared functionality across the API endpoints.
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user_id
 from backend.app.models.user import User, UserRole
-from loguru import logger
 
 
 def get_current_user(
@@ -64,7 +64,11 @@ def require_manager_role(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
     """Require manager or higher role for endpoint access."""
-    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+    if current_user.role not in [
+        UserRole.MANAGER,
+        UserRole.ADMIN,
+        UserRole.SUPER_ADMIN,
+    ]:
         logger.warning(
             f"Manager access denied for user {current_user.id} with role {current_user.role}"
         )
@@ -87,11 +91,11 @@ def can_manage_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Target user not found",
         )
-    
+
     # Super admins can manage anyone
     if current_user.role == UserRole.SUPER_ADMIN:
         return current_user, target_user
-    
+
     # Admins can manage users except super admins
     if current_user.role == UserRole.ADMIN:
         if target_user.role == UserRole.SUPER_ADMIN:
@@ -100,7 +104,7 @@ def can_manage_user(
                 detail="Cannot manage super admin users",
             )
         return current_user, target_user
-    
+
     # Managers can manage regular users and guests
     if current_user.role == UserRole.MANAGER:
         if target_user.role in [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER]:
@@ -109,19 +113,20 @@ def can_manage_user(
                 detail="Cannot manage admin or manager users",
             )
         return current_user, target_user
-    
+
     # Regular users can only manage themselves
     if current_user.id != target_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Can only manage own account",
         )
-    
+
     return current_user, target_user
 
 
 def require_permission(permission: str):
     """Decorator to require specific permission."""
+
     def permission_checker(
         current_user: Annotated[User, Depends(get_current_user)],
     ) -> User:
@@ -134,5 +139,5 @@ def require_permission(permission: str):
                 detail=f"Permission '{permission}' required",
             )
         return current_user
-    
+
     return permission_checker

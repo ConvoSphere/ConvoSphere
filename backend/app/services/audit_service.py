@@ -6,18 +6,16 @@ security monitoring, and system debugging.
 """
 
 import asyncio
-import json
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
+from datetime import UTC, datetime
+from typing import Any
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
-from backend.app.models.audit import AuditLog, AuditEventType, AuditSeverity
-from backend.app.models.user import User
+from backend.app.models.audit import AuditEventType, AuditLog, AuditSeverity
 
 
 class AuditService:
@@ -40,17 +38,15 @@ class AuditService:
         """Stop the audit service worker."""
         if self._worker_task:
             self._worker_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self._worker_task
-            except asyncio.CancelledError:
-                pass
             self._worker_task = None
             logger.info("Audit service stopped")
 
     async def _worker(self):
         """Background worker for processing audit events."""
         batch = []
-        last_flush = datetime.now(timezone.utc)
+        last_flush = datetime.now(UTC)
 
         while True:
             try:
@@ -60,14 +56,14 @@ class AuditService:
                         self._queue.get(), timeout=self._flush_interval
                     )
                     batch.append(event)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     pass
 
                 # Flush batch if full or timeout reached
-                current_time = datetime.now(timezone.utc)
-                if (
-                    len(batch) >= self._batch_size
-                    or (batch and (current_time - last_flush).seconds >= self._flush_interval)
+                current_time = datetime.now(UTC)
+                if len(batch) >= self._batch_size or (
+                    batch
+                    and (current_time - last_flush).seconds >= self._flush_interval
                 ):
                     if batch:
                         await self._flush_batch(batch)
@@ -78,7 +74,7 @@ class AuditService:
                 logger.error(f"Error in audit worker: {e}")
                 await asyncio.sleep(1)
 
-    async def _flush_batch(self, batch: list[Dict[str, Any]]):
+    async def _flush_batch(self, batch: list[dict[str, Any]]):
         """Flush a batch of audit events to the database."""
         try:
             db = next(get_db())
@@ -86,7 +82,7 @@ class AuditService:
                 for event_data in batch:
                     audit_log = AuditLog(**event_data)
                     db.add(audit_log)
-                
+
                 db.commit()
                 logger.debug(f"Flushed {len(batch)} audit events")
             except Exception as e:
@@ -101,13 +97,13 @@ class AuditService:
         self,
         event_type: AuditEventType,
         description: str,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
+        details: dict[str, Any] | None = None,
         severity: AuditSeverity = AuditSeverity.INFO,
     ):
         """Log an audit event asynchronously."""
@@ -126,8 +122,8 @@ class AuditService:
             "resource_id": resource_id,
             "description": description,
             "details": details,
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc),  # Add updated_at field
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),  # Add updated_at field
         }
 
         await self._queue.put(event_data)
@@ -136,13 +132,13 @@ class AuditService:
         self,
         event_type: AuditEventType,
         description: str,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
+        details: dict[str, Any] | None = None,
         severity: AuditSeverity = AuditSeverity.INFO,
     ):
         """Log an audit event synchronously (for immediate logging)."""
@@ -153,8 +149,8 @@ class AuditService:
             db = next(get_db())
             try:
                 # Create timestamp once to ensure consistency
-                timestamp = datetime.now(timezone.utc)
-                
+                timestamp = datetime.now(UTC)
+
                 audit_log = AuditLog(
                     event_type=event_type,
                     severity=severity,
@@ -187,13 +183,13 @@ class AuditService:
         user_agent: str,
         session_id: str,
         success: bool = True,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         """Log user login event."""
         event_type = AuditEventType.USER_LOGIN
         severity = AuditSeverity.INFO if success else AuditSeverity.WARNING
         description = f"User login {'successful' if success else 'failed'}"
-        
+
         if details is None:
             details = {}
         details["success"] = success
@@ -213,8 +209,8 @@ class AuditService:
         self,
         user_id: str,
         session_id: str,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ):
         """Log user logout event."""
         await self.log_event(
@@ -228,12 +224,12 @@ class AuditService:
 
     async def log_permission_denied(
         self,
-        user_id: Optional[str],
+        user_id: str | None,
         resource_type: str,
         resource_id: str,
         ip_address: str,
         user_agent: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         """Log permission denied event."""
         await self.log_event(
@@ -250,7 +246,7 @@ class AuditService:
 
     async def log_rate_limit_exceeded(
         self,
-        user_id: Optional[str],
+        user_id: str | None,
         ip_address: str,
         endpoint: str,
         limit: int,
@@ -274,11 +270,11 @@ class AuditService:
 
     async def log_suspicious_activity(
         self,
-        user_id: Optional[str],
+        user_id: str | None,
         ip_address: str,
         user_agent: str,
         activity_type: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ):
         """Log suspicious activity event."""
         await self.log_event(
@@ -295,7 +291,7 @@ class AuditService:
         self,
         event_type: AuditEventType,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
         severity: AuditSeverity = AuditSeverity.INFO,
     ):
         """Log system event."""
@@ -308,14 +304,14 @@ class AuditService:
 
     async def log_api_usage(
         self,
-        user_id: Optional[str],
+        user_id: str | None,
         endpoint: str,
         method: str,
         status_code: int,
         response_time: float,
         ip_address: str,
         user_agent: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         """Log API usage for monitoring and analytics."""
         severity = AuditSeverity.INFO
@@ -326,11 +322,13 @@ class AuditService:
 
         if details is None:
             details = {}
-        details.update({
-            "method": method,
-            "status_code": status_code,
-            "response_time": response_time,
-        })
+        details.update(
+            {
+                "method": method,
+                "status_code": status_code,
+                "response_time": response_time,
+            }
+        )
 
         await self.log_event(
             event_type=AuditEventType.SYSTEM_MAINTENANCE,  # Using system event for API usage
@@ -347,13 +345,13 @@ class AuditService:
     def get_audit_logs(
         self,
         db: Session,
-        user_id: Optional[str] = None,
-        event_type: Optional[AuditEventType] = None,
-        severity: Optional[AuditSeverity] = None,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_id: str | None = None,
+        event_type: AuditEventType | None = None,
+        severity: AuditSeverity | None = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[AuditLog]:
@@ -375,18 +373,20 @@ class AuditService:
         if end_date:
             query = query.filter(AuditLog.created_at <= end_date)
 
-        return query.order_by(AuditLog.created_at.desc()).limit(limit).offset(offset).all()
+        return (
+            query.order_by(AuditLog.created_at.desc()).limit(limit).offset(offset).all()
+        )
 
     def get_security_events(
         self,
         db: Session,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
     ) -> list[AuditLog]:
         """Get security-related audit events."""
-        query = db.query(AuditLog).filter(AuditLog.is_security_event == True)
-        
+        query = db.query(AuditLog).filter(AuditLog.is_security_event)
+
         if start_date:
             query = query.filter(AuditLog.created_at >= start_date)
         if end_date:
@@ -397,13 +397,13 @@ class AuditService:
     def get_high_severity_events(
         self,
         db: Session,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
     ) -> list[AuditLog]:
         """Get high severity audit events."""
-        query = db.query(AuditLog).filter(AuditLog.is_high_severity == True)
-        
+        query = db.query(AuditLog).filter(AuditLog.is_high_severity)
+
         if start_date:
             query = query.filter(AuditLog.created_at >= start_date)
         if end_date:
@@ -416,13 +416,13 @@ class AuditService:
         self,
         event_type: AuditEventType,
         description: str,
-        user_id: Optional[str] = None,
-        **kwargs
+        user_id: str | None = None,
+        **kwargs,
     ):
         """Context manager for auditing operations with automatic success/failure logging."""
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
         success = False
-        
+
         try:
             yield
             success = True
@@ -434,12 +434,12 @@ class AuditService:
                 user_id=user_id,
                 details={"error": str(e), "success": False},
                 severity=AuditSeverity.ERROR,
-                **kwargs
+                **kwargs,
             )
             raise
         finally:
             # Log the operation result
-            duration = (datetime.now(timezone.utc) - start_time).total_seconds()
+            duration = (datetime.now(UTC) - start_time).total_seconds()
             await self.log_event(
                 event_type=event_type,
                 description=f"{description} - {'SUCCESS' if success else 'FAILED'}",
@@ -449,7 +449,7 @@ class AuditService:
                     "duration_seconds": duration,
                 },
                 severity=AuditSeverity.INFO if success else AuditSeverity.ERROR,
-                **kwargs
+                **kwargs,
             )
 
 
@@ -459,20 +459,14 @@ audit_service = AuditService()
 
 # Convenience functions for easy access
 async def log_audit_event(
-    event_type: AuditEventType,
-    description: str,
-    user_id: Optional[str] = None,
-    **kwargs
+    event_type: AuditEventType, description: str, user_id: str | None = None, **kwargs
 ):
     """Convenience function to log audit events."""
     await audit_service.log_event(event_type, description, user_id=user_id, **kwargs)
 
 
 def log_audit_event_sync(
-    event_type: AuditEventType,
-    description: str,
-    user_id: Optional[str] = None,
-    **kwargs
+    event_type: AuditEventType, description: str, user_id: str | None = None, **kwargs
 ):
     """Convenience function to log audit events synchronously."""
     audit_service.log_event_sync(event_type, description, user_id=user_id, **kwargs)

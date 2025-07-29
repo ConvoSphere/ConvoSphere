@@ -269,23 +269,27 @@ class Settings(BaseSettings):
         """Validate secret key."""
         if not v:
             raise ValueError("Secret key must be set")
-        
+
         # Allow development secret key only in debug mode
         if v == "dev-secret-key-for-development-only-change-in-production":
             # Check if we're in production mode
             import os
+
             if os.getenv("ENVIRONMENT", "development") == "production":
                 raise ValueError("Secret key must be properly configured in production")
             return v
-        
+
         if len(v) < 32:
             raise ValueError("Secret key must be at least 32 characters long")
-        
+
         # Additional security checks for production
         import os
+
         if len(v) < 64 and os.getenv("ENVIRONMENT", "development") == "production":
-            raise ValueError("Production secret key should be at least 64 characters long")
-        
+            raise ValueError(
+                "Production secret key should be at least 64 characters long"
+            )
+
         return v
 
     @field_validator("litellm_temperature")
@@ -301,7 +305,7 @@ class Settings(BaseSettings):
     def parse_cors_origins(cls, v):
         """Parse CORS origins from comma-separated string."""
         import os
-        
+
         if isinstance(v, str):
             origins = [origin.strip() for origin in v.split(",") if origin.strip()]
         elif isinstance(v, list):
@@ -312,18 +316,22 @@ class Settings(BaseSettings):
                 "http://localhost:3000",
                 "http://localhost:8081",
             ]
-        
+
         # Security check for production
         if os.getenv("ENVIRONMENT", "development") == "production":
             # In production, only allow HTTPS origins
-            insecure_origins = [origin for origin in origins if origin.startswith("http://")]
+            insecure_origins = [
+                origin for origin in origins if origin.startswith("http://")
+            ]
             if insecure_origins:
-                raise ValueError(f"Insecure CORS origins not allowed in production: {insecure_origins}")
-            
+                raise ValueError(
+                    f"Insecure CORS origins not allowed in production: {insecure_origins}"
+                )
+
             # Check for wildcard origins
             if "*" in origins:
                 raise ValueError("Wildcard CORS origins not allowed in production")
-        
+
         return origins
 
     model_config = ConfigDict(

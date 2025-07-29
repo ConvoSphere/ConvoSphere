@@ -7,17 +7,24 @@ This module provides the authentication API endpoints for the AI Assistant Platf
 import uuid
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+# Workaround gegen Import-Zyklen: security wird erst hier importiert
+from fastapi.security import HTTPAuthorizationCredentials
+from loguru import logger
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
 from backend.app.core.dependencies import require_admin_role
-from backend.app.core.security import security
-from backend.app.core.config import get_settings
 from backend.app.core.security import (
     create_access_token,
     create_refresh_token,
     get_current_user_id,
     get_password_hash,
     log_security_event,
+    security,
     verify_password,
     verify_token,
 )
@@ -29,18 +36,10 @@ from backend.app.core.security_hardening import (
 )
 from backend.app.models.user import User, UserRole
 from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
+from backend.app.services.audit_service import audit_service
 from backend.app.services.oauth_service import oauth_service
 from backend.app.services.saml_service import saml_service
 from backend.app.services.user_service import UserService
-from backend.app.services.audit_service import audit_service
-from backend.app.models.audit import AuditEventType, AuditSeverity
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-
-# Workaround gegen Import-Zyklen: security wird erst hier importiert
-from fastapi.security import HTTPAuthorizationCredentials
-from loguru import logger
-from pydantic import BaseModel, EmailStr
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -122,7 +121,7 @@ async def login(
             user_agent=user_agent,
             session_id=session_id,
             success=False,
-            details={"error": "Missing email or username"}
+            details={"error": "Missing email or username"},
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -137,7 +136,7 @@ async def login(
             user_agent=user_agent,
             session_id=session_id,
             success=False,
-            details={"error": "Invalid credentials", "identifier": identifier}
+            details={"error": "Invalid credentials", "identifier": identifier},
         )
         logger.warning(f"Failed login attempt for identifier: {identifier}")
         log_security_event(
@@ -160,7 +159,7 @@ async def login(
             user_agent=user_agent,
             session_id=session_id,
             success=False,
-            details={"error": "Account disabled", "identifier": identifier}
+            details={"error": "Account disabled", "identifier": identifier},
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -185,7 +184,7 @@ async def login(
         user_agent=user_agent,
         session_id=session_id,
         success=True,
-        details={"identifier": identifier}
+        details={"identifier": identifier},
     )
 
     log_security_event(

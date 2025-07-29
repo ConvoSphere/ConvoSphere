@@ -6,7 +6,7 @@ agent creation, handoffs, collaboration, and performance monitoring.
 It integrates with the MultiAgentManager and follows the existing service patterns.
 """
 
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
 from loguru import logger
@@ -14,13 +14,12 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.schemas.agent import (
-    AgentConfig,
+    AgentCollaborationRequest,
     AgentCreate,
+    AgentHandoffRequest,
+    AgentPerformanceMetrics,
     AgentResponse,
     AgentUpdate,
-    AgentHandoffRequest,
-    AgentCollaborationRequest,
-    AgentPerformanceMetrics,
 )
 from backend.app.services.multi_agent_manager import multi_agent_manager
 
@@ -33,7 +32,7 @@ class AgentService:
         self.db = db or get_db()
         self.multi_agent_manager = multi_agent_manager
 
-    async def get_available_agents(self) -> List[dict[str, Any]]:
+    async def get_available_agents(self) -> list[dict[str, Any]]:
         """
         Get list of available agents from the registry.
 
@@ -70,8 +69,16 @@ class AgentService:
                 user_id=agent_data.user_id,
                 is_public=agent_data.is_public,
                 is_template=agent_data.is_template,
-                created_at=agent_data.config.created_at if hasattr(agent_data.config, 'created_at') else None,
-                updated_at=agent_data.config.updated_at if hasattr(agent_data.config, 'updated_at') else None,
+                created_at=(
+                    agent_data.config.created_at
+                    if hasattr(agent_data.config, "created_at")
+                    else None
+                ),
+                updated_at=(
+                    agent_data.config.updated_at
+                    if hasattr(agent_data.config, "updated_at")
+                    else None
+                ),
             )
 
             logger.info(f"Created agent: {agent_data.config.name} with ID {agent_id}")
@@ -81,7 +88,9 @@ class AgentService:
             logger.error(f"Error creating agent: {e}")
             raise
 
-    async def update_agent(self, agent_id: str, agent_data: AgentUpdate) -> AgentResponse | None:
+    async def update_agent(
+        self, agent_id: str, agent_data: AgentUpdate
+    ) -> AgentResponse | None:
         """
         Update an existing agent.
 
@@ -110,8 +119,8 @@ class AgentService:
                 id=UUID(agent_id),
                 config=current_config,
                 user_id=UUID("00000000-0000-0000-0000-000000000000"),  # Placeholder
-                is_public=getattr(agent_data, 'is_public', False),
-                is_template=getattr(agent_data, 'is_template', False),
+                is_public=getattr(agent_data, "is_public", False),
+                is_template=getattr(agent_data, "is_template", False),
                 created_at=None,
                 updated_at=None,
             )
@@ -138,9 +147,8 @@ class AgentService:
                 self.multi_agent_manager.remove_agent_from_registry(agent_id)
                 logger.info(f"Deleted agent: {agent_id}")
                 return True
-            else:
-                logger.warning(f"Agent {agent_id} not found in registry")
-                return False
+            logger.warning(f"Agent {agent_id} not found in registry")
+            return False
 
         except Exception as e:
             logger.error(f"Error deleting agent {agent_id}: {e}")
@@ -158,22 +166,26 @@ class AgentService:
         """
         try:
             result = await self.multi_agent_manager.handoff_agent(request)
-            logger.info(f"Agent handoff completed: {request.from_agent_id} -> {request.to_agent_id}")
+            logger.info(
+                f"Agent handoff completed: {request.from_agent_id} -> {request.to_agent_id}"
+            )
             return {
                 "success": True,
                 "conversation": result.dict(),
                 "handoff_info": {
                     "from_agent": request.from_agent_id,
                     "to_agent": request.to_agent_id,
-                    "reason": request.reason
-                }
+                    "reason": request.reason,
+                },
             }
 
         except Exception as e:
             logger.error(f"Error during agent handoff: {e}")
             raise
 
-    async def start_collaboration(self, request: AgentCollaborationRequest) -> dict[str, Any]:
+    async def start_collaboration(
+        self, request: AgentCollaborationRequest
+    ) -> dict[str, Any]:
         """
         Start agent collaboration.
 
@@ -192,15 +204,17 @@ class AgentService:
                 "collaboration_info": {
                     "agents": request.agent_ids,
                     "type": request.collaboration_type,
-                    "strategy": request.coordination_strategy
-                }
+                    "strategy": request.coordination_strategy,
+                },
             }
 
         except Exception as e:
             logger.error(f"Error starting agent collaboration: {e}")
             raise
 
-    async def get_agent_performance(self, agent_id: str, conversation_id: str | None = None) -> List[AgentPerformanceMetrics]:
+    async def get_agent_performance(
+        self, agent_id: str, conversation_id: str | None = None
+    ) -> list[AgentPerformanceMetrics]:
         """
         Get performance metrics for an agent.
 
@@ -213,18 +227,22 @@ class AgentService:
         """
         try:
             metrics = self.multi_agent_manager.get_performance_metrics(
-                agent_id=agent_id,
-                conversation_id=conversation_id,
-                limit=100
+                agent_id=agent_id, conversation_id=conversation_id, limit=100
             )
-            logger.info(f"Retrieved {len(metrics)} performance metrics for agent {agent_id}")
+            logger.info(
+                f"Retrieved {len(metrics)} performance metrics for agent {agent_id}"
+            )
             return metrics
 
         except Exception as e:
-            logger.error(f"Error retrieving performance metrics for agent {agent_id}: {e}")
+            logger.error(
+                f"Error retrieving performance metrics for agent {agent_id}: {e}"
+            )
             raise
 
-    async def get_agent_state(self, conversation_id: str, agent_id: str) -> dict[str, Any] | None:
+    async def get_agent_state(
+        self, conversation_id: str, agent_id: str
+    ) -> dict[str, Any] | None:
         """
         Get current state of an agent in a conversation.
 
@@ -245,7 +263,9 @@ class AgentService:
             logger.error(f"Error retrieving agent state: {e}")
             raise
 
-    async def get_conversation_state(self, conversation_id: str) -> dict[str, Any] | None:
+    async def get_conversation_state(
+        self, conversation_id: str
+    ) -> dict[str, Any] | None:
         """
         Get multi-agent conversation state.
 

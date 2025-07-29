@@ -8,10 +8,25 @@ configuring middleware, routes, and application lifecycle events.
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
+from fastapi import FastAPI, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+from loguru import logger
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
+
 from backend.app.api.v1.api import api_router
 from backend.app.core.config import get_settings
 from backend.app.core.database import check_db_connection, init_db
 from backend.app.core.i18n import I18nMiddleware, i18n_manager, t
+
+# OpenTelemetry Configuration
+from backend.app.core.opentelemetry_config import (
+    initialize_opentelemetry,
+    shutdown_opentelemetry,
+)
 from backend.app.core.redis_client import close_redis, init_redis
 from backend.app.core.security_middleware import setup_security_middleware
 from backend.app.core.weaviate_client import (
@@ -20,20 +35,9 @@ from backend.app.core.weaviate_client import (
     create_schema_if_not_exists,
     init_weaviate,
 )
-from backend.app.services.performance_monitor import performance_monitor
 from backend.app.services.audit_service import audit_service
 from backend.app.services.enhanced_background_job_service import job_manager
-from fastapi import FastAPI, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
-from loguru import logger
-
-# OpenTelemetry Configuration
-from backend.app.core.opentelemetry_config import initialize_opentelemetry, shutdown_opentelemetry
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.middleware.sessions import SessionMiddleware
+from backend.app.services.performance_monitor import performance_monitor
 
 
 @asynccontextmanager
@@ -134,6 +138,7 @@ def create_application() -> FastAPI:
     # Initialize OpenTelemetry
     from backend.app.core.database import engine
     from backend.app.core.redis_client import redis_client
+
     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Setup security middleware first

@@ -67,11 +67,11 @@ def get_db() -> Generator[Session, None, None]:
 def create_default_admin_user():
     """Create and return a fallback admin user (development only)."""
     try:
+        from datetime import UTC, datetime
         from uuid import uuid4
-        from datetime import datetime, UTC
 
-        from backend.app.models.user import User
         from backend.app.core.security import get_password_hash
+        from backend.app.models.user import User
 
         db = next(get_db())
 

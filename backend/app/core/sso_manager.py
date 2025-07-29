@@ -11,6 +11,13 @@ from datetime import UTC, datetime
 from typing import Any
 
 import requests
+from ldap3 import SUBTREE, Connection, Server
+from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
+from saml2.client import Saml2Client
+from saml2.config import Config as SamlConfig
+from saml2.response import AuthnResponse
+from sqlalchemy.orm import Session
+
 from backend.app.models.domain_groups import DomainGroup
 from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
 from backend.app.utils.exceptions import (
@@ -19,12 +26,6 @@ from backend.app.utils.exceptions import (
     SSOConfigurationError,
     UserNotFoundError,
 )
-from ldap3 import SUBTREE, Connection, Server
-from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
-from saml2.client import Saml2Client
-from saml2.config import Config as SamlConfig
-from saml2.response import AuthnResponse
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

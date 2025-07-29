@@ -4,9 +4,11 @@ API v1 router configuration.
 This module configures the main API v1 router and includes all endpoint routers.
 """
 
+from fastapi import APIRouter
+
 from backend.app.api.v1.endpoints import (
-    ai,
     agents,
+    ai,
     assistants_management,
     auth,
     chat,
@@ -18,16 +20,15 @@ from backend.app.api.v1.endpoints import (
     knowledge,
     logs,
     mcp,
+    monitoring_endpoints,
     rag,
     search,
+    statistics_endpoints,
     tools,
     users,
     websocket,
-    statistics_endpoints,
 )
-from backend.app.api.v1.endpoints import monitoring_endpoints
 from backend.app.api.v1.endpoints.audit import router as audit_router
-from fastapi import APIRouter
 
 # Main API v1 router
 api_router = APIRouter()
@@ -38,9 +39,7 @@ api_router.include_router(users.router, prefix="/users", tags=["User Management"
 api_router.include_router(
     assistants_management.router, prefix="/assistants", tags=["Assistant Management"]
 )
-api_router.include_router(
-    agents.router, prefix="/agents", tags=["Agent Management"]
-)
+api_router.include_router(agents.router, prefix="/agents", tags=["Agent Management"])
 api_router.include_router(
     conversations.router, prefix="/conversations", tags=["Conversations"]
 )
@@ -71,9 +70,7 @@ api_router.include_router(
 )
 
 # Logs router
-api_router.include_router(
-    logs.router, prefix="/logs", tags=["Logs"]
-)
+api_router.include_router(logs.router, prefix="/logs", tags=["Logs"])
 
 # Statistics router (dashboard)
 api_router.include_router(

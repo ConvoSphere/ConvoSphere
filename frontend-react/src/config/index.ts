@@ -1,20 +1,33 @@
 // Get API URL from environment variable or use default
-const apiUrl =
-  process.env.VITE_API_URL || import.meta?.env?.VITE_API_URL || "http://localhost:8000";
-const wsUrl =
-  process.env.VITE_WS_URL ||
-  import.meta?.env?.VITE_WS_URL ||
-  "ws://localhost:8000";
+const getEnvVar = (key: string, defaultValue: string): string => {
+  // Check if we're in a test environment
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return process.env[key] || defaultValue;
+  }
+  
+  // Check for Vite environment variables
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env[key] || process.env[key] || defaultValue;
+  }
+  
+  // Fallback to process.env
+  return process.env[key] || defaultValue;
+};
+
+const apiUrl = getEnvVar('VITE_API_URL', 'http://localhost:8000');
+const wsUrl = getEnvVar('VITE_WS_URL', 'ws://localhost:8000');
 
 export const config = {
   apiUrl,
   wsUrl,
   isDevelopment:
-    process.env.NODE_ENV === "development" || import.meta?.env?.DEV,
-  isProduction: process.env.NODE_ENV === "production" || import.meta?.env?.PROD,
+    process.env.NODE_ENV === "development" || 
+    (typeof import.meta !== 'undefined' && import.meta.env?.DEV),
+  isProduction: 
+    process.env.NODE_ENV === "production" || 
+    (typeof import.meta !== 'undefined' && import.meta.env?.PROD),
   enableDebug:
-    process.env.VITE_ENABLE_DEBUG === "true" ||
-    import.meta?.env?.VITE_ENABLE_DEBUG === "true",
+    getEnvVar('VITE_ENABLE_DEBUG', 'false') === 'true',
   wsEndpoints: {
     chat: "/api/v1/chat/ws/",
     notifications: "/api/v1/ws/notifications",
