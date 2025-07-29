@@ -17,8 +17,13 @@ let isLoopDetected = false;
 
 // Request interceptor - simplified to prevent loops
 api.interceptors.request.use(async (config: any) => {
-  // Skip all token handling for auth endpoints
-  if (config.url?.includes('/auth/')) {
+  // Skip token handling only for auth endpoints that don't need authentication
+  if (config.url?.includes('/auth/') && 
+      !config.url?.includes('/auth/me') && 
+      !config.url?.includes('/auth/sso/link') &&
+      !config.url?.includes('/auth/sso/unlink') &&
+      !config.url?.includes('/auth/sso/provisioning') &&
+      !config.url?.includes('/auth/sso/bulk-sync')) {
     return config;
   }
 
@@ -65,8 +70,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Skip auth endpoints completely
-      if (originalRequest.url?.includes('/auth/')) {
+      // Skip auth endpoints that don't need authentication
+      if (originalRequest.url?.includes('/auth/') && 
+          !originalRequest.url?.includes('/auth/me') && 
+          !originalRequest.url?.includes('/auth/sso/link') &&
+          !originalRequest.url?.includes('/auth/sso/unlink') &&
+          !originalRequest.url?.includes('/auth/sso/provisioning') &&
+          !originalRequest.url?.includes('/auth/sso/bulk-sync')) {
         return Promise.reject(error);
       }
 
