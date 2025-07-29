@@ -28,14 +28,17 @@ from pathlib import Path
 
 def print_success(message):
     """Print success message."""
+    print(f"✅ {message}")
 
 
 def print_error(message):
     """Print error message."""
+    print(f"❌ {message}")
 
 
 def print_info(message):
     """Print info message."""
+    print(f"ℹ️  {message}")
 
 
 def db_migrate():
@@ -116,6 +119,160 @@ def db_downgrade(revision):
         print_error(
             "Alembic not found. Please install alembic or run in a virtual environment with backend dependencies.",
         )
+        sys.exit(1)
+
+
+def db_test_connection():
+    """Test database connection."""
+    try:
+        # Import database engine from cli.py approach
+        from sqlalchemy import create_engine, text
+        from backend.app.core.config import settings
+        
+        engine = create_engine(settings.database_url)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            print_success("Database connection successful")
+    except Exception as e:
+        print_error(f"Database connection failed: {e}")
+        sys.exit(1)
+
+
+def db_info():
+    """Show database information."""
+    try:
+        from sqlalchemy import create_engine, text
+        from backend.app.core.config import settings
+        
+        engine = create_engine(settings.database_url)
+        with engine.connect() as conn:
+            # Get database name
+            result = conn.execute(text("SELECT current_database()"))
+            db_name = result.scalar()
+            print_info(f"Database: {db_name}")
+
+            # Get table count
+            result = conn.execute(
+                text(
+                    """
+                SELECT COUNT(*) FROM information_schema.tables
+                WHERE table_schema = 'public'
+            """
+                ),
+            )
+            table_count = result.scalar()
+            print_info(f"Tables: {table_count}")
+
+            # Get user count
+            result = conn.execute(text("SELECT COUNT(*) FROM users"))
+            user_count = result.scalar()
+            print_info(f"Users: {user_count}")
+
+    except Exception as e:
+        print_error(f"Error getting database info: {e}")
+        sys.exit(1)
+
+
+def db_reset(confirm=False):
+    """Completely reset the database - drop all tables and recreate them."""
+    if not confirm:
+        response = input(
+            "⚠️  WARNING: This will completely delete all data in the database. "
+            "This action cannot be undone. Are you sure? (yes/no): ",
+        )
+        if response.lower() != "yes":
+            return
+
+    try:
+        from sqlalchemy import create_engine, text
+        from backend.app.core.config import settings
+        
+        engine = create_engine(settings.database_url)
+        
+        # Step 1: Drop all tables
+        with engine.connect() as conn:
+            # Disable foreign key checks temporarily
+            conn.execute(text("SET session_replication_role = replica;"))
+
+            # Get all table names
+            result = conn.execute(
+                text(
+                    """
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
+                AND tablename != 'alembic_version'
+            """
+                )
+            )
+            tables = [row[0] for row in result]
+
+            # Drop all tables
+            for table in tables:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+
+            # Re-enable foreign key checks
+            conn.execute(text("SET session_replication_role = DEFAULT;"))
+            conn.commit()
+
+        # Step 2: Reset Alembic version table
+        with engine.connect() as conn:
+            conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
+            conn.commit()
+
+        # Step 3: Run migrations to recreate all tables
+        db_migrate()
+
+        print_success("Database has been completely reset and reinitialized")
+
+    except Exception as e:
+        print_error(f"Database reset failed: {e}")
+        sys.exit(1)
+
+
+def db_clear_data(confirm=False):
+    """Clear all data from tables but keep the structure."""
+    if not confirm:
+        response = input(
+            "⚠️  WARNING: This will delete all data from all tables but keep the structure. "
+            "This action cannot be undone. Are you sure? (yes/no): ",
+        )
+        if response.lower() != "yes":
+            return
+
+    try:
+        from sqlalchemy import create_engine, text
+        from backend.app.core.config import settings
+        
+        engine = create_engine(settings.database_url)
+        
+        with engine.connect() as conn:
+            # Disable foreign key checks temporarily
+            conn.execute(text("SET session_replication_role = replica;"))
+
+            # Get all table names
+            result = conn.execute(
+                text(
+                    """
+                SELECT tablename FROM pg_tables
+                WHERE schemaname = 'public'
+                AND tablename != 'alembic_version'
+            """
+                )
+            )
+            tables = [row[0] for row in result]
+
+            # Truncate all tables
+            for table in tables:
+                conn.execute(text(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE"))
+
+            # Re-enable foreign key checks
+            conn.execute(text("SET session_replication_role = DEFAULT;"))
+            conn.commit()
+
+        print_success("All data has been cleared from the database")
+
+    except Exception as e:
+        print_error(f"Data clearing failed: {e}")
         sys.exit(1)
 
 
@@ -329,6 +486,36 @@ def monitoring_health():
         print_error(f"Database check error: {e}")
 
 
+def monitoring_logs(lines=50, level="INFO"):
+    """Show recent application logs."""
+    try:
+        from backend.app.core.config import settings
+        
+        log_file = settings.log_file
+        if not os.path.exists(log_file):
+            print_error(f"Log file not found: {log_file}")
+            return
+
+        with open(log_file) as f:
+            log_lines = f.readlines()
+
+        # Filter by level and get last N lines
+        filtered_lines = [line for line in log_lines if level in line]
+        recent_lines = (
+            filtered_lines[-lines:] if len(filtered_lines) > lines else filtered_lines
+        )
+
+        if recent_lines:
+            print_info(f"Recent {level} logs (last {len(recent_lines)} lines):")
+            for line in recent_lines:
+                print(line.rstrip())
+        else:
+            print_info(f"No {level} logs found in recent {lines} lines")
+
+    except Exception as e:
+        print_error(f"Error reading logs: {e}")
+
+
 def config_show():
     """Show current configuration."""
 
@@ -402,21 +589,58 @@ def dev_api_test(url="http://localhost:8000"):
         # Health check
         response = requests.get(f"{url}/health", timeout=5)
         if response.status_code == 200:
-            pass
+            print_success("Health check: OK")
         else:
-            pass
+            print_error(f"Health check failed: {response.status_code}")
 
         # API docs
         response = requests.get(f"{url}/docs", timeout=5)
         if response.status_code == 200:
-            pass
+            print_success("API docs: OK")
         else:
-            pass
+            print_error(f"API docs failed: {response.status_code}")
 
     except ImportError:
         print_error("API test failed: requests module not available")
     except Exception as e:
         print_error(f"API test failed: {e}")
+
+
+def dev_test_data(users=5):
+    """Create test data for development."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.user import UserRole, UserStatus
+        from backend.app.schemas.user import UserCreate
+        from backend.app.services.user_service import UserService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        user_service = UserService(db)
+
+        for i in range(users):
+            user_data = UserCreate(
+                email=f"test{i}@example.com",
+                username=f"testuser{i}",
+                password="testpass123",
+                first_name=f"Test{i}",
+                last_name="User",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE,
+            )
+            user_service.create_user(user_data)
+
+        print_success(f"Created {users} test users successfully")
+
+    except Exception as e:
+        print_error(f"Error creating test data: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
 
 
 def user_create_admin():
@@ -785,6 +1009,368 @@ def user_reset_password():
             db.close()
 
 
+def debug_auth_flow():
+    """Run authentication flow debug script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "debug_auth_flow.js"
+    if not script_path.exists():
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running authentication flow debug script...")
+    print_info("Open browser console and navigate to the application to see debug output")
+    print_info(f"Script location: {script_path}")
+
+
+def debug_frontend_auth():
+    """Run frontend authentication debug script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "debug_frontend_auth.html"
+    if not script_path.exists():
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication debug script...")
+    print_info(f"Open this file in your browser: {script_path}")
+    print_info("This will test localStorage and API calls")
+
+
+def test_auth_fix():
+    """Run authentication fix test script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "test_auth_fix.py"
+    if not script_path.exists():
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running authentication fix test...")
+    result = subprocess.run([sys.executable, str(script_path)], cwd=script_path.parent)
+    if result.returncode == 0:
+        print_success("Authentication fix test completed successfully")
+    else:
+        print_error("Authentication fix test failed")
+
+
+def test_frontend_auth():
+    """Run frontend authentication test script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "test_frontend_auth.py"
+    if not script_path.exists():
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication test...")
+    result = subprocess.run([sys.executable, str(script_path)], cwd=script_path.parent)
+    if result.returncode == 0:
+        print_success("Frontend authentication test completed successfully")
+    else:
+        print_error("Frontend authentication test failed")
+
+
+def monitoring_containers():
+    """Run container monitoring script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "monitor_containers.sh"
+    if not script_path.exists():
+        print_error(f"Monitoring script not found: {script_path}")
+        return
+    
+    print_info("Starting container monitoring...")
+    print_info("Press Ctrl+C to stop monitoring")
+    try:
+        subprocess.run(["bash", str(script_path)], cwd=script_path.parent)
+    except KeyboardInterrupt:
+        print_info("Monitoring stopped by user")
+
+
+def assistant_list():
+    """List all assistants."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant, AssistantStatus
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get all assistants (admin view)
+        assistants = db.query(Assistant).all()
+        
+        if not assistants:
+            print_info("No assistants found")
+            return
+
+        print_info(f"Found {len(assistants)} assistants:")
+        print("")
+        
+        for assistant in assistants:
+            status_icon = "✅" if assistant.status == AssistantStatus.ACTIVE else "⏸️" if assistant.status == AssistantStatus.INACTIVE else "📝" if assistant.status == AssistantStatus.DRAFT else "🔧"
+            public_icon = "🌐" if assistant.is_public else "🔒"
+            
+            print(f"{status_icon} {public_icon} {assistant.name} (ID: {assistant.id})")
+            print(f"    Status: {assistant.status.value}")
+            print(f"    Model: {assistant.model}")
+            print(f"    Category: {assistant.category or 'N/A'}")
+            print(f"    Tools: {assistant.tool_count}")
+            print(f"    Creator: {assistant.creator_id}")
+            print(f"    Created: {assistant.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            print("")
+
+    except Exception as e:
+        print_error(f"Error listing assistants: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_show(assistant_id: str):
+    """Show detailed information about an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        print_info(f"Assistant Details: {assistant.name}")
+        print("=" * 50)
+        print(f"ID: {assistant.id}")
+        print(f"Name: {assistant.name}")
+        print(f"Description: {assistant.description or 'N/A'}")
+        print(f"Status: {assistant.status.value}")
+        print(f"Model: {assistant.model}")
+        print(f"Temperature: {assistant.temperature}")
+        print(f"Max Tokens: {assistant.max_tokens}")
+        print(f"Category: {assistant.category or 'N/A'}")
+        print(f"Public: {'Yes' if assistant.is_public else 'No'}")
+        print(f"Template: {'Yes' if assistant.is_template else 'No'}")
+        print(f"Tools Enabled: {'Yes' if assistant.tools_enabled else 'No'}")
+        print(f"Tool Count: {assistant.tool_count}")
+        print(f"Creator ID: {assistant.creator_id}")
+        print(f"Version: {assistant.version}")
+        print(f"Created: {assistant.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Updated: {assistant.updated_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        if assistant.tags:
+            print(f"Tags: {', '.join(assistant.tags)}")
+        
+        if assistant.personality:
+            print(f"Personality: {assistant.personality}")
+        
+        if assistant.system_prompt:
+            print(f"System Prompt: {assistant.system_prompt[:100]}...")
+        
+        if assistant.instructions:
+            print(f"Instructions: {assistant.instructions[:100]}...")
+
+    except Exception as e:
+        print_error(f"Error showing assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_create():
+    """Create a new assistant interactively."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import AssistantStatus
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        print_info("Creating new assistant...")
+        print("")
+        
+        # Get input from user
+        name = input("Assistant name: ").strip()
+        if not name:
+            print_error("Name is required")
+            return
+        
+        description = input("Description (optional): ").strip() or None
+        personality = input("Personality (optional): ").strip() or None
+        system_prompt = input("System prompt: ").strip()
+        if not system_prompt:
+            print_error("System prompt is required")
+            return
+        
+        instructions = input("Instructions (optional): ").strip() or None
+        model = input("Model (default: gpt-4): ").strip() or "gpt-4"
+        temperature = input("Temperature (default: 0.7): ").strip() or "0.7"
+        max_tokens = input("Max tokens (default: 4096): ").strip() or "4096"
+        category = input("Category (optional): ").strip() or None
+        is_public = input("Public (y/N): ").strip().lower() == 'y'
+        
+        # Create assistant data object
+        class AssistantCreate:
+            def __init__(self, **kwargs):
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+        
+        assistant_data = AssistantCreate(
+            name=name,
+            description=description,
+            personality=personality,
+            system_prompt=system_prompt,
+            instructions=instructions,
+            model=model,
+            temperature=float(temperature),
+            max_tokens=int(max_tokens),
+            category=category,
+            is_public=is_public,
+            tags=[],
+            tools_config=[]
+        )
+        
+        # Create assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        assistant = assistant_service.create_assistant(assistant_data, admin_user_id)
+        
+        print_success(f"Assistant '{assistant.name}' created successfully with ID: {assistant.id}")
+
+    except Exception as e:
+        print_error(f"Error creating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_delete(assistant_id: str, confirm: bool = False):
+    """Delete an assistant."""
+    if not confirm:
+        response = input(f"⚠️  WARNING: This will delete assistant {assistant_id}. Are you sure? (yes/no): ")
+        if response.lower() != "yes":
+            print_info("Deletion cancelled")
+            return
+
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Delete assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        success = assistant_service.delete_assistant(assistant_id, admin_user_id)
+        
+        if success:
+            print_success(f"Assistant '{assistant.name}' deleted successfully")
+        else:
+            print_error("Failed to delete assistant")
+
+    except Exception as e:
+        print_error(f"Error deleting assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_activate(assistant_id: str):
+    """Activate an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Activate assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        updated_assistant = assistant_service.activate_assistant(assistant_id, admin_user_id)
+        
+        if updated_assistant:
+            print_success(f"Assistant '{assistant.name}' activated successfully")
+        else:
+            print_error("Failed to activate assistant")
+
+    except Exception as e:
+        print_error(f"Error activating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_deactivate(assistant_id: str):
+    """Deactivate an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Deactivate assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        updated_assistant = assistant_service.deactivate_assistant(assistant_id, admin_user_id)
+        
+        if updated_assistant:
+            print_success(f"Assistant '{assistant.name}' deactivated successfully")
+        else:
+            print_error("Failed to deactivate assistant")
+
+    except Exception as e:
+        print_error(f"Error deactivating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
 def show_help():
     """Show help message."""
 
@@ -799,6 +1385,10 @@ def main():
     db_subparsers = db_parser.add_subparsers(dest="db_command")
     db_subparsers.add_parser("migrate", help="Run migrations")
     db_subparsers.add_parser("status", help="Show migration status")
+    db_subparsers.add_parser("test-connection", help="Test database connection")
+    db_subparsers.add_parser("info", help="Show database information")
+    db_subparsers.add_parser("reset", help="Completely reset database (drop all tables and recreate)")
+    db_subparsers.add_parser("clear-data", help="Clear all data but keep table structure")
 
     downgrade_parser = db_subparsers.add_parser(
         "downgrade",
@@ -886,6 +1476,11 @@ def main():
     monitoring_parser = subparsers.add_parser("monitoring", help="System monitoring")
     monitoring_subparsers = monitoring_parser.add_subparsers(dest="monitoring_command")
     monitoring_subparsers.add_parser("health", help="Check system health")
+    monitoring_subparsers.add_parser("containers", help="Monitor containers")
+    
+    logs_parser = monitoring_subparsers.add_parser("logs", help="Show logs")
+    logs_parser.add_argument("--lines", type=int, default=50, help="Number of lines")
+    logs_parser.add_argument("--level", default="INFO", help="Log level")
 
     # Config commands
     config_parser = subparsers.add_parser("config", help="Configuration management")
@@ -897,6 +1492,14 @@ def main():
     dev_parser = subparsers.add_parser("dev", help="Development tools")
     dev_subparsers = dev_parser.add_subparsers(dest="dev_command")
 
+    test_data_parser = dev_subparsers.add_parser("test-data", help="Create test data")
+    test_data_parser.add_argument(
+        "--users",
+        type=int,
+        default=5,
+        help="Number of users",
+    )
+
     dev_subparsers.add_parser("quality-check", help="Run code quality checks")
 
     api_test_parser = dev_subparsers.add_parser("api-test", help="Run API tests")
@@ -905,6 +1508,33 @@ def main():
         default="http://localhost:8000",
         help="API URL",
     )
+
+    # Debug commands
+    debug_parser = subparsers.add_parser("debug", help="Debugging tools")
+    debug_subparsers = debug_parser.add_subparsers(dest="debug_command")
+    debug_subparsers.add_parser("auth-flow", help="Debug authentication flow")
+    debug_subparsers.add_parser("frontend-auth", help="Debug frontend authentication")
+    debug_subparsers.add_parser("test-auth-fix", help="Test authentication fix")
+    debug_subparsers.add_parser("test-frontend-auth", help="Test frontend authentication")
+
+    # Assistant commands
+    assistant_parser = subparsers.add_parser("assistant", help="Assistant management")
+    assistant_subparsers = assistant_parser.add_subparsers(dest="assistant_command")
+    assistant_subparsers.add_parser("list", help="List all assistants")
+    assistant_subparsers.add_parser("create", help="Create a new assistant")
+    
+    show_parser = assistant_subparsers.add_parser("show", help="Show assistant details")
+    show_parser.add_argument("assistant_id", help="Assistant ID")
+    
+    delete_parser = assistant_subparsers.add_parser("delete", help="Delete an assistant")
+    delete_parser.add_argument("assistant_id", help="Assistant ID")
+    delete_parser.add_argument("--confirm", action="store_true", help="Skip confirmation")
+    
+    activate_parser = assistant_subparsers.add_parser("activate", help="Activate an assistant")
+    activate_parser.add_argument("assistant_id", help="Assistant ID")
+    
+    deactivate_parser = assistant_subparsers.add_parser("deactivate", help="Deactivate an assistant")
+    deactivate_parser.add_argument("assistant_id", help="Assistant ID")
 
     args = parser.parse_args()
 
@@ -920,6 +1550,14 @@ def main():
             db_status()
         elif args.db_command == "downgrade":
             db_downgrade(args.revision)
+        elif args.db_command == "test-connection":
+            db_test_connection()
+        elif args.db_command == "info":
+            db_info()
+        elif args.db_command == "reset":
+            db_reset()
+        elif args.db_command == "clear-data":
+            db_clear_data()
 
     elif args.command == "user":
         if args.user_command == "create-admin":
@@ -969,6 +1607,10 @@ def main():
     elif args.command == "monitoring":
         if args.monitoring_command == "health":
             monitoring_health()
+        elif args.monitoring_command == "containers":
+            monitoring_containers()
+        elif args.monitoring_command == "logs":
+            monitoring_logs(args.lines, args.level)
 
     elif args.command == "config":
         if args.config_command == "show":
@@ -977,10 +1619,36 @@ def main():
             config_validate()
 
     elif args.command == "dev":
-        if args.dev_command == "quality-check":
+        if args.dev_command == "test-data":
+            dev_test_data(args.users)
+        elif args.dev_command == "quality-check":
             dev_quality_check()
         elif args.dev_command == "api-test":
             dev_api_test(args.url)
+
+    elif args.command == "debug":
+        if args.debug_command == "auth-flow":
+            debug_auth_flow()
+        elif args.debug_command == "frontend-auth":
+            debug_frontend_auth()
+        elif args.debug_command == "test-auth-fix":
+            test_auth_fix()
+        elif args.debug_command == "test-frontend-auth":
+            test_frontend_auth()
+
+    elif args.command == "assistant":
+        if args.assistant_command == "list":
+            assistant_list()
+        elif args.assistant_command == "create":
+            assistant_create()
+        elif args.assistant_command == "show":
+            assistant_show(args.assistant_id)
+        elif args.assistant_command == "delete":
+            assistant_delete(args.assistant_id, args.confirm)
+        elif args.assistant_command == "activate":
+            assistant_activate(args.assistant_id)
+        elif args.assistant_command == "deactivate":
+            assistant_deactivate(args.assistant_id)
 
 
 if __name__ == "__main__":

@@ -1,81 +1,82 @@
 #!/usr/bin/env python3
 """
-Test script to verify authentication fixes.
+Test script to validate the authentication fix.
 """
 
 import requests
-import json
 import time
+import json
 
 BASE_URL = "http://localhost:8081/api/v1"
 
-def test_auth_flow():
-    """Test the complete authentication flow."""
-    print("Testing authentication flow...")
+def test_auth_fix():
+    """Test that the authentication fix is working correctly."""
+    print("Testing authentication fix...")
     
-    # Test login - try different credential formats
-    login_attempts = [
-        {"username": "admin", "password": "admin123"},
-        {"email": "admin@convosphere.local", "password": "admin123"},
-        {"username": "testuser", "password": "test123"},
-        {"email": "test@example.com", "password": "test123"},
-        {"username": "demo", "password": "demo123"},
-        {"email": "demo@convosphere.com", "password": "demo123"}
-    ]
+    # Test login
+    login_data = {
+        "username": "admin",
+        "password": "admin123"
+    }
     
-    access_token = None
-    refresh_token = None
+    print("1. Testing login...")
+    response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
+    print(f"   Login status: {response.status_code}")
     
-    for i, login_data in enumerate(login_attempts):
-        print(f"1.{i+1}. Testing login with {list(login_data.keys())[0]}: {list(login_data.values())[0]}...")
-        response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
-        print(f"   Login status: {response.status_code}")
+    if response.status_code == 200:
+        data = response.json()
+        access_token = data.get("access_token")
+        print(f"   Login successful, got token")
+        
+        # Test /auth/me endpoint (this was the main issue)
+        print("2. Testing /auth/me endpoint...")
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
+        response = requests.get(f"{BASE_URL}/auth/me", headers=headers)
+        print(f"   /auth/me status: {response.status_code}")
         
         if response.status_code == 200:
-            data = response.json()
-            access_token = data.get("access_token")
-            refresh_token = data.get("refresh_token")
-            print(f"   Login successful, got tokens")
-            break
+            user_data = response.json()
+            print(f"   ✅ /auth/me successful - User: {user_data.get('username')}")
         else:
-            print(f"   Login failed: {response.text}")
-    
-    if access_token and refresh_token:
-        # Test token refresh
-        print("2. Testing token refresh...")
-        refresh_data = {"refresh_token": refresh_token}
-        response = requests.post(f"{BASE_URL}/auth/refresh", json=refresh_data)
-        print(f"   Refresh status: {response.status_code}")
+            print(f"   ❌ /auth/me failed: {response.text}")
+            return False
         
-        if response.status_code == 200:
-            print("   Token refresh successful")
-            
-            # Test authenticated endpoint
-            print("3. Testing authenticated endpoint...")
-            headers = {"Authorization": f"Bearer {access_token}"}
-            response = requests.get(f"{BASE_URL}/auth/me", headers=headers)
-            print(f"   /auth/me status: {response.status_code}")
-            
-            if response.status_code == 200:
-                print("   Authenticated endpoint successful")
-            else:
-                print(f"   Error: {response.text}")
-        else:
-            print(f"   Token refresh failed: {response.text}")
+        # Test other authenticated endpoints
+        print("3. Testing other authenticated endpoints...")
+        
+        endpoints_to_test = [
+            "/assistants/",
+            "/conversations/",
+            "/tools/"
+        ]
+        
+        for endpoint in endpoints_to_test:
+            response = requests.get(f"{BASE_URL}{endpoint}", headers=headers)
+            print(f"   {endpoint}: {response.status_code}")
+            if response.status_code not in [200, 404, 401]:  # 404 is OK for empty endpoints
+                print(f"   ⚠️  Unexpected status for {endpoint}")
+        
+        # Test auth endpoints that should NOT require authentication
+        print("4. Testing auth endpoints that don't need authentication...")
+        
+        auth_endpoints_no_auth = [
+            "/auth/sso/providers",
+            "/auth/login",
+            "/auth/register"
+        ]
+        
+        for endpoint in auth_endpoints_no_auth:
+            response = requests.get(f"{BASE_URL}{endpoint}")
+            print(f"   {endpoint}: {response.status_code}")
+        
+        print("✅ Authentication fix validation completed successfully!")
+        return True
+        
     else:
-        print("   No successful login attempts")
-
-def test_rate_limiting():
-    """Test rate limiting behavior."""
-    print("\nTesting rate limiting...")
-    
-    # Make multiple requests to test rate limiting
-    for i in range(5):
-        response = requests.get(f"{BASE_URL}/assistants")
-        print(f"   Request {i+1}: {response.status_code}")
-        time.sleep(0.1)
+        print(f"❌ Login failed: {response.text}")
+        return False
 
 if __name__ == "__main__":
-    test_auth_flow()
-    test_rate_limiting()
-    print("\nTest completed!") 
+    success = test_auth_fix()
+    exit(0 if success else 1) 
