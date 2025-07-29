@@ -28,14 +28,17 @@ from pathlib import Path
 
 def print_success(message):
     """Print success message."""
+    print(f"✅ {message}")
 
 
 def print_error(message):
     """Print error message."""
+    print(f"❌ {message}")
 
 
 def print_info(message):
     """Print info message."""
+    print(f"ℹ️  {message}")
 
 
 def db_migrate():
@@ -785,6 +788,75 @@ def user_reset_password():
             db.close()
 
 
+def debug_auth_flow():
+    """Run authentication flow debug script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "debug_auth_flow.js"
+    if not script_path.exists():
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running authentication flow debug script...")
+    print_info("Open browser console and navigate to the application to see debug output")
+    print_info(f"Script location: {script_path}")
+
+
+def debug_frontend_auth():
+    """Run frontend authentication debug script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "debug_frontend_auth.html"
+    if not script_path.exists():
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication debug script...")
+    print_info(f"Open this file in your browser: {script_path}")
+    print_info("This will test localStorage and API calls")
+
+
+def test_auth_fix():
+    """Run authentication fix test script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "test_auth_fix.py"
+    if not script_path.exists():
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running authentication fix test...")
+    result = subprocess.run([sys.executable, str(script_path)], cwd=script_path.parent)
+    if result.returncode == 0:
+        print_success("Authentication fix test completed successfully")
+    else:
+        print_error("Authentication fix test failed")
+
+
+def test_frontend_auth():
+    """Run frontend authentication test script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "test_frontend_auth.py"
+    if not script_path.exists():
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication test...")
+    result = subprocess.run([sys.executable, str(script_path)], cwd=script_path.parent)
+    if result.returncode == 0:
+        print_success("Frontend authentication test completed successfully")
+    else:
+        print_error("Frontend authentication test failed")
+
+
+def monitoring_containers():
+    """Run container monitoring script."""
+    script_path = Path(__file__).parent.parent / "scripts" / "monitor_containers.sh"
+    if not script_path.exists():
+        print_error(f"Monitoring script not found: {script_path}")
+        return
+    
+    print_info("Starting container monitoring...")
+    print_info("Press Ctrl+C to stop monitoring")
+    try:
+        subprocess.run(["bash", str(script_path)], cwd=script_path.parent)
+    except KeyboardInterrupt:
+        print_info("Monitoring stopped by user")
+
+
 def show_help():
     """Show help message."""
 
@@ -886,6 +958,7 @@ def main():
     monitoring_parser = subparsers.add_parser("monitoring", help="System monitoring")
     monitoring_subparsers = monitoring_parser.add_subparsers(dest="monitoring_command")
     monitoring_subparsers.add_parser("health", help="Check system health")
+    monitoring_subparsers.add_parser("containers", help="Monitor containers")
 
     # Config commands
     config_parser = subparsers.add_parser("config", help="Configuration management")
@@ -905,6 +978,14 @@ def main():
         default="http://localhost:8000",
         help="API URL",
     )
+
+    # Debug commands
+    debug_parser = subparsers.add_parser("debug", help="Debugging tools")
+    debug_subparsers = debug_parser.add_subparsers(dest="debug_command")
+    debug_subparsers.add_parser("auth-flow", help="Debug authentication flow")
+    debug_subparsers.add_parser("frontend-auth", help="Debug frontend authentication")
+    debug_subparsers.add_parser("test-auth-fix", help="Test authentication fix")
+    debug_subparsers.add_parser("test-frontend-auth", help="Test frontend authentication")
 
     args = parser.parse_args()
 
@@ -969,6 +1050,8 @@ def main():
     elif args.command == "monitoring":
         if args.monitoring_command == "health":
             monitoring_health()
+        elif args.monitoring_command == "containers":
+            monitoring_containers()
 
     elif args.command == "config":
         if args.config_command == "show":
@@ -981,6 +1064,16 @@ def main():
             dev_quality_check()
         elif args.dev_command == "api-test":
             dev_api_test(args.url)
+
+    elif args.command == "debug":
+        if args.debug_command == "auth-flow":
+            debug_auth_flow()
+        elif args.debug_command == "frontend-auth":
+            debug_frontend_auth()
+        elif args.debug_command == "test-auth-fix":
+            test_auth_fix()
+        elif args.debug_command == "test-frontend-auth":
+            test_frontend_auth()
 
 
 if __name__ == "__main__":

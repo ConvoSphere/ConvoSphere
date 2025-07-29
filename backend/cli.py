@@ -680,6 +680,75 @@ def show_help():
     """Show help message."""
 
 
+def debug_auth_flow():
+    """Run authentication flow debug script."""
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "debug_auth_flow.js")
+    if not os.path.exists(script_path):
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running authentication flow debug script...")
+    print_info("Open browser console and navigate to the application to see debug output")
+    print_info(f"Script location: {script_path}")
+
+
+def debug_frontend_auth():
+    """Run frontend authentication debug script."""
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "debug_frontend_auth.html")
+    if not os.path.exists(script_path):
+        print_error(f"Debug script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication debug script...")
+    print_info(f"Open this file in your browser: {script_path}")
+    print_info("This will test localStorage and API calls")
+
+
+def test_auth_fix():
+    """Run authentication fix test script."""
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "test_auth_fix.py")
+    if not os.path.exists(script_path):
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running authentication fix test...")
+    result = subprocess.run([sys.executable, script_path], cwd=os.path.dirname(script_path))
+    if result.returncode == 0:
+        print_success("Authentication fix test completed successfully")
+    else:
+        print_error("Authentication fix test failed")
+
+
+def test_frontend_auth():
+    """Run frontend authentication test script."""
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "test_frontend_auth.py")
+    if not os.path.exists(script_path):
+        print_error(f"Test script not found: {script_path}")
+        return
+    
+    print_info("Running frontend authentication test...")
+    result = subprocess.run([sys.executable, script_path], cwd=os.path.dirname(script_path))
+    if result.returncode == 0:
+        print_success("Frontend authentication test completed successfully")
+    else:
+        print_error("Frontend authentication test failed")
+
+
+def monitoring_containers():
+    """Run container monitoring script."""
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "monitor_containers.sh")
+    if not os.path.exists(script_path):
+        print_error(f"Monitoring script not found: {script_path}")
+        return
+    
+    print_info("Starting container monitoring...")
+    print_info("Press Ctrl+C to stop monitoring")
+    try:
+        subprocess.run(["bash", script_path], cwd=os.path.dirname(script_path))
+    except KeyboardInterrupt:
+        print_info("Monitoring stopped by user")
+
+
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="ConvoSphere Admin CLI")
@@ -766,6 +835,20 @@ def main():
         help="API URL",
     )
 
+    # Debug commands
+    debug_parser = subparsers.add_parser("debug", help="Debugging tools")
+    debug_subparsers = debug_parser.add_subparsers(dest="debug_command")
+    debug_subparsers.add_parser("auth-flow", help="Debug authentication flow")
+    debug_subparsers.add_parser("frontend-auth", help="Debug frontend authentication")
+    debug_subparsers.add_parser("test-auth-fix", help="Test authentication fix")
+    debug_subparsers.add_parser("test-frontend-auth", help="Test frontend authentication")
+
+    # Monitoring commands
+    monitoring_parser = subparsers.add_parser("monitoring", help="System monitoring")
+    monitoring_subparsers = monitoring_parser.add_subparsers(dest="monitoring_command")
+    monitoring_subparsers.add_parser("health", help="Check system health")
+    monitoring_subparsers.add_parser("containers", help="Monitor containers")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -805,12 +888,6 @@ def main():
         elif args.backup_command == "list":
             backup_list(args.backup_dir)
 
-    elif args.command == "monitoring":
-        if args.monitoring_command == "health":
-            monitoring_health()
-        elif args.monitoring_command == "logs":
-            monitoring_logs(args.lines, args.level)
-
     elif args.command == "config":
         if args.config_command == "show":
             config_show()
@@ -824,6 +901,24 @@ def main():
             dev_quality_check()
         elif args.dev_command == "api-test":
             dev_api_test(args.url)
+
+    elif args.command == "debug":
+        if args.debug_command == "auth-flow":
+            debug_auth_flow()
+        elif args.debug_command == "frontend-auth":
+            debug_frontend_auth()
+        elif args.debug_command == "test-auth-fix":
+            test_auth_fix()
+        elif args.debug_command == "test-frontend-auth":
+            test_frontend_auth()
+
+    elif args.command == "monitoring":
+        if args.monitoring_command == "health":
+            monitoring_health()
+        elif args.monitoring_command == "logs":
+            monitoring_logs(args.lines, args.level)
+        elif args.monitoring_command == "containers":
+            monitoring_containers()
 
 
 if __name__ == "__main__":
