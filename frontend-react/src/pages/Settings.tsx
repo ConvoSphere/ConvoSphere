@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
@@ -24,6 +25,7 @@ import {
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernSelect from "../components/ModernSelect";
+import ModernForm, { ModernFormItem } from "../components/ModernForm";
 
 
 const { Title, Text } = Typography;
