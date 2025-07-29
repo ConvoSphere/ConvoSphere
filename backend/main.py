@@ -30,18 +30,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-# OpenTelemetry-Setup (disabled for testing)
-# from opentelemetry import metrics, trace
-# from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-# from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-# from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-# from opentelemetry.instrumentation.redis import RedisInstrumentor
-# from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-# from opentelemetry.sdk.metrics import MeterProvider
-# from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-# from opentelemetry.sdk.resources import Resource
-# from opentelemetry.sdk.trace import TracerProvider
-# from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# OpenTelemetry Configuration
+from backend.app.core.opentelemetry_config import initialize_opentelemetry, shutdown_opentelemetry
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -110,36 +100,15 @@ async def lifespan(_):
         job_manager.stop()
         await close_redis()
         close_weaviate()
+        shutdown_opentelemetry()
         logger.info("All services closed successfully")
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error during shutdown: {e}")
 
 
 def configure_opentelemetry(app, db_engine=None, redis_client=None):
-    # OpenTelemetry disabled for testing
-    pass
-    # resource = Resource.create({
-    #     "service.name": os.getenv("OTEL_SERVICE_NAME", "ai-assistant-platform"),
-    #     "service.version": get_settings().app_version,
-    #     "deployment.environment": get_settings().environment,
-    # })
-    # # Tracing
-    # tracer_provider = TracerProvider(resource=resource)
-    # trace.set_tracer_provider(tracer_provider)
-    # otlp_exporter = OTLPSpanExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
-    # span_processor = BatchSpanProcessor(otlp_exporter)
-    # tracer_provider.add_span_processor(span_processor)
-    # # Metrics
-    # metric_exporter = OTLPMetricExporter(endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"), insecure=True)
-    # metric_reader = PeriodicExportingMetricReader(metric_exporter)
-    # meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-    # metrics.set_meter_provider(meter_provider)
-    # # Instrumentierung
-    # FastAPIInstrumentor.instrument_app(app)
-    # if db_engine is not None:
-    #     SQLAlchemyInstrumentor().instrument(engine=db_engine)
-    # if redis_client is not None:
-    #     RedisInstrumentor().instrument()
+    """Configure OpenTelemetry for the application."""
+    initialize_opentelemetry(app, db_engine, redis_client)
 
 
 def create_application() -> FastAPI:
@@ -162,11 +131,10 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
-    # OpenTelemetry initialisieren (disabled for testing)
-    # if not get_settings().debug or os.getenv("DISABLE_OTEL", "false").lower() != "true":
-    #     from backend.app.core.database import engine
-    #     from backend.app.core.redis_client import redis_client
-    #     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
+    # Initialize OpenTelemetry
+    from backend.app.core.database import engine
+    from backend.app.core.redis_client import redis_client
+    configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Setup security middleware first
     setup_security_middleware(app)
