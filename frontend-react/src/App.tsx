@@ -18,6 +18,10 @@ import { useAuthStore } from "./store/authStore";
 import "./styles/animations.css";
 import "./styles/chat.css";
 
+// Import auth components directly to ensure they are loaded
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+
 import {
   LazyHomePage,
   LazyDashboardPage,
@@ -28,8 +32,6 @@ import {
   LazyToolsPage,
   LazySettingsPage,
   LazyAdminPage,
-  LazyLoginPage,
-  LazyRegisterPage,
   LazyProfilePage,
   LazyConversationsPage,
   LazyMcpToolsPage,
@@ -248,7 +250,7 @@ const App: React.FC = () => {
                   element={
                     <ErrorBoundary>
                       <Suspense fallback={<LoadingSpinner />}>
-                        <LazyLoginPage />
+                        <Login />
                       </Suspense>
                     </ErrorBoundary>
                   }
@@ -258,7 +260,7 @@ const App: React.FC = () => {
                   element={
                     <ErrorBoundary>
                       <Suspense fallback={<LoadingSpinner />}>
-                        <LazyRegisterPage />
+                        <Register />
                       </Suspense>
                     </ErrorBoundary>
                   }

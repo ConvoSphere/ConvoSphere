@@ -17,62 +17,81 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks - Core libraries
-          "vendor-react": ["react", "react-dom"],
-          "vendor-router": ["react-router-dom"],
-          "vendor-antd": ["antd", "@ant-design/icons"],
-          "vendor-utils": ["axios", "dayjs", "zustand"],
-          "vendor-i18n": ["i18next", "react-i18next"],
-          "vendor-charts": ["recharts"],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            if (id.includes('antd') || id.includes('@ant-design')) {
+              return 'vendor-antd';
+            }
+            if (id.includes('axios') || id.includes('dayjs') || id.includes('zustand')) {
+              return 'vendor-utils';
+            }
+            if (id.includes('i18next')) {
+              return 'vendor-i18n';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            // Default vendor chunk for other node_modules
+            return 'vendor';
+          }
 
           // Feature chunks - Page-specific code
-          "feature-chat": [
-            "./src/pages/Chat.tsx",
-            "./src/components/VirtualizedChat.tsx",
-          ],
-          "feature-admin": [
-            "./src/pages/Admin.tsx",
-            "./src/pages/SystemStatus.tsx",
-          ],
-          "feature-assistants": ["./src/pages/Assistants.tsx"],
-          "feature-tools": [
-            "./src/pages/Tools.tsx",
-            "./src/pages/McpTools.tsx",
-          ],
-          "feature-auth": ["./src/pages/Login.tsx", "./src/pages/Register.tsx"],
-          "feature-user": [
-            "./src/pages/Profile.tsx",
-            "./src/pages/Conversations.tsx",
-          ],
+          if (id.includes('/pages/Login.tsx') || id.includes('/pages/Register.tsx')) {
+            return 'feature-auth';
+          }
+          if (id.includes('/pages/Chat.tsx') || id.includes('/components/VirtualizedChat.tsx')) {
+            return 'feature-chat';
+          }
+          if (id.includes('/pages/Admin.tsx') || id.includes('/pages/SystemStatus.tsx')) {
+            return 'feature-admin';
+          }
+          if (id.includes('/pages/Assistants.tsx')) {
+            return 'feature-assistants';
+          }
+          if (id.includes('/pages/Tools.tsx') || id.includes('/pages/McpTools.tsx')) {
+            return 'feature-tools';
+          }
+          if (id.includes('/pages/Profile.tsx') || id.includes('/pages/Conversations.tsx')) {
+            return 'feature-user';
+          }
 
           // Shared chunks - Reusable components and utilities
-          "shared-components": [
-            "./src/components/Layout.tsx",
-            "./src/components/Sidebar.tsx",
-            "./src/components/HeaderBar.tsx",
-            "./src/components/ThemeSwitcher.tsx",
-            "./src/components/LanguageSwitcher.tsx",
-            "./src/components/LogoutButton.tsx",
-          ],
-          "shared-stores": [
-            "./src/store/authStore.ts",
-            "./src/store/themeStore.ts",
-          ],
-          "shared-styles": [
-            "./src/styles/theme.ts",
-            "./src/index.css",
-            "./src/App.css",
-            "./src/styles/animations.css",
-          ],
-          "shared-utils": [
-            "./src/services/chat.ts",
-            "./src/config/",
-            "./src/i18n/",
-          ],
+          if (id.includes('/components/Layout.tsx') || 
+              id.includes('/components/Sidebar.tsx') || 
+              id.includes('/components/HeaderBar.tsx') ||
+              id.includes('/components/ThemeSwitcher.tsx') ||
+              id.includes('/components/LanguageSwitcher.tsx') ||
+              id.includes('/components/LogoutButton.tsx')) {
+            return 'shared-components';
+          }
+          if (id.includes('/store/authStore.ts') || id.includes('/store/themeStore.ts')) {
+            return 'shared-stores';
+          }
+          if (id.includes('/styles/theme.ts') || 
+              id.includes('/index.css') || 
+              id.includes('/App.css') || 
+              id.includes('/styles/animations.css')) {
+            return 'shared-styles';
+          }
+          if (id.includes('/services/chat.ts') || 
+              id.includes('/config/') || 
+              id.includes('/i18n/')) {
+            return 'shared-utils';
+          }
+
+          // Default chunk for other files
+          return 'index';
         },
         // Optimize chunk naming for better caching
-        chunkFileNames: () => {
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `js/[name]-[hash].js`;
         },
         entryFileNames: "js/[name]-[hash].js",
