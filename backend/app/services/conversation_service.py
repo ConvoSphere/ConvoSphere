@@ -145,6 +145,23 @@ class ConversationService:
 
         return [conv.to_dict() for conv in conversations]
 
+    def get_user_conversations_paginated(self, user_id: str, skip: int = 0, limit: int = 20) -> list[dict[str, Any]]:
+        """Return user conversations with simple pagination."""
+        conversations = self.get_user_conversations(user_id)
+        return conversations[skip : skip + limit]
+
+    def create_conversation_simple(self, user_id: str, assistant_id: str | None, title: str, description: str | None = None) -> dict[str, Any]:
+        """Create conversation without having to build ConversationCreate schema (for legacy endpoints)."""
+        from uuid import UUID
+        from backend.app.schemas.conversation import ConversationCreate
+        convo_data = ConversationCreate(
+            user_id=UUID(user_id),
+            assistant_id=UUID(assistant_id) if assistant_id else UUID(assistant_id or user_id),  # fallback
+            title=title,
+            description=description,
+        )
+        return self.create_conversation(convo_data)
+
     def add_message(
         self,
         message_data: MessageCreate,

@@ -114,10 +114,10 @@ async def create_conversation(
         Dict: Created conversation data
     """
     try:
-        conversation = conversation_service.create_conversation(
+        conversation = conversation_service.create_conversation_simple(
             user_id=current_user_id,
-            title=request.title,
             assistant_id=request.assistant_id,
+            title=request.title,
             description=request.description,
         )
     except SecurityValidationError as e:
@@ -177,7 +177,7 @@ async def get_conversations(
         ConversationListResponse: List of conversations with hybrid mode status
     """
     try:
-        conversations = conversation_service.get_user_conversations(
+        conversations = conversation_service.get_user_conversations_paginated(
             user_id=current_user_id,
             skip=(page - 1) * per_page,
             limit=per_page,
