@@ -1,13 +1,6 @@
 import { create } from "zustand";
-import {
-  login as apiLogin,
-  logout as apiLogout,
-  register as apiRegister,
-  isTokenExpired,
-  refreshToken,
-} from "../services/auth";
+import { login as apiLogin, register as apiRegister, logout as apiLogout, isTokenExpired } from "../services/auth";
 import { getProfile, updateProfile } from "../services/user";
-import type { UserProfileUpdate } from "../services/user";
 
 export interface UserProfile {
   id: string;
@@ -15,6 +8,12 @@ export interface UserProfile {
   email: string;
   language?: string;
   role?: string;
+}
+
+export interface UserProfileUpdate {
+  username?: string;
+  email?: string;
+  language?: string;
 }
 
 interface AuthState {
@@ -84,23 +83,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return isValid;
   },
   refreshTokenIfNeeded: async () => {
-    if (isTokenExpired()) {
-      try {
-        const newToken = await refreshToken();
-        if (newToken) {
-          set({ token: newToken, isAuthenticated: true });
-          return true;
-        } else {
-          set({ token: null, isAuthenticated: false, user: null });
-          return false;
-        }
-      } catch (error) {
-        console.error("Token refresh failed:", error);
-        set({ token: null, isAuthenticated: false, user: null });
-        return false;
-      }
-    }
-    return true;
+    // Disable automatic token refresh to prevent loops
+    console.warn("Automatic token refresh disabled to prevent loops");
+    return false;
   },
   initializeAuth: async () => {
     const token = localStorage.getItem("token");
@@ -109,15 +94,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    // Validate existing token
+    // Only validate existing token, don't try to refresh
     const isValid = !isTokenExpired();
     if (!isValid) {
-      // Try to refresh the token
-      const refreshSuccess = await get().refreshTokenIfNeeded();
-      if (!refreshSuccess) {
-        set({ isAuthenticated: false, user: null });
-        return;
-      }
+      console.warn("Token expired, clearing auth state");
+      set({ token: null, isAuthenticated: false, user: null });
+      return;
     }
 
     // Token is valid, fetch user profile

@@ -7,128 +7,125 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Track if we're currently refreshing to prevent loops
+// Global state to prevent loops
 let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (error?: any) => void;
-}> = [];
+let refreshAttempts = 0;
+const MAX_REFRESH_ATTEMPTS = 2;
+let lastRefreshTime = 0;
+const REFRESH_COOLDOWN = 30000; // 30 seconds cooldown
+let isLoopDetected = false;
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(token);
-    }
-  });
-  
-  failedQueue = [];
-};
-
-// Request interceptor for token handling
-api.interceptors.request.use(async (config) => {
-  // Skip token check for auth endpoints to prevent loops
-  if (config.url?.includes('/auth/login') || config.url?.includes('/auth/refresh')) {
+// Request interceptor - simplified to prevent loops
+api.interceptors.request.use(async (config: any) => {
+  // Skip all token handling for auth endpoints
+  if (config.url?.includes('/auth/')) {
     return config;
   }
 
-  // Check if token is expired and refresh if needed
-  if (isTokenExpired()) {
-    if (isRefreshing) {
-      // If already refreshing, queue this request
-      return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      }).then((token) => {
-        config.headers = config.headers || {};
-        config.headers["Authorization"] = `Bearer ${token}`;
-        return config;
-      }).catch((err) => {
-        return Promise.reject(err);
-      });
-    }
-
-    isRefreshing = true;
-    
-    try {
-      const newToken = await refreshToken();
-      if (newToken) {
-        processQueue(null, newToken);
-        config.headers = config.headers || {};
-        config.headers["Authorization"] = `Bearer ${newToken}`;
-      } else {
-        processQueue(new Error("Token refresh failed"));
-        // Don't redirect here, let the response interceptor handle it
-      }
-    } catch (error) {
-      processQueue(error);
-      // Don't redirect here, let the response interceptor handle it
-    } finally {
-      isRefreshing = false;
-    }
-  } else {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+  // If we've detected a loop, don't add any auth headers
+  if (isLoopDetected) {
+    return config;
   }
-  
+
+  // Check if we've exceeded max refresh attempts
+  if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+    console.warn("Max refresh attempts exceeded, clearing auth state");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("token_expiry");
+    isLoopDetected = true;
+    if (!window.location.pathname.includes('/login')) {
+      window.location.href = "/login";
+    }
+    return config;
+  }
+
+  // Only add token if it exists and is not expired
+  const token = localStorage.getItem("token");
+  if (token && !isTokenExpired()) {
+    config.headers = config.headers || {};
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+
   return config;
 });
 
-// Response interceptor for handling 401 errors
+// Response interceptor - simplified to prevent loops
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     const originalRequest = error.config;
 
-    // If we get a 401 and haven't already tried to refresh
+    // If we've detected a loop, don't try to refresh
+    if (isLoopDetected) {
+      return Promise.reject(error);
+    }
+
+    // Only handle 401 errors and only if we haven't already tried to refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Skip auth endpoints to prevent loops
-      if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh')) {
+      // Skip auth endpoints completely
+      if (originalRequest.url?.includes('/auth/')) {
         return Promise.reject(error);
       }
 
-      if (isRefreshing) {
-        // If already refreshing, queue this request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers["Authorization"] = `Bearer ${token}`;
-          return api(originalRequest);
-        }).catch((err) => {
-          return Promise.reject(err);
-        });
+      const now = Date.now();
+      
+      // Check cooldown
+      if (now - lastRefreshTime < REFRESH_COOLDOWN) {
+        console.warn("Refresh cooldown active, redirecting to login");
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = "/login";
+        }
+        return Promise.reject(error);
       }
 
+      // Check if already refreshing
+      if (isRefreshing) {
+        console.warn("Already refreshing, redirecting to login");
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = "/login";
+        }
+        return Promise.reject(error);
+      }
+
+      // Start refresh attempt
       isRefreshing = true;
+      lastRefreshTime = now;
+      refreshAttempts++;
 
       try {
         const newToken = await refreshToken();
         if (newToken) {
-          processQueue(null, newToken);
+          // Reset attempts on success
+          refreshAttempts = 0;
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return api(originalRequest);
         } else {
-          processQueue(new Error("Token refresh failed"));
-          // Only redirect if we're not already on login page
+          // Refresh failed
+          console.warn("Token refresh failed");
           if (!window.location.pathname.includes('/login')) {
             window.location.href = "/login";
           }
           return Promise.reject(error);
         }
       } catch (refreshError) {
-        processQueue(refreshError);
-        // Only redirect if we're not already on login page
+        console.error("Token refresh error:", refreshError);
         if (!window.location.pathname.includes('/login')) {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
+      }
+    }
+
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      console.warn("Rate limit exceeded, redirecting to login");
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = "/login";
       }
     }
 

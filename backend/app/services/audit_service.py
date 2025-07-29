@@ -127,6 +127,7 @@ class AuditService:
             "description": description,
             "details": details,
             "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),  # Add updated_at field
         }
 
         await self._queue.put(event_data)
@@ -151,6 +152,9 @@ class AuditService:
         try:
             db = next(get_db())
             try:
+                # Create timestamp once to ensure consistency
+                timestamp = datetime.now(timezone.utc)
+                
                 audit_log = AuditLog(
                     event_type=event_type,
                     severity=severity,
@@ -161,7 +165,9 @@ class AuditService:
                     resource_type=resource_type,
                     resource_id=resource_id,
                     description=description,
-                    details=details,
+                    details=details or {},
+                    created_at=timestamp,
+                    updated_at=timestamp,
                 )
                 db.add(audit_log)
                 db.commit()

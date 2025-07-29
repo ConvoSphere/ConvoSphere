@@ -96,12 +96,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Different rate limits for different endpoints
         self.endpoint_limits = {
-            "/api/v1/auth/login": 5,  # 5 login attempts per minute
-            "/api/v1/auth/register": 3,  # 3 registration attempts per minute
-            "/api/v1/chat": 30,  # 30 chat messages per minute
-            "/api/v1/knowledge": 20,  # 20 knowledge operations per minute
-            "/api/v1/tools": 15,  # 15 tool executions per minute
-            "/api/v1/assistants": 10,  # 10 assistant operations per minute
+            "/api/v1/auth/login": 20,  # 20 login attempts per minute (increased)
+            "/api/v1/auth/register": 10,  # 10 registration attempts per minute (increased)
+            "/api/v1/auth/refresh": 60,  # 60 refresh attempts per minute (increased)
+            "/api/v1/auth/sso/providers": 200,  # 200 SSO provider requests per minute (increased)
+            "/api/v1/chat": 120,  # 120 chat messages per minute (increased)
+            "/api/v1/knowledge": 80,  # 80 knowledge operations per minute (increased)
+            "/api/v1/tools": 60,  # 60 tool executions per minute (increased)
+            "/api/v1/assistants": 60,  # 60 assistant operations per minute (increased)
         }
 
     async def dispatch(

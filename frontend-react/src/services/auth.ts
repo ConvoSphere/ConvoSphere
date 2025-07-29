@@ -1,4 +1,11 @@
-import api from "./api";
+import axios from "axios";
+import config from "../config";
+
+// Create a separate axios instance for auth operations to prevent loops
+const authApi = axios.create({
+  baseURL: config.apiUrl,
+  withCredentials: true,
+});
 
 export interface TokenResponse {
   access_token: string;
@@ -8,7 +15,7 @@ export interface TokenResponse {
 }
 
 export async function login(username: string, password: string): Promise<string> {
-  const response = await api.post("/v1/auth/login", { username, password });
+  const response = await authApi.post("/v1/auth/login", { username, password });
   const { access_token, refresh_token } = response.data;
   
   // Store both tokens
@@ -30,7 +37,8 @@ export async function refreshToken(): Promise<string | null> {
       return null;
     }
 
-    const response = await api.post("/v1/auth/refresh", { refresh_token });
+    // Use the separate authApi instance to prevent loops
+    const response = await authApi.post("/v1/auth/refresh", { refresh_token });
     const { access_token, refresh_token: new_refresh_token } = response.data;
     
     // Update tokens
@@ -67,7 +75,7 @@ export async function register(
   password: string,
   email: string,
 ) {
-  const response = await api.post("/v1/auth/register", {
+  const response = await authApi.post("/v1/auth/register", {
     username,
     password,
     email,
@@ -77,7 +85,7 @@ export async function register(
 }
 
 export async function getSSOProviders() {
-  const response = await api.get("/v1/auth/sso/providers");
+  const response = await authApi.get("/v1/auth/sso/providers");
   return response.data.providers;
 }
 
@@ -92,7 +100,7 @@ export async function handleSSOCallback(
   state?: string,
 ) {
   // Handle SSO callback with authorization code
-  const response = await api.get(
+  const response = await authApi.get(
     `/v1/auth/sso/callback/${provider}?code=${code}${state ? `&state=${state}` : ""}`,
   );
   const { access_token } = response.data;
@@ -102,25 +110,25 @@ export async function handleSSOCallback(
 
 export async function ssoLink(provider: string) {
   // Call backend SSO link endpoint
-  const response = await api.post(`/v1/auth/sso/link/${provider}`);
+  const response = await authApi.post(`/v1/auth/sso/link/${provider}`);
   return response.data;
 }
 
 export async function ssoUnlink(provider: string) {
   // Call backend SSO unlink endpoint
-  const response = await api.get(`/v1/auth/sso/unlink/${provider}`);
+  const response = await authApi.get(`/v1/auth/sso/unlink/${provider}`);
   return response.data;
 }
 
 export async function getUserProvisioningStatus(userId: string) {
   // Get user provisioning status
-  const response = await api.get(`/v1/auth/sso/provisioning/status/${userId}`);
+  const response = await authApi.get(`/v1/auth/sso/provisioning/status/${userId}`);
   return response.data;
 }
 
 export async function bulkSyncUsers(provider: string, userList: any[]) {
   // Bulk sync users from SSO provider
-  const response = await api.post(`/v1/auth/sso/bulk-sync/${provider}`, {
+  const response = await authApi.post(`/v1/auth/sso/bulk-sync/${provider}`, {
     user_list: userList,
   });
   return response.data;
