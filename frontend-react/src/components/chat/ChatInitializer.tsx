@@ -66,7 +66,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
       try {
         setLoading(true);
-        const response = await fetch(`${config.apiUrl}/v1/assistants`, {
+        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -102,7 +102,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
       // Create new conversation
       const conversationResponse = await fetch(
-        `${config.apiUrl}/v1/chat/conversations`,
+        `${config.apiUrl}${config.apiEndpoints.chat}/conversations`,
         {
           method: "POST",
           headers: {
@@ -124,7 +124,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
       // Send initial message
       const messageResponse = await fetch(
-        `${config.apiUrl}/v1/chat/conversations/${conversation.id}/messages`,
+        `${config.apiUrl}${config.apiEndpoints.chat}/conversations/${conversation.id}/messages`,
         {
           method: "POST",
           headers: {
@@ -188,7 +188,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
                 <div>
                   <div style={{ fontWeight: 500 }}>{assistant.name}</div>
                   {variant !== "minimal" && (
-                    <div style={{ fontSize: "12px", color: colors.colorTextSecondary }}>
+                    <div style={{ fontSize: "12px", color: colors?.colorTextSecondary ?? "#999" }}>
                       {assistant.description}
                     </div>
                   )}
@@ -215,9 +215,8 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
       <Form.Item>
         <ModernButton
-          type="primary"
+          variant="primary"
           htmlType="submit"
-          size={variant === "minimal" ? "middle" : "large"}
           loading={submitting}
           icon={<SendOutlined />}
           style={{ width: variant === "minimal" ? "auto" : "100%" }}

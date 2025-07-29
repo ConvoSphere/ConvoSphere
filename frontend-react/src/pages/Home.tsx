@@ -47,7 +47,7 @@ const Home: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(`${config.apiUrl}/v1/assistants`, {
+        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

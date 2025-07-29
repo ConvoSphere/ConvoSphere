@@ -22,6 +22,7 @@ from backend.app.api.v1.endpoints import (
     tools,
     users,
     websocket,
+    statistics_endpoints,
 )
 from backend.app.api.v1.endpoints import monitoring_endpoints
 from backend.app.api.v1.endpoints.audit import router as audit_router
@@ -66,4 +67,9 @@ api_router.include_router(
 )
 api_router.include_router(
     monitoring_endpoints.router, prefix="/monitoring", tags=["Monitoring"]
+)
+
+# Statistics router (dashboard)
+api_router.include_router(
+    statistics_endpoints.router, prefix="/statistics", tags=["Statistics"]
 )

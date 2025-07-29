@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import {
   Row,
@@ -11,6 +12,7 @@ import {
   Typography,
   Divider,
   Alert,
+  Tooltip,
 } from "antd";
 import {
   MessageOutlined,

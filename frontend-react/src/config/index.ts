@@ -18,6 +18,7 @@ export const config = {
   wsEndpoints: {
     chat: "/api/v1/chat/ws/",
     notifications: "/api/v1/ws/notifications",
+    realtime: "/api/v1/ws",
   },
   apiEndpoints: {
     auth: "/api/v1/auth",
