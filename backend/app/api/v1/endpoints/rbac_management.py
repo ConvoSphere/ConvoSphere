@@ -8,6 +8,9 @@ ABAC rules, security policies, and monitoring RBAC performance.
 from datetime import UTC, datetime
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.rbac_cache import rbac_cache, rbac_performance_monitor
 from backend.app.core.security import get_current_user
@@ -31,8 +34,6 @@ from backend.app.schemas.rbac import (
 )
 from backend.app.services.rbac_service import RBACService
 from backend.app.utils.exceptions import PermissionDeniedError
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

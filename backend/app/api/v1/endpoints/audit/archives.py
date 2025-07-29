@@ -9,6 +9,9 @@ This module handles all audit archive related operations including:
 import logging
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.models.user import User
@@ -19,8 +22,6 @@ from backend.app.schemas.audit_extended import (
 )
 from backend.app.services.audit import get_audit_service
 from backend.app.utils.exceptions import AuditError
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

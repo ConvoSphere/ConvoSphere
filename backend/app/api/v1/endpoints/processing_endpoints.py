@@ -2,6 +2,9 @@
 Processing-related API endpoints (jobs, engines, supported formats, bulk import).
 """
 
+from fastapi import APIRouter, Depends, Form, Query
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.models.user import User
@@ -12,8 +15,6 @@ from backend.app.schemas.knowledge import (
 )
 from backend.app.services.docling_processor import docling_processor
 from backend.app.services.knowledge_service import KnowledgeService
-from fastapi import APIRouter, Depends, Form, Query
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

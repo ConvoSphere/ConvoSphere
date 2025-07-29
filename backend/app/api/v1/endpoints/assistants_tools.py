@@ -4,12 +4,13 @@ Assistant tools API endpoints (add/remove tools).
 
 from typing import Any
 
-from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user_id
-from backend.app.services.assistant_service import AssistantService
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+
+from backend.app.core.database import get_db
+from backend.app.core.security import get_current_user_id
+from backend.app.services.assistant_service import AssistantService
 
 
 # Pydantic model

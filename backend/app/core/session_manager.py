@@ -12,10 +12,11 @@ from typing import Any
 from uuid import uuid4
 
 import redis
+from fastapi import Request
+
 from backend.app.core.config import settings
 from backend.app.models.user import User
 from backend.app.utils.exceptions import SessionError
-from fastapi import Request
 
 logger = logging.getLogger(__name__)
 

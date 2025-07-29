@@ -6,24 +6,28 @@ Provides aggregated overview statistics, system health, recent activity and user
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
-from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
-from backend.app.models.user import User
+from backend.app.models.assistant import Assistant
 from backend.app.models.conversation import Conversation, Message
 from backend.app.models.knowledge import Document
-from backend.app.models.assistant import Assistant
 from backend.app.models.tool import Tool
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
+
+    from backend.app.models.user import User
 
 router = APIRouter()
 
 
 # Helpers ---------------------------------------------------------------------
+
 
 def _safe_count(db: Session, model) -> int:
     """Return count for model, swallowing errors."""
@@ -37,7 +41,7 @@ def _safe_count(db: Session, model) -> int:
 # Endpoints -------------------------------------------------------------------
 
 
-@router.get("/overview", response_model=Dict[str, Any])
+@router.get("/overview", response_model=dict[str, Any])
 async def get_overview_statistics(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -51,9 +55,10 @@ async def get_overview_statistics(
             "totalAssistants": _safe_count(db, Assistant),
             "totalTools": _safe_count(db, Tool),
             # naive active users: users with conversation in last 24h
-            "activeUsers": db.query(Conversation.user_id).filter(
-                Conversation.created_at >= datetime.utcnow() - timedelta(days=1)
-            ).distinct().count(),
+            "activeUsers": db.query(Conversation.user_id)
+            .filter(Conversation.created_at >= datetime.utcnow() - timedelta(days=1))
+            .distinct()
+            .count(),
             # Basic health & performance placeholders
             "systemHealth": "healthy",
             "performance": {
@@ -64,11 +69,8 @@ async def get_overview_statistics(
             },
         }
 
-        recent_activity: List[Dict[str, Any]] = (
-            db.query(Message)
-            .order_by(Message.created_at.desc())
-            .limit(10)
-            .all()
+        recent_activity: list[dict[str, Any]] = (
+            db.query(Message).order_by(Message.created_at.desc()).limit(10).all()
         )
         recent_activity_data = [
             {
@@ -109,7 +111,7 @@ async def get_overview_statistics(
         raise HTTPException(status_code=500, detail="Failed to compute statistics")
 
 
-@router.get("/system-health", response_model=Dict[str, Any])
+@router.get("/system-health", response_model=dict[str, Any])
 async def get_system_health():
     """Placeholder system health endpoint."""
     return {
@@ -123,16 +125,14 @@ async def get_system_health():
     }
 
 
-@router.get("/recent-activity", response_model=List[Dict[str, Any]])
+@router.get("/recent-activity", response_model=list[dict[str, Any]])
 async def get_recent_activity(
     limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Return recent activity items."""
-    msgs = (
-        db.query(Message).order_by(Message.created_at.desc()).limit(limit).all()
-    )
+    msgs = db.query(Message).order_by(Message.created_at.desc()).limit(limit).all()
     return [
         {
             "id": str(msg.id),
@@ -145,7 +145,7 @@ async def get_recent_activity(
     ]
 
 
-@router.get("/user", response_model=Dict[str, Any])
+@router.get("/user", response_model=dict[str, Any])
 async def get_user_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -160,4 +160,4 @@ async def get_user_stats(
         .filter(Conversation.user_id == current_user.id)
         .count(),
         "documents": 0,
-    } 
+    }

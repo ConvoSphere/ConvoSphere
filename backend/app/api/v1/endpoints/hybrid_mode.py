@@ -8,6 +8,11 @@ switching, configuration, and status queries.
 from datetime import UTC, datetime
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user_id
 from backend.app.schemas.hybrid_mode import (
@@ -19,10 +24,6 @@ from backend.app.schemas.hybrid_mode import (
     ModeDecision,
 )
 from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

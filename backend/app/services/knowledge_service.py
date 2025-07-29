@@ -27,24 +27,18 @@ from backend.app.models.knowledge import (
     SearchQuery,
     Tag,
 )
+from backend.app.services.document.backup_manager import BackupType, get_backup_manager
+from backend.app.services.document.error_handler import (
+    get_document_error_handler,
+)
+from backend.app.services.document.recovery_manager import (
+    RecoveryStrategy,
+    get_recovery_manager,
+    get_state_manager,
+)
 
 from .ai_service import AIService
 from .document.document_service import DocumentService
-from backend.app.services.document.error_handler import (
-    DocumentErrorHandler,
-    ErrorCategory,
-    ErrorSeverity,
-    get_document_error_handler
-)
-from backend.app.services.document.recovery_manager import (
-    get_recovery_manager,
-    get_state_manager,
-    RecoveryStrategy
-)
-from backend.app.services.document.backup_manager import (
-    get_backup_manager,
-    BackupType
-)
 
 # Create a document processor instance
 document_processor = DocumentService(db=None)
@@ -347,10 +341,10 @@ class KnowledgeService:
 
     async def process_document(self, document_id: str) -> bool:
         """Process a document by extracting text and creating chunks with recovery mechanisms."""
-        
+
         # Create rollback point before processing
         rollback_id = self.state_manager.create_rollback_point(document_id)
-        
+
         async def processing_operation():
             """The main document processing operation."""
             document = (
@@ -481,11 +475,15 @@ class KnowledgeService:
             """Rollback operation in case of failure."""
             if rollback_id:
                 self.state_manager.rollback_to_point(document_id, rollback_id)
-                logger.info(f"Rolled back document {document_id} to point {rollback_id}")
+                logger.info(
+                    f"Rolled back document {document_id} to point {rollback_id}"
+                )
 
         # Execute with recovery mechanisms
-        operation_id = f"process_document_{document_id}_{int(datetime.utcnow().timestamp())}"
-        
+        operation_id = (
+            f"process_document_{document_id}_{int(datetime.utcnow().timestamp())}"
+        )
+
         success = await self.recovery_manager.execute_with_recovery(
             operation_id=operation_id,
             document_id=document_id,
@@ -495,8 +493,8 @@ class KnowledgeService:
             recovery_strategies=[
                 RecoveryStrategy.RETRY,
                 RecoveryStrategy.ROLLBACK,
-                RecoveryStrategy.FALLBACK
-            ]
+                RecoveryStrategy.FALLBACK,
+            ],
         )
 
         # Create backup after successful processing
@@ -505,10 +503,12 @@ class KnowledgeService:
                 await self.backup_manager.create_backup(
                     backup_type=BackupType.METADATA_ONLY,
                     document_ids=[document_id],
-                    retention_days=7
+                    retention_days=7,
                 )
             except Exception as backup_error:
-                logger.warning(f"Failed to create backup for document {document_id}: {backup_error}")
+                logger.warning(
+                    f"Failed to create backup for document {document_id}: {backup_error}"
+                )
 
         return success
 

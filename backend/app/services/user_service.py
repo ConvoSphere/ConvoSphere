@@ -2,6 +2,10 @@
 
 from datetime import UTC, datetime, timedelta
 
+from passlib.context import CryptContext
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_password_hash, verify_password
 from backend.app.models.user import AuthProvider, User, UserGroup, UserRole, UserStatus
@@ -28,9 +32,6 @@ from backend.app.utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
-from passlib.context import CryptContext
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import joinedload
 
 
 class UserService:

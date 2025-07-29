@@ -8,12 +8,13 @@ and security utilities for the AI Assistant Platform.
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from backend.app.core.config import get_settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
+
+from backend.app.core.config import get_settings
 
 # Password hashing context with optimized bcrypt settings
 pwd_context = CryptContext(

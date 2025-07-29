@@ -7,10 +7,11 @@ AI assistants with their personality profiles and tool configurations.
 
 from typing import Any
 
-from backend.app.core.database import get_db
-from backend.app.models.assistant import Assistant, AssistantStatus
 from loguru import logger
 from sqlalchemy import and_, or_
+
+from backend.app.core.database import get_db
+from backend.app.models.assistant import Assistant, AssistantStatus
 
 
 class AssistantService:

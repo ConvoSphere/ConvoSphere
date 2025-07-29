@@ -2,6 +2,10 @@
 
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.models.user import User
@@ -14,9 +18,6 @@ from backend.app.schemas.conversation import (
     MessageResponse,
 )
 from backend.app.services.conversation_service import ConversationService
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

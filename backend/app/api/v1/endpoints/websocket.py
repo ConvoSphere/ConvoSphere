@@ -15,6 +15,8 @@ from sqlalchemy.orm import Session
 
 router = APIRouter()
 
+from loguru import logger
+
 from backend.app.core.database import get_db
 
 # get_current_user_ws is defined in this file
@@ -23,7 +25,6 @@ from backend.app.models.user import User
 from backend.app.services.ai_service import AIService
 from backend.app.services.conversation_service import ConversationService
 from backend.app.services.knowledge_service import KnowledgeService
-from loguru import logger
 
 
 class ConnectionManager:

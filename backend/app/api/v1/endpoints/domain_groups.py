@@ -7,6 +7,9 @@ including CRUD operations, member management, resource sharing, and invitation h
 
 from datetime import UTC, datetime
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.models.domain_groups import AccessLevel, DomainType, ResourceType
@@ -37,8 +40,6 @@ from backend.app.utils.exceptions import (
     ResourceNotFoundError,
     UserNotFoundError,
 )
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

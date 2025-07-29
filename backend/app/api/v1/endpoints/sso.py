@@ -8,6 +8,10 @@ LDAP, SAML, and OAuth providers with user management and group synchronization.
 import logging
 from datetime import UTC, datetime
 
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import create_access_token, get_current_user
 from backend.app.core.sso_manager import get_sso_manager
@@ -20,9 +24,6 @@ from backend.app.utils.exceptions import (
     SSOConfigurationError,
     UserNotFoundError,
 )
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

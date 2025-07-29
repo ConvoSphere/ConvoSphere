@@ -8,31 +8,30 @@ log correlation, and standardized log formats.
 import json
 import logging
 import sys
-import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
 from contextlib import contextmanager
+from datetime import UTC, datetime
+from typing import Any
 
 from loguru import logger
 from opentelemetry import trace
-from opentelemetry.trace import Span, Status, StatusCode
+from opentelemetry.trace import Status, StatusCode
 
 from backend.app.core.config import get_settings
 
 
 class StructuredLogger:
     """Structured logger with OpenTelemetry integration."""
-    
+
     def __init__(self):
         self.settings = get_settings()
         self._setup_loguru()
         self._setup_standard_logging()
-    
+
     def _setup_loguru(self):
         """Setup Loguru with structured logging."""
         # Remove default handler
         logger.remove()
-        
+
         # Add structured console handler
         logger.add(
             sys.stdout,
@@ -42,7 +41,7 @@ class StructuredLogger:
             backtrace=True,
             diagnose=True,
         )
-        
+
         # Add file handler if configured
         if self.settings.log_file and self.settings.log_file != "./logs/app.log":
             logger.add(
@@ -54,20 +53,22 @@ class StructuredLogger:
                 retention="30 days",
                 compression="gz",
             )
-    
+
     def _setup_standard_logging(self):
         """Setup standard Python logging to work with Loguru."""
         logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-    
+
     def _format_log(self, record):
         """Format log record with structured data."""
         # Get current span for correlation
         current_span = trace.get_current_span()
         span_context = current_span.get_span_context() if current_span else None
-        
+
         # Base log structure
         log_data = {
-            "timestamp": datetime.fromtimestamp(record["time"].timestamp(), tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(
+                record["time"].timestamp(), tz=UTC
+            ).isoformat(),
             "level": record["level"].name,
             "logger": record["name"],
             "message": record["message"],
@@ -75,18 +76,20 @@ class StructuredLogger:
             "function": record["function"],
             "line": record["line"],
         }
-        
+
         # Add trace correlation if available
         if span_context and span_context.is_valid:
-            log_data.update({
-                "trace_id": format(span_context.trace_id, "032x"),
-                "span_id": format(span_context.span_id, "016x"),
-            })
-        
+            log_data.update(
+                {
+                    "trace_id": format(span_context.trace_id, "032x"),
+                    "span_id": format(span_context.span_id, "016x"),
+                }
+            )
+
         # Add extra fields from record
         if "extra" in record and record["extra"]:
             log_data.update(record["extra"])
-        
+
         # Add exception info if present
         if record["exception"]:
             log_data["exception"] = {
@@ -94,9 +97,9 @@ class StructuredLogger:
                 "value": str(record["exception"].value),
                 "traceback": record["exception"].traceback,
             }
-        
+
         return json.dumps(log_data, ensure_ascii=False, default=str)
-    
+
     def log_event(
         self,
         level: str,
@@ -109,8 +112,8 @@ class StructuredLogger:
         method: str = None,
         status_code: int = None,
         duration: float = None,
-        extra: Dict[str, Any] = None,
-        **kwargs
+        extra: dict[str, Any] = None,
+        **kwargs,
     ):
         """Log a structured event."""
         log_data = {
@@ -123,20 +126,20 @@ class StructuredLogger:
             "status_code": status_code,
             "duration": duration,
         }
-        
+
         # Add extra data
         if extra:
             log_data.update(extra)
-        
+
         # Add additional kwargs
         log_data.update(kwargs)
-        
+
         # Remove None values
         log_data = {k: v for k, v in log_data.items() if v is not None}
-        
+
         # Log with structured data
         getattr(logger, level.lower())(message, extra=log_data)
-    
+
     def log_api_request(
         self,
         method: str,
@@ -164,7 +167,7 @@ class StructuredLogger:
             response_size=response_size,
             error=error,
         )
-    
+
     def log_database_query(
         self,
         query_type: str,
@@ -184,7 +187,7 @@ class StructuredLogger:
             rows_affected=rows_affected,
             error=error,
         )
-    
+
     def log_security_event(
         self,
         event_type: str,
@@ -192,7 +195,7 @@ class StructuredLogger:
         user_id: str = None,
         ip_address: str = None,
         severity: str = "INFO",
-        details: Dict[str, Any] = None,
+        details: dict[str, Any] = None,
     ):
         """Log security event with structured data."""
         self.log_event(
@@ -204,13 +207,13 @@ class StructuredLogger:
             ip_address=ip_address,
             details=details,
         )
-    
+
     def log_performance_metric(
         self,
         metric_name: str,
         value: float,
         unit: str = None,
-        tags: Dict[str, str] = None,
+        tags: dict[str, str] = None,
     ):
         """Log performance metric with structured data."""
         self.log_event(
@@ -222,19 +225,21 @@ class StructuredLogger:
             unit=unit,
             tags=tags,
         )
-    
+
     @contextmanager
     def trace_operation(
         self,
         operation_name: str,
-        attributes: Dict[str, Any] = None,
+        attributes: dict[str, Any] = None,
         user_id: str = None,
         request_id: str = None,
     ):
         """Context manager for tracing operations with logging."""
         tracer = trace.get_tracer(__name__)
-        
-        with tracer.start_as_current_span(operation_name, attributes=attributes) as span:
+
+        with tracer.start_as_current_span(
+            operation_name, attributes=attributes
+        ) as span:
             try:
                 # Log operation start
                 self.log_event(
@@ -245,9 +250,9 @@ class StructuredLogger:
                     user_id=user_id,
                     request_id=request_id,
                 )
-                
+
                 yield span
-                
+
                 # Log operation success
                 span.set_status(Status(StatusCode.OK))
                 self.log_event(
@@ -258,7 +263,7 @@ class StructuredLogger:
                     user_id=user_id,
                     request_id=request_id,
                 )
-                
+
             except Exception as e:
                 # Log operation error
                 span.set_status(Status(StatusCode.ERROR, str(e)))
@@ -277,19 +282,21 @@ class StructuredLogger:
 
 class InterceptHandler(logging.Handler):
     """Intercept standard logging and redirect to Loguru."""
-    
+
     def emit(self, record):
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
-        
+
         frame, depth = logging.currentframe(), 2
         while frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
-        
-        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
 
 
 # Global structured logger instance
@@ -312,8 +319,8 @@ def log_event(
     method: str = None,
     status_code: int = None,
     duration: float = None,
-    extra: Dict[str, Any] = None,
-    **kwargs
+    extra: dict[str, Any] = None,
+    **kwargs,
 ):
     """Log a structured event."""
     structured_logger.log_event(
@@ -328,7 +335,7 @@ def log_event(
         status_code=status_code,
         duration=duration,
         extra=extra,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -380,7 +387,7 @@ def log_security_event(
     user_id: str = None,
     ip_address: str = None,
     severity: str = "INFO",
-    details: Dict[str, Any] = None,
+    details: dict[str, Any] = None,
 ):
     """Log security event with structured data."""
     structured_logger.log_security_event(
@@ -397,7 +404,7 @@ def log_performance_metric(
     metric_name: str,
     value: float,
     unit: str = None,
-    tags: Dict[str, str] = None,
+    tags: dict[str, str] = None,
 ):
     """Log performance metric with structured data."""
     structured_logger.log_performance_metric(
@@ -410,7 +417,7 @@ def log_performance_metric(
 
 def trace_operation(
     operation_name: str,
-    attributes: Dict[str, Any] = None,
+    attributes: dict[str, Any] = None,
     user_id: str = None,
     request_id: str = None,
 ):

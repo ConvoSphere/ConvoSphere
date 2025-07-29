@@ -3,11 +3,12 @@
 import uuid
 from typing import Any
 
+from loguru import logger
+from sqlalchemy import and_
+
 from backend.app.core.database import get_db
 from backend.app.models.tool import Tool, ToolCategory
 from backend.app.models.user import User
-from loguru import logger
-from sqlalchemy import and_
 
 
 class ToolService:

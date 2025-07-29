@@ -2,6 +2,9 @@
 
 from typing import Any
 
+from sqlalchemy import and_, desc
+from sqlalchemy.orm import joinedload
+
 from backend.app.core.database import get_db
 from backend.app.core.exceptions import (
     ConversationError,
@@ -14,8 +17,6 @@ from backend.app.schemas.conversation import (
     ConversationCreate,
     MessageCreate,
 )
-from sqlalchemy import and_, desc
-from sqlalchemy.orm import joinedload
 
 
 class ConversationService:
@@ -47,7 +48,8 @@ class ConversationService:
                 raise ValidationError("title", "Conversation title is required")
 
             # Create conversation
-            from datetime import datetime, UTC
+            from datetime import UTC, datetime
+
             now = datetime.now(UTC)
             conversation = Conversation(
                 user_id=str(conversation_data.user_id),
@@ -149,10 +151,13 @@ class ConversationService:
 
         return [conv.to_dict() for conv in conversations]
 
-    def get_user_conversations_paginated(self, user_id: str, skip: int = 0, limit: int = 20) -> list[dict[str, Any]]:
+    def get_user_conversations_paginated(
+        self, user_id: str, skip: int = 0, limit: int = 20
+    ) -> list[dict[str, Any]]:
         """Return user conversations with simple pagination."""
         from sqlalchemy import desc
-        conversations = (
+
+        return (
             self.db.query(Conversation)
             .filter(Conversation.user_id == user_id)
             .order_by(desc(Conversation.updated_at))
@@ -160,17 +165,26 @@ class ConversationService:
             .limit(limit)
             .all()
         )
-        return conversations
 
-    def create_conversation_simple(self, user_id: str, assistant_id: str | None, title: str, description: str | None = None) -> dict[str, Any]:
+    def create_conversation_simple(
+        self,
+        user_id: str,
+        assistant_id: str | None,
+        title: str,
+        description: str | None = None,
+    ) -> dict[str, Any]:
         """Create conversation without having to build ConversationCreate schema (for legacy endpoints)."""
+        from datetime import UTC, datetime
         from uuid import UUID
+
         from backend.app.schemas.conversation import ConversationCreate
-        from datetime import datetime, UTC
+
         now = datetime.now(UTC)
         convo_data = ConversationCreate(
             user_id=UUID(user_id),
-            assistant_id=UUID(assistant_id) if assistant_id else UUID(assistant_id or user_id),  # fallback
+            assistant_id=(
+                UUID(assistant_id) if assistant_id else UUID(assistant_id or user_id)
+            ),  # fallback
             title=title,
             description=description,
             # conversation_metadata default handled

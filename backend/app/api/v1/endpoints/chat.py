@@ -7,21 +7,22 @@ management system for structured responses and mode switching.
 
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from loguru import logger
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user_id
-from backend.app.schemas.hybrid_mode import ConversationMode
-from backend.app.services.assistant_engine import assistant_engine
-from backend.app.services.conversation_service import conversation_service
 from backend.app.core.validation import (
     SecureChatMessageRequest,
     SecureConversationCreateRequest,
     SecurityValidationError,
     log_security_event,
 )
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from loguru import logger
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
+from backend.app.schemas.hybrid_mode import ConversationMode
+from backend.app.services.assistant_engine import assistant_engine
+from backend.app.services.conversation_service import conversation_service
 
 router = APIRouter()
 
@@ -253,7 +254,9 @@ async def send_message(
     """
     try:
         # Verify conversation access
-        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
+        conversation = conversation_service.get_conversation(
+            conversation_id, current_user_id
+        )
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -353,7 +356,9 @@ async def get_conversation_messages(
     """
     try:
         # Verify conversation access
-        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
+        conversation = conversation_service.get_conversation(
+            conversation_id, current_user_id
+        )
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -428,7 +433,9 @@ async def delete_conversation(
     """
     try:
         # Verify conversation access
-        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
+        conversation = conversation_service.get_conversation(
+            conversation_id, current_user_id
+        )
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -478,7 +485,9 @@ async def get_conversation_mode_status(
     """
     try:
         # Verify conversation access
-        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
+        conversation = conversation_service.get_conversation(
+            conversation_id, current_user_id
+        )
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

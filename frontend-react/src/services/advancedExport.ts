@@ -284,7 +284,7 @@ class AdvancedExportService {
     options: ChatExportOptions,
     conversationTitle?: string
   ): string {
-    let content = "Role,Timestamp,Content\n";
+    const content = "Role,Timestamp,Content\n";
     
     messages.forEach(message => {
       const role = message.role;

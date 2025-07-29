@@ -93,7 +93,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.request_counts = {}
-        
+
         # Different rate limits for different endpoints
         self.endpoint_limits = {
             "/api/v1/auth/login": 20,  # 20 login attempts per minute (increased)
@@ -112,7 +112,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """Apply rate limiting to requests."""
         client_ip = self._get_client_ip(request)
         current_time = int(time.time() / 60)  # Minute-based window
-        
+
         # Get user ID if authenticated
         user_id = self._get_user_id(request)
         identifier = user_id if user_id else client_ip
@@ -122,10 +122,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Get rate limit for this endpoint
         rate_limit = self._get_rate_limit_for_endpoint(request.url.path)
-        
+
         # Check rate limit
         if not self._check_rate_limit(identifier, current_time, rate_limit):
-            logger.warning(f"Rate limit exceeded for {identifier} on {request.url.path}")
+            logger.warning(
+                f"Rate limit exceeded for {identifier} on {request.url.path}"
+            )
             return Response(
                 content="Rate limit exceeded",
                 status_code=429,
@@ -158,8 +160,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 token = auth_header.split(" ")[1]
                 # Decode JWT token to get user ID
                 import jwt
+
                 from backend.app.core.config import get_settings
-                payload = jwt.decode(token, get_settings().secret_key, algorithms=["HS256"])
+
+                payload = jwt.decode(
+                    token, get_settings().secret_key, algorithms=["HS256"]
+                )
                 return payload.get("sub")
         except Exception:
             pass
@@ -172,7 +178,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 return limit
         return self.requests_per_minute
 
-    def _check_rate_limit(self, identifier: str, current_time: int, rate_limit: int) -> bool:
+    def _check_rate_limit(
+        self, identifier: str, current_time: int, rate_limit: int
+    ) -> bool:
         """Check if request is within rate limit."""
         key = f"{identifier}:{current_time}"
         count = self.request_counts.get(key, 0)
@@ -183,7 +191,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.request_counts[key] = count + 1
         return True
 
-    def _get_remaining_requests(self, identifier: str, current_time: int, rate_limit: int) -> int:
+    def _get_remaining_requests(
+        self, identifier: str, current_time: int, rate_limit: int
+    ) -> int:
         """Get remaining requests for client."""
         key = f"{identifier}:{current_time}"
         count = self.request_counts.get(key, 0)

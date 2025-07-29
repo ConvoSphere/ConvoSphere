@@ -1,11 +1,18 @@
 """Users endpoints for user management with enterprise features."""
 
 import psutil
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from opentelemetry.trace import get_current_span
+from sqlalchemy.orm import Session
+
 from backend.app.core.config import get_settings
 from backend.app.core.database import check_db_connection, get_db, get_db_info
 from backend.app.core.redis_client import check_redis_connection, get_redis_info
 from backend.app.core.security import get_current_user
-from backend.app.core.weaviate_client import check_weaviate_connection, get_weaviate_info
+from backend.app.core.weaviate_client import (
+    check_weaviate_connection,
+    get_weaviate_info,
+)
 from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
 from backend.app.schemas.user import (
     SSOUserCreate,
@@ -32,9 +39,6 @@ from backend.app.utils.exceptions import (
     UserLockedError,
     UserNotFoundError,
 )
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
-from opentelemetry.trace import get_current_span
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

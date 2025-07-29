@@ -5,8 +5,9 @@ This module provides configuration endpoints that the frontend needs
 to initialize properly.
 """
 
-from backend.app.core.config import get_settings
 from fastapi import APIRouter
+
+from backend.app.core.config import get_settings
 
 router = APIRouter()
 

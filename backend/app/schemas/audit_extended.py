@@ -9,6 +9,8 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from pydantic import BaseModel, Field, field_validator
+
 from backend.app.models.audit_extended import (
     AuditEventCategory,
     AuditEventType,
@@ -16,7 +18,6 @@ from backend.app.models.audit_extended import (
     ComplianceFramework,
     DataClassification,
 )
-from pydantic import BaseModel, Field, field_validator
 
 
 # Base schemas

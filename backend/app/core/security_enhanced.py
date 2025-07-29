@@ -13,10 +13,11 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-from backend.app.core.redis_client import get_redis_client
-from backend.app.models.user import User
 from fastapi import HTTPException, Request, status
 from loguru import logger
+
+from backend.app.core.redis_client import get_redis_client
+from backend.app.models.user import User
 
 
 class SecurityEventType(str, Enum):
