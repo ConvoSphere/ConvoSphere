@@ -151,8 +151,16 @@ class ConversationService:
 
     def get_user_conversations_paginated(self, user_id: str, skip: int = 0, limit: int = 20) -> list[dict[str, Any]]:
         """Return user conversations with simple pagination."""
-        conversations = self.get_user_conversations(user_id)
-        return conversations[skip : skip + limit]
+        from sqlalchemy import desc
+        conversations = (
+            self.db.query(Conversation)
+            .filter(Conversation.user_id == user_id)
+            .order_by(desc(Conversation.updated_at))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        return conversations
 
     def create_conversation_simple(self, user_id: str, assistant_id: str | None, title: str, description: str | None = None) -> dict[str, Any]:
         """Create conversation without having to build ConversationCreate schema (for legacy endpoints)."""
