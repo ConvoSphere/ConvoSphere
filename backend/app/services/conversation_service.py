@@ -47,6 +47,8 @@ class ConversationService:
                 raise ValidationError("title", "Conversation title is required")
 
             # Create conversation
+            from datetime import datetime, UTC
+            now = datetime.now(UTC)
             conversation = Conversation(
                 user_id=str(conversation_data.user_id),
                 assistant_id=str(conversation_data.assistant_id),
@@ -54,6 +56,8 @@ class ConversationService:
                 description=conversation_data.description,
                 conversation_metadata=conversation_data.conversation_metadata,
                 is_active=True,
+                created_at=now,
+                updated_at=now,
             )
 
             self.db.add(conversation)
@@ -154,13 +158,22 @@ class ConversationService:
         """Create conversation without having to build ConversationCreate schema (for legacy endpoints)."""
         from uuid import UUID
         from backend.app.schemas.conversation import ConversationCreate
+        from datetime import datetime, UTC
+        now = datetime.now(UTC)
         convo_data = ConversationCreate(
             user_id=UUID(user_id),
             assistant_id=UUID(assistant_id) if assistant_id else UUID(assistant_id or user_id),  # fallback
             title=title,
             description=description,
+            # conversation_metadata default handled
+            # timestamps
+            # these extra fields will be ignored by schema but we'll pass later when constructing model
         )
-        return self.create_conversation(convo_data)
+        conversation_dict = self.create_conversation(convo_data)
+        # ensure timestamps if missing
+        if not conversation_dict.get("created_at"):
+            conversation_dict["created_at"] = now.isoformat()
+        return conversation_dict
 
     def add_message(
         self,
