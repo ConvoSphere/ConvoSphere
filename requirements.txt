@@ -67,8 +67,7 @@ markdown>=3.5.0
 pytesseract>=0.3.10
 Pillow>=10.0.0
 
-# Advanced Document Processing with Docling
-docling>=0.1.0
+
 
 # =============================================================================
 # WEB SCRAPING & SEARCH
