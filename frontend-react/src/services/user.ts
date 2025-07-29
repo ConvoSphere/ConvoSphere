@@ -6,8 +6,13 @@ export interface UserProfileUpdate {
   language?: string;
 }
 
-export async function getProfile() {
-  const response = await api.get("/v1/auth/me");
+export async function getProfile(token?: string) {
+  const headers: any = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  
+  const response = await api.get("/v1/auth/me", { headers });
   return response.data;
 }
 

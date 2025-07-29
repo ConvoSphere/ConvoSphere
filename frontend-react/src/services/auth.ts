@@ -67,7 +67,7 @@ export function isTokenExpired(): boolean {
   
   // Add 5 minute buffer before expiry
   const buffer = 5 * 60 * 1000;
-  return Date.now() + buffer > parseInt(expiryTime);
+  return Date.now() > parseInt(expiryTime) - buffer;
 }
 
 export async function register(

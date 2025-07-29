@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const token = await apiLogin(username, password);
       set({ token, isAuthenticated: true, isLoading: false });
+      
       await get().fetchProfile();
     } catch (error) {
       set({ isLoading: false });
@@ -61,7 +62,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   fetchProfile: async () => {
     try {
-      const user = await getProfile();
+      // Use token from store, fallback to localStorage
+      let token = get().token;
+      if (!token) {
+        token = localStorage.getItem("token");
+        if (token) {
+          // Update store with token from localStorage
+          set({ token, isAuthenticated: true });
+        }
+      }
+      
+      if (!token) {
+        console.warn("No token available for profile fetch");
+        return;
+      }
+      
+      const user = await getProfile(token);
       set({ user });
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -76,11 +92,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const token = localStorage.getItem("token");
     if (!token) return false;
     
-    const isValid = !isTokenExpired();
-    if (!isValid) {
-      set({ token: null, isAuthenticated: false, user: null });
-    }
-    return isValid;
+    // Don't use isTokenExpired() here as it has a buffer
+    // Just check if token exists and is not empty
+    return !!token && token.length > 0;
   },
   refreshTokenIfNeeded: async () => {
     // Disable automatic token refresh to prevent loops
@@ -94,20 +108,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    // Only validate existing token, don't try to refresh
-    const isValid = !isTokenExpired();
-    if (!isValid) {
-      console.warn("Token expired, clearing auth state");
-      set({ token: null, isAuthenticated: false, user: null });
-      return;
-    }
+    // Set token in store first
+    set({ token, isAuthenticated: true });
 
-    // Token is valid, fetch user profile
+    // Try to fetch profile to validate token
     try {
       await get().fetchProfile();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to initialize auth:", error);
-      // Don't logout on profile fetch failure, just keep the token
+      // Only clear token if it's actually invalid (401/403)
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.warn("Token invalid, clearing auth state");
+        set({ token: null, isAuthenticated: false, user: null });
+      }
     }
   },
 }));

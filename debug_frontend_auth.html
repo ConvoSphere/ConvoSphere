@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Auth Debug</title>
+</head>
+<body>
+    <h1>Frontend Auth Debug</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        // Test localStorage
+        log('=== Testing localStorage ===');
+        const token = localStorage.getItem('token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        const tokenExpiry = localStorage.getItem('token_expiry');
+        
+        log('Token exists: ' + (token ? 'YES' : 'NO'));
+        log('Token length: ' + (token ? token.length : 0));
+        log('Refresh token exists: ' + (refreshToken ? 'YES' : 'NO'));
+        log('Token expiry exists: ' + (tokenExpiry ? 'YES' : 'NO'));
+        
+        if (tokenExpiry) {
+            const expiry = parseInt(tokenExpiry);
+            const now = Date.now();
+            const isExpired = now > expiry;
+            log('Token expiry: ' + new Date(expiry).toISOString());
+            log('Current time: ' + new Date(now).toISOString());
+            log('Token expired: ' + isExpired);
+        }
+        
+        // Test API call
+        log('=== Testing API call ===');
+        if (token) {
+            fetch('/api/v1/auth/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                log('Response status: ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                log('Response data: ' + JSON.stringify(data));
+            })
+            .catch(error => {
+                log('Error: ' + error.message);
+            });
+        } else {
+            log('No token available for API test');
+        }
+    </script>
+</body>
+</html> 
