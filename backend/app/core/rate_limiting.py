@@ -12,10 +12,10 @@ from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 import redis.asyncio as redis
 from backend.app.core.config import get_settings
-from backend.app.core.redis_client import get_redis_client
-from backend.app.utils.logger import get_logger
+from backend.app.core.redis_client import get_redis
+from loguru import logger
 
-logger = get_logger(__name__)
+
 
 class RateLimiter:
     """Rate limiter using Redis for distributed rate limiting."""
@@ -132,7 +132,7 @@ async def get_rate_limiter() -> RateLimiter:
     """Get or create rate limiter instance."""
     global _rate_limiter
     if _rate_limiter is None:
-        redis_client = await get_redis_client()
+        redis_client = await get_redis()
         _rate_limiter = RateLimiter(redis_client)
     return _rate_limiter
 

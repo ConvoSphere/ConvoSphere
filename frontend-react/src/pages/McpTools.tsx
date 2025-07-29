@@ -316,38 +316,57 @@ const McpTools: React.FC = () => {
                         >
                           <Title level={3} style={{ margin: 0 }}>
                             <ToolOutlined
-                    style={{ marginRight: 8, color: colors.colorPrimary }}
-                  />
-                  {t("mcp_tools.available_tools")}
-                </Title>
-                <Tag color="blue">
-                  {filteredTools.length} {t("mcp_tools.tools")}
-                </Tag>
-              </div>
+                              style={{ marginRight: 8, color: colors.colorPrimary }}
+                            />
+                            {t("mcp_tools.available_tools")}
+                          </Title>
+                          <Tag color="blue">
+                            {filteredTools.length} {t("mcp_tools.tools")}
+                          </Tag>
+                        </div>
 
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "40px" }}>
-                  <Spin size="large" />
-                  <Text style={{ display: "block", marginTop: 16 }}>
-                    {t("mcp_tools.loading")}
-                  </Text>
-                </div>
-              ) : filteredTools.length === 0 ? (
-                <Empty
-                  description={
-                    searchQuery
-                      ? t("mcp_tools.no_results")
-                      : t("mcp_tools.no_tools")
-                  }
-                  style={{ padding: "40px 0" }}
-                />
-              ) : (
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  {filteredTools.map(renderToolCard)}
-                </div>
-              )}
+                        {loading ? (
+                          <div style={{ textAlign: "center", padding: "40px" }}>
+                            <Spin size="large" />
+                            <Text style={{ display: "block", marginTop: 16 }}>
+                              {t("mcp_tools.loading")}
+                            </Text>
+                          </div>
+                        ) : filteredTools.length === 0 ? (
+                          <Empty
+                            description={
+                              searchQuery
+                                ? t("mcp_tools.no_results")
+                                : t("mcp_tools.no_tools")
+                            }
+                            style={{ padding: "40px 0" }}
+                          />
+                        ) : (
+                          <div
+                            style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                          >
+                            {filteredTools.map(renderToolCard)}
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "history",
+                    label: (
+                      <Space>
+                        <HistoryOutlined />
+                        {t("mcp_tools.history", "History")}
+                      </Space>
+                    ),
+                    children: (
+                      <div style={{ padding: "24px 0" }}>
+                        {renderExecutionHistory()}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             </ModernCard>
           </Col>
 
@@ -444,16 +463,6 @@ const McpTools: React.FC = () => {
                   {t("mcp_tools.actions.refresh_cache")}
                 </ModernButton>
               </div>
-            </ModernCard>
-
-            <ModernCard variant="elevated" size="md">
-              <Title level={4}>
-                <HistoryOutlined
-                  style={{ marginRight: 8, color: colors.colorPrimary }}
-                />
-                {t("mcp_tools.recent_executions")}
-              </Title>
-              {renderExecutionHistory()}
             </ModernCard>
           </Col>
         </Row>

@@ -91,6 +91,7 @@ const Login: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Early return if already authenticated to prevent unnecessary rendering
   if (isAuthenticated) {
     return null;
   }

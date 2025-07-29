@@ -256,14 +256,7 @@ export const showValidationErrors = (errors: FileValidationError[]): void => {
     message.error(errorMessages[0]);
   } else {
     message.error(
-      <div>
-        <div>Multiple files have validation errors:</div>
-        <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-          {errorMessages.map((msg, index) => (
-            <li key={index}>{msg}</li>
-          ))}
-        </ul>
-      </div>
+      `Multiple files have validation errors:\n${errorMessages.join('\n')}`
     );
   }
 };
@@ -280,14 +273,7 @@ export const showValidationWarnings = (warnings: string[]): void => {
     message.warning(uniqueWarnings[0]);
   } else {
     message.warning(
-      <div>
-        <div>Upload warnings:</div>
-        <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-          {uniqueWarnings.map((warning, index) => (
-            <li key={index}>{warning}</li>
-          ))}
-        </ul>
-      </div>
+      `Upload warnings:\n${uniqueWarnings.join('\n')}`
     );
   }
 };

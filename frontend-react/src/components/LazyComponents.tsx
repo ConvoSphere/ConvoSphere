@@ -45,106 +45,19 @@ export const LazySystemStatus = lazy(() => import("../pages/SystemStatus"));
 export const LazyVirtualizedChat = lazy(() => import("./VirtualizedChat"));
 // IconSystem is not a component; use Icon from './icons' where needed
 
-// Lazy Component Wrapper
-interface LazyComponentProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}
-
-export const LazyComponent: React.FC<LazyComponentProps> = ({
-  children,
-  fallback = <LoadingSpinner size="large" />,
-}) => {
-  return <Suspense fallback={fallback}>{children}</Suspense>;
-};
-
-// Page-specific Lazy Components
-export const LazyHomePage: React.FC = () => (
-  <LazyComponent>
-    <LazyHome />
-  </LazyComponent>
-);
-
-export const LazyDashboardPage: React.FC = () => (
-  <LazyComponent>
-    <LazyDashboard />
-  </LazyComponent>
-);
-
-export const LazyOverviewPage: React.FC = () => (
-  <LazyComponent>
-    <LazyOverview />
-  </LazyComponent>
-);
-
-export const LazyChatPage: React.FC = () => (
-  <LazyComponent>
-    <LazyChat />
-  </LazyComponent>
-);
-
-export const LazyAssistantsPage: React.FC = () => (
-  <LazyComponent>
-    <LazyAssistants />
-  </LazyComponent>
-);
-
-export const LazyKnowledgeBasePage: React.FC = () => (
-  <LazyComponent>
-    <LazyKnowledgeBase />
-  </LazyComponent>
-);
-
-export const LazyToolsPage: React.FC = () => (
-  <LazyComponent>
-    <LazyTools />
-  </LazyComponent>
-);
-
-export const LazySettingsPage: React.FC = () => (
-  <LazyComponent>
-    <LazySettings />
-  </LazyComponent>
-);
-
-export const LazyAdminPage: React.FC = () => (
-  <LazyComponent>
-    <LazyAdmin />
-  </LazyComponent>
-);
-
-export const LazyLoginPage: React.FC = () => (
-  <LazyComponent>
-    <LazyLogin />
-  </LazyComponent>
-);
-
-export const LazyRegisterPage: React.FC = () => (
-  <LazyComponent>
-    <LazyRegister />
-  </LazyComponent>
-);
-
-export const LazyProfilePage: React.FC = () => (
-  <LazyComponent>
-    <LazyProfile />
-  </LazyComponent>
-);
-
-export const LazyConversationsPage: React.FC = () => (
-  <LazyComponent>
-    <LazyConversations />
-  </LazyComponent>
-);
-
-export const LazyMcpToolsPage: React.FC = () => (
-  <LazyComponent>
-    <LazyMcpTools />
-  </LazyComponent>
-);
-
-export const LazySystemStatusPage: React.FC = () => (
-  <LazyComponent>
-    <LazySystemStatus />
-  </LazyComponent>
-);
+// Page-specific Lazy Components - Direct exports without additional Suspense wrapper
+export const LazyHomePage: React.FC = () => <LazyHome />;
+export const LazyDashboardPage: React.FC = () => <LazyDashboard />;
+export const LazyOverviewPage: React.FC = () => <LazyOverview />;
+export const LazyChatPage: React.FC = () => <LazyChat />;
+export const LazyAssistantsPage: React.FC = () => <LazyAssistants />;
+export const LazyKnowledgeBasePage: React.FC = () => <LazyKnowledgeBase />;
+export const LazyToolsPage: React.FC = () => <LazyTools />;
+export const LazySettingsPage: React.FC = () => <LazySettings />;
+export const LazyAdminPage: React.FC = () => <LazyAdmin />;
+export const LazyLoginPage: React.FC = () => <LazyLogin />;
+export const LazyRegisterPage: React.FC = () => <LazyRegister />;
+export const LazyProfilePage: React.FC = () => <LazyProfile />;
+export const LazyConversationsPage: React.FC = () => <LazyConversations />;
+export const LazyMcpToolsPage: React.FC = () => <LazyMcpTools />;
+export const LazySystemStatusPage: React.FC = () => <LazySystemStatus />;

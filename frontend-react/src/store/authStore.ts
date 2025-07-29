@@ -21,6 +21,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   user: UserProfile | null;
+  isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (
     username: string,
@@ -32,16 +33,24 @@ interface AuthState {
   updateProfile: (data: UserProfileUpdate) => Promise<void>;
   validateToken: () => boolean;
   refreshTokenIfNeeded: () => Promise<boolean>;
+  initializeAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   token: localStorage.getItem("token"),
   isAuthenticated: !!localStorage.getItem("token"),
   user: null,
+  isLoading: false,
   login: async (username, password) => {
-    const token = await apiLogin(username, password);
-    set({ token, isAuthenticated: true });
-    await useAuthStore.getState().fetchProfile();
+    set({ isLoading: true });
+    try {
+      const token = await apiLogin(username, password);
+      set({ token, isAuthenticated: true, isLoading: false });
+      await get().fetchProfile();
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
   },
   register: async (username, password, email) => {
     await apiRegister(username, password, email);
@@ -49,11 +58,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: () => {
     apiLogout();
-    set({ token: null, isAuthenticated: false, user: null });
+    set({ token: null, isAuthenticated: false, user: null, isLoading: false });
   },
   fetchProfile: async () => {
-    const user = await getProfile();
-    set({ user });
+    try {
+      const user = await getProfile();
+      set({ user });
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
+      // Don't logout on profile fetch failure
+    }
   },
   updateProfile: async (data) => {
     const user = await updateProfile(data);
@@ -71,15 +85,47 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   refreshTokenIfNeeded: async () => {
     if (isTokenExpired()) {
-      const newToken = await refreshToken();
-      if (newToken) {
-        set({ token: newToken, isAuthenticated: true });
-        return true;
-      } else {
+      try {
+        const newToken = await refreshToken();
+        if (newToken) {
+          set({ token: newToken, isAuthenticated: true });
+          return true;
+        } else {
+          set({ token: null, isAuthenticated: false, user: null });
+          return false;
+        }
+      } catch (error) {
+        console.error("Token refresh failed:", error);
         set({ token: null, isAuthenticated: false, user: null });
         return false;
       }
     }
     return true;
+  },
+  initializeAuth: async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      set({ isAuthenticated: false, user: null });
+      return;
+    }
+
+    // Validate existing token
+    const isValid = !isTokenExpired();
+    if (!isValid) {
+      // Try to refresh the token
+      const refreshSuccess = await get().refreshTokenIfNeeded();
+      if (!refreshSuccess) {
+        set({ isAuthenticated: false, user: null });
+        return;
+      }
+    }
+
+    // Token is valid, fetch user profile
+    try {
+      await get().fetchProfile();
+    } catch (error) {
+      console.error("Failed to initialize auth:", error);
+      // Don't logout on profile fetch failure, just keep the token
+    }
   },
 }));

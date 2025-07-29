@@ -28,10 +28,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.app.core.database import get_db
 from backend.app.core.caching import get_cache_manager
-from backend.app.utils.logger import get_logger
+from loguru import logger
 from backend.app.core.config import get_settings
 
-logger = get_logger(__name__)
+
 
 
 class MetricType(Enum):

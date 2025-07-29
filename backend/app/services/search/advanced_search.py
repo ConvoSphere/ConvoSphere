@@ -22,10 +22,10 @@ from sqlalchemy.sql import select
 from backend.app.models.knowledge import Document, DocumentChunk, SearchQuery, Tag
 from backend.app.services.weaviate_service import WeaviateService
 from backend.app.services.ai_service import AIService
-from backend.app.utils.logger import get_logger
+from loguru import logger
 from backend.app.core.config import get_settings
 
-logger = get_logger(__name__)
+
 
 
 class SearchType(Enum):

@@ -9,7 +9,9 @@ from typing import Any
 
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
-from backend.app.core.dependencies import get_security_dep, get_settings_dep, require_admin_role
+from backend.app.core.dependencies import require_admin_role
+from backend.app.core.security import security
+from backend.app.core.config import get_settings
 from backend.app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -308,8 +310,8 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(
-    credentials: HTTPAuthorizationCredentials = Depends(get_security_dep),
-    settings=Depends(get_settings_dep),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    settings=Depends(get_settings),
 ):
     """
     Logout user (invalidate tokens).
@@ -841,8 +843,8 @@ async def get_user_provisioning_status(
 async def bulk_sync_users(
     provider: str,
     user_list: list[dict[str, Any]],
+    request: Request,
     current_user: User = Depends(require_admin_role),
-    request: Request = Depends(),
     db: Session = Depends(get_db),
 ):
     """Bulk sync users from SSO provider (Admin only)."""

@@ -11,7 +11,7 @@ from enum import Enum
 from datetime import datetime
 from sqlalchemy.orm import Session
 from backend.app.models.knowledge import Document, DocumentStatus
-from backend.app.utils.logger import get_logger
+from loguru import logger
 from backend.app.utils.exceptions import (
     FileUploadError,
     ProcessingError,
@@ -19,7 +19,7 @@ from backend.app.utils.exceptions import (
     ConvoSphereError
 )
 
-logger = get_logger(__name__)
+
 
 
 class ErrorSeverity(Enum):

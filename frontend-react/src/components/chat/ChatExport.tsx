@@ -25,12 +25,11 @@ import {
   FilePdfOutlined,
   FileExcelOutlined,
   FileMarkdownOutlined,
-  FilePowerpointOutlined,
-  FileHtmlOutlined,
+  FilePptOutlined,
   SettingOutlined,
   BarChartOutlined,
   LayoutOutlined,
-  PaletteOutlined,
+  BgColorsOutlined,
   PrinterOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -93,14 +92,14 @@ const ChatExport: React.FC<ChatExportProps> = ({
     {
       value: "powerpoint",
       label: "PowerPoint",
-      icon: <FilePowerpointOutlined />,
+              icon: <FilePptOutlined />,
       description: t("chat.export.powerpoint_description", "Präsentation mit Themes"),
       color: "#fa8c16",
     },
     {
       value: "html",
       label: "HTML",
-      icon: <FileHtmlOutlined />,
+      icon: <FileTextOutlined />,
       description: t("chat.export.html_description", "Web-Dokument mit Templates"),
       color: "#722ed1",
     },

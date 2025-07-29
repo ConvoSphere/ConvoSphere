@@ -24,17 +24,17 @@ import {
   ClockCircleOutlined,
   DatabaseOutlined,
   CloudOutlined,
-  MemoryOutlined,
+  DesktopOutlined,
   HddOutlined,
-  NetworkOutlined,
   ReloadOutlined,
   LineChartOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
   WarningOutlined,
   InfoCircleOutlined,
+  GlobalOutlined,
 } from "@ant-design/icons";
-import { Line, Bar, Pie } from "@ant-design/charts";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -289,7 +289,7 @@ const PerformanceDashboard: React.FC = () => {
               title="CPU Usage"
               value={metrics?.cpu_percent || 0}
               suffix="%"
-              prefix={<MemoryOutlined />}
+              prefix={<DesktopOutlined />}
               valueStyle={{ color: metrics?.cpu_percent > 80 ? "#cf1322" : "#3f8600" }}
             />
             <Progress
@@ -305,7 +305,7 @@ const PerformanceDashboard: React.FC = () => {
               title="Memory Usage"
               value={metrics?.memory_percent || 0}
               suffix="%"
-              prefix={<MemoryOutlined />}
+              prefix={<DesktopOutlined />}
               valueStyle={{ color: metrics?.memory_percent > 85 ? "#cf1322" : "#3f8600" }}
             />
             <Progress
@@ -414,7 +414,7 @@ const PerformanceDashboard: React.FC = () => {
                   title="Memory Cache Size"
                   value={cacheMetrics?.memory_cache_size || 0}
                   suffix={`/ ${cacheMetrics?.memory_cache_capacity || 0}`}
-                  prefix={<MemoryOutlined />}
+                  prefix={<DesktopOutlined />}
                 />
               </Col>
               <Col span={12}>
@@ -432,20 +432,20 @@ const PerformanceDashboard: React.FC = () => {
       {/* Network and Storage */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={12}>
-          <Card title={<><NetworkOutlined /> Network I/O</>}>
+          <Card title={<><GlobalOutlined /> Network I/O</>}>
             <Row gutter={16}>
               <Col span={12}>
                 <Statistic
                   title="Bytes Sent/sec"
                   value={metrics?.network_bytes_sent_per_sec ? formatBytes(metrics.network_bytes_sent_per_sec) : "0 B"}
-                  prefix={<NetworkOutlined />}
+                  prefix={<GlobalOutlined />}
                 />
               </Col>
               <Col span={12}>
                 <Statistic
                   title="Bytes Received/sec"
                   value={metrics?.network_bytes_recv_per_sec ? formatBytes(metrics.network_bytes_recv_per_sec) : "0 B"}
-                  prefix={<NetworkOutlined />}
+                  prefix={<GlobalOutlined />}
                 />
               </Col>
             </Row>
@@ -458,7 +458,7 @@ const PerformanceDashboard: React.FC = () => {
                 <Statistic
                   title="Available Memory"
                   value={metrics?.memory_available_gb ? `${metrics.memory_available_gb.toFixed(2)} GB` : "0 GB"}
-                  prefix={<MemoryOutlined />}
+                  prefix={<DesktopOutlined />}
                 />
               </Col>
               <Col span={12}>

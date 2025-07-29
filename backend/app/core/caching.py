@@ -21,10 +21,10 @@ import pickle
 
 import redis.asyncio as redis
 from backend.app.core.config import get_settings
-from backend.app.core.redis_client import get_redis_client
-from backend.app.utils.logger import get_logger
+from backend.app.core.redis_client import get_redis
+from loguru import logger
 
-logger = get_logger(__name__)
+
 
 
 class CacheLevel(Enum):
@@ -109,7 +109,7 @@ class CacheManager:
     
     def __init__(self):
         self.settings = get_settings()
-        self.redis_client = get_redis_client()
+        self.redis_client = get_redis()
         self.metrics = CacheMetrics()
         
         # Memory cache (L1)

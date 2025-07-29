@@ -217,11 +217,10 @@ export const handleError = (
       message: errorMessage,
       description: recovery.description,
       duration: 0,
-      btn: recovery.handler ? (
-        <button onClick={recovery.handler}>
-          {recovery.action}
-        </button>
-      ) : undefined,
+      btn: recovery.handler ? {
+        text: recovery.action,
+        onClick: recovery.handler
+      } : undefined,
     });
   }
 
@@ -324,11 +323,9 @@ export const withErrorBoundary = <P extends object>(
           });
         }
         
-        return (
-          <div style={{ padding: 20, textAlign: "center" }}>
-            <h3>Something went wrong</h3>
-            <button onClick={this.resetError}>Try again</button>
-          </div>
+        return React.createElement('div', { style: { padding: 20, textAlign: "center" } },
+          React.createElement('h3', null, 'Something went wrong'),
+          React.createElement('button', { onClick: this.resetError }, 'Try again')
         );
       }
 

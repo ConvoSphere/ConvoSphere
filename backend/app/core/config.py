@@ -127,6 +127,7 @@ class Settings(BaseSettings):
 
     # File Storage
     upload_dir: str = Field(default="./uploads", description="Upload directory")
+    backup_dir: str = Field(default="./backups", description="Backup directory")
 
     # Logging
     log_level: str = Field(default="INFO", description="Log level")
@@ -281,6 +282,7 @@ class Settings(BaseSettings):
             raise ValueError("Secret key must be at least 32 characters long")
         
         # Additional security checks for production
+        import os
         if len(v) < 64 and os.getenv("ENVIRONMENT", "development") == "production":
             raise ValueError("Production secret key should be at least 64 characters long")
         

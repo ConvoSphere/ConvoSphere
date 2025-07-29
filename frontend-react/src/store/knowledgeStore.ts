@@ -431,24 +431,7 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     });
   },
 
-  getTags: async () => {
-    // Placeholder: fetch tags and set state
-    try {
-      const tags = await getTags();
-      set({ tags });
-    } catch (error) {
-      set({ tags: [] });
-    }
-  },
-  getDocuments: async () => {
-    // Placeholder: fetch documents and set state
-    try {
-      const documents = await getDocuments();
-      set({ documents });
-    } catch (error) {
-      set({ documents: [] });
-    }
-  },
+
 }));
 
 // Selectors for better performance

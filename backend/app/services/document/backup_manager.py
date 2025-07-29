@@ -20,9 +20,9 @@ from sqlalchemy import and_
 
 from backend.app.models.knowledge import Document, DocumentChunk, DocumentProcessingJob
 from backend.app.core.config import get_settings
-from backend.app.utils.logger import get_logger
+from loguru import logger
 
-logger = get_logger(__name__)
+
 
 
 class BackupType(Enum):
@@ -64,8 +64,8 @@ class DocumentBackup:
     document_id: str
     document_data: Dict[str, Any]
     chunks_data: List[Dict[str, Any]]
-    file_path: Optional[str] = None
     backup_timestamp: datetime
+    file_path: Optional[str] = None
 
 
 class DocumentBackupManager:

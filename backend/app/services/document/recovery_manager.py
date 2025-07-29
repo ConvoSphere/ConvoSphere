@@ -21,9 +21,9 @@ from backend.app.services.document.error_handler import (
     ErrorSeverity,
     DocumentErrorHandler
 )
-from backend.app.utils.logger import get_logger
+from loguru import logger
 
-logger = get_logger(__name__)
+
 
 
 class RecoveryStrategy(Enum):

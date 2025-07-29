@@ -189,14 +189,7 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
-  const handleBulkTag = async (documentIds: string[]) => {
-    try {
-      message.success(`Tags applied to ${documentIds.length} documents`);
-      refreshDocuments();
-    } catch (_error) {
-      message.error("Failed to apply tags");
-    }
-  };
+
 
   const handleBulkReprocess = async (documentIds: string[]) => {
     try {

@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { ConfigProvider, theme as antdTheme, Spin, Button } from "antd";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { I18nextProvider, useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import CriticalErrorBoundary from "./components/CriticalErrorBoundary";
 import PerformanceMonitor from "./components/PerformanceMonitor";
 import performanceMonitor from "./utils/performance";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
+import { useAuthStore } from "./store/authStore";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -19,6 +20,7 @@ import "./styles/chat.css";
 
 import {
   LazyHomePage,
+  LazyDashboardPage,
   LazyOverviewPage,
   LazyChatPage,
   LazyAssistantsPage,
@@ -149,9 +151,41 @@ const ErrorFallback: React.FC<{
 };
 
 const App: React.FC = () => {
-  const { mode, getCurrentTheme } = useThemeStore();
-  const currentTheme = getCurrentTheme();
-  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
+  const { mode, currentTheme } = useThemeStore();
+  const { initializeAuth } = useAuthStore();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize authentication on app start
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        await initializeAuth();
+      } catch (error) {
+        console.error("Failed to initialize authentication:", error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    initApp();
+  }, [initializeAuth]);
+
+  // Show loading spinner while initializing
+  if (!isInitialized) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: currentTheme.token.colorBgBase,
+        }}
+      >
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   // Initialize performance monitoring
   React.useEffect(() => {
@@ -292,7 +326,7 @@ const App: React.FC = () => {
                           </ErrorBoundary>
                         </Layout>
                       </ProtectedRoute>
-                    </ErrorBoundary>
+                    </CriticalErrorBoundary>
                   }
                 />
               </Routes>
