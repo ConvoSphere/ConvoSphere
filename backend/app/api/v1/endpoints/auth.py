@@ -60,6 +60,10 @@ class UserRegister(BaseModel):
     last_name: str | None = None
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
@@ -263,14 +267,14 @@ async def register(
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
-    refresh_token: str,
+    refresh_token_data: RefreshTokenRequest,
     db: Session = Depends(get_db),
 ):
     """
     Refresh access token using refresh token.
 
     Args:
-        refresh_token: Refresh token
+        refresh_token_data: Refresh token data
         db: Database session
 
     Returns:
@@ -279,7 +283,7 @@ async def refresh_token(
     Raises:
         HTTPException: If refresh token is invalid
     """
-    user_id = verify_token(refresh_token)
+    user_id = await verify_token(refresh_token_data.refresh_token)
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
