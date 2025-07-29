@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -20,7 +19,6 @@ import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
-import McpServerManager from "../components/mcp/McpServerManager";
 import {
   ToolOutlined,
   PlayCircleOutlined,
@@ -34,7 +32,6 @@ import {
   CodeOutlined,
   ApiOutlined,
   DatabaseOutlined,
-  ServerOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
@@ -54,10 +51,20 @@ interface ToolExecution {
   output?: string;
 }
 
+interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  background?: string;
+  text?: string;
+  success?: string;
+  warning?: string;
+  error?: string;
+}
+
 const McpTools: React.FC = () => {
   const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors() ?? {};
+  const colors = getCurrentColors() as ThemeColors ?? {};
   const [tools, setTools] = useState<McpTool[]>([]);
   const [selected, setSelected] = useState<McpTool | null>(null);
   const [visible, setVisible] = useState(false);
@@ -73,7 +80,7 @@ const McpTools: React.FC = () => {
       .then(setTools)
       .catch(() => message.error(t("mcp_tools.load_failed")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   const handleRun = async () => {
     if (!selected) return;
@@ -124,13 +131,13 @@ const McpTools: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "success":
-        return colors.colorSuccess;
+        return colors.success;
       case "error":
-        return colors.colorError;
+        return colors.error;
       case "running":
-        return colors.colorWarning;
+        return colors.warning;
       default:
-        return colors.colorTextSecondary;
+        return colors.textSecondary;
     }
   };
 
@@ -168,7 +175,7 @@ const McpTools: React.FC = () => {
         <Avatar
           icon={getToolIcon(tool.name)}
           size="large"
-          style={{ backgroundColor: colors.colorPrimary }}
+          style={{ backgroundColor: colors.primary }}
         />
         <div style={{ flex: 1 }}>
           <Title level={5} style={{ margin: 0 }}>
@@ -235,7 +242,7 @@ const McpTools: React.FC = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: colors.colorGradientPrimary || "#23224A",
+        background: colors.background || "#23224A",
         padding: "24px",
       }}
     >
@@ -318,7 +325,7 @@ const McpTools: React.FC = () => {
                         >
                           <Title level={3} style={{ margin: 0 }}>
                             <ToolOutlined
-                              style={{ marginRight: 8, color: colors.colorPrimary }}
+                              style={{ marginRight: 8, color: colors.primary }}
                             />
                             {t("mcp_tools.available_tools")}
                           </Title>
@@ -380,7 +387,7 @@ const McpTools: React.FC = () => {
             >
               <Title level={4}>
                 <ThunderboltOutlined
-                  style={{ marginRight: 8, color: colors.colorPrimary }}
+                  style={{ marginRight: 8, color: colors.primary }}
                 />
                 {t("mcp_tools.quick_stats")}
               </Title>
@@ -395,7 +402,7 @@ const McpTools: React.FC = () => {
                   }}
                 >
                   <Text>{t("mcp_tools.stats.total_tools")}</Text>
-                  <Text strong style={{ color: colors.colorPrimary }}>
+                  <Text strong style={{ color: colors.primary }}>
                     {tools.length}
                   </Text>
                 </div>
@@ -407,7 +414,7 @@ const McpTools: React.FC = () => {
                   }}
                 >
                   <Text>{t("mcp_tools.stats.successful_executions")}</Text>
-                  <Text strong style={{ color: colors.colorSuccess }}>
+                  <Text strong style={{ color: colors.success }}>
                     {
                       executionHistory.filter(
                         (exec) => exec.status === "success",
@@ -423,7 +430,7 @@ const McpTools: React.FC = () => {
                   }}
                 >
                   <Text>{t("mcp_tools.stats.failed_executions")}</Text>
-                  <Text strong style={{ color: colors.colorError }}>
+                  <Text strong style={{ color: colors.error }}>
                     {
                       executionHistory.filter((exec) => exec.status === "error")
                         .length
@@ -440,7 +447,7 @@ const McpTools: React.FC = () => {
             >
               <Title level={4}>
                 <SettingOutlined
-                  style={{ marginRight: 8, color: colors.colorPrimary }}
+                  style={{ marginRight: 8, color: colors.primary }}
                 />
                 {t("mcp_tools.quick_actions")}
               </Title>
@@ -473,7 +480,7 @@ const McpTools: React.FC = () => {
       <Modal
         title={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <ThunderboltOutlined style={{ color: colors.colorPrimary }} />
+            <ThunderboltOutlined style={{ color: colors.primary }} />
             {selected?.name}
           </div>
         }

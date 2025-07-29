@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 import {
   Spin,
@@ -18,7 +17,6 @@ import {
   SearchOutlined,
   LoadingOutlined,
   DownloadOutlined,
-  MoreOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
@@ -38,6 +36,19 @@ import ChatExport from "../components/chat/ChatExport";
 import { exportService } from "../services/export";
 
 const { Title, Text } = Typography;
+
+interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  background?: string;
+  text?: string;
+}
+
+interface ExportOptions {
+  format: string;
+  includeMetadata: boolean;
+  includeKnowledgeContext: boolean;
+}
 
 const Chat: React.FC = () => {
   const { t } = useTranslation();
@@ -63,8 +74,8 @@ const Chat: React.FC = () => {
 
   const token = useAuthStore((s) => s.token);
   const { getCurrentColors } = useThemeStore();
-  const { searchDocuments } = useKnowledgeStore() as any;
-  const colors = (getCurrentColors() as any) ?? {};
+  const { searchDocuments } = useKnowledgeStore();
+  const colors = (getCurrentColors() as ThemeColors) ?? {};
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<InputRef>(null);
 
@@ -390,18 +401,18 @@ const Chat: React.FC = () => {
         : isSystem
           ? "#f0f0f0"
           : isUser
-            ? colors.colorChatUserBubble
-            : colors.colorChatAIBubble,
+            ? colors.primary
+            : colors.secondary,
       color: isError
         ? "#fff"
         : isSystem
           ? "#666"
           : isUser
-            ? colors.colorChatUserText
-            : colors.colorChatAIText,
+            ? colors.text
+            : colors.text,
       padding: "16px 20px",
       borderRadius: "20px",
-      boxShadow: colors.boxShadow,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       position: "relative",
       wordWrap: "break-word",
       maxWidth: "100%",
@@ -415,8 +426,8 @@ const Chat: React.FC = () => {
         : isSystem
           ? "#d9d9d9"
           : isUser
-            ? colors.colorPrimary
-            : colors.colorSecondary,
+            ? colors.primary
+            : colors.secondary,
       flexShrink: 0,
       width: "40px",
       height: "40px",
@@ -454,7 +465,7 @@ const Chat: React.FC = () => {
                   display: "inline-block",
                   width: "8px",
                   height: "16px",
-                  backgroundColor: colors.colorPrimary,
+                  backgroundColor: colors.primary,
                   animation: "blink 1s infinite",
                   marginLeft: "4px",
                 }}
@@ -492,7 +503,7 @@ const Chat: React.FC = () => {
               <div
                 style={{
                   fontSize: "12px",
-                  color: colors.colorSecondary,
+                  color: colors.secondary,
                 }}
               >
                 <Text
@@ -523,7 +534,7 @@ const Chat: React.FC = () => {
                     <div
                       style={{
                         fontSize: "11px",
-                        color: colors.colorSecondary,
+                        color: colors.secondary,
                         textAlign: "center",
                         marginTop: "4px",
                       }}
@@ -539,7 +550,7 @@ const Chat: React.FC = () => {
           <div
             style={{
               fontSize: "11px",
-              color: colors.colorSecondary,
+              color: colors.secondary,
               marginLeft: isUser ? "auto" : "0",
               marginRight: isUser ? "0" : "auto",
               opacity: 0.8,
@@ -571,7 +582,7 @@ const Chat: React.FC = () => {
               >
                 <Title
                   level={4}
-                  style={{ margin: 0, color: colors.colorTextBase }}
+                  style={{ margin: 0, color: colors.text }}
                 >
                   {t("chat.title")}
                 </Title>
@@ -587,10 +598,10 @@ const Chat: React.FC = () => {
                     }}
                   >
                     <LoadingOutlined
-                      style={{ fontSize: "14px", color: colors.colorPrimary }}
+                      style={{ fontSize: "14px", color: colors.primary }}
                     />
                     <span
-                      style={{ fontSize: "14px", color: colors.colorSecondary }}
+                      style={{ fontSize: "14px", color: colors.secondary }}
                     >
                       {t("chat.typing")}
                     </span>
@@ -657,7 +668,7 @@ const Chat: React.FC = () => {
               marginBottom: "20px",
               border: "1px solid var(--colorBorder)",
               borderRadius: "16px",
-              background: colors.colorBackground,
+              background: colors.background,
               minHeight: "400px",
             }}
             className="chat-messages-container"
@@ -669,7 +680,7 @@ const Chat: React.FC = () => {
                   style={{
                     marginTop: 20,
                     fontSize: "16px",
-                    color: colors.colorSecondary,
+                    color: colors.secondary,
                   }}
                 >
                   {t("chat.loading")}
@@ -680,19 +691,19 @@ const Chat: React.FC = () => {
                 style={{
                   textAlign: "center",
                   padding: "60px",
-                  color: colors.colorSecondary,
+                  color: colors.secondary,
                 }}
               >
                 <RobotOutlined
                   style={{
                     fontSize: "64px",
                     marginBottom: 24,
-                    color: colors.colorPrimary,
+                    color: colors.primary,
                   }}
                 />
                 <Title
                   level={3}
-                  style={{ color: colors.colorTextBase, marginBottom: 16 }}
+                  style={{ color: colors.text, marginBottom: 16 }}
                 >
                   {t("chat.title")}
                 </Title>
@@ -726,11 +737,11 @@ const Chat: React.FC = () => {
                   >
                     <div
                       style={{
-                        backgroundColor: colors.colorChatAIBubble,
-                        color: colors.colorChatAIText,
+                        backgroundColor: colors.secondary,
+                        color: colors.text,
                         padding: "16px 20px",
                         borderRadius: "20px",
-                        boxShadow: colors.boxShadow,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         position: "relative",
                         wordWrap: "break-word",
                         maxWidth: "100%",
@@ -739,7 +750,7 @@ const Chat: React.FC = () => {
                     >
                       <div
                         style={{
-                          backgroundColor: colors.colorPrimary,
+                          backgroundColor: colors.primary,
                           flexShrink: 0,
                           width: "40px",
                           height: "40px",
@@ -767,7 +778,7 @@ const Chat: React.FC = () => {
                               display: "inline-block",
                               width: "8px",
                               height: "16px",
-                              backgroundColor: colors.colorPrimary,
+                              backgroundColor: colors.primary,
                               animation: "blink 1s infinite",
                               marginLeft: "4px",
                             }}

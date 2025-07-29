@@ -22,7 +22,6 @@ import {
   FilterOutlined,
   ClearOutlined,
   SaveOutlined,
-  BookOutlined,
   CalendarOutlined,
   FileTextOutlined,
   TagOutlined,
@@ -34,7 +33,7 @@ import ModernButton from "../ModernButton";
 import ModernInput from "../ModernInput";
 import ModernSelect from "../ModernSelect";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
 const { RangePicker } = DatePicker;
 const { Panel } = Collapse;

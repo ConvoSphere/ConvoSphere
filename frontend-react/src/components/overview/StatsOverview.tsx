@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import {
   Row,
@@ -22,7 +21,6 @@ import {
   UserOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
-  RiseOutlined,
   RobotOutlined,
   ApiOutlined,
   ReloadOutlined,
@@ -45,6 +43,16 @@ interface StatsOverviewProps {
   className?: string;
 }
 
+interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  background?: string;
+  text?: string;
+  success?: string;
+  warning?: string;
+  error?: string;
+}
+
 const StatsOverview: React.FC<StatsOverviewProps> = ({
   variant = "full",
   showActivity = true,
@@ -54,7 +62,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
   const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
   const { token } = useAuthStore();
-  const colors = getCurrentColors();
+  const colors = getCurrentColors() as ThemeColors;
 
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,26 +197,26 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
       {
         title: t("overview.stats.conversations"),
         value: stats.systemStats.totalConversations,
-        icon: <MessageOutlined style={{ color: colors.colorPrimary }} />,
-        color: colors.colorPrimary,
+        icon: <MessageOutlined style={{ color: colors.primary }} />,
+        color: colors.primary,
       },
       {
         title: t("overview.stats.messages"),
         value: stats.systemStats.totalMessages,
-        icon: <MessageOutlined style={{ color: colors.colorSecondary }} />,
-        color: colors.colorSecondary,
+        icon: <MessageOutlined style={{ color: colors.secondary }} />,
+        color: colors.secondary,
       },
       {
         title: t("overview.stats.documents"),
         value: stats.systemStats.totalDocuments,
-        icon: <BookOutlined style={{ color: colors.colorAccent }} />,
-        color: colors.colorAccent,
+        icon: <BookOutlined style={{ color: colors.accent }} />,
+        color: colors.accent,
       },
       {
         title: t("overview.stats.assistants"),
         value: stats.systemStats.totalAssistants,
-        icon: <TeamOutlined style={{ color: colors.colorPrimary }} />,
-        color: colors.colorPrimary,
+        icon: <TeamOutlined style={{ color: colors.primary }} />,
+        color: colors.primary,
       },
     ];
 
@@ -310,7 +318,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
               <Tooltip title={realtimeConnected ? t("overview.realtime_connected") : t("overview.realtime_disconnected")}>
                 <WifiOutlined 
                   style={{ 
-                    color: realtimeConnected ? colors.colorSuccess : colors.colorTextSecondary,
+                    color: realtimeConnected ? colors.success : colors.textSecondary,
                     fontSize: "14px"
                   }} 
                 />
@@ -331,16 +339,16 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
             <Statistic
               title={t("overview.stats.active_users")}
               value={stats.systemStats.activeUsers}
-              prefix={<UserOutlined style={{ color: colors.colorPrimary }} />}
-              valueStyle={{ color: colors.colorPrimary }}
+              prefix={<UserOutlined style={{ color: colors.primary }} />}
+              valueStyle={{ color: colors.primary }}
             />
           </Col>
           <Col span={12}>
             <Statistic
               title={t("overview.stats.tools")}
               value={stats.systemStats.totalTools}
-              prefix={<ToolOutlined style={{ color: colors.colorSecondary }} />}
-              valueStyle={{ color: colors.colorSecondary }}
+              prefix={<ToolOutlined style={{ color: colors.secondary }} />}
+              valueStyle={{ color: colors.secondary }}
             />
           </Col>
         </Row>
@@ -354,7 +362,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
               <Progress
                 percent={stats.systemStats.performance.cpuUsage}
                 status="active"
-                strokeColor={colors.colorPrimary}
+                strokeColor={colors.primary}
                 strokeWidth={8}
                 format={(percent) => `CPU: ${percent}%`}
               />
@@ -363,7 +371,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
               <Progress
                 percent={stats.systemStats.performance.memoryUsage}
                 status="active"
-                strokeColor={colors.colorSecondary}
+                strokeColor={colors.secondary}
                 strokeWidth={8}
                 format={(percent) => `RAM: ${percent}%`}
               />
@@ -421,7 +429,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                   <Avatar
                     icon={getActivityIcon(item.type)}
                     style={{
-                      backgroundColor: colors.colorPrimary,
+                      backgroundColor: colors.primary,
                       color: "#FFFFFF",
                       width: variant === "compact" ? 32 : 40,
                       height: variant === "compact" ? 32 : 40,
@@ -447,7 +455,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                     )}
                     <Space>
                       <ClockCircleOutlined
-                        style={{ color: colors.colorTextSecondary }}
+                        style={{ color: colors.textSecondary }}
                       />
                       <Text type="secondary">
                         {new Date(item.timestamp).toLocaleString()}
