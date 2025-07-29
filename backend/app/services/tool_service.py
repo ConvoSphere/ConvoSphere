@@ -158,7 +158,7 @@ class ToolService:
             new_tool = Tool(
                 name=tool_data["name"],
                 description=tool_data.get("description"),
-                version=tool_data.get("version", "1.0.0"),
+                version=tool_data.get("version", "0.1.0-beta"),
                 category=category,
                 function_name=tool_data["function_name"],
                 parameters_schema=tool_data.get("parameters_schema"),

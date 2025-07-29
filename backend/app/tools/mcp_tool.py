@@ -84,7 +84,7 @@ class MCPClient:
                     },
                     "clientInfo": {
                         "name": "ai-assistant-platform",
-                        "version": "1.0.0",
+                        "version": "0.1.0-beta",
                     },
                 },
             }
@@ -142,7 +142,7 @@ class MCPClient:
                             description=tool.get("description", ""),
                             input_schema=tool.get("inputSchema", {}),
                             server_name=self.server_name,
-                            server_version=tool.get("version", "1.0.0"),
+                            server_version=tool.get("version", "0.1.0-beta"),
                         )
                         for tool in tools_data
                     ]

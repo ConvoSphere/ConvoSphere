@@ -17,7 +17,7 @@ class Settings(BaseSettings):
         default="AI Assistant Platform",
         description="Application name",
     )
-    app_version: str = Field(default="1.0.0", description="Application version")
+    app_version: str = Field(default="0.1.0-beta", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
     environment: str = Field(default="production", description="Environment")
 

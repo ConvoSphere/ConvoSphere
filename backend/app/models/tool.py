@@ -42,7 +42,7 @@ class Tool(Base, TimestampMixin):
     # Basic information
     name = Column(String(200), nullable=False, index=True)
     description = Column(Text, nullable=True)
-    version = Column(String(50), default="1.0.0")
+    version = Column(String(50), default="0.1.0-beta")
 
     # Tool configuration
     category = Column(SQLEnum(ToolCategory), nullable=False)

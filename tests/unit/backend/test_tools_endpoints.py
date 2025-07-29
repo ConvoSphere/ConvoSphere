@@ -37,7 +37,7 @@ def mock_tool():
     mock.id = "550e8400-e29b-41d4-a716-446655440000"
     mock.name = "Test Tool"
     mock.description = "A test tool for testing"
-    mock.version = "1.0.0"
+    mock.version = "0.1.0-beta"
     mock.category = "search"
     mock.function_name = "test_function"
     mock.parameters_schema = {"type": "object", "properties": {}}
@@ -59,7 +59,7 @@ def mock_tool():
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "name": "Test Tool",
         "description": "A test tool for testing",
-        "version": "1.0.0",
+        "version": "0.1.0-beta",
         "category": "search",
         "function_name": "test_function",
         "parameters_schema": {"type": "object", "properties": {}},
@@ -86,7 +86,7 @@ def sample_tool_data():
     return {
         "name": "Test Tool",
         "description": "A test tool for testing",
-        "version": "1.0.0",
+        "version": "0.1.0-beta",
         "category": "search",
         "function_name": "test_function",
         "parameters_schema": {"type": "object", "properties": {}},
@@ -243,7 +243,7 @@ class TestToolsEndpoints:
             valid_data = {
                 "name": "Test Tool",
                 "description": "A test tool for testing",
-                "version": "1.0.0",
+                "version": "0.1.0-beta",
                 "category": "search",
                 "function_name": "test_function",
                 "parameters_schema": {"type": "object", "properties": {}},
@@ -280,7 +280,7 @@ class TestToolsEndpoints:
             sample_tool_data = {
                 "name": "Test Tool",
                 "description": "A test tool for testing",
-                "version": "1.0.0",
+                "version": "0.1.0-beta",
                 "category": "invalid_category",
                 "function_name": "test_function",
                 "parameters_schema": {"type": "object", "properties": {}},

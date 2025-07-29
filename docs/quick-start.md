@@ -16,7 +16,9 @@ docker-compose up --build
 ```
 
 ### 3. Open Browser
-→ [http://localhost:5173](http://localhost:5173)
+→ [http://localhost:8081](http://localhost:8081)
+
+> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
 
 **That's it!** 🎉
 
@@ -77,7 +79,7 @@ npm run dev
 ```bash
 # Check ports
 lsof -i :8000  # Backend
-lsof -i :5173  # Frontend
+lsof -i :8081  # Frontend
 
 # Use different ports
 docker-compose -f docker-compose.yml -p ai-chat-app up
