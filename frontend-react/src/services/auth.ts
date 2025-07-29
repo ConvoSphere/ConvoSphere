@@ -15,7 +15,7 @@ export interface TokenResponse {
 }
 
 export async function login(username: string, password: string): Promise<string> {
-  const response = await authApi.post("/v1/auth/login", { username, password });
+  const response = await authApi.post(`${config.apiEndpoints.auth}/login`, { username, password });
   const { access_token, refresh_token } = response.data;
   
   // Store both tokens
@@ -38,7 +38,7 @@ export async function refreshToken(): Promise<string | null> {
     }
 
     // Use the separate authApi instance to prevent loops
-    const response = await authApi.post("/v1/auth/refresh", { refresh_token });
+    const response = await authApi.post(`${config.apiEndpoints.auth}/refresh`, { refresh_token });
     const { access_token, refresh_token: new_refresh_token } = response.data;
     
     // Update tokens
@@ -75,7 +75,7 @@ export async function register(
   password: string,
   email: string,
 ) {
-  const response = await authApi.post("/v1/auth/register", {
+  const response = await authApi.post(`${config.apiEndpoints.auth}/register`, {
     username,
     password,
     email,
@@ -85,7 +85,7 @@ export async function register(
 }
 
 export async function getSSOProviders() {
-  const response = await authApi.get("/v1/auth/sso/providers");
+  const response = await authApi.get(`${config.apiEndpoints.auth}/sso/providers`);
   return response.data.providers;
 }
 
