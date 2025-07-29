@@ -4,7 +4,7 @@ from backend.app.core.config import settings
 def test_settings_loading():
     """Test that settings load correctly."""
     assert settings.app_name == "AI Assistant Platform"  # noqa: S101
-    assert settings.app_version == "1.0.0"  # noqa: S101
+    assert settings.app_version == "0.1.0-beta"  # noqa: S101
     assert isinstance(settings.debug, bool)  # noqa: S101
     assert isinstance(settings.port, int)  # noqa: S101
     assert settings.port == 8000  # noqa: S101

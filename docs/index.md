@@ -15,7 +15,9 @@ cd ai-chat-app
 docker-compose up --build
 ```
 
-→ Open [http://localhost:5173](http://localhost:5173) (Frontend) | [http://localhost:8000](http://localhost:8000) (Backend API)
+→ Open [http://localhost:8081](http://localhost:8081) (Frontend) | [http://localhost:8000](http://localhost:8000) (Backend API)
+
+> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
 
 ## ✨ Key Features
 

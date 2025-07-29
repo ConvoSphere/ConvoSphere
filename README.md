@@ -2,9 +2,11 @@
 
 A modern, full-stack AI chat application built with **FastAPI** (Backend) and **React** (Frontend), featuring comprehensive test coverage, real-time messaging, and advanced AI capabilities.
 
+> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
+
 <div align="center">
 
-![ConvoSphere](https://img.shields.io/badge/ConvoSphere-v1.0.0-blue)
+![ConvoSphere](https://img.shields.io/badge/ConvoSphere-Beta%200.1.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.11+-green)
 ![React](https://img.shields.io/badge/React-18+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
@@ -270,7 +272,7 @@ gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker
 # Frontend
 cd frontend-react
 npm run build
-serve -s build -l 3000
+serve -s build -l 8081
 ```
 
 ## 📚 API Documentation

@@ -37,7 +37,7 @@ class TestToolService:
         return {
             "name": "Test Tool",
             "description": "A test tool for testing",
-            "version": "1.0.0",
+            "version": "0.1.0-beta",
             "category": "search",
             "function_name": "test_function",
             "parameters_schema": {
@@ -64,7 +64,7 @@ class TestToolService:
         tool.id = "550e8400-e29b-41d4-a716-446655440000"  # Valid UUID
         tool.name = "Test Tool"
         tool.description = "A test tool"
-        tool.version = "1.0.0"
+        tool.version = "0.1.0-beta"
         tool.category = ToolCategory.SEARCH
         tool.function_name = "test_function"
         tool.is_enabled = True
@@ -76,7 +76,7 @@ class TestToolService:
             "id": "550e8400-e29b-41d4-a716-446655440000",
             "name": "Test Tool",
             "description": "A test tool",
-            "version": "1.0.0",
+            "version": "0.1.0-beta",
             "category": "search",
             "function_name": "test_function",
             "is_enabled": True,

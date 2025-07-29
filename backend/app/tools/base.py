@@ -37,7 +37,7 @@ class BaseTool(ABC):
         self.name: str = self.__class__.__name__
         self.description: str = self.__doc__ or ""
         self.category: str = "general"
-        self.version: str = "1.0.0"
+        self.version: str = "0.1.0-beta"
         self.parameters: list[ToolParameter] = []
         self.requires_auth: bool = False
         self.rate_limit: str | None = None

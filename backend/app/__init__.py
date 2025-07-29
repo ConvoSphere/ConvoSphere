@@ -5,6 +5,6 @@ A comprehensive backend for managing multiple AI assistants with personality pro
 extensive tool support, and enterprise-grade features including RBAC and multi-language support.
 """
 
-__version__ = "1.0.0"
+__version__ = "0.1.0-beta"
 __author__ = "AI Assistant Team"
 __description__ = "AI Assistant Platform Backend"

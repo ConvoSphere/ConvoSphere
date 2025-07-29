@@ -59,7 +59,7 @@ const initializeOptimizations = async () => {
           case "user-preferences":
             return { theme: "light", language: "en" };
           case "app-config":
-            return { version: "1.0.0", features: ["chat", "assistants"] };
+            return { version: "0.1.0-beta", features: ["chat", "assistants"] };
           case "theme-settings":
             return { mode: "light", colors: {} };
           default:

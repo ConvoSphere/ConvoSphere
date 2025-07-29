@@ -172,7 +172,7 @@ class ExampleMCPServer:
                 },
                 "serverInfo": {
                     "name": "example-mcp-server",
-                    "version": "1.0.0",
+                    "version": "0.1.0-beta",
                 },
             },
         }
@@ -298,7 +298,7 @@ class ExampleMCPServer:
             content = json.dumps(
                 {
                     "server_name": "example-mcp-server",
-                    "version": "1.0.0",
+                    "version": "0.1.0-beta",
                     "tools_count": len(self.tools),
                     "resources_count": len(self.resources),
                 },
@@ -407,7 +407,7 @@ class ExampleMCPServer:
             {
                 "status": "healthy",
                 "server": "example-mcp-server",
-                "version": "1.0.0",
+                "version": "0.1.0-beta",
                 "tools_count": len(self.tools),
                 "resources_count": len(self.resources),
             },
