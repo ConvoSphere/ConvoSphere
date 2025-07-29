@@ -31,8 +31,8 @@ const Sidebar: React.FC = () => {
   const menuStyle: React.CSSProperties = {
     height: "100%",
     borderRight: 0,
-    backgroundColor: colors.colorBgContainer,
-    color: colors.colorTextBase,
+    backgroundColor: colors?.colorBgContainer || "#ffffff",
+    color: colors?.colorTextBase || "#000000",
     padding: "8px",
   };
 
@@ -41,82 +41,82 @@ const Sidebar: React.FC = () => {
     alignItems: "center",
     gap: "12px",
     padding: "20px 16px",
-    borderBottom: `1px solid ${colors.colorBorder}`,
-    backgroundColor: colors.colorBgElevated,
+    borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}`,
+    backgroundColor: colors?.colorBgElevated || "#fafafa",
   };
 
   const userSectionStyle: React.CSSProperties = {
     padding: "16px",
-    borderTop: `1px solid ${colors.colorBorder}`,
-    backgroundColor: colors.colorBgElevated,
+    borderTop: `1px solid ${colors?.colorBorder || "#d9d9d9"}`,
+    backgroundColor: colors?.colorBgElevated || "#fafafa",
   };
 
   const items = [
-            {
-          key: "/",
-          icon: <MessageOutlined style={{ color: colors.colorPrimary }} />,
-          label: t("navigation.home"),
-        },
-        {
-          key: "/dashboard",
-          icon: <DashboardOutlined style={{ color: colors.colorPrimary }} />,
-          label: t("navigation.dashboard"),
-        },
-        {
-          key: "/overview",
-          icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />,
-          label: t("navigation.overview"),
-        },
+    {
+      key: "/",
+      icon: <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      label: t("navigation.home"),
+    },
+    {
+      key: "/dashboard",
+      icon: <DashboardOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      label: t("navigation.dashboard"),
+    },
+    {
+      key: "/overview",
+      icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
+      label: t("navigation.overview"),
+    },
     {
       key: "/chat",
-      icon: <MessageOutlined style={{ color: colors.colorAccent }} />,
+      icon: <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("chat.title"),
     },
     {
       key: "/assistants",
-      icon: <TeamOutlined style={{ color: colors.colorAccent }} />,
+      icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("navigation.assistants"),
     },
     {
       key: "/knowledge-base",
-      icon: <BookOutlined style={{ color: colors.colorPrimary }} />,
+      icon: <BookOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("knowledge.title"),
     },
     {
       key: "/tools",
-      icon: <ToolOutlined style={{ color: colors.colorSecondary }} />,
+      icon: <ToolOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
       label: t("tools.title"),
     },
     {
       key: "/conversations",
-      icon: <AppstoreOutlined style={{ color: colors.colorAccent }} />,
+      icon: <AppstoreOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("navigation.conversations"),
     },
     {
       key: "/mcp-tools",
-      icon: <ApiOutlined style={{ color: colors.colorPrimary }} />,
+      icon: <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("navigation.mcp_tools"),
     },
     {
       key: "/settings",
-      icon: <SettingOutlined style={{ color: colors.colorSecondary }} />,
+      icon: <SettingOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
       label: t("settings.title"),
     },
     {
       key: "/profile",
-      icon: <UserOutlined style={{ color: colors.colorAccent }} />,
+      icon: <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("profile.title"),
     },
     ...(isAdmin
       ? [
           {
             key: "/admin",
-            icon: <TeamOutlined style={{ color: colors.colorPrimary }} />,
+            icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
             label: t("admin.title"),
           },
           {
             key: "/admin/system-status",
-            icon: <BarChartOutlined style={{ color: colors.colorSecondary }} />,
+            icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
             label: t("admin.system_status"),
           },
         ]
@@ -131,8 +131,8 @@ const Sidebar: React.FC = () => {
           icon={<RobotOutlined />}
           size="large"
           style={{
-            backgroundColor: colors.colorPrimary,
-            color: colors.colorTextBase,
+            backgroundColor: colors?.colorPrimary || "#1890ff",
+            color: colors?.colorTextBase || "#ffffff",
           }}
         />
         <div style={{ flex: 1 }}>
@@ -140,18 +140,18 @@ const Sidebar: React.FC = () => {
             style={{
               fontWeight: 600,
               fontSize: "16px",
-              color: colors.colorTextBase,
+              color: colors?.colorTextBase || "#000000",
             }}
           >
-            {t("app.title")}
+            {t("app.title", "ConvoSphere")}
           </div>
           <div
             style={{
               fontSize: "12px",
-              color: colors.colorTextSecondary,
+              color: colors?.colorTextSecondary || "#666666",
             }}
           >
-            {user?.role || t("navigation.user")}
+            {t("app.subtitle", "AI Assistant Platform")}
           </div>
         </div>
       </div>
@@ -182,8 +182,8 @@ const Sidebar: React.FC = () => {
             icon={<UserOutlined />}
             size="small"
             style={{
-              backgroundColor: colors.colorSecondary,
-              color: colors.colorTextBase,
+              backgroundColor: colors?.colorTextSecondary || "#8c8c8c",
+              color: colors?.colorTextBase || "#ffffff",
             }}
           />
           <div style={{ flex: 1 }}>
@@ -191,7 +191,7 @@ const Sidebar: React.FC = () => {
               style={{
                 fontSize: "14px",
                 fontWeight: 500,
-                color: colors.colorTextBase,
+                color: colors?.colorTextBase || "#000000",
               }}
             >
               {user?.username || t("navigation.user")}
@@ -199,7 +199,7 @@ const Sidebar: React.FC = () => {
             <div
               style={{
                 fontSize: "12px",
-                color: colors.colorTextSecondary,
+                color: colors?.colorTextSecondary || "#666666",
               }}
             >
               {user?.email || "user@example.com"}

@@ -1,18 +1,15 @@
 import React from "react";
-import { Avatar, Typography, Badge } from "antd";
-import { BellOutlined, UserOutlined, RobotOutlined } from "@ant-design/icons";
+import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import ThemeSwitcher from "./ThemeSwitcher";
-import LanguageSwitcher from "./LanguageSwitcher";
-import LogoutButton from "./LogoutButton";
-import { useAuthStore } from "../store/authStore";
+import NotificationDropdown from "./NotificationDropdown";
+import UserDropdown from "./UserDropdown";
 import { useThemeStore } from "../store/themeStore";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const HeaderBar: React.FC = () => {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
@@ -22,19 +19,19 @@ const HeaderBar: React.FC = () => {
     justifyContent: "space-between",
     height: "64px",
     padding: "0 24px",
-    backgroundColor: colors.colorBgContainer,
-    borderBottom: `1px solid ${colors.colorBorder}`,
-    boxShadow: colors.boxShadow,
+    backgroundColor: colors?.colorBgContainer || "#ffffff",
+    borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}`,
+    boxShadow: colors?.boxShadow || "0 2px 8px rgba(0, 0, 0, 0.1)",
     backdropFilter: "blur(10px)",
     position: "sticky",
     top: 0,
     zIndex: 1000,
   };
 
-  const logoStyle: React.CSSProperties = {
+  const leftSectionStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    gap: "16px",
   };
 
   const controlsStyle: React.CSSProperties = {
@@ -43,109 +40,31 @@ const HeaderBar: React.FC = () => {
     gap: "16px",
   };
 
-  const userInfoStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "8px 16px",
-    backgroundColor: colors.colorBgElevated,
-    borderRadius: "12px",
-    border: `1px solid ${colors.colorBorder}`,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    cursor: "pointer",
-  };
-
   return (
     <div style={headerStyle}>
-      {/* Logo Section */}
-      <div style={logoStyle}>
-        <Avatar
-          icon={<RobotOutlined />}
-          size="large"
+      {/* Left Section - Page Title */}
+      <div style={leftSectionStyle}>
+        <Text
           style={{
-            backgroundColor: colors.colorPrimary,
-            color: colors.colorTextBase,
+            fontSize: "18px",
+            fontWeight: 600,
+            color: colors?.colorTextBase || "#000000",
           }}
-        />
-        <div>
-          <Title
-            level={4}
-            style={{
-              margin: 0,
-              color: colors.colorTextBase,
-              fontWeight: 600,
-            }}
-          >
-            {t("app.title")}
-          </Title>
-          <Text
-            style={{
-              fontSize: "12px",
-              color: colors.colorTextSecondary,
-            }}
-          >
-            {t("app.subtitle")}
-          </Text>
-        </div>
+        >
+          {t("app.title", "ConvoSphere")}
+        </Text>
       </div>
 
-      {/* Controls Section */}
+      {/* Right Section - Controls */}
       <div style={controlsStyle}>
         {/* Notifications */}
-        <Badge count={3} size="small">
-          <Avatar
-            icon={<BellOutlined />}
-            size="small"
-            style={{
-              backgroundColor: colors.colorSecondary,
-              color: colors.colorTextBase,
-              cursor: "pointer",
-            }}
-          />
-        </Badge>
+        <NotificationDropdown />
 
         {/* Theme Switcher */}
         <ThemeSwitcher />
 
-        {/* Language Switcher */}
-        <LanguageSwitcher />
-
-        {/* User Info */}
-        {user && (
-          <div style={userInfoStyle}>
-            <Avatar
-              icon={<UserOutlined />}
-              size="small"
-              style={{
-                backgroundColor: colors.colorAccent,
-                color: colors.colorTextBase,
-              }}
-            />
-            <div>
-              <Text
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  color: colors.colorTextBase,
-                  display: "block",
-                }}
-              >
-                {user.username}
-              </Text>
-              <Text
-                style={{
-                  fontSize: "12px",
-                  color: colors.colorTextSecondary,
-                }}
-              >
-                {user.role}
-              </Text>
-            </div>
-          </div>
-        )}
-
-        {/* Logout Button */}
-        <LogoutButton />
+        {/* User Dropdown */}
+        <UserDropdown />
       </div>
     </div>
   );
