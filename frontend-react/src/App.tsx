@@ -38,11 +38,21 @@ import {
   LazySystemStatusPage,
 } from "./components/LazyComponents";
 
+// Simple theme configuration to avoid complex theme store issues
+const simpleTheme = {
+  token: {
+    colorPrimary: "#23224A",
+    colorBgBase: "#F7F9FB",
+    colorBgContainer: "#FFFFFF",
+    colorText: "#23224A",
+    colorTextSecondary: "#7A869A",
+    colorBorder: "#E5E7EB",
+  },
+};
+
 // Loading component with theme-aware styling
 const LoadingSpinner: React.FC = () => {
   const { t } = useTranslation();
-  const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors();
 
   return (
     <div
@@ -51,15 +61,15 @@ const LoadingSpinner: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
-        backgroundColor: colors.colorBgBase,
+        backgroundColor: simpleTheme.token.colorBgBase,
       }}
     >
       <div style={{ textAlign: "center" }}>
-        <Spin size="large" style={{ color: colors.colorPrimary }} />
+        <Spin size="large" style={{ color: simpleTheme.token.colorPrimary }} />
         <div
           style={{
             marginTop: "16px",
-            color: colors.colorTextSecondary,
+            color: simpleTheme.token.colorTextSecondary,
             fontSize: "14px",
           }}
         >
@@ -76,8 +86,6 @@ const ErrorFallback: React.FC<{
   resetErrorBoundary: () => void;
 }> = ({ error, resetErrorBoundary }) => {
   const { t } = useTranslation();
-  const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors();
 
   return (
     <div
@@ -86,7 +94,7 @@ const ErrorFallback: React.FC<{
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
-        backgroundColor: colors.colorBgBase,
+        backgroundColor: simpleTheme.token.colorBgBase,
         padding: "20px",
       }}
     >
@@ -94,68 +102,36 @@ const ErrorFallback: React.FC<{
         style={{
           maxWidth: "500px",
           textAlign: "center",
-          backgroundColor: colors.colorBgContainer,
+          backgroundColor: simpleTheme.token.colorBgContainer,
           padding: "32px",
           borderRadius: "12px",
-          border: `1px solid ${colors.colorBorder}`,
-          boxShadow: colors.boxShadow,
+          border: `1px solid ${simpleTheme.token.colorBorder}`,
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
         }}
       >
-        <h2 style={{ color: colors.colorError, marginBottom: "16px" }}>
-          {t("common.error_something_wrong")}
+        <h2 style={{ color: simpleTheme.token.colorText, marginBottom: "16px" }}>
+          {t("common.error_occurred")}
         </h2>
-        <p style={{ color: colors.colorTextSecondary, marginBottom: "24px" }}>
-          {t("common.error_unexpected")}
+        <p style={{ color: simpleTheme.token.colorTextSecondary, marginBottom: "24px" }}>
+          {error.message || t("common.unknown_error")}
         </p>
-        <button
+        <Button
+          type="primary"
           onClick={resetErrorBoundary}
-          style={{
-            backgroundColor: colors.colorPrimary,
-            color: colors.colorTextBase,
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: 500,
-          }}
+          style={{ backgroundColor: simpleTheme.token.colorPrimary }}
         >
           {t("common.try_again")}
-        </button>
-        {process.env.NODE_ENV === "development" && (
-          <details style={{ marginTop: "16px", textAlign: "left" }}>
-            <summary
-              style={{ cursor: "pointer", color: colors.colorTextSecondary }}
-            >
-              {t("common.error_details")}
-            </summary>
-            <pre
-              style={{
-                marginTop: "8px",
-                padding: "12px",
-                backgroundColor: colors.colorBgElevated,
-                borderRadius: "4px",
-                fontSize: "12px",
-                color: colors.colorTextSecondary,
-                overflow: "auto",
-                maxHeight: "200px",
-              }}
-            >
-              {error.message}
-              {"\n"}
-              {error.stack}
-            </pre>
-          </details>
-        )}
+        </Button>
       </div>
     </div>
   );
 };
 
 const App: React.FC = () => {
-  const { mode, currentTheme } = useThemeStore();
+  const { mode } = useThemeStore();
   const { initializeAuth } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
 
   // Initialize authentication on app start
   useEffect(() => {
@@ -172,25 +148,8 @@ const App: React.FC = () => {
     initApp();
   }, [initializeAuth]);
 
-  // Show loading spinner while initializing
-  if (!isInitialized) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: currentTheme.token.colorBgBase,
-        }}
-      >
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  // Initialize performance monitoring
-  React.useEffect(() => {
+  // Initialize performance monitoring - MUST be before conditional return
+  useEffect(() => {
     performanceMonitor.init();
 
     // Mark app initialization
@@ -205,6 +164,23 @@ const App: React.FC = () => {
       );
     };
   }, []);
+
+  // Show loading spinner while initializing
+  if (!isInitialized) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: simpleTheme.token.colorBgBase,
+        }}
+      >
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary
@@ -231,7 +207,7 @@ const App: React.FC = () => {
                 mode === "dark"
                   ? antdTheme.darkAlgorithm
                   : antdTheme.defaultAlgorithm,
-              token: currentTheme.token,
+              token: simpleTheme.token,
             }}
           >
           <Router>

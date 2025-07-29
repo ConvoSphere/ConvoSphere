@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { lightTheme, darkTheme, getThemeColors } from "../styles/theme";
+import type { ThemeConfig } from 'antd';
 
 export type ThemeMode = "light" | "dark";
 
@@ -8,7 +9,7 @@ interface ThemeState {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
   toggleMode: () => void;
-  getCurrentTheme: () => typeof lightTheme | typeof darkTheme;
+  getCurrentTheme: () => ThemeConfig;
   getCurrentColors: () => ReturnType<typeof getThemeColors>;
 }
 

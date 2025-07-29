@@ -1,7 +1,9 @@
 // Vollständiges Design-Schema für das Projekt
 // WCAG AA/AAA konforme Farbpalette mit harmonischen Übergängen
 
-export const lightTheme = {
+import type { ThemeConfig } from 'antd';
+
+export const lightTheme: ThemeConfig = {
   token: {
     // Hauptfarben
     colorBgBase: "#F7F9FB", // White Smoke - Hintergrund
@@ -76,7 +78,7 @@ export const lightTheme = {
   },
 };
 
-export const darkTheme = {
+export const darkTheme: ThemeConfig = {
   token: {
     // Hauptfarben
     colorBgBase: "#23224A", // Deep Indigo - Haupt-Hintergrund
