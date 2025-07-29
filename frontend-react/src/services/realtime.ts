@@ -91,7 +91,7 @@ class RealtimeService {
 
       try {
         const wsUrl = config.wsUrl || config.apiUrl.replace('http', 'ws');
-        this.ws = new WebSocket(`${wsUrl}/v1/realtime?token=${token}`);
+        this.ws = new WebSocket(`${wsUrl}/api/v1/realtime?token=${token}`);
 
         this.ws.onopen = () => {
           console.log("Realtime WebSocket connected");

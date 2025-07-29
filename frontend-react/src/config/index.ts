@@ -28,6 +28,7 @@ export const config = {
     assistants: "/api/v1/assistants",
     knowledge: "/api/v1/knowledge",
     health: "/api/v1/health",
+    statistics: "/api/v1/statistics",
   },
 };
 

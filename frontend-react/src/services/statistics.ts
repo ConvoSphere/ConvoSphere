@@ -42,7 +42,7 @@ class StatisticsService {
 
   async getOverviewStats(token: string): Promise<OverviewStats> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/statistics/overview`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/overview`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -63,7 +63,7 @@ class StatisticsService {
 
   async getSystemHealth(token: string): Promise<SystemStats> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/statistics/system-health`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/system-health`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -84,7 +84,7 @@ class StatisticsService {
   async getRecentActivity(token: string, limit: number = 10): Promise<ActivityItem[]> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/v1/statistics/recent-activity?limit=${limit}`,
+        `${this.baseUrl}${config.apiEndpoints.statistics}/recent-activity?limit=${limit}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ class StatisticsService {
 
   async getUserStats(token: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/statistics/user`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

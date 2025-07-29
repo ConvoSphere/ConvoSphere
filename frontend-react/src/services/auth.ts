@@ -101,7 +101,7 @@ export async function handleSSOCallback(
 ) {
   // Handle SSO callback with authorization code
   const response = await authApi.get(
-    `/v1/auth/sso/callback/${provider}?code=${code}${state ? `&state=${state}` : ""}`,
+    `${config.apiEndpoints.auth}/sso/callback/${provider}?code=${code}${state ? `&state=${state}` : ""}`,
   );
   const { access_token } = response.data;
   localStorage.setItem("token", access_token);
@@ -110,25 +110,25 @@ export async function handleSSOCallback(
 
 export async function ssoLink(provider: string) {
   // Call backend SSO link endpoint
-  const response = await authApi.post(`/v1/auth/sso/link/${provider}`);
+  const response = await authApi.post(`${config.apiEndpoints.auth}/sso/link/${provider}`);
   return response.data;
 }
 
 export async function ssoUnlink(provider: string) {
   // Call backend SSO unlink endpoint
-  const response = await authApi.get(`/v1/auth/sso/unlink/${provider}`);
+  const response = await authApi.get(`${config.apiEndpoints.auth}/sso/unlink/${provider}`);
   return response.data;
 }
 
 export async function getUserProvisioningStatus(userId: string) {
   // Get user provisioning status
-  const response = await authApi.get(`/v1/auth/sso/provisioning/status/${userId}`);
+  const response = await authApi.get(`${config.apiEndpoints.auth}/sso/provisioning/status/${userId}`);
   return response.data;
 }
 
 export async function bulkSyncUsers(provider: string, userList: any[]) {
   // Bulk sync users from SSO provider
-  const response = await authApi.post(`/v1/auth/sso/bulk-sync/${provider}`, {
+  const response = await authApi.post(`${config.apiEndpoints.auth}/sso/bulk-sync/${provider}`, {
     user_list: userList,
   });
   return response.data;

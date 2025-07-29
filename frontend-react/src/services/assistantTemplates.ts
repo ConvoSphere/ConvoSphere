@@ -203,7 +203,7 @@ class AssistantTemplateService {
 
   async getTemplates(token: string): Promise<AssistantTemplate[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/assistants/templates`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}/templates`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -225,7 +225,7 @@ class AssistantTemplateService {
 
   async getTemplateById(token: string, templateId: string): Promise<AssistantTemplate | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/assistants/templates/${templateId}`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}/templates/${templateId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -263,7 +263,7 @@ class AssistantTemplateService {
         description: customizations?.description || template.description,
       };
 
-      const response = await fetch(`${this.baseUrl}/v1/assistants`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -285,7 +285,7 @@ class AssistantTemplateService {
 
   async saveTemplate(token: string, template: Omit<AssistantTemplate, "id">): Promise<AssistantTemplate> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/assistants/templates`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}/templates`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -307,7 +307,7 @@ class AssistantTemplateService {
 
   async updateTemplate(token: string, templateId: string, updates: Partial<AssistantTemplate>): Promise<AssistantTemplate> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/assistants/templates/${templateId}`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}/templates/${templateId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -329,7 +329,7 @@ class AssistantTemplateService {
 
   async deleteTemplate(token: string, templateId: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/assistants/templates/${templateId}`, {
+      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.assistants}/templates/${templateId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
