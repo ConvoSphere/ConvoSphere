@@ -23,6 +23,7 @@ from .security import (
     create_refresh_token,
     get_current_user,
     get_current_user_id,
+    get_current_user_optional,
     get_password_hash,
     log_security_event,
     require_permission,
@@ -43,4 +44,14 @@ from .weaviate_client import (
 
 __all__ = [
     "get_settings",
+    "get_current_user",
+    "get_current_user_id", 
+    "get_current_user_optional",
+    "create_access_token",
+    "create_refresh_token",
+    "verify_password",
+    "get_password_hash",
+    "verify_token",
+    "log_security_event",
+    "require_permission",
 ]

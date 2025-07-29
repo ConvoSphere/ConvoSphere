@@ -242,6 +242,25 @@ async def get_current_active_user(
     return current_user
 
 
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> "User | None":
+    """
+    Get current user from JWT token, but return None if no valid token provided.
+    This is useful for endpoints that can work with or without authentication.
+
+    Args:
+        credentials: HTTP authorization credentials
+
+    Returns:
+        User | None: Current user object or None if no valid token
+    """
+    try:
+        return await get_current_user(credentials)
+    except HTTPException:
+        return None
+
+
 def require_permission(permission: str):
     """
     Decorator to require specific permission.
