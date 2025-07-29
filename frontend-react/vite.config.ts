@@ -123,6 +123,8 @@ export default defineConfig({
     include: [
       "react",
       "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
       "react-router-dom",
       "antd",
       "@ant-design/icons",
@@ -133,6 +135,7 @@ export default defineConfig({
       "react-i18next",
     ],
     exclude: ["@ant-design/icons"], // Exclude large icon library from pre-bundling
+    force: true, // Force dependency optimization
   },
   server: {
     port: 3000,
@@ -169,6 +172,13 @@ export default defineConfig({
           overrideBrowserslist: ["> 1%", "last 2 versions", "not dead"],
         }),
       ],
+    },
+  },
+  // Resolve configuration to ensure proper module resolution
+  resolve: {
+    alias: {
+      'react': 'react',
+      'react-dom': 'react-dom',
     },
   },
 });
