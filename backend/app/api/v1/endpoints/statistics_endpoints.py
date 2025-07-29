@@ -89,18 +89,13 @@ async def get_overview_statistics(
             )
             .count(),
             "messagesThisWeek": db.query(Message)
+            .join(Conversation, Message.conversation_id == Conversation.id)
             .filter(
-                Message.user_id == current_user.id,
+                Conversation.user_id == current_user.id,
                 Message.created_at >= datetime.utcnow() - timedelta(days=7),
             )
             .count(),
-            "documentsUploaded": db.query(Document)
-            .filter(
-                Document.uploader_id == current_user.id if hasattr(Document, "uploader_id") else False
-            )
-            .count()
-            if hasattr(Document, "uploader_id")
-            else 0,
+            "documentsUploaded": 0,
             "favoriteAssistant": "",
         }
 
@@ -161,7 +156,8 @@ async def get_user_stats(
         .filter(Conversation.user_id == current_user.id)
         .count(),
         "messages": db.query(Message)
-        .filter(Message.user_id == current_user.id)
+        .join(Conversation, Message.conversation_id == Conversation.id)
+        .filter(Conversation.user_id == current_user.id)
         .count(),
         "documents": 0,
     } 
