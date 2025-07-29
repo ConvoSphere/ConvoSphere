@@ -102,6 +102,7 @@ plugins:
       enable_creation_date: true
       fallback_to_build_date: true
       enable_parallel_processing: false
+      enable_git_follow: false
   - minify:
       minify_html: true
   - awesome-pages
@@ -139,6 +140,20 @@ nav:
   - Development:
     - Test Coverage: development/test_coverage_improvement_plan.md
     - Test Quick Start: development/test_coverage_quick_start.md
+    - Implementation Summaries:
+      - Phase 1: development/PHASE1_IMPLEMENTATION_SUMMARY.md
+      - Phase 2: development/PHASE2_IMPLEMENTATION_SUMMARY.md
+      - Phase 3: development/PHASE3_IMPLEMENTATION_SUMMARY.md
+      - Phase 4: development/PHASE4_IMPLEMENTATION_SUMMARY.md
+      - Phase 5: development/PHASE5_EXTENDED_EXPORT_SUMMARY.md
+    - Design & Architecture:
+      - Design System: development/DESIGN_SYSTEM.md
+      - Extended Export Features: development/EXTENDED_EXPORT_FEATURES.md
+      - Integration Summary: development/INTEGRATION_SUMMARY.md
+      - Improvements Summary: development/IMPROVEMENTS_SUMMARY.md
+      - Refactoring Summary: development/REFACTORING_SUMMARY.md
+      - User Management Implementation: development/Benutzerverwaltung_Implementierung.md
+    - Agent Implementation: agent-implementation.md
   - Analysis:
     - Database Analysis: analysis/sqlite_vs_postgresql_analysis.md
     - Translation Analysis: analysis/translation_analysis_report.md
