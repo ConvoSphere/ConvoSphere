@@ -13,6 +13,7 @@ import PerformanceMonitor from "./components/PerformanceMonitor";
 import performanceMonitor from "./utils/performance";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { useAuthStore } from "./store/authStore";
+import { detectLanguage, saveLanguagePreference } from "./utils/languageDetection";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -98,30 +99,40 @@ const ErrorFallback: React.FC<{
         padding: "20px",
       }}
     >
-      <div
-        style={{
-          maxWidth: "500px",
-          textAlign: "center",
-          backgroundColor: simpleTheme.token.colorBgContainer,
-          padding: "32px",
-          borderRadius: "12px",
-          border: `1px solid ${simpleTheme.token.colorBorder}`,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-        }}
-      >
-        <h2 style={{ color: simpleTheme.token.colorText, marginBottom: "16px" }}>
-          {t("common.error_occurred")}
-        </h2>
-        <p style={{ color: simpleTheme.token.colorTextSecondary, marginBottom: "24px" }}>
-          {error.message || t("common.unknown_error")}
+      <div style={{ textAlign: "center", maxWidth: "500px" }}>
+        <h1 style={{ color: "#e74c3c", marginBottom: "16px" }}>
+          {t("common.error_something_wrong")}
+        </h1>
+        <p style={{ marginBottom: "16px", color: simpleTheme.token.colorTextSecondary }}>
+          {t("common.error_unexpected")}
         </p>
-        <Button
-          type="primary"
-          onClick={resetErrorBoundary}
-          style={{ backgroundColor: simpleTheme.token.colorPrimary }}
-        >
-          {t("common.try_again")}
-        </Button>
+        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+          <Button type="primary" onClick={resetErrorBoundary}>
+            {t("common.try_again")}
+          </Button>
+          <Button onClick={() => window.location.reload()}>
+            {t("common.refresh_page")}
+          </Button>
+        </div>
+        {process.env.NODE_ENV === "development" && (
+          <details style={{ marginTop: "16px", textAlign: "left" }}>
+            <summary style={{ cursor: "pointer", color: simpleTheme.token.colorTextSecondary }}>
+              {t("common.error_details")}
+            </summary>
+            <pre
+              style={{
+                background: "#f5f5f5",
+                padding: "12px",
+                borderRadius: "4px",
+                fontSize: "12px",
+                overflow: "auto",
+                marginTop: "8px",
+              }}
+            >
+              {error.message}
+            </pre>
+          </details>
+        )}
       </div>
     </div>
   );
@@ -129,17 +140,25 @@ const ErrorFallback: React.FC<{
 
 const App: React.FC = () => {
   const { mode } = useThemeStore();
-  const { initializeAuth } = useAuthStore();
+  const { initializeAuth, user } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
 
-  // Initialize authentication on app start
+  // Initialize language detection and authentication on app start
   useEffect(() => {
     const initApp = async () => {
       try {
+        // Initialize language detection
+        const detectedLanguage = detectLanguage();
+        if (detectedLanguage !== i18n.language) {
+          await i18n.changeLanguage(detectedLanguage);
+          saveLanguagePreference(detectedLanguage);
+        }
+
+        // Initialize authentication
         await initializeAuth();
       } catch (error) {
-        console.error("Failed to initialize authentication:", error);
+        console.error("Failed to initialize application:", error);
       } finally {
         setIsInitialized(true);
       }
@@ -147,6 +166,14 @@ const App: React.FC = () => {
 
     initApp();
   }, [initializeAuth]);
+
+  // Sync user language preference with i18n
+  useEffect(() => {
+    if (user?.language && user.language !== i18n.language) {
+      i18n.changeLanguage(user.language);
+      saveLanguagePreference(user.language);
+    }
+  }, [user?.language]);
 
   // Initialize performance monitoring - MUST be before conditional return
   useEffect(() => {
@@ -242,106 +269,219 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
-                  path="/*"
+                  path="/"
                   element={
-                    <CriticalErrorBoundary componentName="App" critical={true}>
-                      <ProtectedRoute>
-                        <Layout>
-                          <ErrorBoundary>
-                            <Suspense fallback={<LoadingSpinner />}>
-                              <Routes>
-                                                          <Route path="/" element={<LazyHomePage />} />
-                          <Route
-                            path="/dashboard"
-                            element={<LazyDashboardPage />}
-                          />
-                          <Route
-                            path="/overview"
-                            element={<LazyOverviewPage />}
-                          />
-                                <Route
-                                  path="/chat"
-                                  element={<LazyChatPage />}
-                                />
-                                <Route
-                                  path="/assistants"
-                                  element={<LazyAssistantsPage />}
-                                />
-                                <Route
-                                  path="/knowledge-base"
-                                  element={<LazyKnowledgeBasePage />}
-                                />
-                                <Route
-                                  path="/tools"
-                                  element={<LazyToolsPage />}
-                                />
-                                <Route
-                                  path="/settings"
-                                  element={<LazySettingsPage />}
-                                />
-                                <Route
-                                  path="/admin"
-                                  element={<LazyAdminPage />}
-                                />
-                                <Route
-                                  path="/profile"
-                                  element={<LazyProfilePage />}
-                                />
-                                <Route
-                                  path="/conversations"
-                                  element={<LazyConversationsPage />}
-                                />
-                                <Route
-                                  path="/mcp-tools"
-                                  element={<LazyMcpToolsPage />}
-                                />
-                                <Route
-                                  path="/admin/system-status"
-                                  element={<LazySystemStatusPage />}
-                                />
-                              </Routes>
-                            </Suspense>
-                          </ErrorBoundary>
-                        </Layout>
-                      </ProtectedRoute>
-                    </CriticalErrorBoundary>
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyHomePage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyDashboardPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/overview"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyOverviewPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chat"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyChatPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assistants"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyAssistantsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/knowledge"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyKnowledgeBasePage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tools"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyToolsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazySettingsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyAdminPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyProfilePage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/conversations"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyConversationsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mcp-tools"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyMcpToolsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/system-status"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazySystemStatusPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
                   }
                 />
               </Routes>
             </ErrorBoundary>
           </Router>
-
-          {/* Performance Monitor Toggle (Development Only) */}
-          {process.env.NODE_ENV === "development" && (
-            <Button
-              type="primary"
-              icon={<DashboardOutlined />}
-              size="small"
-              onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
-              style={{
-                position: "fixed",
-                bottom: "20px",
-                right: "20px",
-                zIndex: 1001,
-                borderRadius: "50%",
-                width: "48px",
-                height: "48px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-              }}
-            />
-          )}
-
-          {/* Performance Monitor */}
-          <PerformanceMonitor
-            visible={showPerformanceMonitor}
-            onClose={() => setShowPerformanceMonitor(false)}
-          />
-        </ConfigProvider>
+          </ConfigProvider>
         </AccessibilityProvider>
       </I18nextProvider>
+
+      {/* Performance Monitor (development only) */}
+      {process.env.NODE_ENV === "development" && showPerformanceMonitor && (
+        <PerformanceMonitor />
+      )}
+
+      {/* Performance Monitor Toggle (development only) */}
+      {process.env.NODE_ENV === "development" && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            zIndex: 9999,
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<DashboardOutlined />}
+            onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+            size="small"
+          >
+            {showPerformanceMonitor ? "Hide" : "Show"} Monitor
+          </Button>
+        </div>
+      )}
     </ErrorBoundary>
   );
 };
