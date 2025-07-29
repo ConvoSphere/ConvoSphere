@@ -2,13 +2,16 @@
 
 import uuid
 from typing import Any
+from datetime import datetime
+from pytz import UTC
 
 from loguru import logger
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 
 from backend.app.core.database import get_db
 from backend.app.models.tool import Tool, ToolCategory
 from backend.app.models.user import User
+from backend.app.models.tool_permission import ToolPermission
 
 
 class ToolService:
@@ -23,25 +26,26 @@ class ToolService:
         category: str | None = None,
     ) -> list[dict[str, Any]]:
         """
-        Get all available tools with optional filtering.
+        Get all available tools.
 
         Args:
             user_id: User ID for permission checking
-            category: Filter by tool category
+            category: Filter by category
 
         Returns:
             List[Dict[str, Any]]: List of available tools
         """
         try:
-            query = self.db.query(Tool).filter(Tool.is_enabled is True)
+            # Build query
+            query = self.db.query(Tool)
 
             # Filter by category if specified
             if category:
                 try:
-                    tool_category = ToolCategory(category)
-                    query = query.filter(Tool.category == tool_category)
+                    category_enum = ToolCategory(category)
+                    query = query.filter(Tool.category == category_enum)
                 except ValueError:
-                    logger.warning(f"Invalid tool category: {category}")
+                    logger.warning(f"Invalid category: {category}")
                     return []
 
             # Get tools
@@ -63,7 +67,7 @@ class ToolService:
             logger.info(f"Retrieved {len(result)} available tools")
             return result
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error getting available tools: {e}")
             return []
 
@@ -109,9 +113,23 @@ class ToolService:
             logger.info(f"Retrieved tool: {tool.name} ({tool_id})")
             return tool_dict
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error getting tool by ID {tool_id}: {e}")
             return None
+
+    def _validate_tool_data(self, tool_data: dict[str, Any]) -> None:
+        """Validate tool data and raise appropriate exceptions."""
+        # Validate required fields
+        required_fields = ["name", "category", "function_name"]
+        for field in required_fields:
+            if field not in tool_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        # Validate category
+        try:
+            category = ToolCategory(tool_data["category"])
+        except ValueError:
+            raise ValueError(f"Invalid tool category: {tool_data['category']}") from None
 
     def create_tool(
         self,
@@ -129,17 +147,8 @@ class ToolService:
             Optional[Dict[str, Any]]: Created tool information or None if failed
         """
         try:
-            # Validate required fields
-            required_fields = ["name", "category", "function_name"]
-            for field in required_fields:
-                if field not in tool_data:
-                    raise ValueError(f"Missing required field: {field}")
-
-            # Validate category
-            try:
-                category = ToolCategory(tool_data["category"])
-            except ValueError:
-                raise ValueError(f"Invalid tool category: {tool_data['category']}")
+            # Validate tool data
+            self._validate_tool_data(tool_data)
 
             # Check if function_name already exists
             existing_tool = (
@@ -158,30 +167,23 @@ class ToolService:
             # Create new tool
             new_tool = Tool(
                 name=tool_data["name"],
-                description=tool_data.get("description"),
-                version=tool_data.get("version", "0.1.0-beta"),
-                category=category,
+                description=tool_data.get("description", ""),
+                category=ToolCategory(tool_data["category"]),
                 function_name=tool_data["function_name"],
-                parameters_schema=tool_data.get("parameters_schema"),
-                implementation_path=tool_data.get("implementation_path"),
-                is_builtin=tool_data.get("is_builtin", False),
-                is_enabled=tool_data.get("is_enabled", True),
+                parameters_schema=tool_data.get("parameters_schema", {}),
                 requires_auth=tool_data.get("requires_auth", False),
-                required_permissions=tool_data.get("required_permissions", []),
-                rate_limit=tool_data.get("rate_limit"),
-                tags=tool_data.get("tags", []),
-                tool_metadata=tool_data.get("tool_metadata", {}),
+                is_builtin=tool_data.get("is_builtin", False),
                 creator_id=creator_id,
             )
 
+            # Add to database
             self.db.add(new_tool)
             self.db.commit()
-            self.db.refresh(new_tool)
 
-            logger.info(f"Created new tool: {new_tool.name} by user {creator_id}")
+            logger.info(f"Created tool: {new_tool.name} by user {creator_id}")
             return new_tool.to_dict()
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             self.db.rollback()
             logger.error(f"Error creating tool: {e}")
             return None
@@ -204,18 +206,23 @@ class ToolService:
             Optional[Dict[str, Any]]: Updated tool information or None if failed
         """
         try:
-            # Get existing tool
+            # Validate UUID format
+            try:
+                uuid.UUID(tool_id)
+            except ValueError:
+                logger.warning(f"Invalid tool ID format: {tool_id}")
+                return None
+
+            # Get tool from database
             tool = self.db.query(Tool).filter(Tool.id == tool_id).first()
 
             if not tool:
-                logger.warning(f"Tool not found for update: {tool_id}")
+                logger.warning(f"Tool not found: {tool_id}")
                 return None
 
-            # Check if user has permission to update this tool
+            # Check if user can edit this tool
             if not self._can_edit_tool(tool, user_id):
-                logger.warning(
-                    f"User {user_id} does not have permission to edit tool {tool_id}",
-                )
+                logger.warning(f"User {user_id} cannot edit tool {tool_id}")
                 return None
 
             # Update fields
@@ -225,46 +232,28 @@ class ToolService:
             if "description" in tool_data:
                 tool.description = tool_data["description"]
 
-            if "version" in tool_data:
-                tool.version = tool_data["version"]
-
             if "category" in tool_data:
                 try:
                     tool.category = ToolCategory(tool_data["category"])
                 except ValueError:
-                    raise ValueError(f"Invalid tool category: {tool_data['category']}")
+                    raise ValueError(f"Invalid tool category: {tool_data['category']}") from None
 
             if "parameters_schema" in tool_data:
                 tool.parameters_schema = tool_data["parameters_schema"]
 
-            if "implementation_path" in tool_data:
-                tool.implementation_path = tool_data["implementation_path"]
-
-            if "is_enabled" in tool_data:
-                tool.is_enabled = tool_data["is_enabled"]
-
             if "requires_auth" in tool_data:
                 tool.requires_auth = tool_data["requires_auth"]
 
-            if "required_permissions" in tool_data:
-                tool.required_permissions = tool_data["required_permissions"]
+            # Update timestamp
+            tool.updated_at = datetime.now(UTC)
 
-            if "rate_limit" in tool_data:
-                tool.rate_limit = tool_data["rate_limit"]
-
-            if "tags" in tool_data:
-                tool.tags = tool_data["tags"]
-
-            if "tool_metadata" in tool_data:
-                tool.tool_metadata = tool_data["tool_metadata"]
-
+            # Save changes
             self.db.commit()
-            self.db.refresh(tool)
 
             logger.info(f"Updated tool: {tool.name} by user {user_id}")
             return tool.to_dict()
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             self.db.rollback()
             logger.error(f"Error updating tool {tool_id}: {e}")
             return None
@@ -281,23 +270,23 @@ class ToolService:
             bool: True if deleted successfully, False otherwise
         """
         try:
-            # Get tool
+            # Validate UUID format
+            try:
+                uuid.UUID(tool_id)
+            except ValueError:
+                logger.warning(f"Invalid tool ID format: {tool_id}")
+                return False
+
+            # Get tool from database
             tool = self.db.query(Tool).filter(Tool.id == tool_id).first()
 
             if not tool:
-                logger.warning(f"Tool not found for deletion: {tool_id}")
+                logger.warning(f"Tool not found: {tool_id}")
                 return False
 
-            # Check if user has permission to delete this tool
+            # Check if user can delete this tool
             if not self._can_edit_tool(tool, user_id):
-                logger.warning(
-                    f"User {user_id} does not have permission to delete tool {tool_id}",
-                )
-                return False
-
-            # Check if tool is builtin (builtin tools cannot be deleted)
-            if tool.is_builtin:
-                logger.warning(f"Cannot delete builtin tool: {tool_id}")
+                logger.warning(f"User {user_id} cannot delete tool {tool_id}")
                 return False
 
             # Delete tool
@@ -307,7 +296,7 @@ class ToolService:
             logger.info(f"Deleted tool: {tool.name} by user {user_id}")
             return True
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             self.db.rollback()
             logger.error(f"Error deleting tool {tool_id}: {e}")
             return False
@@ -328,11 +317,26 @@ class ToolService:
             List[Dict[str, Any]]: List of tools in the category
         """
         try:
-            ToolCategory(category)
-            return self.get_available_tools(user_id=user_id, category=category)
+            category_enum = ToolCategory(category)
+            tools = self.db.query(Tool).filter(Tool.category == category_enum).all()
+
+            result = []
+            for tool in tools:
+                tool_dict = tool.to_dict()
+
+                # Check if user has permission to use this tool
+                if user_id:
+                    tool_dict["can_use"] = self._check_user_permission(tool, user_id)
+                else:
+                    tool_dict["can_use"] = not tool.requires_auth
+
+                result.append(tool_dict)
+
+            logger.info(f"Retrieved {len(result)} tools in category: {category}")
+            return result
 
         except ValueError:
-            logger.warning(f"Invalid tool category: {category}")
+            logger.warning(f"Invalid category: {category}")
             return []
 
     def search_tools(
@@ -355,18 +359,14 @@ class ToolService:
             tools = (
                 self.db.query(Tool)
                 .filter(
-                    and_(
-                        Tool.is_enabled is True,
-                        (
-                            Tool.name.ilike(f"%{query}%")
-                            | Tool.description.ilike(f"%{query}%")
-                        ),
+                    or_(
+                        Tool.name.ilike(f"%{query}%"),
+                        Tool.description.ilike(f"%{query}%"),
                     ),
                 )
                 .all()
             )
 
-            # Convert to dictionaries
             result = []
             for tool in tools:
                 tool_dict = tool.to_dict()
@@ -382,7 +382,7 @@ class ToolService:
             logger.info(f"Found {len(result)} tools matching query: {query}")
             return result
 
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error searching tools: {e}")
             return []
 
@@ -391,11 +391,11 @@ class ToolService:
         Check if user has permission to use a tool.
 
         Args:
-            tool: Tool to check
+            tool: Tool object
             user_id: User ID
 
         Returns:
-            bool: True if user has permission
+            bool: True if user has permission, False otherwise
         """
         try:
             # If tool doesn't require auth, anyone can use it
@@ -404,18 +404,39 @@ class ToolService:
 
             # Get user
             user = self.db.query(User).filter(User.id == user_id).first()
-            if not user or not user.is_active:
+            if not user:
                 return False
 
-            # Check if user has required permissions
-            if tool.required_permissions:
-                for permission in tool.required_permissions:
-                    if not user.has_permission(permission):
-                        return False
+            # Admin can use all tools
+            if user.role.value == "admin":
+                return True
 
-            return True
+            # Check if user has specific permission for this tool
+            permission = (
+                self.db.query(ToolPermission)
+                .filter(
+                    ToolPermission.tool_id == tool.id,
+                    ToolPermission.user_id == user_id,
+                )
+                .first()
+            )
 
-        except Exception as e:
+            if permission:
+                return True
+
+            # Check if user's role has permission
+            role_permission = (
+                self.db.query(ToolPermission)
+                .filter(
+                    ToolPermission.tool_id == tool.id,
+                    ToolPermission.role == user.role.value,
+                )
+                .first()
+            )
+
+            return bool(role_permission)
+
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error checking user permission for tool: {e}")
             return False
 
@@ -424,19 +445,19 @@ class ToolService:
         Check if user can edit a tool.
 
         Args:
-            tool: Tool to check
+            tool: Tool object
             user_id: User ID
 
         Returns:
-            bool: True if user can edit
+            bool: True if user can edit, False otherwise
         """
         try:
             # Get user
             user = self.db.query(User).filter(User.id == user_id).first()
-            if not user or not user.is_active:
+            if not user:
                 return False
 
-            # Admin can edit any tool
+            # Admin can edit all tools
             if user.role.value == "admin":
                 return True
 
@@ -446,7 +467,7 @@ class ToolService:
 
             # Manager can edit non-builtin tools
             return bool(user.role.value == "manager" and not tool.is_builtin)
-        except Exception as e:
+        except (ValueError, AttributeError) as e:
             logger.error(f"Error checking edit permission for tool: {e}")
             return False
 

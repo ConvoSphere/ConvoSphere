@@ -100,58 +100,47 @@ class ToolCache:
         self.access_times: dict[str, datetime] = {}
 
     def _generate_cache_key(self, tool_name: str, arguments: dict[str, Any]) -> str:
-        """Generate cache key for tool execution."""
-        # Create a deterministic key from tool name and arguments
-        args_str = json.dumps(arguments, sort_keys=True)
-        return f"{tool_name}:{hash(args_str)}"
+        """Generate cache key from tool name and arguments."""
+        return f"{tool_name}:{json.dumps(arguments, sort_keys=True)}"
 
     def get(self, tool_name: str, arguments: dict[str, Any]) -> Any | None:
         """Get cached result if available and not expired."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-
+        
         if cache_key not in self.cache:
             return None
 
-        cached_data = self.cache[cache_key]
-        cached_time = cached_data.get("cached_at")
+        # Check if expired
+        if cache_key in self.access_times:
+            age = datetime.now(UTC) - self.access_times[cache_key]
+            if age.total_seconds() > self.ttl_hours * 3600:
+                del self.cache[cache_key]
+                del self.access_times[cache_key]
+                return None
 
-        # Check if cache is expired
-        if cached_time and datetime.now(UTC) - cached_time > timedelta(
-            hours=self.ttl_hours,
-        ):
-            del self.cache[cache_key]
-            del self.access_times[cache_key]
-            return None
-
-        # Update access time for LRU
+        # Update access time
         self.access_times[cache_key] = datetime.now(UTC)
-        return cached_data.get("result")
+        return self.cache[cache_key]["result"]
 
     def set(self, tool_name: str, arguments: dict[str, Any], result: Any) -> None:
-        """Cache tool execution result."""
+        """Cache result with current timestamp."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-
-        # Implement LRU eviction if cache is full
+        
+        # Evict if cache is full
         if len(self.cache) >= self.max_size:
             self._evict_lru()
 
-        self.cache[cache_key] = {
-            "result": result,
-            "cached_at": datetime.now(UTC),
-            "tool_name": tool_name,
-            "arguments": arguments,
-        }
+        self.cache[cache_key] = {"result": result}
         self.access_times[cache_key] = datetime.now(UTC)
 
     def _evict_lru(self) -> None:
         """Evict least recently used cache entry."""
         if not self.access_times:
             return
-
-        # Find least recently used entry
-        lru_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
-        del self.cache[lru_key]
-        del self.access_times[lru_key]
+        
+        oldest_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
+        del self.cache[oldest_key]
+        del self.access_times[oldest_key]
 
     def clear(self) -> None:
         """Clear all cached data."""
@@ -163,30 +152,27 @@ class ToolCache:
         return {
             "size": len(self.cache),
             "max_size": self.max_size,
-            "ttl_hours": self.ttl_hours,
             "hit_rate": self._calculate_hit_rate(),
+            "ttl_hours": self.ttl_hours,
         }
 
     def _calculate_hit_rate(self) -> float:
-        """Calculate cache hit rate (simplified)."""
-        # This would need to be implemented with actual hit/miss tracking
-        return 0.0
+        """Calculate cache hit rate (placeholder implementation)."""
+        return 0.0  # TODO: Implement actual hit rate calculation
 
 
 class ToolDependencyManager:
-    """Manage tool dependencies and execution order."""
+    """Manages tool dependencies and execution order."""
 
     def __init__(self):
         self.dependencies: dict[str, list[str]] = {}
-        self.execution_order: list[str] = []
 
     def add_dependency(self, tool_name: str, depends_on: list[str]) -> None:
-        """Add dependencies for a tool."""
+        """Add dependency for a tool."""
         self.dependencies[tool_name] = depends_on
 
     def get_execution_order(self, tools: list[str]) -> list[str]:
-        """Get optimal execution order for tools."""
-        # Simple topological sort for dependencies
+        """Get tools in dependency order using topological sort."""
         visited = set()
         temp_visited = set()
         order = []
@@ -196,18 +182,19 @@ class ToolDependencyManager:
                 raise ValueError(f"Circular dependency detected for tool: {tool}")
             if tool in visited:
                 return
-
+            
             temp_visited.add(tool)
-
+            
             # Visit dependencies first
             for dep in self.dependencies.get(tool, []):
                 if dep in tools:  # Only visit if dependency is in our tool list
                     visit(dep)
-
+            
             temp_visited.remove(tool)
             visited.add(tool)
             order.append(tool)
 
+        # Visit all tools
         for tool in tools:
             if tool not in visited:
                 visit(tool)
@@ -220,58 +207,33 @@ class ToolDependencyManager:
             deps = self.dependencies.get(tool, [])
             for dep in deps:
                 if dep not in tools:
-                    logger.warning(
-                        f"Tool {tool} depends on {dep} which is not available",
-                    )
+                    logger.warning(f"Tool {tool} depends on {dep} which is not available")
                     return False
         return True
 
 
 class EnhancedToolExecutor:
-    """Enhanced tool executor with validation, caching, and monitoring."""
+    """Enhanced tool executor with caching, monitoring, and dependency management."""
 
     def __init__(self):
         self.cache = ToolCache()
         self.dependency_manager = ToolDependencyManager()
         self.execution_history: list[ToolExecutionResult] = []
-        self.active_executions: dict[str, asyncio.Task] = {}
-        self.max_concurrent_executions = 10
-        self.semaphore = asyncio.Semaphore(self.max_concurrent_executions)
-
-        # Initialize dependencies for common tools
         self._initialize_dependencies()
 
     def _initialize_dependencies(self) -> None:
-        """Initialize common tool dependencies."""
-        # Example dependencies
-        self.dependency_manager.add_dependency("web_search", [])
-        self.dependency_manager.add_dependency("file_reader", [])
-        self.dependency_manager.add_dependency("data_analyzer", ["file_reader"])
-        self.dependency_manager.add_dependency(
-            "report_generator",
-            ["data_analyzer", "web_search"],
-        )
+        """Initialize tool dependencies."""
+        # Example dependencies - customize based on your tools
+        self.dependency_manager.add_dependency("data_processor", ["data_loader"])
+        self.dependency_manager.add_dependency("report_generator", ["data_processor"])
+        self.dependency_manager.add_dependency("chart_creator", ["data_processor"])
 
     async def execute_tool(
         self,
         request: ToolExecutionRequest,
     ) -> ToolExecutionResult:
-        """
-        Execute a tool with validation, caching, and monitoring.
-
-        Args:
-            request: Tool execution request with validation
-
-        Returns:
-            ToolExecutionResult: Execution result with metadata
-
-        Raises:
-            ToolError: If tool execution fails
-            ValidationError: If request validation fails
-        """
+        """Execute a single tool with full monitoring and error handling."""
         execution_id = str(uuid4())
-
-        # Create execution result
         result = ToolExecutionResult(
             execution_id=execution_id,
             tool_name=request.tool_name,
@@ -279,74 +241,57 @@ class EnhancedToolExecutor:
             user_id=request.user_id,
             conversation_id=request.conversation_id,
             status="pending",
+            start_time=datetime.now(UTC),
         )
 
         try:
-            # Check cache first
-            if request.cache_result:
-                cached_result = self.cache.get(request.tool_name, request.arguments)
-                if cached_result is not None:
-                    result.result = cached_result
-                    result.status = "completed"
-                    result.cache_hit = True
-                    result.end_time = datetime.now(UTC)
-                    result.execution_time = 0.0
-                    logger.info(f"Cache hit for tool {request.tool_name}")
-                    return result
-
-            # Execute tool with semaphore for concurrency control
-            async with self.semaphore:
-                return await self._execute_tool_internal(request, result)
-
-        except Exception as e:
+            return await self._execute_tool_internal(request, result)
+        except (ToolError, ValueError, TimeoutError) as e:
             result.status = "failed"
             result.error = str(e)
             result.end_time = datetime.now(UTC)
             if result.start_time:
-                result.execution_time = (
-                    result.end_time - result.start_time
-                ).total_seconds()
-
+                result.execution_time = (result.end_time - result.start_time).total_seconds()
             logger.error(f"Tool execution failed: {e}")
             raise ToolError(
                 f"Tool execution failed: {str(e)}",
                 request.tool_name,
                 request.arguments,
-            )
-
-        finally:
-            # Store execution history
-            self.execution_history.append(result)
-            if len(self.execution_history) > 1000:  # Keep last 1000 executions
-                self.execution_history = self.execution_history[-1000:]
+            ) from e
 
     async def _execute_tool_internal(
         self,
         request: ToolExecutionRequest,
         result: ToolExecutionResult,
     ) -> ToolExecutionResult:
-        """Internal tool execution with timeout and retry logic."""
+        """Internal tool execution with retry logic."""
         result.status = "running"
-        result.start_time = datetime.now(UTC)
-
-        # Try to execute tool with retries
         last_error = None
+
         for attempt in range(request.retry_count + 1):
             try:
-                # Execute with timeout
-                tool_result = await asyncio.wait_for(
-                    self._execute_single_tool(request),
-                    timeout=request.timeout,
-                )
+                # Check cache first
+                if request.cache_result:
+                    cached_result = self.cache.get(request.tool_name, request.arguments)
+                    if cached_result is not None:
+                        result.result = cached_result
+                        result.status = "completed"
+                        result.cache_hit = True
+                        result.end_time = datetime.now(UTC)
+                        if result.start_time:
+                            result.execution_time = (result.end_time - result.start_time).total_seconds()
+                        logger.info(f"Cache hit for tool {request.tool_name}")
+                        return result
 
+                # Execute tool
+                tool_result = await self._execute_single_tool(request)
                 result.result = tool_result
                 result.status = "completed"
                 result.end_time = datetime.now(UTC)
-                result.execution_time = (
-                    result.end_time - result.start_time
-                ).total_seconds()
+                if result.start_time:
+                    result.execution_time = (result.end_time - result.start_time).total_seconds()
 
-                # Cache result if requested
+                # Cache result if successful
                 if request.cache_result:
                     self.cache.set(request.tool_name, request.arguments, tool_result)
 
@@ -356,49 +301,46 @@ class EnhancedToolExecutor:
                 return result
 
             except TimeoutError:
-                last_error = f"Tool execution timed out after {request.timeout}s"
+                last_error = f"Timeout after {request.timeout}s"
                 logger.warning(
                     f"Tool {request.tool_name} timed out on attempt {attempt + 1}",
                 )
 
-            except Exception as e:
+            except (ToolError, ValueError) as e:
                 last_error = str(e)
                 logger.warning(
                     f"Tool {request.tool_name} failed on attempt {attempt + 1}: {e}",
                 )
 
-                if attempt < request.retry_count:
-                    await asyncio.sleep(2**attempt)  # Exponential backoff
-
         # All attempts failed
         result.status = "failed"
         result.error = last_error
         result.end_time = datetime.now(UTC)
-        result.execution_time = (result.end_time - result.start_time).total_seconds()
+        if result.start_time:
+            result.execution_time = (result.end_time - result.start_time).total_seconds()
 
         raise ToolError(
             f"Tool execution failed after {request.retry_count + 1} attempts: {last_error}",
         )
 
     async def _execute_single_tool(self, request: ToolExecutionRequest) -> Any:
-        """Execute a single tool (regular or MCP)."""
+        """Execute a single tool, trying regular tools first, then MCP tools."""
         tool_name = request.tool_name
         arguments = request.arguments
 
-        # Try regular tool first
+        # Try regular tools first
         try:
             return await tool_service.execute_tool(
                 tool_name,
-                request.user_id,
                 **arguments,
             )
-        except Exception as e:
+        except (ToolError, ValueError, KeyError) as e:
             logger.debug(f"Regular tool {tool_name} failed: {e}")
 
-        # Try MCP tool
+        # Try MCP tools
         try:
             return await mcp_manager.execute_tool(tool_name, **arguments)
-        except Exception as e:
+        except (ToolError, ValueError, KeyError) as e:
             logger.debug(f"MCP tool {tool_name} failed: {e}")
 
         # Both failed
@@ -408,138 +350,115 @@ class EnhancedToolExecutor:
         self,
         requests: list[ToolExecutionRequest],
     ) -> list[ToolExecutionResult]:
-        """
-        Execute multiple tools with dependency management.
-
-        Args:
-            requests: List of tool execution requests
-
-        Returns:
-            List[ToolExecutionResult]: Execution results
-        """
+        """Execute multiple tools in parallel with dependency management."""
+        # Sort by dependencies
         tool_names = [req.tool_name for req in requests]
-
-        # Get optimal execution order
         execution_order = self.dependency_manager.get_execution_order(tool_names)
-
-        # Group requests by execution order
-        ordered_requests = []
-        for tool_name in execution_order:
-            for req in requests:
-                if req.tool_name == tool_name:
-                    ordered_requests.append(req)
-                    break
-
-        # Execute tools in order
+        
+        # Create request map
+        request_map = {req.tool_name: req for req in requests}
+        
+        # Execute in order
         results = []
-        for request in ordered_requests:
-            try:
-                result = await self.execute_tool(request)
-                results.append(result)
-            except Exception as e:
-                # Create failed result
-                failed_result = ToolExecutionResult(
-                    execution_id=str(uuid4()),
-                    tool_name=request.tool_name,
-                    arguments=request.arguments,
-                    user_id=request.user_id,
-                    conversation_id=request.conversation_id,
-                    status="failed",
-                    error=str(e),
-                    start_time=datetime.now(UTC),
-                    end_time=datetime.now(UTC),
-                )
-                results.append(failed_result)
+        for tool_name in execution_order:
+            if tool_name in request_map:
+                request = request_map[tool_name]
+                try:
+                    result = await self.execute_tool(request)
+                    results.append(result)
+                except (ToolError, ValueError, TimeoutError) as e:
+                    # Create failed result
+                    failed_result = ToolExecutionResult(
+                        execution_id=str(uuid4()),
+                        tool_name=tool_name,
+                        arguments=request.arguments,
+                        user_id=request.user_id,
+                        conversation_id=request.conversation_id,
+                        status="failed",
+                        error=str(e),
+                        start_time=datetime.now(UTC),
+                        end_time=datetime.now(UTC),
+                    )
+                    results.append(failed_result)
 
         return results
 
     def get_available_tools(self) -> list[dict[str, Any]]:
-        """Get list of available tools with metadata."""
+        """Get list of all available tools with metadata."""
         tools = []
 
         # Get regular tools
-        if tool_service is not None:
-            try:
-                regular_tools = tool_service.get_available_tools()
-                for tool in regular_tools:
-                    tools.append(
-                        {
-                            "name": tool.get("name"),
-                            "description": tool.get("description", ""),
-                            "category": tool.get("category", "general"),
-                            "type": "regular",
-                            "dependencies": self.dependency_manager.dependencies.get(
-                                tool.get("name"),
-                                [],
-                            ),
-                        },
-                    )
-            except Exception as e:
-                logger.warning(f"Error getting regular tools: {e}")
-        else:
-            # Return empty list for tests when tool_service is not initialized
-            logger.debug("tool_service not initialized, returning empty tool list")
+        try:
+            regular_tools = tool_service.get_available_tools()
+            tools.extend(
+                {
+                    "name": tool.get("name"),
+                    "description": tool.get("description", ""),
+                    "category": tool.get("category", "general"),
+                    "type": "regular",
+                    "dependencies": self.dependency_manager.dependencies.get(
+                        tool.get("name"),
+                        [],
+                    ),
+                }
+                for tool in regular_tools
+            )
+        except (ToolError, KeyError) as e:
+            logger.warning(f"Error getting regular tools: {e}")
 
         # Get MCP tools
         try:
             mcp_tools = mcp_manager.get_all_tools()
-            for tool in mcp_tools:
-                tools.append(
-                    {
-                        "name": tool.get("name"),
-                        "description": tool.get("description", ""),
-                        "category": tool.get("category", "mcp"),
-                        "type": "mcp",
-                        "dependencies": self.dependency_manager.dependencies.get(
-                            tool.get("name"),
-                            [],
-                        ),
-                    },
-                )
-        except Exception as e:
+            tools.extend(
+                {
+                    "name": tool.get("name"),
+                    "description": tool.get("description", ""),
+                    "category": tool.get("category", "mcp"),
+                    "type": "mcp",
+                    "dependencies": self.dependency_manager.dependencies.get(
+                        tool.get("name"),
+                        [],
+                    ),
+                }
+                for tool in mcp_tools
+            )
+        except (ToolError, KeyError) as e:
             logger.warning(f"Error getting MCP tools: {e}")
 
         return tools
 
     def get_execution_stats(self) -> dict[str, Any]:
-        """Get tool execution statistics."""
+        """Get execution statistics."""
         total_executions = len(self.execution_history)
-        successful_executions = len(
-            [r for r in self.execution_history if r.status == "completed"],
+        successful_executions = sum(
+            1 for ex in self.execution_history if ex.status == "completed"
         )
-        failed_executions = len(
-            [r for r in self.execution_history if r.status == "failed"],
+        failed_executions = sum(
+            1 for ex in self.execution_history if ex.status == "failed"
         )
 
         avg_execution_time = 0.0
         if successful_executions > 0:
             execution_times = [
-                r.execution_time for r in self.execution_history if r.execution_time
+                ex.execution_time
+                for ex in self.execution_history
+                if ex.status == "completed" and ex.execution_time is not None
             ]
             if execution_times:
                 avg_execution_time = sum(execution_times) / len(execution_times)
-
-        cache_stats = self.cache.get_stats()
 
         return {
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": (
-                (successful_executions / total_executions * 100)
-                if total_executions > 0
-                else 0
-            ),
+            "success_rate": successful_executions / total_executions if total_executions > 0 else 0.0,
             "average_execution_time": avg_execution_time,
-            "cache_stats": cache_stats,
-            "active_executions": len(self.active_executions),
-            "max_concurrent_executions": self.max_concurrent_executions,
+            "cache_stats": self.cache.get_stats(),
         }
 
     def clear_cache(self) -> None:
         """Clear tool execution cache."""
         self.cache.clear()
-        logger.info("Tool execution cache cleared")
 
     def get_recent_executions(
         self,
@@ -550,20 +469,13 @@ class EnhancedToolExecutor:
         """Get recent tool executions with optional filtering."""
         executions = self.execution_history.copy()
 
+        # Apply filters
         if tool_name:
-            executions = [e for e in executions if e.tool_name == tool_name]
-
+            executions = [ex for ex in executions if ex.tool_name == tool_name]
         if user_id:
-            executions = [e for e in executions if e.user_id == user_id]
+            executions = [ex for ex in executions if ex.user_id == user_id]
 
         # Sort by start time (most recent first)
-        executions.sort(key=lambda x: x.start_time or datetime.min, reverse=True)
+        executions.sort(key=lambda x: x.start_time or datetime.min.replace(tzinfo=UTC), reverse=True)
 
         return executions[:limit]
-
-
-# Global enhanced tool executor instance
-enhanced_tool_executor = EnhancedToolExecutor()
-
-# Alias for backward compatibility
-tool_executor = enhanced_tool_executor

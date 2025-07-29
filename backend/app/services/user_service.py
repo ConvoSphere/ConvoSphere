@@ -34,6 +34,12 @@ from backend.app.utils.exceptions import (
 )
 
 
+# Error message constants
+INSUFFICIENT_PERMISSIONS_CREATE_GROUPS = "Insufficient permissions to create groups"
+INSUFFICIENT_PERMISSIONS_GROUP_ASSIGNMENTS = "Insufficient permissions for group assignments"
+USER_NOT_FOUND_TEMPLATE = "User with ID {} not found"
+
+
 class UserService:
     """Service for managing users with enterprise features."""
 
@@ -45,7 +51,6 @@ class UserService:
     def create_user(
         self,
         user_data: UserCreate | None = None,
-        current_user: User | None = None,
         email: str | None = None,
         username: str | None = None,
         password: str | None = None,
@@ -56,8 +61,6 @@ class UserService:
         # Handle both UserCreate object and individual parameters
         if user_data is None:
             # Create UserCreate object from individual parameters
-            from backend.app.schemas.user import UserCreate
-
             user_data = UserCreate(
                 email=email,
                 username=username,
@@ -450,7 +453,7 @@ class UserService:
     ) -> UserGroup:
         """Create a new user group."""
         if not current_user.has_permission("group:write"):
-            raise PermissionDeniedError("Insufficient permissions to create groups")
+            raise PermissionDeniedError(INSUFFICIENT_PERMISSIONS_CREATE_GROUPS)
 
         group = UserGroup(
             name=group_data.name,
@@ -543,7 +546,7 @@ class UserService:
         """Assign user to groups."""
         user = self.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            raise UserNotFoundError(USER_NOT_FOUND_TEMPLATE.format(user_id))
 
         groups = self.db.query(UserGroup).filter(UserGroup.id.in_(group_ids)).all()
 
@@ -560,9 +563,7 @@ class UserService:
     ) -> int:
         """Assign multiple users to groups."""
         if not current_user.has_permission("user:write"):
-            raise PermissionDeniedError(
-                "Insufficient permissions for group assignments",
-            )
+            raise PermissionDeniedError(INSUFFICIENT_PERMISSIONS_GROUP_ASSIGNMENTS)
 
         users = self.db.query(User).filter(User.id.in_(assignment.user_ids)).all()
         groups = (
