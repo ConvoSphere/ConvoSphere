@@ -16,6 +16,7 @@ from backend.app.api.v1.endpoints import (
     hybrid_mode,
     intelligence,
     knowledge,
+    logs,
     mcp,
     rag,
     search,
@@ -67,6 +68,11 @@ api_router.include_router(
 )
 api_router.include_router(
     monitoring_endpoints.router, prefix="/monitoring", tags=["Monitoring"]
+)
+
+# Logs router
+api_router.include_router(
+    logs.router, prefix="/logs", tags=["Logs"]
 )
 
 # Statistics router (dashboard)
