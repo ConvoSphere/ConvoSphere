@@ -303,7 +303,7 @@ export class OfflineAPI {
     this.baseURL = baseURL;
   }
 
-  async request(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  async request(endpoint: string, options: any = {}): Promise<Response> {
     const url = `${this.baseURL}${endpoint}`;
     
     // Check if we're online

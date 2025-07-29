@@ -479,3 +479,6 @@ class EnhancedToolExecutor:
         executions.sort(key=lambda x: x.start_time or datetime.min.replace(tzinfo=UTC), reverse=True)
 
         return executions[:limit]
+
+# Create a global instance of the enhanced tool executor
+enhanced_tool_executor = EnhancedToolExecutor()

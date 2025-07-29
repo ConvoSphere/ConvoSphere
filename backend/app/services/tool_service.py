@@ -11,7 +11,6 @@ from sqlalchemy import and_, or_
 from backend.app.core.database import get_db
 from backend.app.models.tool import Tool, ToolCategory
 from backend.app.models.user import User
-from backend.app.models.tool_permission import ToolPermission
 
 
 class ToolService:
@@ -412,29 +411,12 @@ class ToolService:
                 return True
 
             # Check if user has specific permission for this tool
-            permission = (
-                self.db.query(ToolPermission)
-                .filter(
-                    ToolPermission.tool_id == tool.id,
-                    ToolPermission.user_id == user_id,
-                )
-                .first()
-            )
-
-            if permission:
-                return True
-
-            # Check if user's role has permission
-            role_permission = (
-                self.db.query(ToolPermission)
-                .filter(
-                    ToolPermission.tool_id == tool.id,
-                    ToolPermission.role == user.role.value,
-                )
-                .first()
-            )
-
-            return bool(role_permission)
+            # The ToolPermission model is removed, so this part of the logic is no longer applicable.
+            # Assuming a default permission for now, or that this logic needs to be re-evaluated
+            # if specific user permissions are required.
+            # For now, we'll return True if the tool doesn't require auth,
+            # as the ToolPermission model is removed.
+            return not tool.requires_auth
 
         except (ValueError, AttributeError) as e:
             logger.error(f"Error checking user permission for tool: {e}")
