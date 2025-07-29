@@ -1,29 +1,36 @@
 import React, { useState, useEffect } from "react";
 import {
   Modal,
-  Space,
-  Typography,
-  Button,
   Spin,
   Alert,
   Tabs,
+  Typography,
+  Space,
+  Button,
   Tag,
   Divider,
-  Descriptions,
+  Card,
+  Row,
+  Col,
+  Statistic,
 } from "antd";
 import {
   FileTextOutlined,
   FilePdfOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
   FileImageOutlined,
-  FileCodeOutlined,
   DownloadOutlined,
   EyeOutlined,
-  CloseOutlined,
-  LoadingOutlined,
+  InfoCircleOutlined,
+  TagOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  FileOutlined,
 } from "@ant-design/icons";
-import { useTranslation } from "react-i18next";
-import { Document } from "../../services/knowledge";
-import { LoadingState } from "../LoadingStates";
+import type { Document, DocumentChunk } from "../../services/knowledge";
+import { formatFileSize, formatDate } from "../../utils/formatters";
+import { FileValidator } from "../../utils/fileValidation";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -33,13 +40,15 @@ interface DocumentPreviewProps {
   visible: boolean;
   onClose: () => void;
   onDownload?: (documentId: string) => void;
+  onEdit?: (document: Document) => void;
+  onReprocess?: (documentId: string) => void;
 }
 
-interface FileTypeConfig {
-  icon: React.ReactNode;
-  color: string;
-  previewComponent: React.ComponentType<{ document: Document }>;
-  supported: boolean;
+interface PreviewContent {
+  type: "text" | "image" | "pdf" | "table" | "error";
+  content?: string;
+  url?: string;
+  error?: string;
 }
 
 const DocumentPreview: React.FC<DocumentPreviewProps> = ({
@@ -47,316 +56,407 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   visible,
   onClose,
   onDownload,
+  onEdit,
+  onReprocess,
 }) => {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("preview");
+  const [previewContent, setPreviewContent] = useState<PreviewContent | null>(null);
   const [loading, setLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("preview");
 
   useEffect(() => {
     if (document && visible) {
-      loadDocumentPreview();
+      loadPreviewContent();
     }
   }, [document, visible]);
 
-  const loadDocumentPreview = async () => {
+  const loadPreviewContent = async () => {
     if (!document) return;
 
     setLoading(true);
     try {
-      // In a real implementation, you would fetch the document content
-      // For now, we'll simulate loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate different content based on file type
-      const fileType = getFileType(document.filename);
-      if (fileType === "pdf") {
-        setPreviewUrl(`/api/documents/${document.id}/preview`);
-      } else if (fileType === "text" || fileType === "code") {
-        setFileContent("This is a sample document content...\n\nLorem ipsum dolor sit amet...");
-      }
+      const content = await generatePreviewContent(document);
+      setPreviewContent(content);
     } catch (error) {
-      console.error("Failed to load document preview:", error);
+      setPreviewContent({
+        type: "error",
+        error: "Failed to load preview content",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const getFileType = (filename: string): string => {
-    const extension = filename.split('.').pop()?.toLowerCase();
+  const generatePreviewContent = async (doc: Document): Promise<PreviewContent> => {
+    // Determine content type based on file type
+    const fileType = doc.file_type.toLowerCase();
     
-    if (['pdf'].includes(extension || '')) return 'pdf';
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension || '')) return 'image';
-    if (['txt', 'md', 'rtf'].includes(extension || '')) return 'text';
-    if (['js', 'ts', 'jsx', 'tsx', 'py', 'java', 'cpp', 'c', 'html', 'css', 'json', 'xml'].includes(extension || '')) return 'code';
-    
-    return 'unknown';
-  };
-
-  const getFileTypeConfig = (filename: string): FileTypeConfig => {
-    const fileType = getFileType(filename);
-    
-    const configs: Record<string, FileTypeConfig> = {
-      pdf: {
-        icon: <FilePdfOutlined />,
-        color: "#ff4d4f",
-        previewComponent: PDFPreview,
-        supported: true,
-      },
-      image: {
-        icon: <FileImageOutlined />,
-        color: "#52c41a",
-        previewComponent: ImagePreview,
-        supported: true,
-      },
-      text: {
-        icon: <FileTextOutlined />,
-        color: "#1890ff",
-        previewComponent: TextPreview,
-        supported: true,
-      },
-      code: {
-        icon: <FileCodeOutlined />,
-        color: "#722ed1",
-        previewComponent: CodePreview,
-        supported: true,
-      },
-      unknown: {
-        icon: <FileTextOutlined />,
-        color: "#8c8c8c",
-        previewComponent: UnsupportedPreview,
-        supported: false,
-      },
-    };
-
-    return configs[fileType] || configs.unknown;
-  };
-
-  const handleDownload = () => {
-    if (document && onDownload) {
-      onDownload(document.id);
+    if (FileValidator.isImage({ type: doc.mime_type || "" } as File)) {
+      return {
+        type: "image",
+        url: `/api/v1/knowledge/documents/${doc.id}/download`,
+      };
+    } else if (fileType === "pdf") {
+      return {
+        type: "pdf",
+        url: `/api/v1/knowledge/documents/${doc.id}/download`,
+      };
+    } else if (FileValidator.isDocument({ type: doc.mime_type || "" } as File)) {
+      // For text-based documents, we could fetch the content
+      return {
+        type: "text",
+        content: "Document content preview not available for this file type.",
+      };
+    } else if (FileValidator.isSpreadsheet({ type: doc.mime_type || "" } as File)) {
+      return {
+        type: "table",
+        content: "Spreadsheet preview not available. Please download to view.",
+      };
+    } else {
+      return {
+        type: "text",
+        content: "Preview not available for this file type.",
+      };
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const getFileIcon = (fileType: string) => {
+    switch (fileType.toLowerCase()) {
+      case "pdf":
+        return <FilePdfOutlined style={{ color: "#ff4d4f" }} />;
+      case "doc":
+      case "docx":
+        return <FileWordOutlined style={{ color: "#1890ff" }} />;
+      case "xls":
+      case "xlsx":
+        return <FileExcelOutlined style={{ color: "#52c41a" }} />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <FileImageOutlined style={{ color: "#722ed1" }} />;
+      default:
+        return <FileTextOutlined style={{ color: "#8c8c8c" }} />;
+    }
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleString();
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PROCESSED":
+        return "success";
+      case "PROCESSING":
+        return "processing";
+      case "ERROR":
+        return "error";
+      case "UPLOADED":
+        return "default";
+      default:
+        return "default";
+    }
+  };
+
+  const renderPreviewContent = () => {
+    if (loading) {
+      return (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <Spin size="large" />
+          <div style={{ marginTop: "16px" }}>Loading preview...</div>
+        </div>
+      );
+    }
+
+    if (!previewContent) {
+      return (
+        <Alert
+          message="No preview available"
+          description="This document type does not support preview."
+          type="info"
+          showIcon
+        />
+      );
+    }
+
+    switch (previewContent.type) {
+      case "image":
+        return (
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={previewContent.url}
+              alt={document?.title}
+              style={{ maxWidth: "100%", maxHeight: "500px" }}
+            />
+          </div>
+        );
+
+      case "pdf":
+        return (
+          <iframe
+            src={previewContent.url}
+            style={{ width: "100%", height: "600px", border: "none" }}
+            title={document?.title}
+          />
+        );
+
+      case "text":
+        return (
+          <Card>
+            <Paragraph style={{ whiteSpace: "pre-wrap" }}>
+              {previewContent.content}
+            </Paragraph>
+          </Card>
+        );
+
+      case "table":
+        return (
+          <Alert
+            message="Spreadsheet Preview"
+            description={previewContent.content}
+            type="info"
+            showIcon
+          />
+        );
+
+      case "error":
+        return (
+          <Alert
+            message="Preview Error"
+            description={previewContent.error}
+            type="error"
+            showIcon
+          />
+        );
+
+      default:
+        return (
+          <Alert
+            message="Unsupported Format"
+            description="Preview is not available for this file type."
+            type="warning"
+            showIcon
+          />
+        );
+    }
+  };
+
+  const renderDocumentInfo = () => {
+    if (!document) return null;
+
+    return (
+      <Card>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Statistic
+              title="File Size"
+              value={formatFileSize(document.file_size)}
+              prefix={<FileOutlined />}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="Word Count"
+              value={document.word_count || 0}
+              prefix={<FileTextOutlined />}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="Page Count"
+              value={document.page_count || 0}
+              prefix={<FileTextOutlined />}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="Character Count"
+              value={document.character_count || 0}
+              prefix={<FileTextOutlined />}
+            />
+          </Col>
+        </Row>
+
+        <Divider />
+
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <div>
+            <Text strong>Author:</Text>{" "}
+            <Text>{document.author || "Unknown"}</Text>
+          </div>
+          <div>
+            <Text strong>Source:</Text>{" "}
+            <Text>{document.source || "Not specified"}</Text>
+          </div>
+          <div>
+            <Text strong>Language:</Text>{" "}
+            <Text>{document.language || "Not detected"}</Text>
+          </div>
+          <div>
+            <Text strong>Year:</Text>{" "}
+            <Text>{document.year || "Not specified"}</Text>
+          </div>
+          <div>
+            <Text strong>Version:</Text>{" "}
+            <Text>{document.version || "Not specified"}</Text>
+          </div>
+          <div>
+            <Text strong>Processing Engine:</Text>{" "}
+            <Text>{document.processing_engine || "Default"}</Text>
+          </div>
+        </Space>
+
+        {document.keywords && document.keywords.length > 0 && (
+          <>
+            <Divider />
+            <div>
+              <Text strong>Keywords:</Text>
+              <div style={{ marginTop: "8px" }}>
+                {document.keywords.map((keyword, index) => (
+                  <Tag key={index} style={{ marginBottom: "4px" }}>
+                    {keyword}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </Card>
+    );
+  };
+
+  const renderMetadata = () => {
+    if (!document) return null;
+
+    return (
+      <Card>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <div>
+            <Text strong>File Name:</Text>{" "}
+            <Text code>{document.file_name}</Text>
+          </div>
+          <div>
+            <Text strong>File Type:</Text>{" "}
+            <Text code>{document.file_type.toUpperCase()}</Text>
+          </div>
+          <div>
+            <Text strong>MIME Type:</Text>{" "}
+            <Text code>{document.mime_type || "Not detected"}</Text>
+          </div>
+          <div>
+            <Text strong>Document Type:</Text>{" "}
+            <Text code>{document.document_type || "Unknown"}</Text>
+          </div>
+          <div>
+            <Text strong>Status:</Text>{" "}
+            <Tag color={getStatusColor(document.status)}>
+              {document.status}
+            </Tag>
+          </div>
+          <div>
+            <Text strong>Created:</Text>{" "}
+            <Text>{formatDate(document.created_at)}</Text>
+          </div>
+          <div>
+            <Text strong>Updated:</Text>{" "}
+            <Text>{formatDate(document.updated_at)}</Text>
+          </div>
+          {document.processed_at && (
+            <div>
+              <Text strong>Processed:</Text>{" "}
+              <Text>{formatDate(document.processed_at)}</Text>
+            </div>
+          )}
+          {document.error_message && (
+            <div>
+              <Text strong>Error:</Text>{" "}
+              <Text type="danger">{document.error_message}</Text>
+            </div>
+          )}
+        </Space>
+      </Card>
+    );
   };
 
   if (!document) return null;
 
-  const fileConfig = getFileTypeConfig(document.filename);
-
   return (
     <Modal
       title={
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ color: fileConfig.color }}>{fileConfig.icon}</span>
-          <Title level={4} style={{ margin: 0 }}>
-            {document.title || document.filename}
-          </Title>
-        </div>
+        <Space>
+          {getFileIcon(document.file_type)}
+          <span>{document.title}</span>
+        </Space>
       }
       open={visible}
       onCancel={onClose}
-      width="80%"
-      style={{ top: 20 }}
-      footer={
-        <Space>
-          <Button icon={<CloseOutlined />} onClick={onClose}>
-            {t("common.close", "Schließen")}
+      width={1000}
+      footer={[
+        <Button key="close" onClick={onClose}>
+          Close
+        </Button>,
+        onDownload && (
+          <Button
+            key="download"
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={() => onDownload(document.id)}
+          >
+            Download
           </Button>
-          {onDownload && (
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={handleDownload}
-            >
-              {t("documents.download", "Herunterladen")}
-            </Button>
-          )}
-        </Space>
-      }
+        ),
+        onEdit && (
+          <Button
+            key="edit"
+            icon={<FileTextOutlined />}
+            onClick={() => onEdit(document)}
+          >
+            Edit
+          </Button>
+        ),
+        onReprocess && (
+          <Button
+            key="reprocess"
+            icon={<FileTextOutlined />}
+            onClick={() => onReprocess(document.id)}
+          >
+            Reprocess
+          </Button>
+        ),
+      ].filter(Boolean)}
     >
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane
           tab={
-            <Space>
+            <span>
               <EyeOutlined />
-              {t("documents.preview", "Vorschau")}
-            </Space>
+              Preview
+            </span>
           }
           key="preview"
         >
-          <LoadingState loading={loading} error={null}>
-            <div style={{ minHeight: "400px" }}>
-              {fileConfig.supported ? (
-                React.createElement(fileConfig.previewComponent, { document })
-              ) : (
-                <UnsupportedPreview document={document} />
-              )}
-            </div>
-          </LoadingState>
+          {renderPreviewContent()}
         </TabPane>
-
         <TabPane
-          tab={t("documents.details", "Details")}
-          key="details"
+          tab={
+            <span>
+              <InfoCircleOutlined />
+              Information
+            </span>
+          }
+          key="info"
         >
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label={t("documents.filename", "Dateiname")}>
-              {document.filename}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.title", "Titel")}>
-              {document.title || "-"}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.description", "Beschreibung")}>
-              {document.description || "-"}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.file_type", "Dateityp")}>
-              <Tag color={fileConfig.color}>
-                {getFileType(document.filename).toUpperCase()}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.file_size", "Dateigröße")}>
-              {formatFileSize(document.file_size || 0)}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.upload_date", "Upload-Datum")}>
-              {formatDate(document.created_at)}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.tags", "Tags")}>
-              {document.tags && document.tags.length > 0 ? (
-                <Space>
-                  {document.tags.map((tag, index) => (
-                    <Tag key={index} color="blue">
-                      {tag}
-                    </Tag>
-                  ))}
-                </Space>
-              ) : (
-                "-"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label={t("documents.status", "Status")}>
-              <Tag color={document.status === "processed" ? "green" : "orange"}>
-                {t(`documents.status.${document.status}`, document.status)}
-              </Tag>
-            </Descriptions.Item>
-          </Descriptions>
+          {renderDocumentInfo()}
+        </TabPane>
+        <TabPane
+          tab={
+            <span>
+              <TagOutlined />
+              Metadata
+            </span>
+          }
+          key="metadata"
+        >
+          {renderMetadata()}
         </TabPane>
       </Tabs>
     </Modal>
-  );
-};
-
-// Preview Components
-const PDFPreview: React.FC<{ document: Document }> = ({ document }) => {
-  return (
-    <div style={{ width: "100%", height: "600px" }}>
-      <iframe
-        src={`/api/documents/${document.id}/preview`}
-        width="100%"
-        height="100%"
-        style={{ border: "none" }}
-        title={document.title || document.filename}
-      />
-    </div>
-  );
-};
-
-const ImagePreview: React.FC<{ document: Document }> = ({ document }) => {
-  return (
-    <div style={{ textAlign: "center" }}>
-      <img
-        src={`/api/documents/${document.id}/preview`}
-        alt={document.title || document.filename}
-        style={{ maxWidth: "100%", maxHeight: "600px", objectFit: "contain" }}
-      />
-    </div>
-  );
-};
-
-const TextPreview: React.FC<{ document: Document }> = ({ document }) => {
-  const [content, setContent] = useState<string>("");
-
-  useEffect(() => {
-    // In a real implementation, fetch the text content
-    setContent("This is a sample text document content...\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-  }, [document]);
-
-  return (
-    <div style={{ padding: "16px", backgroundColor: "#fafafa", borderRadius: "8px" }}>
-      <pre style={{ 
-        whiteSpace: "pre-wrap", 
-        fontFamily: "monospace", 
-        fontSize: "14px",
-        lineHeight: "1.5",
-        margin: 0
-      }}>
-        {content}
-      </pre>
-    </div>
-  );
-};
-
-const CodePreview: React.FC<{ document: Document }> = ({ document }) => {
-  const [content, setContent] = useState<string>("");
-
-  useEffect(() => {
-    // In a real implementation, fetch the code content with syntax highlighting
-    setContent(`function example() {
-  console.log("Hello, World!");
-  return "This is a sample code file";
-}
-
-// Sample code content
-const data = {
-  name: "Document",
-  type: "code",
-  language: "javascript"
-};`);
-  }, [document]);
-
-  return (
-    <div style={{ padding: "16px", backgroundColor: "#1e1e1e", borderRadius: "8px" }}>
-      <pre style={{ 
-        whiteSpace: "pre-wrap", 
-        fontFamily: "Consolas, Monaco, 'Courier New', monospace", 
-        fontSize: "14px",
-        lineHeight: "1.5",
-        margin: 0,
-        color: "#d4d4d4"
-      }}>
-        {content}
-      </pre>
-    </div>
-  );
-};
-
-const UnsupportedPreview: React.FC<{ document: Document }> = ({ document }) => {
-  const { t } = useTranslation();
-  
-  return (
-    <div style={{ textAlign: "center", padding: "48px" }}>
-      <FileTextOutlined style={{ fontSize: "64px", color: "#8c8c8c", marginBottom: "16px" }} />
-      <Title level={4} style={{ color: "#8c8c8c" }}>
-        {t("documents.preview_not_supported", "Vorschau nicht unterstützt")}
-      </Title>
-      <Paragraph type="secondary">
-        {t("documents.preview_not_supported_desc", "Für diesen Dateityp ist keine Vorschau verfügbar. Sie können die Datei herunterladen, um sie zu öffnen.")}
-      </Paragraph>
-      <Tag color="orange">
-        {document.filename.split('.').pop()?.toUpperCase() || "UNKNOWN"}
-      </Tag>
-    </div>
   );
 };
 

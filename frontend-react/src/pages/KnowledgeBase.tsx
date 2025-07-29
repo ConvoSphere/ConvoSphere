@@ -34,6 +34,7 @@ import {
   CloudUploadOutlined,
   DatabaseOutlined,
   CheckCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useKnowledgeStore } from "../store/knowledgeStore";
 import DocumentList from "../components/knowledge/DocumentList";
@@ -43,6 +44,7 @@ import BulkActions from "../components/knowledge/BulkActions";
 import SystemStats from "../components/admin/SystemStats";
 import type { Document } from "../services/knowledge";
 import DocumentPreview from "../components/documents/DocumentPreview";
+import BulkEditModal from "../components/documents/BulkEditModal";
 import AdvancedSearch from "../components/search/AdvancedSearch";
 import BulkOperations from "../components/documents/BulkOperations";
 
@@ -72,6 +74,7 @@ const KnowledgeBase: React.FC = () => {
     refreshDocuments,
     deleteDocument,
     downloadDocument,
+    bulkUpdateDocuments,
   } = useKnowledgeStore();
   const { stats, statsLoading } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,6 +86,7 @@ const KnowledgeBase: React.FC = () => {
   // New states for enhanced features
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -115,18 +119,30 @@ const KnowledgeBase: React.FC = () => {
   };
 
   const handleEditDocument = (document: Document) => {
-    // Open edit modal
-    Modal.confirm({
-      title: `Dokument bearbeiten: ${document.title}`,
-      content: (
-        <div>
-          <p>Bearbeitungsfunktionalität wird implementiert...</p>
-        </div>
-      ),
-      onOk() {
-        message.info("Bearbeitung wird implementiert");
-      },
-    });
+    // For single document edit, show bulk edit with just this document
+    setSelectedRowKeys([document.id]);
+    setShowBulkEdit(true);
+  };
+
+  const handleBulkEdit = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning("Please select documents to edit");
+      return;
+    }
+    setShowBulkEdit(true);
+  };
+
+  const handleBulkEditSave = async (updates: any) => {
+    try {
+      // Use bulk update function
+      await bulkUpdateDocuments(selectedRowKeys, updates);
+      
+      message.success(`Updated ${selectedRowKeys.length} documents`);
+      setShowBulkEdit(false);
+      setSelectedRowKeys([]);
+    } catch (error) {
+      message.error("Failed to update documents");
+    }
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -460,13 +476,20 @@ const KnowledgeBase: React.FC = () => {
                 <Text type="secondary">
                   {selectedRowKeys.length} {t("common.selected")}
                 </Text>
-                <ModernButton
-                  variant="secondary"
-                  icon={<ReloadOutlined />}
-                  onClick={() => setShowBulkActions(true)}
-                >
-                  {t("knowledge.actions.bulk_actions")}
-                </ModernButton>
+                            <ModernButton
+              variant="secondary"
+              icon={<EditOutlined />}
+              onClick={handleBulkEdit}
+            >
+              {t("knowledge.actions.bulk_edit")}
+            </ModernButton>
+            <ModernButton
+              variant="secondary"
+              icon={<ReloadOutlined />}
+              onClick={() => setShowBulkActions(true)}
+            >
+              {t("knowledge.actions.bulk_actions")}
+            </ModernButton>
               </>
             )}
           </Space>
@@ -844,6 +867,18 @@ const KnowledgeBase: React.FC = () => {
           downloadDocument(documentId);
           setShowPreview(false);
         }}
+        onEdit={handleEditDocument}
+        onReprocess={handleReprocessDocument}
+      />
+
+      {/* Bulk Edit Modal */}
+      <BulkEditModal
+        visible={showBulkEdit}
+        documents={documents.filter(doc => selectedRowKeys.includes(doc.id))}
+        tags={[]} // TODO: Get tags from store
+        onClose={() => setShowBulkEdit(false)}
+        onSave={handleBulkEditSave}
+        loading={loading}
       />
 
       {/* Advanced Search Modal */}

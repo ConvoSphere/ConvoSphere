@@ -25,7 +25,13 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import { useKnowledgeStore } from "../../store/knowledgeStore";
-import { formatFileSize, getFileExtension } from "../../utils/formatters";
+import { formatFileSize } from "../../utils/formatters";
+import { 
+  createFileValidator, 
+  showValidationErrors, 
+  showValidationWarnings,
+  type FileValidationConfig 
+} from "../../utils/fileValidation";
 
 const { Dragger } = Upload;
 const { Text, Title } = Typography;
@@ -36,6 +42,7 @@ interface UploadAreaProps {
   maxFileSize?: number; // in bytes
   allowedTypes?: string[];
   showQueue?: boolean;
+  validationConfig?: Partial<FileValidationConfig>;
 }
 
 const UploadArea: React.FC<UploadAreaProps> = ({
@@ -54,13 +61,22 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     "pptx",
   ],
   showQueue = true,
+  validationConfig,
 }) => {
   const { uploadQueue, addToUploadQueue, removeFromUploadQueue, uploadFiles } =
     useKnowledgeStore();
   const [dragOver, setDragOver] = useState(false);
+  
+  // Create file validator with custom config
+  const fileValidator = createFileValidator({
+    maxFileSize,
+    allowedTypes,
+    maxFiles,
+    ...validationConfig,
+  });
 
   const getFileIcon = (fileType: string) => {
-    const ext = getFileExtension(fileType);
+    const ext = fileType.split(".").pop()?.toLowerCase() || "";
     switch (ext) {
       case "pdf":
         return <FilePdfOutlined style={{ color: "#ff4d4f" }} />;
@@ -97,39 +113,24 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     }
   };
 
-  const validateFile = (file: File): string | null => {
-    const ext = getFileExtension(file.name);
-
-    if (!allowedTypes.includes(ext)) {
-      return `File type .${ext} is not allowed`;
-    }
-
-    if (file.size > maxFileSize) {
-      return `File size exceeds ${formatFileSize(maxFileSize)}`;
-    }
-
-    return null;
-  };
+  // Remove old validateFile function - now using FileValidator class
 
   const handleFileSelect = useCallback(
     (files: File[]) => {
-      const validFiles: File[] = [];
-      const errors: string[] = [];
+      // Use the new file validator
+      const { validFiles, invalidFiles, warnings } = fileValidator.validateFiles(files);
 
-      files.forEach((file) => {
-        const error = validateFile(file);
-        if (error) {
-          errors.push(`${file.name}: ${error}`);
-        } else {
-          validFiles.push(file);
-        }
-      });
-
-      if (errors.length > 0) {
-        // You might want to show these errors in a more user-friendly way
-        console.error("Upload errors:", errors);
+      // Show validation errors
+      if (invalidFiles.length > 0) {
+        showValidationErrors(invalidFiles);
       }
 
+      // Show validation warnings
+      if (warnings.length > 0) {
+        showValidationWarnings(warnings);
+      }
+
+      // Process valid files
       if (validFiles.length > 0) {
         addToUploadQueue(validFiles);
         uploadFiles(validFiles).then(() => {
@@ -137,13 +138,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
         });
       }
     },
-    [
-      addToUploadQueue,
-      uploadFiles,
-      onUploadComplete,
-      allowedTypes,
-      maxFileSize,
-    ],
+    [fileValidator, addToUploadQueue, uploadFiles, onUploadComplete],
   );
 
   const uploadProps = {

@@ -51,6 +51,7 @@ import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
 import ApiTestPanel from "../components/admin/ApiTestPanel";
+import PerformanceDashboard from "../components/admin/PerformanceDashboard";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -1109,6 +1110,18 @@ const Admin: React.FC = () => {
               key="api_test"
             >
               <ApiTestPanel />
+            </TabPane>
+
+            <TabPane
+              tab={
+                <Space>
+                  <MonitorOutlined />
+                  {t("admin.tabs.performance", "Performance")}
+                </Space>
+              }
+              key="performance"
+            >
+              <PerformanceDashboard />
             </TabPane>
           </Tabs>
         </div>
