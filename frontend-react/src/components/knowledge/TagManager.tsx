@@ -28,6 +28,7 @@ const TagManager: React.FC<TagManagerProps> = ({
 }) => {
   const { tags, fetchTags } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagType | null>(null);
   const [form] = Form.useForm();

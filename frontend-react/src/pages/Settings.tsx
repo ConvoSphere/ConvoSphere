@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
@@ -11,7 +10,6 @@ import {
   message,
 } from "antd";
 import {
-  SettingOutlined,
   GlobalOutlined,
   BellOutlined,
   SecurityScanOutlined,
@@ -25,20 +23,36 @@ import {
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernSelect from "../components/ModernSelect";
-import ModernForm, { ModernFormItem } from "../components/ModernForm";
-
 
 const { Title, Text } = Typography;
+
+interface SettingsState {
+  language: string;
+  theme: string;
+  notifications: boolean;
+  emailNotifications: boolean;
+  soundEnabled: boolean;
+  autoSave: boolean;
+  privacyMode: boolean;
+  analytics: boolean;
+}
+
+interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  background?: string;
+  text?: string;
+}
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors();
+  const colors = getCurrentColors() as ThemeColors;
 
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsState>({
     language: user?.language || "de",
     theme: "light",
     notifications: true,
@@ -49,11 +63,11 @@ const Settings: React.FC = () => {
     analytics: true,
   });
 
-  const handleSettingChange = async (key: string, value: any) => {
+  const handleSettingChange = async (key: keyof SettingsState, value: string | boolean) => {
     setSaving(true);
     try {
       if (key === "language") {
-        await updateProfile({ language: value });
+        await updateProfile({ language: value as string });
         message.success(t("settings.language_updated", "Sprache aktualisiert"));
       } else {
         // Update local settings
@@ -100,7 +114,7 @@ const Settings: React.FC = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: colors.colorGradientPrimary,
+        background: colors.primary,
         padding: "24px",
       }}
     >
@@ -156,7 +170,7 @@ const Settings: React.FC = () => {
                       style={{ display: "flex", alignItems: "center", gap: 12 }}
                     >
                       <GlobalOutlined
-                        style={{ color: colors.colorPrimary, fontSize: "20px" }}
+                        style={{ color: colors.secondary, fontSize: "20px" }}
                       />
                       <Title level={3} style={{ margin: 0 }}>
                         {t("settings.language_regional", "Sprache & Region")}
@@ -166,7 +180,7 @@ const Settings: React.FC = () => {
                 >
                   <Row gutter={[24, 24]}>
                     <Col xs={24} md={12}>
-                      <ModernFormItem
+                      <ModernSelect
                         label={t("settings.language", "Sprache")}
                         style={{ marginBottom: 0 }}
                       >
@@ -192,11 +206,11 @@ const Settings: React.FC = () => {
                             🇪🇸 Español
                           </ModernSelect.Option>
                         </ModernSelect>
-                      </ModernFormItem>
+                      </ModernSelect>
                     </Col>
 
                     <Col xs={24} md={12}>
-                      <ModernFormItem
+                      <ModernSelect
                         label={t("settings.timezone", "Zeitzone")}
                         style={{ marginBottom: 0 }}
                       >
@@ -214,7 +228,7 @@ const Settings: React.FC = () => {
                             🇺🇸 New York (UTC-5)
                           </ModernSelect.Option>
                         </ModernSelect>
-                      </ModernFormItem>
+                      </ModernSelect>
                     </Col>
                   </Row>
                 </ModernCard>
@@ -229,7 +243,7 @@ const Settings: React.FC = () => {
                     >
                       <BgColorsOutlined
                         style={{
-                          color: colors.colorSecondary,
+                          color: colors.secondary,
                           fontSize: "20px",
                         }}
                       />
@@ -241,7 +255,7 @@ const Settings: React.FC = () => {
                 >
                   <Row gutter={[24, 24]}>
                     <Col xs={24} md={12}>
-                      <ModernFormItem
+                      <ModernSelect
                         label={t("settings.theme", "Design")}
                         style={{ marginBottom: 0 }}
                       >
@@ -262,11 +276,11 @@ const Settings: React.FC = () => {
                             🔄 {t("settings.theme_auto", "Automatisch")}
                           </ModernSelect.Option>
                         </ModernSelect>
-                      </ModernFormItem>
+                      </ModernSelect>
                     </Col>
 
                     <Col xs={24} md={12}>
-                      <ModernFormItem
+                      <ModernSelect
                         label={t("settings.font_size", "Schriftgröße")}
                         style={{ marginBottom: 0 }}
                       >
@@ -284,7 +298,7 @@ const Settings: React.FC = () => {
                             {t("settings.font_large", "Groß")}
                           </ModernSelect.Option>
                         </ModernSelect>
-                      </ModernFormItem>
+                      </ModernSelect>
                     </Col>
                   </Row>
                 </ModernCard>
@@ -298,7 +312,7 @@ const Settings: React.FC = () => {
                       style={{ display: "flex", alignItems: "center", gap: 12 }}
                     >
                       <BellOutlined
-                        style={{ color: colors.colorAccent, fontSize: "20px" }}
+                        style={{ color: colors.secondary, fontSize: "20px" }}
                       />
                       <Title level={3} style={{ margin: 0 }}>
                         {t("settings.notifications", "Benachrichtigungen")}
@@ -317,9 +331,9 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "16px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "12px",
-                        border: `1px solid ${colors.colorBorder}`,
+                        border: `1px solid ${colors.text}`,
                       }}
                     >
                       <div>
@@ -361,9 +375,9 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "16px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "12px",
-                        border: `1px solid ${colors.colorBorder}`,
+                        border: `1px solid ${colors.text}`,
                       }}
                     >
                       <div>
@@ -405,9 +419,9 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "16px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "12px",
-                        border: `1px solid ${colors.colorBorder}`,
+                        border: `1px solid ${colors.text}`,
                       }}
                     >
                       <div>
@@ -474,9 +488,9 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "16px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "12px",
-                        border: `1px solid ${colors.colorBorder}`,
+                        border: `1px solid ${colors.text}`,
                       }}
                     >
                       <div>
@@ -513,9 +527,9 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "16px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "12px",
-                        border: `1px solid ${colors.colorBorder}`,
+                        border: `1px solid ${colors.text}`,
                       }}
                     >
                       <div>
@@ -610,7 +624,7 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "12px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "8px",
                       }}
                     >
@@ -620,7 +634,7 @@ const Settings: React.FC = () => {
                           "Aktive Benachrichtigungen",
                         )}
                       </Text>
-                      <Text strong style={{ color: colors.colorPrimary }}>
+                      <Text strong style={{ color: colors.secondary }}>
                         {settings.notifications ? "2" : "0"}
                       </Text>
                     </div>
@@ -631,14 +645,14 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "12px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "8px",
                       }}
                     >
                       <Text>
                         {t("settings.current_theme", "Aktuelles Design")}
                       </Text>
-                      <Text strong style={{ color: colors.colorSecondary }}>
+                      <Text strong style={{ color: colors.secondary }}>
                         {getThemeIcon(settings.theme)}{" "}
                         {t(`settings.theme_${settings.theme}`, settings.theme)}
                       </Text>
@@ -650,12 +664,12 @@ const Settings: React.FC = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "12px",
-                        backgroundColor: colors.colorBgContainer,
+                        backgroundColor: colors.background,
                         borderRadius: "8px",
                       }}
                     >
                       <Text>{t("settings.language", "Sprache")}</Text>
-                      <Text strong style={{ color: colors.colorAccent }}>
+                      <Text strong style={{ color: colors.secondary }}>
                         {settings.language === "de" ? "🇩🇪" : "🇺🇸"}{" "}
                         {settings.language.toUpperCase()}
                       </Text>

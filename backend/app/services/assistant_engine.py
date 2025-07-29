@@ -29,7 +29,7 @@ from backend.app.services.hybrid_mode_manager import (
 )
 from backend.app.services.knowledge_service import knowledge_service
 from backend.app.services.multi_agent_manager import multi_agent_manager
-from backend.app.services.tool_executor_v2 import tool_executor
+from backend.app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
 
 
 @dataclass

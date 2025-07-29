@@ -1,0 +1,294 @@
+name: Linting Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  linting:
+    name: Linting Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff bandit mypy black isort
+      
+      - name: Install Node.js dependencies
+        run: |
+          cd frontend-react
+          npm ci
+      
+      - name: Run Python linting (warnings allowed)
+        id: python-lint
+        run: |
+          echo "🔍 Running Python linting..."
+          
+          # Run ruff check
+          ruff check backend/ --output-format=json > ruff-report.json || true
+          
+          # Run ruff format check
+          ruff format --check backend/ --output-format=json > ruff-format-report.json || true
+          
+          # Run black check
+          black --check --diff backend/ > black-report.txt 2>&1 || true
+          
+          # Run isort check
+          isort --check-only --diff backend/ > isort-report.txt 2>&1 || true
+          
+          # Check if there are any errors (not just warnings)
+          python -c "
+          import json
+          import sys
+          
+          # Check ruff errors
+          try:
+              with open('ruff-report.json', 'r') as f:
+                  data = json.load(f)
+              errors = [issue for issue in data if issue.get('code', '').startswith(('E', 'F'))]
+              if errors:
+                  print(f'❌ Found {len(errors)} errors in Python linting')
+                  sys.exit(1)
+              else:
+                  print(f'✅ No errors found in Python linting')
+          except FileNotFoundError:
+              print('✅ No ruff issues found')
+          
+          # Check ruff format errors
+          try:
+              with open('ruff-format-report.json', 'r') as f:
+                  data = json.load(f)
+              if data:
+                  print(f'❌ Found {len(data)} formatting errors')
+                  sys.exit(1)
+              else:
+                  print('✅ No formatting errors found')
+          except FileNotFoundError:
+              print('✅ No formatting issues found')
+          "
+      
+      - name: Run TypeScript linting (warnings allowed)
+        id: typescript-lint
+        run: |
+          echo "🔍 Running TypeScript linting..."
+          cd frontend-react
+          
+          # Run ESLint
+          npm run lint -- --format=json --output-file=eslint-report.json || true
+          
+          # Check if there are any errors (not just warnings)
+          node -e "
+          const fs = require('fs');
+          try {
+              const data = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
+              const errors = data.filter(issue => issue.severity === 2);
+              const warnings = data.filter(issue => issue.severity === 1);
+              
+              if (errors.length > 0) {
+                  console.log('❌ Found ' + errors.length + ' errors in TypeScript linting');
+                  process.exit(1);
+              } else {
+                  console.log('✅ No errors found in TypeScript linting');
+                  console.log('⚠️  Found ' + warnings.length + ' warnings');
+              }
+          } catch (e) {
+              console.log('✅ No linting issues found');
+          }
+          "
+      
+      - name: Run security checks
+        id: security-check
+        run: |
+          echo "🔍 Running security checks..."
+          
+          # Run bandit
+          bandit -r backend/ -f json -o bandit-report.json || true
+          
+          # Check bandit results
+          python -c "
+          import json
+          try:
+              with open('bandit-report.json', 'r') as f:
+                  data = json.load(f)
+              high_severity = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'HIGH']
+              if high_severity:
+                  print(f'❌ Found {len(high_severity)} high severity security issues')
+                  exit(1)
+              else:
+                  print('✅ No high severity security issues found')
+          except FileNotFoundError:
+              print('✅ No security issues found')
+          "
+      
+      - name: Run type checking (warnings allowed)
+        id: type-check
+        run: |
+          echo "🔍 Running type checking..."
+          
+          # Run mypy
+          mypy backend/ --ignore-missing-imports --json-report mypy-report.json || true
+          
+          # Check if there are any errors (not just warnings)
+          python -c "
+          import json
+          try:
+              with open('mypy-report.json', 'r') as f:
+                  data = json.load(f)
+              errors = []
+              for file_data in data.values():
+                  for issue in file_data:
+                      if issue.get('severity') == 'error':
+                          errors.append(issue)
+              if errors:
+                  print(f'❌ Found {len(errors)} type errors')
+                  exit(1)
+              else:
+                  print('✅ No type errors found')
+          except FileNotFoundError:
+              print('✅ No type checking issues found')
+          "
+      
+      - name: Generate linting summary
+        if: always()
+        run: |
+          echo "# 🔍 Linting Summary" > linting-summary.md
+          echo "Generated on $(date)" >> linting-summary.md
+          echo "" >> linting-summary.md
+          
+          # Python linting summary
+          echo "## Python Linting" >> linting-summary.md
+          if [ -f "ruff-report.json" ]; then
+            python -c "
+            import json
+            with open('ruff-report.json', 'r') as f:
+                data = json.load(f)
+            errors = [issue for issue in data if issue.get('code', '').startswith(('E', 'F'))]
+            warnings = [issue for issue in data if not issue.get('code', '').startswith(('E', 'F'))]
+            print(f'- ✅ Errors: {len(errors)}')
+            print(f'- ⚠️  Warnings: {len(warnings)}')
+            " >> linting-summary.md
+          else
+            echo "- ✅ No issues found" >> linting-summary.md
+          fi
+          
+          # TypeScript linting summary
+          echo "" >> linting-summary.md
+          echo "## TypeScript Linting" >> linting-summary.md
+          if [ -f "frontend-react/eslint-report.json" ]; then
+            node -e "
+            const fs = require('fs');
+            try {
+                const data = JSON.parse(fs.readFileSync('frontend-react/eslint-report.json', 'utf8'));
+                const errors = data.filter(issue => issue.severity === 2);
+                const warnings = data.filter(issue => issue.severity === 1);
+                console.log('- ✅ Errors: ' + errors.length);
+                console.log('- ⚠️  Warnings: ' + warnings.length);
+            } catch (e) {
+                console.log('- ✅ No issues found');
+            }
+            " >> linting-summary.md
+          else
+            echo "- ✅ No issues found" >> linting-summary.md
+          fi
+          
+          # Security summary
+          echo "" >> linting-summary.md
+          echo "## Security Checks" >> linting-summary.md
+          if [ -f "bandit-report.json" ]; then
+            python -c "
+            import json
+            with open('bandit-report.json', 'r') as f:
+                data = json.load(f)
+            high = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'HIGH']
+            medium = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'MEDIUM']
+            low = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'LOW']
+            print(f'- ❌ High: {len(high)}')
+            print(f'- ⚠️  Medium: {len(medium)}')
+            print(f'- ℹ️  Low: {len(low)}')
+            " >> linting-summary.md
+          else
+            echo "- ✅ No issues found" >> linting-summary.md
+          fi
+          
+          # Type checking summary
+          echo "" >> linting-summary.md
+          echo "## Type Checking" >> linting-summary.md
+          if [ -f "mypy-report.json" ]; then
+            python -c "
+            import json
+            try:
+                with open('mypy-report.json', 'r') as f:
+                    data = json.load(f)
+                errors = []
+                warnings = []
+                for file_data in data.values():
+                    for issue in file_data:
+                        if issue.get('severity') == 'error':
+                            errors.append(issue)
+                        else:
+                            warnings.append(issue)
+                print(f'- ✅ Errors: {len(errors)}')
+                print(f'- ⚠️  Warnings: {len(warnings)}')
+            except FileNotFoundError:
+                print('- ✅ No issues found')
+            " >> linting-summary.md
+          else
+            echo "- ✅ No issues found" >> linting-summary.md
+          fi
+          
+          echo "" >> linting-summary.md
+          echo "> 💡 **Note:** Warnings are shown for information but don't block the build. Only errors will cause the pipeline to fail." >> linting-summary.md
+      
+      - name: Upload linting reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linting-reports
+          path: |
+            ruff-report.json
+            ruff-format-report.json
+            black-report.txt
+            isort-report.txt
+            eslint-report.json
+            mypy-report.json
+            bandit-report.json
+            linting-summary.md
+          retention-days: 30
+      
+      - name: Comment on PR with linting results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('linting-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

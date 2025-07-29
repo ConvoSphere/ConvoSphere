@@ -37,6 +37,7 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import { useKnowledgeStore } from "../store/knowledgeStore";
+import { useAuthStore } from "../store/authStore";
 import DocumentList from "../components/knowledge/DocumentList";
 import UploadArea from "../components/knowledge/UploadArea";
 import TagManager from "../components/knowledge/TagManager";
@@ -59,6 +60,7 @@ const { Title, Text } = Typography;
 
 const KnowledgeBase: React.FC = () => {
   const { t } = useTranslation();
+  const user = useAuthStore((s) => s.user);
 
   const { colors } = useThemeStore();
   const {

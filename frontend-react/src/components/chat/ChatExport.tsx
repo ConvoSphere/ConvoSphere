@@ -31,6 +31,7 @@ import {
   LayoutOutlined,
   BgColorsOutlined,
   PrinterOutlined,
+  PaletteOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";

@@ -8,6 +8,15 @@ import {
   Typography,
   Space,
 } from "antd";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";

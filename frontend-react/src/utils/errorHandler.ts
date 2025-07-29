@@ -1,3 +1,4 @@
+import React from "react";
 import { message, notification } from "antd";
 import { useTranslation } from "react-i18next";
 
@@ -187,12 +188,11 @@ export const handleError = (
   error: any,
   context: string = "general",
   showNotification: boolean = true,
-  showMessage: boolean = true
+  showMessage: boolean = true,
+  t?: (key: string, defaultValue?: string) => string
 ): ErrorInfo => {
-  const { t } = useTranslation();
-  
-  const errorMessage = getErrorMessage(error, t);
-  const recovery = getErrorRecovery(error, t);
+  const errorMessage = getErrorMessage(error, t || ((key: string, defaultValue?: string) => defaultValue || key));
+  const recovery = getErrorRecovery(error, t || ((key: string, defaultValue?: string) => defaultValue || key));
   
   const errorInfo: ErrorInfo = {
     code: error.code || ErrorCodes.UNKNOWN_ERROR,
