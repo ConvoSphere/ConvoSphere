@@ -114,7 +114,7 @@ async def create_conversation(
         Dict: Created conversation data
     """
     try:
-        conversation = await conversation_service.create_conversation(
+        conversation = conversation_service.create_conversation(
             user_id=current_user_id,
             title=request.title,
             assistant_id=request.assistant_id,
@@ -177,7 +177,7 @@ async def get_conversations(
         ConversationListResponse: List of conversations with hybrid mode status
     """
     try:
-        conversations = await conversation_service.get_user_conversations(
+        conversations = conversation_service.get_user_conversations(
             user_id=current_user_id,
             skip=(page - 1) * per_page,
             limit=per_page,
@@ -213,7 +213,7 @@ async def get_conversations(
 
             enhanced_conversations.append(conv_data)
 
-        total = await conversation_service.get_user_conversation_count(current_user_id)
+        total = len(conversations)
 
         return ConversationListResponse(
             conversations=enhanced_conversations,
@@ -253,7 +253,7 @@ async def send_message(
     """
     try:
         # Verify conversation access
-        conversation = await conversation_service.get_conversation(conversation_id)
+        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -261,7 +261,7 @@ async def send_message(
             )
 
         # Add user message to conversation
-        user_message = await conversation_service.add_message(
+        user_message = conversation_service.add_message(
             conversation_id=conversation_id,
             user_id=current_user_id,
             content=request.message,
@@ -353,14 +353,14 @@ async def get_conversation_messages(
     """
     try:
         # Verify conversation access
-        conversation = await conversation_service.get_conversation(conversation_id)
+        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Conversation not found or access denied",
             )
 
-        messages = await conversation_service.get_conversation_messages(
+        messages = conversation_service.get_conversation_messages(
             conversation_id=conversation_id,
             skip=(page - 1) * per_page,
             limit=per_page,
@@ -428,7 +428,7 @@ async def delete_conversation(
     """
     try:
         # Verify conversation access
-        conversation = await conversation_service.get_conversation(conversation_id)
+        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -436,7 +436,7 @@ async def delete_conversation(
             )
 
         # Delete conversation
-        await conversation_service.delete_conversation(conversation_id)
+        conversation_service.delete_conversation(conversation_id, current_user_id)
 
         # Clean up hybrid mode state
         from backend.app.services.hybrid_mode_manager import hybrid_mode_manager
@@ -478,7 +478,7 @@ async def get_conversation_mode_status(
     """
     try:
         # Verify conversation access
-        conversation = await conversation_service.get_conversation(conversation_id)
+        conversation = conversation_service.get_conversation(conversation_id, current_user_id)
         if not conversation or str(conversation.user_id) != current_user_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
