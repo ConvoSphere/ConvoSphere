@@ -1078,6 +1078,299 @@ def monitoring_containers():
         print_info("Monitoring stopped by user")
 
 
+def assistant_list():
+    """List all assistants."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant, AssistantStatus
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get all assistants (admin view)
+        assistants = db.query(Assistant).all()
+        
+        if not assistants:
+            print_info("No assistants found")
+            return
+
+        print_info(f"Found {len(assistants)} assistants:")
+        print("")
+        
+        for assistant in assistants:
+            status_icon = "✅" if assistant.status == AssistantStatus.ACTIVE else "⏸️" if assistant.status == AssistantStatus.INACTIVE else "📝" if assistant.status == AssistantStatus.DRAFT else "🔧"
+            public_icon = "🌐" if assistant.is_public else "🔒"
+            
+            print(f"{status_icon} {public_icon} {assistant.name} (ID: {assistant.id})")
+            print(f"    Status: {assistant.status.value}")
+            print(f"    Model: {assistant.model}")
+            print(f"    Category: {assistant.category or 'N/A'}")
+            print(f"    Tools: {assistant.tool_count}")
+            print(f"    Creator: {assistant.creator_id}")
+            print(f"    Created: {assistant.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            print("")
+
+    except Exception as e:
+        print_error(f"Error listing assistants: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_show(assistant_id: str):
+    """Show detailed information about an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        print_info(f"Assistant Details: {assistant.name}")
+        print("=" * 50)
+        print(f"ID: {assistant.id}")
+        print(f"Name: {assistant.name}")
+        print(f"Description: {assistant.description or 'N/A'}")
+        print(f"Status: {assistant.status.value}")
+        print(f"Model: {assistant.model}")
+        print(f"Temperature: {assistant.temperature}")
+        print(f"Max Tokens: {assistant.max_tokens}")
+        print(f"Category: {assistant.category or 'N/A'}")
+        print(f"Public: {'Yes' if assistant.is_public else 'No'}")
+        print(f"Template: {'Yes' if assistant.is_template else 'No'}")
+        print(f"Tools Enabled: {'Yes' if assistant.tools_enabled else 'No'}")
+        print(f"Tool Count: {assistant.tool_count}")
+        print(f"Creator ID: {assistant.creator_id}")
+        print(f"Version: {assistant.version}")
+        print(f"Created: {assistant.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Updated: {assistant.updated_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        if assistant.tags:
+            print(f"Tags: {', '.join(assistant.tags)}")
+        
+        if assistant.personality:
+            print(f"Personality: {assistant.personality}")
+        
+        if assistant.system_prompt:
+            print(f"System Prompt: {assistant.system_prompt[:100]}...")
+        
+        if assistant.instructions:
+            print(f"Instructions: {assistant.instructions[:100]}...")
+
+    except Exception as e:
+        print_error(f"Error showing assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_create():
+    """Create a new assistant interactively."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import AssistantStatus
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        print_info("Creating new assistant...")
+        print("")
+        
+        # Get input from user
+        name = input("Assistant name: ").strip()
+        if not name:
+            print_error("Name is required")
+            return
+        
+        description = input("Description (optional): ").strip() or None
+        personality = input("Personality (optional): ").strip() or None
+        system_prompt = input("System prompt: ").strip()
+        if not system_prompt:
+            print_error("System prompt is required")
+            return
+        
+        instructions = input("Instructions (optional): ").strip() or None
+        model = input("Model (default: gpt-4): ").strip() or "gpt-4"
+        temperature = input("Temperature (default: 0.7): ").strip() or "0.7"
+        max_tokens = input("Max tokens (default: 4096): ").strip() or "4096"
+        category = input("Category (optional): ").strip() or None
+        is_public = input("Public (y/N): ").strip().lower() == 'y'
+        
+        # Create assistant data object
+        class AssistantCreate:
+            def __init__(self, **kwargs):
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+        
+        assistant_data = AssistantCreate(
+            name=name,
+            description=description,
+            personality=personality,
+            system_prompt=system_prompt,
+            instructions=instructions,
+            model=model,
+            temperature=float(temperature),
+            max_tokens=int(max_tokens),
+            category=category,
+            is_public=is_public,
+            tags=[],
+            tools_config=[]
+        )
+        
+        # Create assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        assistant = assistant_service.create_assistant(assistant_data, admin_user_id)
+        
+        print_success(f"Assistant '{assistant.name}' created successfully with ID: {assistant.id}")
+
+    except Exception as e:
+        print_error(f"Error creating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_delete(assistant_id: str, confirm: bool = False):
+    """Delete an assistant."""
+    if not confirm:
+        response = input(f"⚠️  WARNING: This will delete assistant {assistant_id}. Are you sure? (yes/no): ")
+        if response.lower() != "yes":
+            print_info("Deletion cancelled")
+            return
+
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Delete assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        success = assistant_service.delete_assistant(assistant_id, admin_user_id)
+        
+        if success:
+            print_success(f"Assistant '{assistant.name}' deleted successfully")
+        else:
+            print_error("Failed to delete assistant")
+
+    except Exception as e:
+        print_error(f"Error deleting assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_activate(assistant_id: str):
+    """Activate an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Activate assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        updated_assistant = assistant_service.activate_assistant(assistant_id, admin_user_id)
+        
+        if updated_assistant:
+            print_success(f"Assistant '{assistant.name}' activated successfully")
+        else:
+            print_error("Failed to activate assistant")
+
+    except Exception as e:
+        print_error(f"Error activating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
+def assistant_deactivate(assistant_id: str):
+    """Deactivate an assistant."""
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from backend.app.core.config import settings
+        from backend.app.models.assistant import Assistant
+        from backend.app.services.assistant_service import AssistantService
+        
+        engine = create_engine(settings.database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        assistant_service = AssistantService(db)
+
+        # Get assistant name for confirmation
+        assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+        if not assistant:
+            print_error(f"Assistant with ID {assistant_id} not found")
+            return
+
+        # Deactivate assistant (using admin user ID)
+        admin_user_id = "00000000-0000-0000-0000-000000000000"  # Placeholder admin ID
+        updated_assistant = assistant_service.deactivate_assistant(assistant_id, admin_user_id)
+        
+        if updated_assistant:
+            print_success(f"Assistant '{assistant.name}' deactivated successfully")
+        else:
+            print_error("Failed to deactivate assistant")
+
+    except Exception as e:
+        print_error(f"Error deactivating assistant: {e}")
+        sys.exit(1)
+    finally:
+        if 'db' in locals():
+            db.close()
+
+
 def show_help():
     """Show help message."""
 
@@ -1224,6 +1517,25 @@ def main():
     debug_subparsers.add_parser("test-auth-fix", help="Test authentication fix")
     debug_subparsers.add_parser("test-frontend-auth", help="Test frontend authentication")
 
+    # Assistant commands
+    assistant_parser = subparsers.add_parser("assistant", help="Assistant management")
+    assistant_subparsers = assistant_parser.add_subparsers(dest="assistant_command")
+    assistant_subparsers.add_parser("list", help="List all assistants")
+    assistant_subparsers.add_parser("create", help="Create a new assistant")
+    
+    show_parser = assistant_subparsers.add_parser("show", help="Show assistant details")
+    show_parser.add_argument("assistant_id", help="Assistant ID")
+    
+    delete_parser = assistant_subparsers.add_parser("delete", help="Delete an assistant")
+    delete_parser.add_argument("assistant_id", help="Assistant ID")
+    delete_parser.add_argument("--confirm", action="store_true", help="Skip confirmation")
+    
+    activate_parser = assistant_subparsers.add_parser("activate", help="Activate an assistant")
+    activate_parser.add_argument("assistant_id", help="Assistant ID")
+    
+    deactivate_parser = assistant_subparsers.add_parser("deactivate", help="Deactivate an assistant")
+    deactivate_parser.add_argument("assistant_id", help="Assistant ID")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -1323,6 +1635,20 @@ def main():
             test_auth_fix()
         elif args.debug_command == "test-frontend-auth":
             test_frontend_auth()
+
+    elif args.command == "assistant":
+        if args.assistant_command == "list":
+            assistant_list()
+        elif args.assistant_command == "create":
+            assistant_create()
+        elif args.assistant_command == "show":
+            assistant_show(args.assistant_id)
+        elif args.assistant_command == "delete":
+            assistant_delete(args.assistant_id, args.confirm)
+        elif args.assistant_command == "activate":
+            assistant_activate(args.assistant_id)
+        elif args.assistant_command == "deactivate":
+            assistant_deactivate(args.assistant_id)
 
 
 if __name__ == "__main__":

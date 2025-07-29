@@ -38,6 +38,7 @@ help:
 	@echo "  admin-test-data Create test data"
 	@echo "  admin-debug    Run debug tools"
 	@echo "  admin-monitor  Monitor containers"
+	@echo "  admin-assistant Manage assistants"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  clean          Clean up temporary files"
@@ -189,6 +190,14 @@ admin-cli:
 	@echo "  python3 admin.py debug test-auth-fix"
 	@echo "  python3 admin.py debug test-frontend-auth"
 	@echo ""
+	@echo "Assistant Management:"
+	@echo "  python3 admin.py assistant list"
+	@echo "  python3 admin.py assistant create"
+	@echo "  python3 admin.py assistant show <id>"
+	@echo "  python3 admin.py assistant delete <id>"
+	@echo "  python3 admin.py assistant activate <id>"
+	@echo "  python3 admin.py assistant deactivate <id>"
+	@echo ""
 	@echo "For detailed help: python3 admin.py --help"
 
 admin-backup:
@@ -217,6 +226,15 @@ admin-debug:
 admin-monitor:
 	@echo "Starting container monitoring..."
 	cd backend && python3 admin.py monitoring containers
+
+admin-assistant:
+	@echo "Available assistant commands:"
+	@echo "  python3 admin.py assistant list"
+	@echo "  python3 admin.py assistant create"
+	@echo "  python3 admin.py assistant show <id>"
+	@echo "  python3 admin.py assistant delete <id>"
+	@echo "  python3 admin.py assistant activate <id>"
+	@echo "  python3 admin.py assistant deactivate <id>"
 
 # Utilities
 clean:
