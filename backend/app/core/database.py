@@ -65,8 +65,44 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def create_default_admin_user():
-    """Create default admin user if none exist."""
-    logger.info("Admin user creation should be done via CLI tool for security")
+    """Create and return a fallback admin user (development only)."""
+    try:
+        from uuid import uuid4
+        from datetime import datetime, UTC
+
+        from backend.app.models.user import User
+        from backend.app.core.security import get_password_hash
+
+        db = next(get_db())
+
+        existing_admin = db.query(User).filter(User.role == "admin").first()
+        if existing_admin:
+            return existing_admin
+
+        logger.warning("No admin user found – creating development admin 'admin@local'")
+
+        admin_user = User(
+            id=uuid4(),
+            email="admin@local",
+            username="admin",
+            hashed_password=get_password_hash("admin123"),
+            role="admin",
+            is_verified=True,
+            language="en",
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
+        )
+
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+
+        return admin_user
+    except Exception as exc:  # pragma: no cover
+        logger.error(f"Failed to create default admin user: {exc}")
+        if "db" in locals():
+            db.rollback()
+        return None
 
 
 def create_default_assistant():
@@ -102,8 +138,8 @@ def create_default_assistant():
             description="A general-purpose AI assistant for everyday tasks",
             system_prompt="You are a helpful AI assistant that can help with various tasks including answering questions, writing content, and solving problems.",
             model="gpt-4",
-            temperature="0.7",
-            max_tokens="4096",
+            temperature=0.7,
+            max_tokens=4096,
             status=AssistantStatus.ACTIVE,
             is_public=True,
             is_template=False,
