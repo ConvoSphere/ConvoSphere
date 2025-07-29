@@ -446,7 +446,7 @@ class TestToolServiceComprehensive:
             mock_get.return_value = sample_tool_data
 
             with patch(
-                "app.services.tool_service.tool_executor.execute",
+                "app.services.tool_service.enhanced_tool_executor.execute",
             ) as mock_execute:
                 mock_execute.return_value = {"result": "success"}
 
