@@ -5,9 +5,8 @@ This module provides a comprehensive tool execution framework with
 validation, caching, monitoring, and dependency management.
 """
 
-import asyncio
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -106,7 +105,7 @@ class ToolCache:
     def get(self, tool_name: str, arguments: dict[str, Any]) -> Any | None:
         """Get cached result if available and not expired."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-        
+
         if cache_key not in self.cache:
             return None
 
@@ -125,7 +124,7 @@ class ToolCache:
     def set(self, tool_name: str, arguments: dict[str, Any], result: Any) -> None:
         """Cache result with current timestamp."""
         cache_key = self._generate_cache_key(tool_name, arguments)
-        
+
         # Evict if cache is full
         if len(self.cache) >= self.max_size:
             self._evict_lru()
@@ -137,7 +136,7 @@ class ToolCache:
         """Evict least recently used cache entry."""
         if not self.access_times:
             return
-        
+
         oldest_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
         del self.cache[oldest_key]
         del self.access_times[oldest_key]
@@ -182,14 +181,14 @@ class ToolDependencyManager:
                 raise ValueError(f"Circular dependency detected for tool: {tool}")
             if tool in visited:
                 return
-            
+
             temp_visited.add(tool)
-            
+
             # Visit dependencies first
             for dep in self.dependencies.get(tool, []):
                 if dep in tools:  # Only visit if dependency is in our tool list
                     visit(dep)
-            
+
             temp_visited.remove(tool)
             visited.add(tool)
             order.append(tool)
@@ -354,10 +353,10 @@ class EnhancedToolExecutor:
         # Sort by dependencies
         tool_names = [req.tool_name for req in requests]
         execution_order = self.dependency_manager.get_execution_order(tool_names)
-        
+
         # Create request map
         request_map = {req.tool_name: req for req in requests}
-        
+
         # Execute in order
         results = []
         for tool_name in execution_order:

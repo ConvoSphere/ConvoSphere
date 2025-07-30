@@ -269,7 +269,7 @@ jobs:
         echo "All performance tests completed successfully" >> performance-report.txt
 
     - name: Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-report
         path: performance-report.txt
@@ -336,7 +336,7 @@ jobs:
         safety check --json --output safety-report.json || true
 
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
@@ -532,7 +532,7 @@ jobs:
         echo "- Component Tests: $(cat coverage-reports/frontend-coverage.txt || echo 'N/A')" >> coverage-summary.md
 
     - name: Upload coverage summary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-summary
         path: coverage-summary.md
@@ -571,7 +571,7 @@ jobs:
         echo "> 💡 **Note:** Warnings are shown for information but don't block the build. Only test failures will cause the pipeline to fail." >> test-summary.md
 
     - name: Upload test summary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-summary
         path: test-summary.md
