@@ -78,6 +78,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        cache-dependency-path: frontend-react/package-lock.json
 
     - name: Install Python dependencies
       run: |
@@ -365,6 +366,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        cache-dependency-path: frontend-react/package-lock.json
 
     - name: Install dependencies
       run: |
@@ -473,6 +475,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        cache-dependency-path: frontend-react/package-lock.json
 
     - name: Install dependencies
       run: |
