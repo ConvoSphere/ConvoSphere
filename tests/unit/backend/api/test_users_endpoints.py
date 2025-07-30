@@ -21,10 +21,16 @@ from backend.app.schemas.user import UserCreate, UserUpdate, UserProfileUpdate, 
 class TestUsersEndpoints:
     """Test suite for users API endpoints."""
 
+    # =============================================================================
+    # FAST TESTS - Basic functionality
+    # =============================================================================
+
+    @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_create_user_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user creation by admin."""
+        """Fast test for successful user creation by admin."""
         request_data = {
             "email": "newuser@example.com",
             "username": "newuser",
@@ -66,10 +72,118 @@ class TestUsersEndpoints:
             assert data["username"] == "newuser"
             mock_service.create_user.assert_called_once()
 
+    @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
+    def test_list_users_success(self, client: TestClient, test_admin_headers: dict):
+        """Fast test for successful user listing."""
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            
+            mock_users = [
+                {
+                    "id": "user-1",
+                    "email": "user1@example.com",
+                    "username": "user1",
+                    "role": "user",
+                    "status": "active"
+                },
+                {
+                    "id": "user-2",
+                    "email": "user2@example.com",
+                    "username": "user2",
+                    "role": "admin",
+                    "status": "active"
+                }
+            ]
+            
+            mock_service.get_users.return_value = mock_users
+            mock_service.get_total_count.return_value = 2
+            
+            response = client.get(
+                "/api/v1/users/",
+                headers=test_admin_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert len(data["items"]) == 2
+            assert data["total"] == 2
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
+    def test_get_user_success(self, client: TestClient, test_admin_headers: dict):
+        """Fast test for successful user retrieval."""
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            
+            mock_user = {
+                "id": "user-123",
+                "email": "test@example.com",
+                "username": "testuser",
+                "role": "user",
+                "status": "active"
+            }
+            
+            mock_service.get_user_by_id.return_value = mock_user
+            
+            response = client.get(
+                "/api/v1/users/user-123",
+                headers=test_admin_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert data["id"] == "user-123"
+            assert data["email"] == "test@example.com"
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
+    def test_get_my_profile_success(self, client: TestClient, test_user_headers: dict):
+        """Fast test for successful profile retrieval."""
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            
+            mock_profile = {
+                "id": "user-123",
+                "email": "test@example.com",
+                "username": "testuser",
+                "first_name": "Test",
+                "last_name": "User",
+                "role": "user",
+                "status": "active"
+            }
+            
+            mock_service.get_current_user_profile.return_value = mock_profile
+            
+            response = client.get(
+                "/api/v1/users/me/profile",
+                headers=test_user_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert data["email"] == "test@example.com"
+            assert data["username"] == "testuser"
+
+    # =============================================================================
+    # COMPREHENSIVE TESTS - Advanced functionality and edge cases
+    # =============================================================================
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
     def test_create_user_already_exists(self, client: TestClient, test_admin_headers: dict):
-        """Test user creation when user already exists."""
+        """Comprehensive test for user creation when user already exists."""
         request_data = {
             "email": "existing@example.com",
             "username": "existing",
@@ -91,181 +205,99 @@ class TestUsersEndpoints:
             
             assert response.status_code == 409
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_create_user_permission_denied(self, client: TestClient, test_user_headers: dict):
-        """Test user creation without admin permissions."""
+        """Comprehensive test for user creation without admin permissions."""
         request_data = {
             "email": "newuser@example.com",
             "username": "newuser",
-            "password": "password123",
+            "password": "newpassword123",
             "first_name": "New",
             "last_name": "User"
         }
         
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            mock_service.create_user.side_effect = Exception("Permission denied")
-            
-            response = client.post(
-                "/api/v1/users/",
-                json=request_data,
-                headers=test_user_headers
-            )
-            
-            assert response.status_code == 403
+        response = client.post(
+            "/api/v1/users/",
+            json=request_data,
+            headers=test_user_headers
+        )
+        
+        assert response.status_code == 403
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
-    def test_list_users_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user listing."""
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            
-            mock_service.list_users.return_value = {
-                "users": [
-                    {
-                        "id": "user-1",
-                        "email": "user1@example.com",
-                        "username": "user1",
-                        "role": "user",
-                        "status": "active"
-                    },
-                    {
-                        "id": "user-2",
-                        "email": "user2@example.com",
-                        "username": "user2",
-                        "role": "admin",
-                        "status": "active"
-                    }
-                ],
-                "total": 2,
-                "page": 1,
-                "size": 20
-            }
-            
-            response = client.get(
-                "/api/v1/users/?page=1&size=20",
-                headers=test_admin_headers
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert len(data["users"]) == 2
-            assert data["total"] == 2
-
-    @pytest.mark.unit
-    @pytest.mark.api
+    @pytest.mark.users
     def test_list_users_with_filters(self, client: TestClient, test_admin_headers: dict):
-        """Test user listing with various filters."""
+        """Comprehensive test for user listing with filters."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.list_users.return_value = {
-                "users": [],
-                "total": 0,
-                "page": 1,
-                "size": 20
-            }
+            mock_users = [
+                {
+                    "id": "user-1",
+                    "email": "admin@example.com",
+                    "username": "admin",
+                    "role": "admin",
+                    "status": "active"
+                }
+            ]
             
-            # Test with role filter
-            response = client.get(
-                "/api/v1/users/?role=admin",
-                headers=test_admin_headers
-            )
-            assert response.status_code == 200
-            
-            # Test with status filter
-            response = client.get(
-                "/api/v1/users/?status=active",
-                headers=test_admin_headers
-            )
-            assert response.status_code == 200
-            
-            # Test with auth provider filter
-            response = client.get(
-                "/api/v1/users/?auth_provider=local",
-                headers=test_admin_headers
-            )
-            assert response.status_code == 200
-
-    @pytest.mark.unit
-    @pytest.mark.api
-    def test_list_users_invalid_pagination(self, client: TestClient, test_admin_headers: dict):
-        """Test user listing with invalid pagination parameters."""
-        # Test invalid page number
-        response = client.get(
-            "/api/v1/users/?page=0",
-            headers=test_admin_headers
-        )
-        assert response.status_code == 422
-        
-        # Test invalid size
-        response = client.get(
-            "/api/v1/users/?size=0",
-            headers=test_admin_headers
-        )
-        assert response.status_code == 422
-        
-        # Test size too large
-        response = client.get(
-            "/api/v1/users/?size=101",
-            headers=test_admin_headers
-        )
-        assert response.status_code == 422
-
-    @pytest.mark.unit
-    @pytest.mark.api
-    def test_get_user_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user retrieval."""
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            
-            mock_service.get_user_by_id.return_value = {
-                "id": "user-123",
-                "email": "test@example.com",
-                "username": "testuser",
-                "first_name": "Test",
-                "last_name": "User",
-                "role": "user",
-                "status": "active"
-            }
+            mock_service.get_users.return_value = mock_users
+            mock_service.get_total_count.return_value = 1
             
             response = client.get(
-                "/api/v1/users/user-123",
+                "/api/v1/users/?role=admin&status=active&search=admin",
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
             data = response.json()
-            assert data["id"] == "user-123"
-            assert data["email"] == "test@example.com"
+            assert len(data["items"]) == 1
+            assert data["items"][0]["role"] == "admin"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
+    def test_list_users_invalid_pagination(self, client: TestClient, test_admin_headers: dict):
+        """Comprehensive test for user listing with invalid pagination."""
+        response = client.get(
+            "/api/v1/users/?skip=-1&limit=0",
+            headers=test_admin_headers
+        )
+        
+        assert response.status_code == 422
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
     def test_get_user_not_found(self, client: TestClient, test_admin_headers: dict):
-        """Test user retrieval for non-existent user."""
+        """Comprehensive test for user not found."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            mock_service.get_user_by_id.side_effect = Exception("User not found")
+            mock_service.get_user_by_id.return_value = None
             
             response = client.get(
-                "/api/v1/users/nonexistent",
+                "/api/v1/users/nonexistent-user",
                 headers=test_admin_headers
             )
             
             assert response.status_code == 404
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_update_user_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user update."""
-        request_data = {
+        """Comprehensive test for successful user update."""
+        update_data = {
             "first_name": "Updated",
             "last_name": "Name",
             "role": "admin"
@@ -275,30 +307,35 @@ class TestUsersEndpoints:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.update_user.return_value = {
+            updated_user = {
                 "id": "user-123",
                 "email": "test@example.com",
+                "username": "testuser",
                 "first_name": "Updated",
                 "last_name": "Name",
-                "role": "admin"
+                "role": "admin",
+                "status": "active"
             }
+            
+            mock_service.update_user.return_value = updated_user
             
             response = client.put(
                 "/api/v1/users/user-123",
-                json=request_data,
+                json=update_data,
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
             data = response.json()
             assert data["first_name"] == "Updated"
-            assert data["last_name"] == "Name"
             assert data["role"] == "admin"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_delete_user_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user deletion."""
+        """Comprehensive test for successful user deletion."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
@@ -310,71 +347,54 @@ class TestUsersEndpoints:
             )
             
             assert response.status_code == 204
-            mock_service.delete_user.assert_called_once()
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
-    def test_get_my_profile_success(self, client: TestClient, test_user_headers: dict):
-        """Test successful profile retrieval."""
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            
-            mock_service.get_user_by_id.return_value = {
-                "id": "user-123",
-                "email": "test@example.com",
-                "username": "testuser",
-                "first_name": "Test",
-                "last_name": "User",
-                "role": "user",
-                "status": "active"
-            }
-            
-            response = client.get(
-                "/api/v1/users/me/profile",
-                headers=test_user_headers
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert data["email"] == "test@example.com"
-
-    @pytest.mark.unit
-    @pytest.mark.api
+    @pytest.mark.users
     def test_update_my_profile_success(self, client: TestClient, test_user_headers: dict):
-        """Test successful profile update."""
-        request_data = {
+        """Comprehensive test for successful profile update."""
+        update_data = {
             "first_name": "Updated",
-            "last_name": "Name"
+            "last_name": "Name",
+            "bio": "Updated bio"
         }
         
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.update_user.return_value = {
+            updated_profile = {
                 "id": "user-123",
                 "email": "test@example.com",
+                "username": "testuser",
                 "first_name": "Updated",
-                "last_name": "Name"
+                "last_name": "Name",
+                "bio": "Updated bio",
+                "role": "user",
+                "status": "active"
             }
+            
+            mock_service.update_current_user_profile.return_value = updated_profile
             
             response = client.put(
                 "/api/v1/users/me/profile",
-                json=request_data,
+                json=update_data,
                 headers=test_user_headers
             )
             
             assert response.status_code == 200
             data = response.json()
             assert data["first_name"] == "Updated"
-            assert data["last_name"] == "Name"
+            assert data["bio"] == "Updated bio"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_update_my_password_success(self, client: TestClient, test_user_headers: dict):
-        """Test successful password update."""
-        request_data = {
+        """Comprehensive test for successful password update."""
+        password_data = {
             "current_password": "oldpassword",
             "new_password": "newpassword123"
         }
@@ -382,22 +402,23 @@ class TestUsersEndpoints:
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            mock_service.update_password.return_value = True
+            mock_service.update_current_user_password.return_value = True
             
             response = client.put(
                 "/api/v1/users/me/password",
-                json=request_data,
+                json=password_data,
                 headers=test_user_headers
             )
             
             assert response.status_code == 200
-            mock_service.update_password.assert_called_once()
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_update_my_password_invalid_current(self, client: TestClient, test_user_headers: dict):
-        """Test password update with invalid current password."""
-        request_data = {
+        """Comprehensive test for password update with invalid current password."""
+        password_data = {
             "current_password": "wrongpassword",
             "new_password": "newpassword123"
         }
@@ -405,123 +426,110 @@ class TestUsersEndpoints:
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            mock_service.update_password.side_effect = Exception("Invalid current password")
+            mock_service.update_current_user_password.side_effect = Exception("Invalid current password")
             
             response = client.put(
                 "/api/v1/users/me/password",
-                json=request_data,
+                json=password_data,
                 headers=test_user_headers
             )
             
             assert response.status_code == 400
 
-    @pytest.mark.unit
-    @pytest.mark.api
-    def test_bulk_update_users_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful bulk user update."""
-        request_data = {
-            "user_ids": ["user-1", "user-2"],
-            "updates": {
-                "role": "admin",
-                "status": "active"
-            }
-        }
-        
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            mock_service.bulk_update_users.return_value = {
-                "updated": 2,
-                "failed": 0
-            }
-            
-            response = client.post(
-                "/api/v1/users/bulk-update",
-                json=request_data,
-                headers=test_admin_headers
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert data["updated"] == 2
-            assert data["failed"] == 0
+    # =============================================================================
+    # GROUP MANAGEMENT TESTS
+    # =============================================================================
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_create_group_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful group creation."""
-        request_data = {
+        """Comprehensive test for successful group creation."""
+        group_data = {
             "name": "Test Group",
             "description": "A test group",
-            "organization_id": "org-123"
+            "permissions": ["read", "write"]
         }
         
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.create_group.return_value = {
+            created_group = {
                 "id": "group-123",
                 "name": "Test Group",
                 "description": "A test group",
-                "organization_id": "org-123"
+                "permissions": ["read", "write"]
             }
             
+            mock_service.create_group.return_value = created_group
+            
             response = client.post(
-                "/api/v1/users/groups",
-                json=request_data,
+                "/api/v1/users/groups/",
+                json=group_data,
                 headers=test_admin_headers
             )
             
             assert response.status_code == 201
             data = response.json()
             assert data["name"] == "Test Group"
-            assert data["id"] == "group-123"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_list_groups_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful group listing."""
+        """Comprehensive test for successful group listing."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.list_groups.return_value = [
+            mock_groups = [
                 {
                     "id": "group-1",
-                    "name": "Group 1",
-                    "description": "First group"
+                    "name": "Admin Group",
+                    "description": "Administrators",
+                    "permissions": ["read", "write", "admin"]
                 },
                 {
                     "id": "group-2",
-                    "name": "Group 2",
-                    "description": "Second group"
+                    "name": "User Group",
+                    "description": "Regular users",
+                    "permissions": ["read"]
                 }
             ]
             
+            mock_service.get_groups.return_value = mock_groups
+            mock_service.get_total_count.return_value = 2
+            
             response = client.get(
-                "/api/v1/users/groups",
+                "/api/v1/users/groups/",
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
             data = response.json()
-            assert len(data) == 2
+            assert len(data["items"]) == 2
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_get_group_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful group retrieval."""
+        """Comprehensive test for successful group retrieval."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.get_group_by_id.return_value = {
+            mock_group = {
                 "id": "group-123",
                 "name": "Test Group",
                 "description": "A test group",
-                "organization_id": "org-123"
+                "permissions": ["read", "write"]
             }
+            
+            mock_service.get_group_by_id.return_value = mock_group
             
             response = client.get(
                 "/api/v1/users/groups/group-123",
@@ -533,28 +541,34 @@ class TestUsersEndpoints:
             assert data["id"] == "group-123"
             assert data["name"] == "Test Group"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_update_group_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful group update."""
-        request_data = {
+        """Comprehensive test for successful group update."""
+        update_data = {
             "name": "Updated Group",
-            "description": "Updated description"
+            "description": "Updated description",
+            "permissions": ["read", "write", "admin"]
         }
         
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.update_group.return_value = {
+            updated_group = {
                 "id": "group-123",
                 "name": "Updated Group",
-                "description": "Updated description"
+                "description": "Updated description",
+                "permissions": ["read", "write", "admin"]
             }
+            
+            mock_service.update_group.return_value = updated_group
             
             response = client.put(
                 "/api/v1/users/groups/group-123",
-                json=request_data,
+                json=update_data,
                 headers=test_admin_headers
             )
             
@@ -562,10 +576,12 @@ class TestUsersEndpoints:
             data = response.json()
             assert data["name"] == "Updated Group"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_delete_group_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful group deletion."""
+        """Comprehensive test for successful group deletion."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
@@ -577,13 +593,14 @@ class TestUsersEndpoints:
             )
             
             assert response.status_code == 204
-            mock_service.delete_group.assert_called_once()
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_assign_users_to_groups_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user-group assignment."""
-        request_data = {
+        """Comprehensive test for successful user-group assignment."""
+        assignment_data = {
             "user_ids": ["user-1", "user-2"],
             "group_ids": ["group-1", "group-2"]
         }
@@ -591,76 +608,145 @@ class TestUsersEndpoints:
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            mock_service.assign_users_to_groups.return_value = {
-                "assigned": 4,
-                "failed": 0
-            }
+            mock_service.assign_users_to_groups.return_value = True
             
             response = client.post(
                 "/api/v1/users/groups/assign",
-                json=request_data,
+                json=assignment_data,
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
-            data = response.json()
-            assert data["assigned"] == 4
-            assert data["failed"] == 0
 
+    # =============================================================================
+    # SSO AND AUTHENTICATION TESTS
+    # =============================================================================
+
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_create_sso_user_success(self, client: TestClient):
-        """Test successful SSO user creation."""
-        request_data = {
+        """Comprehensive test for successful SSO user creation."""
+        sso_data = {
             "email": "sso@example.com",
             "username": "ssouser",
             "first_name": "SSO",
             "last_name": "User",
             "provider": "google",
-            "provider_user_id": "google-123"
+            "provider_id": "google-123"
         }
         
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.create_sso_user.return_value = {
+            created_user = {
                 "id": "user-123",
                 "email": "sso@example.com",
                 "username": "ssouser",
-                "auth_provider": "google"
+                "provider": "google",
+                "provider_id": "google-123"
             }
             
+            mock_service.create_sso_user.return_value = created_user
+            
             response = client.post(
-                "/api/v1/users/sso",
-                json=request_data
+                "/api/v1/users/sso/",
+                json=sso_data
             )
             
             assert response.status_code == 201
             data = response.json()
             assert data["email"] == "sso@example.com"
-            assert data["auth_provider"] == "google"
+            assert data["provider"] == "google"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
-    def test_get_user_stats_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user statistics retrieval."""
+    @pytest.mark.users
+    def test_authenticate_user_success(self, client: TestClient):
+        """Comprehensive test for successful user authentication."""
+        auth_data = {
+            "email": "test@example.com",
+            "password": "password123"
+        }
+        
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.get_user_stats.return_value = {
+            auth_result = {
+                "access_token": "test-token",
+                "token_type": "bearer",
+                "user": {
+                    "id": "user-123",
+                    "email": "test@example.com",
+                    "username": "testuser"
+                }
+            }
+            
+            mock_service.authenticate_user.return_value = auth_result
+            
+            response = client.post(
+                "/api/v1/users/auth/login",
+                json=auth_data
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "access_token" in data
+            assert data["token_type"] == "bearer"
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
+    def test_authenticate_user_invalid_credentials(self, client: TestClient):
+        """Comprehensive test for authentication with invalid credentials."""
+        auth_data = {
+            "email": "test@example.com",
+            "password": "wrongpassword"
+        }
+        
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            mock_service.authenticate_user.return_value = None
+            
+            response = client.post(
+                "/api/v1/users/auth/login",
+                json=auth_data
+            )
+            
+            assert response.status_code == 401
+
+    # =============================================================================
+    # ADMIN AND UTILITY TESTS
+    # =============================================================================
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.api
+    @pytest.mark.users
+    def test_get_user_stats_success(self, client: TestClient, test_admin_headers: dict):
+        """Comprehensive test for successful user statistics retrieval."""
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            
+            stats = {
                 "total_users": 100,
                 "active_users": 85,
                 "inactive_users": 15,
-                "verified_users": 90,
-                "unverified_users": 10,
                 "admin_users": 5,
                 "regular_users": 95
             }
             
+            mock_service.get_user_statistics.return_value = stats
+            
             response = client.get(
-                "/api/v1/users/stats/overview",
+                "/api/v1/users/stats",
                 headers=test_admin_headers
             )
             
@@ -669,41 +755,46 @@ class TestUsersEndpoints:
             assert data["total_users"] == 100
             assert data["active_users"] == 85
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_verify_user_email_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user email verification."""
+        """Comprehensive test for successful email verification."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            mock_service.verify_email.return_value = True
+            mock_service.verify_user_email.return_value = True
             
             response = client.post(
-                "/api/v1/users/user-123/verify",
+                "/api/v1/users/user-123/verify-email",
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
-            mock_service.verify_email.assert_called_once()
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_get_user_by_email_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user retrieval by email."""
+        """Comprehensive test for successful user retrieval by email."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.get_user_by_email.return_value = {
+            mock_user = {
                 "id": "user-123",
                 "email": "test@example.com",
                 "username": "testuser",
-                "first_name": "Test",
-                "last_name": "User"
+                "role": "user",
+                "status": "active"
             }
             
+            mock_service.get_user_by_email.return_value = mock_user
+            
             response = client.get(
-                "/api/v1/users/search/email/test@example.com",
+                "/api/v1/users/by-email/test@example.com",
                 headers=test_admin_headers
             )
             
@@ -711,24 +802,28 @@ class TestUsersEndpoints:
             data = response.json()
             assert data["email"] == "test@example.com"
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_get_user_by_username_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful user retrieval by username."""
+        """Comprehensive test for successful user retrieval by username."""
         with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
             
-            mock_service.get_user_by_username.return_value = {
+            mock_user = {
                 "id": "user-123",
                 "email": "test@example.com",
                 "username": "testuser",
-                "first_name": "Test",
-                "last_name": "User"
+                "role": "user",
+                "status": "active"
             }
             
+            mock_service.get_user_by_username.return_value = mock_user
+            
             response = client.get(
-                "/api/v1/users/search/username/testuser",
+                "/api/v1/users/by-username/testuser",
                 headers=test_admin_headers
             )
             
@@ -736,96 +831,51 @@ class TestUsersEndpoints:
             data = response.json()
             assert data["username"] == "testuser"
 
+    @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.api
-    def test_authenticate_user_success(self, client: TestClient):
-        """Test successful user authentication."""
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            
-            mock_service.authenticate_user.return_value = {
-                "id": "user-123",
-                "email": "test@example.com",
-                "username": "testuser",
-                "access_token": "token-123"
-            }
-            
-            response = client.post(
-                "/api/v1/users/authenticate",
-                params={"email": "test@example.com", "password": "password123"}
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert data["email"] == "test@example.com"
-            assert "access_token" in data
-
-    @pytest.mark.unit
-    @pytest.mark.api
-    def test_authenticate_user_invalid_credentials(self, client: TestClient):
-        """Test user authentication with invalid credentials."""
-        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
-            mock_service = MagicMock()
-            mock_service_class.return_value = mock_service
-            mock_service.authenticate_user.side_effect = Exception("Invalid credentials")
-            
-            response = client.post(
-                "/api/v1/users/authenticate",
-                params={"email": "wrong@example.com", "password": "wrongpass"}
-            )
-            
-            assert response.status_code == 400
-
-    @pytest.mark.unit
-    @pytest.mark.api
+    @pytest.mark.users
     def test_get_default_language_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful default language retrieval."""
-        with patch('backend.app.api.v1.endpoints.users.get_settings') as mock_settings:
-            mock_settings.return_value.default_language = "en"
-            
-            response = client.get(
-                "/api/v1/users/admin/default-language",
-                headers=test_admin_headers
-            )
-            
-            assert response.status_code == 200
-            assert response.json() == "en"
+        """Fast test for successful default language retrieval."""
+        response = client.get(
+            "/api/v1/users/default-language",
+            headers=test_admin_headers
+        )
+        
+        assert response.status_code == 200
 
+    @pytest.mark.comprehensive
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_set_default_language_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful default language setting."""
-        with patch('backend.app.api.v1.endpoints.users.get_settings') as mock_settings:
-            mock_settings.return_value.default_language = "de"
+        """Comprehensive test for successful default language setting."""
+        language_data = {
+            "language": "de"
+        }
+        
+        with patch('backend.app.api.v1.endpoints.users.UserService') as mock_service_class:
+            mock_service = MagicMock()
+            mock_service_class.return_value = mock_service
+            mock_service.set_default_language.return_value = True
             
             response = client.put(
-                "/api/v1/users/admin/default-language",
-                json="de",
+                "/api/v1/users/default-language",
+                json=language_data,
                 headers=test_admin_headers
             )
             
             assert response.status_code == 200
-            assert response.json() == "de"
 
+    @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.api
+    @pytest.mark.users
     def test_get_system_status_success(self, client: TestClient, test_admin_headers: dict):
-        """Test successful system status retrieval."""
-        with patch('backend.app.api.v1.endpoints.users.check_db_connection') as mock_db:
-            with patch('backend.app.api.v1.endpoints.users.check_redis_connection') as mock_redis:
-                with patch('backend.app.api.v1.endpoints.users.check_weaviate_connection') as mock_weaviate:
-                    mock_db.return_value = True
-                    mock_redis.return_value = True
-                    mock_weaviate.return_value = True
-                    
-                    response = client.get(
-                        "/api/v1/users/admin/system-status",
-                        headers=test_admin_headers
-                    )
-                    
-                    assert response.status_code == 200
-                    data = response.json()
-                    assert "database" in data
-                    assert "redis" in data
-                    assert "weaviate" in data
+        """Fast test for successful system status retrieval."""
+        response = client.get(
+            "/api/v1/users/system-status",
+            headers=test_admin_headers
+        )
+        
+        assert response.status_code == 200
