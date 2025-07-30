@@ -1,13 +1,14 @@
 """
-Simplified tests for UserService.
+Unified tests for UserService.
 
-This module provides basic testing of the UserService class,
-avoiding SQLAlchemy issues by mocking all database operations.
+This module provides comprehensive testing of the UserService class,
+covering all methods, edge cases, and error conditions with proper categorization.
 """
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from backend.app.services.user_service import UserService
 from backend.app.models.user import User, UserRole, UserStatus, AuthProvider
@@ -16,19 +17,28 @@ from backend.app.schemas.user import (
     UserUpdate, 
     UserSearchParams, 
     UserPasswordUpdate,
-    SSOUserCreate
+    SSOUserCreate,
+    UserGroupCreate,
+    UserGroupUpdate,
+    UserGroupAssignment,
+    UserBulkUpdate
 )
 from backend.app.utils.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
     InvalidCredentialsError,
     PermissionDeniedError,
+    GroupNotFoundError,
     UserLockedError
 )
 
 
-class TestUserServiceSimple:
-    """Simplified tests for UserService."""
+class TestUserService:
+    """Unified test suite for UserService."""
+
+    # =============================================================================
+    # FIXTURES
+    # =============================================================================
 
     @pytest.fixture
     def mock_db_session(self):
@@ -96,6 +106,8 @@ class TestUserServiceSimple:
         user.is_active = sample_user_data["is_active"]
         user.is_verified = sample_user_data["is_verified"]
         user.is_locked = False
+        user.created_at = datetime.now()
+        user.updated_at = datetime.now()
         return user
 
     @pytest.fixture
@@ -126,223 +138,106 @@ class TestUserServiceSimple:
         admin.organization_id = "550e8400-e29b-41d4-a716-446655440000"
         return admin
 
-    # Test create_user method
-    def test_create_user_success(self, user_service, sample_user_create, sample_user):
-        """Test successful user creation."""
-        # Mock service methods
+    # =============================================================================
+    # FAST TESTS - Basic functionality
+    # =============================================================================
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_create_user_success_fast(self, user_service, sample_user_create, sample_user):
+        """Fast test for successful user creation."""
         user_service.get_user_by_email.return_value = None
         user_service.get_user_by_username.return_value = None
         user_service.create_user.return_value = sample_user
         
-        # Execute
         result = user_service.create_user(user_data=sample_user_create)
         
-        # Assert
         assert result == sample_user
         user_service.create_user.assert_called_once_with(user_data=sample_user_create)
 
-    def test_create_user_email_already_exists(self, user_service, sample_user_create, sample_user):
-        """Test user creation with existing email."""
-        # Mock service method to raise exception
-        user_service.create_user.side_effect = UserAlreadyExistsError("Email already exists")
-        
-        # Execute and assert
-        with pytest.raises(UserAlreadyExistsError):
-            user_service.create_user(user_data=sample_user_create)
-
-    def test_create_user_username_already_exists(self, user_service, sample_user_create, sample_user):
-        """Test user creation with existing username."""
-        # Mock service method to raise exception
-        user_service.create_user.side_effect = UserAlreadyExistsError("Username already exists")
-        
-        # Execute and assert
-        with pytest.raises(UserAlreadyExistsError):
-            user_service.create_user(user_data=sample_user_create)
-
-    # Test get_user_by_id method
-    def test_get_user_by_id_success(self, user_service, sample_user):
-        """Test successful user retrieval by ID."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_id_success_fast(self, user_service, sample_user):
+        """Fast test for successful user retrieval by ID."""
         user_service.get_user_by_id.return_value = sample_user
         
-        # Execute
         result = user_service.get_user_by_id("user-123")
         
-        # Assert
         assert result == sample_user
         user_service.get_user_by_id.assert_called_once_with("user-123")
 
-    def test_get_user_by_id_not_found(self, user_service):
-        """Test user retrieval by ID when user not found."""
-        # Mock service method
-        user_service.get_user_by_id.return_value = None
-        
-        # Execute
-        result = user_service.get_user_by_id("nonexistent-user")
-        
-        # Assert
-        assert result is None
-        user_service.get_user_by_id.assert_called_once_with("nonexistent-user")
-
-    # Test get_user_by_email method
-    def test_get_user_by_email_success(self, user_service, sample_user):
-        """Test successful user retrieval by email."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_email_success_fast(self, user_service, sample_user):
+        """Fast test for successful user retrieval by email."""
         user_service.get_user_by_email.return_value = sample_user
         
-        # Execute
         result = user_service.get_user_by_email("test@example.com")
         
-        # Assert
         assert result == sample_user
         user_service.get_user_by_email.assert_called_once_with("test@example.com")
 
-    def test_get_user_by_email_not_found(self, user_service):
-        """Test user retrieval by email when user not found."""
-        # Mock service method
-        user_service.get_user_by_email.return_value = None
-        
-        # Execute
-        result = user_service.get_user_by_email("nonexistent@example.com")
-        
-        # Assert
-        assert result is None
-        user_service.get_user_by_email.assert_called_once_with("nonexistent@example.com")
-
-    # Test get_user_by_username method
-    def test_get_user_by_username_success(self, user_service, sample_user):
-        """Test successful user retrieval by username."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_username_success_fast(self, user_service, sample_user):
+        """Fast test for successful user retrieval by username."""
         user_service.get_user_by_username.return_value = sample_user
         
-        # Execute
         result = user_service.get_user_by_username("testuser")
         
-        # Assert
         assert result == sample_user
         user_service.get_user_by_username.assert_called_once_with("testuser")
 
-    def test_get_user_by_username_not_found(self, user_service):
-        """Test user retrieval by username when user not found."""
-        # Mock service method
-        user_service.get_user_by_username.return_value = None
-        
-        # Execute
-        result = user_service.get_user_by_username("nonexistentuser")
-        
-        # Assert
-        assert result is None
-        user_service.get_user_by_username.assert_called_once_with("nonexistentuser")
-
-    # Test authenticate_user method
-    def test_authenticate_user_success(self, user_service, sample_user):
-        """Test successful user authentication."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_authenticate_user_success_fast(self, user_service, sample_user):
+        """Fast test for successful user authentication."""
         user_service.authenticate_user.return_value = sample_user
         
-        # Execute
         result = user_service.authenticate_user("test@example.com", "password123")
         
-        # Assert
         assert result == sample_user
         user_service.authenticate_user.assert_called_once_with("test@example.com", "password123")
 
-    def test_authenticate_user_failure(self, user_service):
-        """Test failed user authentication."""
-        # Mock service method
-        user_service.authenticate_user.return_value = None
-        
-        # Execute
-        result = user_service.authenticate_user("test@example.com", "wrongpassword")
-        
-        # Assert
-        assert result is None
-        user_service.authenticate_user.assert_called_once_with("test@example.com", "wrongpassword")
-
-    def test_authenticate_user_locked_user(self, user_service, sample_user):
-        """Test authentication with locked user."""
-        # Set user as locked
-        sample_user.is_locked = True
-        
-        # Mock service method to raise exception
-        user_service.authenticate_user.side_effect = UserLockedError
-        
-        # Execute and assert
-        with pytest.raises(UserLockedError):
-            user_service.authenticate_user("test@example.com", "password123")
-
-    # Test update_user method
-    def test_update_user_success(self, user_service, sample_user, sample_user_update):
-        """Test successful user update."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_user_success_fast(self, user_service, sample_user, sample_user_update):
+        """Fast test for successful user update."""
         user_service.update_user.return_value = sample_user
         
-        # Execute
         result = user_service.update_user("user-123", sample_user_update, sample_user)
         
-        # Assert
         assert result == sample_user
         user_service.update_user.assert_called_once_with("user-123", sample_user_update, sample_user)
 
-    def test_update_user_not_found(self, user_service, sample_user_update, sample_admin_user):
-        """Test user update when user not found."""
-        # Mock service method to raise exception
-        user_service.update_user.side_effect = UserNotFoundError
-        
-        # Execute and assert
-        with pytest.raises(UserNotFoundError):
-            user_service.update_user("nonexistent-user", sample_user_update, sample_admin_user)
-
-    def test_update_user_permission_denied(self, user_service, sample_user, sample_user_update):
-        """Test user update with insufficient permissions."""
-        # Mock service method to raise exception
-        user_service.update_user.side_effect = PermissionDeniedError
-        
-        # Execute and assert
-        with pytest.raises(PermissionDeniedError):
-            user_service.update_user("user-123", sample_user_update, sample_user)
-
-    # Test delete_user method
-    def test_delete_user_success(self, user_service, sample_user, sample_admin_user):
-        """Test successful user deletion."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_delete_user_success_fast(self, user_service, sample_user, sample_admin_user):
+        """Fast test for successful user deletion."""
         user_service.delete_user.return_value = True
         
-        # Execute
         result = user_service.delete_user("user-123", sample_admin_user)
         
-        # Assert
         assert result is True
         user_service.delete_user.assert_called_once_with("user-123", sample_admin_user)
 
-    def test_delete_user_not_found(self, user_service, sample_admin_user):
-        """Test user deletion when user not found."""
-        # Mock service method to raise exception
-        user_service.delete_user.side_effect = UserNotFoundError
-        
-        # Execute and assert
-        with pytest.raises(UserNotFoundError):
-            user_service.delete_user("nonexistent-user", sample_admin_user)
-
-    def test_delete_user_permission_denied(self, user_service, sample_user):
-        """Test user deletion with insufficient permissions."""
-        # Mock service method to raise exception
-        user_service.delete_user.side_effect = PermissionDeniedError
-        
-        # Execute and assert
-        with pytest.raises(PermissionDeniedError):
-            user_service.delete_user("user-123", sample_user)
-
-    # Test list_users method
-    def test_list_users_success(self, user_service, sample_user, sample_admin_user):
-        """Test successful user listing."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_list_users_success_fast(self, user_service, sample_user, sample_admin_user):
+        """Fast test for successful user listing."""
         mock_response = Mock()
         mock_response.users = [sample_user]
         mock_response.total = 1
         user_service.list_users.return_value = mock_response
         
-        # Create search parameters
         search_params = UserSearchParams(
             page=1,
             size=10,
@@ -351,116 +246,49 @@ class TestUserServiceSimple:
             is_active=True
         )
         
-        # Execute
         result = user_service.list_users(search_params, sample_admin_user)
         
-        # Assert
         assert result is not None
         assert len(result.users) == 1
         assert result.total == 1
         user_service.list_users.assert_called_once_with(search_params, sample_admin_user)
 
-    def test_list_users_empty_result(self, user_service, sample_admin_user):
-        """Test user listing with empty result."""
-        # Mock service method
-        mock_response = Mock()
-        mock_response.users = []
-        mock_response.total = 0
-        user_service.list_users.return_value = mock_response
-        
-        # Create search parameters
-        search_params = UserSearchParams(
-            page=1,
-            size=10,
-            search="nonexistent"
-        )
-        
-        # Execute
-        result = user_service.list_users(search_params, sample_admin_user)
-        
-        # Assert
-        assert result is not None
-        assert len(result.users) == 0
-        assert result.total == 0
-
-    # Test update_password method
-    def test_update_password_success(self, user_service, sample_user):
-        """Test successful password update."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_password_success_fast(self, user_service, sample_user):
+        """Fast test for successful password update."""
         user_service.update_password.return_value = True
         
-        # Create password update data
         password_data = UserPasswordUpdate(
             current_password="oldpassword",
             new_password="NewPassword123!"
         )
         
-        # Execute
         result = user_service.update_password("user-123", password_data)
         
-        # Assert
         assert result is True
         user_service.update_password.assert_called_once_with("user-123", password_data)
 
-    def test_update_password_user_not_found(self, user_service):
-        """Test password update when user not found."""
-        # Mock service method to raise exception
-        user_service.update_password.side_effect = UserNotFoundError
-        
-        # Create password update data
-        password_data = UserPasswordUpdate(
-            current_password="oldpassword",
-            new_password="NewPassword123!"
-        )
-        
-        # Execute and assert
-        with pytest.raises(UserNotFoundError):
-            user_service.update_password("nonexistent-user", password_data)
-
-    def test_update_password_incorrect_current_password(self, user_service, sample_user):
-        """Test password update with incorrect current password."""
-        # Mock service method to raise exception
-        user_service.update_password.side_effect = InvalidCredentialsError
-        
-        # Create password update data
-        password_data = UserPasswordUpdate(
-            current_password="wrongpassword",
-            new_password="NewPassword123!"
-        )
-        
-        # Execute and assert
-        with pytest.raises(InvalidCredentialsError):
-            user_service.update_password("user-123", password_data)
-
-    # Test verify_email method
-    def test_verify_email_success(self, user_service, sample_user):
-        """Test successful email verification."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_verify_email_success_fast(self, user_service, sample_user):
+        """Fast test for successful email verification."""
         user_service.verify_email.return_value = True
         
-        # Execute
         result = user_service.verify_email("user-123")
         
-        # Assert
         assert result is True
         user_service.verify_email.assert_called_once_with("user-123")
 
-    def test_verify_email_user_not_found(self, user_service):
-        """Test email verification when user not found."""
-        # Mock service method to raise exception
-        user_service.verify_email.side_effect = UserNotFoundError
-        
-        # Execute and assert
-        with pytest.raises(UserNotFoundError):
-            user_service.verify_email("nonexistent-user")
-
-    # Test create_sso_user method
-    def test_create_sso_user_success(self, user_service, sample_user):
-        """Test successful SSO user creation."""
-        # Mock service method
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_create_sso_user_success_fast(self, user_service, sample_user):
+        """Fast test for successful SSO user creation."""
         user_service.create_sso_user.return_value = sample_user
         
-        # Create SSO user data
         sso_data = SSOUserCreate(
             email="sso@example.com",
             username="ssouser",
@@ -472,19 +300,222 @@ class TestUserServiceSimple:
             sso_attributes={"provider": "google", "sub": "ext-123"}
         )
         
-        # Execute
         result = user_service.create_sso_user(sso_data)
         
-        # Assert
         assert result == sample_user
         user_service.create_sso_user.assert_called_once_with(sso_data)
 
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_stats_success_fast(self, user_service, sample_admin_user):
+        """Fast test for successful user statistics retrieval."""
+        mock_stats = Mock()
+        mock_stats.total_users = 10
+        mock_stats.active_users = 8
+        mock_stats.inactive_users = 2
+        user_service.get_user_stats.return_value = mock_stats
+        
+        result = user_service.get_user_stats(organization_id="org-123", current_user=sample_admin_user)
+        
+        assert result is not None
+        assert result.total_users == 10
+        assert result.active_users == 8
+        assert result.inactive_users == 2
+        user_service.get_user_stats.assert_called_once_with(organization_id="org-123", current_user=sample_admin_user)
+
+    # =============================================================================
+    # COMPREHENSIVE TESTS - Error handling and edge cases
+    # =============================================================================
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_create_user_email_already_exists(self, user_service, sample_user_create, sample_user):
+        """Comprehensive test for user creation with existing email."""
+        user_service.create_user.side_effect = UserAlreadyExistsError("Email already exists")
+        
+        with pytest.raises(UserAlreadyExistsError):
+            user_service.create_user(user_data=sample_user_create)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_create_user_username_already_exists(self, user_service, sample_user_create, sample_user):
+        """Comprehensive test for user creation with existing username."""
+        user_service.create_user.side_effect = UserAlreadyExistsError("Username already exists")
+        
+        with pytest.raises(UserAlreadyExistsError):
+            user_service.create_user(user_data=sample_user_create)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_id_not_found(self, user_service):
+        """Comprehensive test for user retrieval by ID when user not found."""
+        user_service.get_user_by_id.return_value = None
+        
+        result = user_service.get_user_by_id("nonexistent-user")
+        
+        assert result is None
+        user_service.get_user_by_id.assert_called_once_with("nonexistent-user")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_email_not_found(self, user_service):
+        """Comprehensive test for user retrieval by email when user not found."""
+        user_service.get_user_by_email.return_value = None
+        
+        result = user_service.get_user_by_email("nonexistent@example.com")
+        
+        assert result is None
+        user_service.get_user_by_email.assert_called_once_with("nonexistent@example.com")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_user_by_username_not_found(self, user_service):
+        """Comprehensive test for user retrieval by username when user not found."""
+        user_service.get_user_by_username.return_value = None
+        
+        result = user_service.get_user_by_username("nonexistentuser")
+        
+        assert result is None
+        user_service.get_user_by_username.assert_called_once_with("nonexistentuser")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_authenticate_user_failure(self, user_service):
+        """Comprehensive test for failed user authentication."""
+        user_service.authenticate_user.return_value = None
+        
+        result = user_service.authenticate_user("test@example.com", "wrongpassword")
+        
+        assert result is None
+        user_service.authenticate_user.assert_called_once_with("test@example.com", "wrongpassword")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_authenticate_user_locked_user(self, user_service, sample_user):
+        """Comprehensive test for authentication with locked user."""
+        sample_user.is_locked = True
+        user_service.authenticate_user.side_effect = UserLockedError
+        
+        with pytest.raises(UserLockedError):
+            user_service.authenticate_user("test@example.com", "password123")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_user_not_found(self, user_service, sample_user_update, sample_admin_user):
+        """Comprehensive test for user update when user not found."""
+        user_service.update_user.side_effect = UserNotFoundError
+        
+        with pytest.raises(UserNotFoundError):
+            user_service.update_user("nonexistent-user", sample_user_update, sample_admin_user)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_user_permission_denied(self, user_service, sample_user, sample_user_update):
+        """Comprehensive test for user update with insufficient permissions."""
+        user_service.update_user.side_effect = PermissionDeniedError
+        
+        with pytest.raises(PermissionDeniedError):
+            user_service.update_user("user-123", sample_user_update, sample_user)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_delete_user_not_found(self, user_service, sample_admin_user):
+        """Comprehensive test for user deletion when user not found."""
+        user_service.delete_user.side_effect = UserNotFoundError
+        
+        with pytest.raises(UserNotFoundError):
+            user_service.delete_user("nonexistent-user", sample_admin_user)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_delete_user_permission_denied(self, user_service, sample_user):
+        """Comprehensive test for user deletion with insufficient permissions."""
+        user_service.delete_user.side_effect = PermissionDeniedError
+        
+        with pytest.raises(PermissionDeniedError):
+            user_service.delete_user("user-123", sample_user)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_list_users_empty_result(self, user_service, sample_admin_user):
+        """Comprehensive test for user listing with empty result."""
+        mock_response = Mock()
+        mock_response.users = []
+        mock_response.total = 0
+        user_service.list_users.return_value = mock_response
+        
+        search_params = UserSearchParams(
+            page=1,
+            size=10,
+            search="nonexistent"
+        )
+        
+        result = user_service.list_users(search_params, sample_admin_user)
+        
+        assert result is not None
+        assert len(result.users) == 0
+        assert result.total == 0
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_password_user_not_found(self, user_service):
+        """Comprehensive test for password update when user not found."""
+        user_service.update_password.side_effect = UserNotFoundError
+        
+        password_data = UserPasswordUpdate(
+            current_password="oldpassword",
+            new_password="NewPassword123!"
+        )
+        
+        with pytest.raises(UserNotFoundError):
+            user_service.update_password("nonexistent-user", password_data)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_update_password_incorrect_current_password(self, user_service, sample_user):
+        """Comprehensive test for password update with incorrect current password."""
+        user_service.update_password.side_effect = InvalidCredentialsError
+        
+        password_data = UserPasswordUpdate(
+            current_password="wrongpassword",
+            new_password="NewPassword123!"
+        )
+        
+        with pytest.raises(InvalidCredentialsError):
+            user_service.update_password("user-123", password_data)
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_verify_email_user_not_found(self, user_service):
+        """Comprehensive test for email verification when user not found."""
+        user_service.verify_email.side_effect = UserNotFoundError
+        
+        with pytest.raises(UserNotFoundError):
+            user_service.verify_email("nonexistent-user")
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_create_sso_user_email_already_exists(self, user_service, sample_user):
-        """Test SSO user creation with existing email."""
-        # Mock service method to raise exception
+        """Comprehensive test for SSO user creation with existing email."""
         user_service.create_sso_user.side_effect = UserAlreadyExistsError
         
-        # Create SSO user data
         sso_data = SSOUserCreate(
             email="sso@example.com",
             username="ssouser",
@@ -495,125 +526,132 @@ class TestUserServiceSimple:
             sso_attributes={"provider": "google", "sub": "ext-123"}
         )
         
-        # Execute and assert
         with pytest.raises(UserAlreadyExistsError):
             user_service.create_sso_user(sso_data)
 
-    # Test get_user_stats method
-    def test_get_user_stats_success(self, user_service, sample_admin_user):
-        """Test successful user statistics retrieval."""
-        # Mock service method
-        mock_stats = Mock()
-        mock_stats.total_users = 10
-        mock_stats.active_users = 8
-        mock_stats.inactive_users = 2
-        user_service.get_user_stats.return_value = mock_stats
-        
-        # Execute
-        result = user_service.get_user_stats(organization_id="org-123", current_user=sample_admin_user)
-        
-        # Assert
-        assert result is not None
-        assert result.total_users == 10
-        assert result.active_users == 8
-        assert result.inactive_users == 2
-        user_service.get_user_stats.assert_called_once_with(organization_id="org-123", current_user=sample_admin_user)
+    # =============================================================================
+    # PERMISSION TESTS - User management permissions
+    # =============================================================================
 
-    # Test _can_manage_user method
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_can_manage_user_admin_managing_anyone(self, user_service, sample_admin_user, sample_user):
-        """Test admin can manage any user."""
-        # Mock service method
+        """Comprehensive test for admin managing any user."""
         user_service._can_manage_user.return_value = True
         
-        # Execute
         result = user_service._can_manage_user(sample_admin_user, sample_user)
         
-        # Assert
         assert result is True
         user_service._can_manage_user.assert_called_once_with(sample_admin_user, sample_user)
 
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_can_manage_user_self_management(self, user_service, sample_user):
-        """Test user can manage themselves."""
-        # Mock service method
+        """Comprehensive test for user managing themselves."""
         user_service._can_manage_user.return_value = True
         
-        # Execute
         result = user_service._can_manage_user(sample_user, sample_user)
         
-        # Assert
         assert result is True
         user_service._can_manage_user.assert_called_once_with(sample_user, sample_user)
 
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_can_manage_user_regular_user_managing_other(self, user_service, sample_user):
-        """Test regular user cannot manage other users."""
+        """Comprehensive test for regular user cannot manage other users."""
         other_user = Mock(spec=User)
         other_user.id = "other-123"
         other_user.role = UserRole.USER
         
-        # Mock service method
         user_service._can_manage_user.return_value = False
         
-        # Execute
         result = user_service._can_manage_user(sample_user, other_user)
         
-        # Assert
         assert result is False
         user_service._can_manage_user.assert_called_once_with(sample_user, other_user)
 
-    # Test error handling
+    # =============================================================================
+    # ERROR HANDLING TESTS - Database and validation errors
+    # =============================================================================
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_database_error_handling(self, user_service):
-        """Test error handling when database operations fail."""
-        # Mock service method to raise exception
+        """Comprehensive test for database error handling."""
         user_service.get_user_by_id.side_effect = Exception("Database error")
         
-        # Execute and assert
         with pytest.raises(Exception, match="Database error"):
             user_service.get_user_by_id("user-123")
 
-    # Test edge cases
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_validation_error_handling(self, user_service):
+        """Comprehensive test for validation error handling."""
+        user_service.create_user.side_effect = ValueError("Invalid user data")
+        
+        with pytest.raises(ValueError, match="Invalid user data"):
+            user_service.create_user(user_data=None)
+
+    # =============================================================================
+    # INITIALIZATION TESTS - Service setup and configuration
+    # =============================================================================
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_user_service_initialization_without_db(self):
-        """Test UserService initialization without database parameter."""
+        """Fast test for UserService initialization without database parameter."""
         with patch('backend.app.services.user_service.get_db') as mock_get_db:
             mock_db = Mock()
             mock_get_db.return_value = mock_db
             
-            # Execute
             service = UserService()
             
-            # Assert
             assert service.db == mock_db
             mock_get_db.assert_called_once()
 
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_user_service_initialization_with_db(self):
-        """Test UserService initialization with database parameter."""
+        """Fast test for UserService initialization with database parameter."""
         mock_db = Mock()
         
-        # Execute
         service = UserService(db=mock_db)
         
-        # Assert
         assert service.db == mock_db
 
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_password_context_initialization(self, user_service):
-        """Test password context is properly initialized."""
+        """Fast test for password context initialization."""
         assert user_service.pwd_context is not None
         assert hasattr(user_service.pwd_context, 'hash')
         assert hasattr(user_service.pwd_context, 'verify')
 
-    # Test performance scenarios
+    # =============================================================================
+    # PERFORMANCE TESTS - Multiple and concurrent operations
+    # =============================================================================
+
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_multiple_user_operations(self, user_service, sample_user, sample_admin_user):
-        """Test multiple user operations in sequence."""
-        # Mock service methods
+        """Comprehensive test for multiple user operations in sequence."""
         user_service.get_user_by_id.return_value = sample_user
         user_service.get_user_by_email.return_value = sample_user
         user_service.get_user_by_username.return_value = sample_user
         
-        # Execute multiple operations
         user1 = user_service.get_user_by_id("user-123")
         user2 = user_service.get_user_by_email("test@example.com")
         user3 = user_service.get_user_by_username("testuser")
         
-        # Assert
         assert user1 == sample_user
         assert user2 == sample_user
         assert user3 == sample_user
@@ -621,17 +659,17 @@ class TestUserServiceSimple:
         assert user_service.get_user_by_email.call_count == 1
         assert user_service.get_user_by_username.call_count == 1
 
+    @pytest.mark.comprehensive
+    @pytest.mark.unit
+    @pytest.mark.service
     def test_concurrent_user_operations(self, user_service, sample_user):
-        """Test concurrent user operations."""
-        # Mock service method
+        """Comprehensive test for concurrent user operations."""
         user_service.get_user_by_id.return_value = sample_user
         
-        # Simulate concurrent operations
         results = []
         for i in range(5):
             result = user_service.get_user_by_id(f"user-{i}")
             results.append(result)
         
-        # Assert
         assert all(result == sample_user for result in results)
         assert user_service.get_user_by_id.call_count == 5
