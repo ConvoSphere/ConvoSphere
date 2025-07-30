@@ -17,6 +17,12 @@ on:
     # Run performance tests daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+# Add permissions for GitHub script to comment on issues
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '18'
@@ -515,7 +521,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download coverage artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: coverage-reports
 
@@ -581,11 +587,18 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const fs = require('fs');
-          const summary = fs.readFileSync('test-summary.md', 'utf8');
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: summary
-          });
+          try {
+            const fs = require('fs');
+            const summary = fs.readFileSync('test-summary.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+            console.log('Successfully posted test summary comment');
+          } catch (error) {
+            console.error('Failed to post comment:', error.message);
+            // Don't fail the workflow if commenting fails
+            core.setFailed('Failed to post comment to PR, but this is not a critical failure');
+          }

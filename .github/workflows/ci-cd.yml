@@ -15,6 +15,12 @@ on:
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
+# Add permissions for GitHub script to comment on issues
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -57,7 +63,7 @@ jobs:
         run: |
           echo "Running Python linting..."
           ruff check backend/ --output-format=json > ruff-report.json || true
-          ruff format --check backend/ --output-format=json > ruff-format-report.json || true
+          ruff format --check backend/ > ruff-format-report.json || true
           
           # Check if there are any errors (not just warnings)
           python -c "
@@ -144,65 +150,72 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const fs = require('fs');
-            let message = '## 🔍 Linting Results\n\n';
-            
             try {
-              // Python linting results
-              const ruffData = JSON.parse(fs.readFileSync('ruff-report.json', 'utf8'));
-              const warnings = ruffData.filter(issue => !issue.code.startsWith('E') && !issue.code.startsWith('F'));
-              const errors = ruffData.filter(issue => issue.code.startsWith('E') || issue.code.startsWith('F'));
+              const fs = require('fs');
+              let message = '## 🔍 Linting Results\n\n';
               
-              message += `### Python Linting\n`;
-              message += `- ✅ Errors: ${errors.length}\n`;
-              message += `- ⚠️ Warnings: ${warnings.length}\n\n`;
-              
-              if (warnings.length > 0) {
-                message += `**Warnings found:**\n`;
-                warnings.slice(0, 10).forEach(w => {
-                  message += `- ${w.code}: ${w.message} (${w.location.file}:${w.location.row})\n`;
-                });
-                if (warnings.length > 10) {
-                  message += `- ... and ${warnings.length - 10} more warnings\n`;
+              try {
+                // Python linting results
+                const ruffData = JSON.parse(fs.readFileSync('ruff-report.json', 'utf8'));
+                const warnings = ruffData.filter(issue => !issue.code.startsWith('E') && !issue.code.startsWith('F'));
+                const errors = ruffData.filter(issue => issue.code.startsWith('E') || issue.code.startsWith('F'));
+                
+                message += `### Python Linting\n`;
+                message += `- ✅ Errors: ${errors.length}\n`;
+                message += `- ⚠️ Warnings: ${warnings.length}\n\n`;
+                
+                if (warnings.length > 0) {
+                  message += `**Warnings found:**\n`;
+                  warnings.slice(0, 10).forEach(w => {
+                    message += `- ${w.code}: ${w.message} (${w.location.file}:${w.location.row})\n`;
+                  });
+                  if (warnings.length > 10) {
+                    message += `- ... and ${warnings.length - 10} more warnings\n`;
+                  }
+                  message += '\n';
                 }
-                message += '\n';
+              } catch (e) {
+                message += `### Python Linting\n- ✅ No issues found\n\n`;
               }
-            } catch (e) {
-              message += `### Python Linting\n- ✅ No issues found\n\n`;
-            }
-            
-            try {
-              // TypeScript linting results
-              const eslintData = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
-              const warnings = eslintData.filter(issue => issue.severity === 1);
-              const errors = eslintData.filter(issue => issue.severity === 2);
               
-              message += `### TypeScript Linting\n`;
-              message += `- ✅ Errors: ${errors.length}\n`;
-              message += `- ⚠️ Warnings: ${warnings.length}\n\n`;
-              
-              if (warnings.length > 0) {
-                message += `**Warnings found:**\n`;
-                warnings.slice(0, 10).forEach(w => {
-                  message += `- ${w.ruleId}: ${w.message} (${w.filePath}:${w.line})\n`;
-                });
-                if (warnings.length > 10) {
-                  message += `- ... and ${warnings.length - 10} more warnings\n`;
+              try {
+                // TypeScript linting results
+                const eslintData = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
+                const warnings = eslintData.filter(issue => issue.severity === 1);
+                const errors = eslintData.filter(issue => issue.severity === 2);
+                
+                message += `### TypeScript Linting\n`;
+                message += `- ✅ Errors: ${errors.length}\n`;
+                message += `- ⚠️ Warnings: ${warnings.length}\n\n`;
+                
+                if (warnings.length > 0) {
+                  message += `**Warnings found:**\n`;
+                  warnings.slice(0, 10).forEach(w => {
+                    message += `- ${w.ruleId}: ${w.message} (${w.filePath}:${w.line})\n`;
+                  });
+                  if (warnings.length > 10) {
+                    message += `- ... and ${warnings.length - 10} more warnings\n`;
+                  }
+                  message += '\n';
                 }
-                message += '\n';
+              } catch (e) {
+                message += `### TypeScript Linting\n- ✅ No issues found\n\n`;
               }
-            } catch (e) {
-              message += `### TypeScript Linting\n- ✅ No issues found\n\n`;
+              
+              message += `> 💡 **Note:** Warnings are shown for information but don't block the build. Only errors will cause the pipeline to fail.`;
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Successfully posted linting results comment');
+            } catch (error) {
+              console.error('Failed to post comment:', error.message);
+              // Don't fail the workflow if commenting fails
+              core.setFailed('Failed to post comment to PR, but this is not a critical failure');
             }
-            
-            message += `> 💡 **Note:** Warnings are shown for information but don't block the build. Only errors will cause the pipeline to fail.`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
 
   # Build Docker images
   build-images:
