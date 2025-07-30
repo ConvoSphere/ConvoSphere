@@ -15,14 +15,12 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-)
-from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import (
     ForeignKey,
     String,
     Table,
     Text,
 )
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func

@@ -1,12 +1,12 @@
 """Tool service for managing available tools."""
 
 import uuid
-from typing import Any
 from datetime import datetime
-from pytz import UTC
+from typing import Any
 
 from loguru import logger
-from sqlalchemy import and_, or_
+from pytz import UTC
+from sqlalchemy import or_
 
 from backend.app.core.database import get_db
 from backend.app.models.tool import Tool, ToolCategory
