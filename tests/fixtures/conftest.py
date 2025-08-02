@@ -277,11 +277,11 @@ def mock_assistant_service():
 @pytest.fixture
 def mock_assistant_engine():
     """Create a mock assistant engine."""
-    with patch('backend.app.engine.assistant_engine.AssistantEngine') as mock:
+    with patch('backend.app.services.assistant_engine.AssistantEngine') as mock:
         engine = mock.return_value
         engine.process_message = Mock()
-        engine.create_conversation = Mock()
-        engine.get_conversation = Mock()
+        engine.get_processing_status = Mock()
+        engine.get_stats = Mock()
         yield engine
 
 

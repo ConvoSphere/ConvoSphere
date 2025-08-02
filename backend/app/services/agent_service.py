@@ -3,7 +3,7 @@ Agent service for managing AI agents.
 
 This module provides business logic for managing AI agents, including
 agent creation, handoffs, collaboration, and performance monitoring.
-It integrates with the MultiAgentManager and follows the existing service patterns.
+It integrates with the new modular AgentManager and follows the existing service patterns.
 """
 
 from typing import Any
@@ -21,7 +21,7 @@ from backend.app.schemas.agent import (
     AgentResponse,
     AgentUpdate,
 )
-from backend.app.services.multi_agent_manager import multi_agent_manager
+from backend.app.services.agents import agent_manager
 
 
 class AgentService:
@@ -30,7 +30,7 @@ class AgentService:
     def __init__(self, db: Session | None = None):
         """Initialize the agent service."""
         self.db = db or get_db()
-        self.multi_agent_manager = multi_agent_manager
+        self.agent_manager = agent_manager
 
     async def get_available_agents(self) -> list[dict[str, Any]]:
         """
@@ -40,7 +40,7 @@ class AgentService:
             List[dict]: List of available agents with their configurations
         """
         try:
-            agents = self.multi_agent_manager.get_available_agents()
+            agents = await self.agent_manager.get_available_agents()
             logger.info(f"Retrieved {len(agents)} available agents")
             return agents
         except Exception as e:
@@ -58,30 +58,8 @@ class AgentService:
             AgentResponse: Created agent response
         """
         try:
-            # Add agent to registry
-            agent_id = f"custom_{len(self.multi_agent_manager.agent_registry) + 1}"
-            self.multi_agent_manager.add_agent_to_registry(agent_id, agent_data.config)
-
-            # Create response
-            response = AgentResponse(
-                id=UUID(agent_id),
-                config=agent_data.config,
-                user_id=agent_data.user_id,
-                is_public=agent_data.is_public,
-                is_template=agent_data.is_template,
-                created_at=(
-                    agent_data.config.created_at
-                    if hasattr(agent_data.config, "created_at")
-                    else None
-                ),
-                updated_at=(
-                    agent_data.config.updated_at
-                    if hasattr(agent_data.config, "updated_at")
-                    else None
-                ),
-            )
-
-            logger.info(f"Created agent: {agent_data.config.name} with ID {agent_id}")
+            response = await self.agent_manager.create_agent(agent_data)
+            logger.info(f"Created agent: {agent_data.config.name}")
             return response
 
         except Exception as e:
@@ -102,30 +80,11 @@ class AgentService:
             AgentResponse: Updated agent response or None if not found
         """
         try:
-            # Get current agent config
-            current_config = self.multi_agent_manager.agent_registry.get(agent_id)
-            if not current_config:
-                logger.warning(f"Agent {agent_id} not found in registry")
-                return None
-
-            # Update config fields
-            update_data = agent_data.dict(exclude_unset=True)
-            for field, value in update_data.items():
-                if hasattr(current_config, field):
-                    setattr(current_config, field, value)
-
-            # Create response
-            response = AgentResponse(
-                id=UUID(agent_id),
-                config=current_config,
-                user_id=UUID("00000000-0000-0000-0000-000000000000"),  # Placeholder
-                is_public=getattr(agent_data, "is_public", False),
-                is_template=getattr(agent_data, "is_template", False),
-                created_at=None,
-                updated_at=None,
-            )
-
-            logger.info(f"Updated agent: {agent_id}")
+            response = await self.agent_manager.update_agent(agent_id, agent_data)
+            if response:
+                logger.info(f"Updated agent: {agent_id}")
+            else:
+                logger.warning(f"Agent {agent_id} not found")
             return response
 
         except Exception as e:
@@ -143,12 +102,12 @@ class AgentService:
             bool: True if deleted, False if not found
         """
         try:
-            if agent_id in self.multi_agent_manager.agent_registry:
-                self.multi_agent_manager.remove_agent_from_registry(agent_id)
+            success = await self.agent_manager.delete_agent(agent_id)
+            if success:
                 logger.info(f"Deleted agent: {agent_id}")
-                return True
-            logger.warning(f"Agent {agent_id} not found in registry")
-            return False
+            else:
+                logger.warning(f"Agent {agent_id} not found in registry")
+            return success
 
         except Exception as e:
             logger.error(f"Error deleting agent {agent_id}: {e}")
@@ -165,19 +124,11 @@ class AgentService:
             dict: Handoff result
         """
         try:
-            result = await self.multi_agent_manager.handoff_agent(request)
+            result = await self.agent_manager.handoff_agent(request)
             logger.info(
                 f"Agent handoff completed: {request.from_agent_id} -> {request.to_agent_id}"
             )
-            return {
-                "success": True,
-                "conversation": result.dict(),
-                "handoff_info": {
-                    "from_agent": request.from_agent_id,
-                    "to_agent": request.to_agent_id,
-                    "reason": request.reason,
-                },
-            }
+            return result
 
         except Exception as e:
             logger.error(f"Error during agent handoff: {e}")
@@ -196,17 +147,9 @@ class AgentService:
             dict: Collaboration result
         """
         try:
-            result = await self.multi_agent_manager.start_collaboration(request)
+            result = await self.agent_manager.start_collaboration(request)
             logger.info(f"Agent collaboration started: {request.agent_ids}")
-            return {
-                "success": True,
-                "conversation": result.dict(),
-                "collaboration_info": {
-                    "agents": request.agent_ids,
-                    "type": request.collaboration_type,
-                    "strategy": request.coordination_strategy,
-                },
-            }
+            return result
 
         except Exception as e:
             logger.error(f"Error starting agent collaboration: {e}")
@@ -226,8 +169,8 @@ class AgentService:
             List[AgentPerformanceMetrics]: Performance metrics
         """
         try:
-            metrics = self.multi_agent_manager.get_performance_metrics(
-                agent_id=agent_id, conversation_id=conversation_id, limit=100
+            metrics = await self.agent_manager.get_agent_performance(
+                agent_id, conversation_id=conversation_id
             )
             logger.info(
                 f"Retrieved {len(metrics)} performance metrics for agent {agent_id}"
@@ -254,10 +197,8 @@ class AgentService:
             dict: Agent state or None if not found
         """
         try:
-            state = self.multi_agent_manager.get_agent_state(conversation_id, agent_id)
-            if state:
-                return state.dict()
-            return None
+            state = await self.agent_manager.get_agent_state(conversation_id, agent_id)
+            return state
 
         except Exception as e:
             logger.error(f"Error retrieving agent state: {e}")
@@ -276,10 +217,8 @@ class AgentService:
             dict: Conversation state or None if not found
         """
         try:
-            state = self.multi_agent_manager.get_conversation_state(conversation_id)
-            if state:
-                return state.dict()
-            return None
+            state = self.agent_manager.get_conversation_state(conversation_id)
+            return state
 
         except Exception as e:
             logger.error(f"Error retrieving conversation state: {e}")
@@ -293,7 +232,7 @@ class AgentService:
             dict: Service statistics
         """
         try:
-            return self.multi_agent_manager.get_stats()
+            return self.agent_manager.get_stats()
         except Exception as e:
             logger.error(f"Error retrieving agent stats: {e}")
             raise
