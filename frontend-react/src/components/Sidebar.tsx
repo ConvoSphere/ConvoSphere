@@ -93,6 +93,16 @@ const Sidebar: React.FC = () => {
       label: t("navigation.conversations"),
     },
     {
+      key: "/conversation-intelligence",
+      icon: <BarChartOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      label: t("navigation.conversation_intelligence"),
+    },
+    {
+      key: "/domain-groups",
+      icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      label: t("navigation.domain_groups"),
+    },
+    {
       key: "/mcp-tools",
       icon: <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("navigation.mcp_tools"),

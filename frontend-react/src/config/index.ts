@@ -43,6 +43,8 @@ export const config = {
     knowledge: "/api/v1/knowledge",
     health: "/api/v1/health",
     statistics: "/api/v1/statistics",
+    intelligence: "/api/v1/intelligence",
+    domainGroups: "/api/v1/domain-groups",
   },
 };
 
