@@ -45,6 +45,9 @@ export const config = {
     statistics: "/api/v1/statistics",
     intelligence: "/api/v1/intelligence",
     domainGroups: "/api/v1/domain-groups",
+    monitoring: "/api/v1/monitoring",
+    search: "/api/v1/search",
+    rag: "/api/v1/rag",
   },
 };
 

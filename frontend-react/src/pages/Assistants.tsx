@@ -39,6 +39,7 @@ import {
   getDefaultAssistantId,
   setDefaultAssistant,
 } from "../services/assistants";
+import config from "../config";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -83,100 +84,11 @@ const Assistants: React.FC = () => {
   );
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
 
-  // Mock data for demonstration
-  const mockAssistants: Assistant[] = [
-    {
-      id: 1,
-      name: "Customer Support Bot",
-      description: "AI assistant for customer service and support",
-      personality: "Helpful, professional, and patient customer service agent",
-      model: "gpt-4",
-      temperature: 0.7,
-      isActive: true,
-      knowledgeBaseIds: ["kb1", "kb2"],
-      toolIds: ["tool1", "tool2"],
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-15T10:30:00Z",
-      usageCount: 1250,
-      avgRating: 4.8,
-      tags: ["support", "customer-service", "helpful"],
-    },
-    {
-      id: 2,
-      name: "Technical Advisor",
-      description: "Technical expert for complex problem solving",
-      personality: "Expert technical advisor with deep knowledge",
-      model: "gpt-4-turbo",
-      temperature: 0.3,
-      isActive: true,
-      knowledgeBaseIds: ["kb3"],
-      toolIds: ["tool3", "tool4"],
-      createdAt: "2024-01-05T00:00:00Z",
-      updatedAt: "2024-01-14T15:20:00Z",
-      usageCount: 890,
-      avgRating: 4.9,
-      tags: ["technical", "expert", "problem-solving"],
-    },
-    {
-      id: 3,
-      name: "Creative Writer",
-      description: "Creative writing assistant for content creation",
-      personality: "Creative and imaginative writing partner",
-      model: "gpt-4",
-      temperature: 0.9,
-      isActive: false,
-      knowledgeBaseIds: ["kb4"],
-      toolIds: ["tool5"],
-      createdAt: "2024-01-10T00:00:00Z",
-      updatedAt: "2024-01-13T09:15:00Z",
-      usageCount: 450,
-      avgRating: 4.6,
-      tags: ["creative", "writing", "content"],
-    },
-  ];
-
-  const availableModels = [
-    { value: "gpt-4", label: "GPT-4", description: "Most capable model" },
-    {
-      value: "gpt-4-turbo",
-      label: "GPT-4 Turbo",
-      description: "Faster and more efficient",
-    },
-    {
-      value: "gpt-3.5-turbo",
-      label: "GPT-3.5 Turbo",
-      description: "Good balance of speed and capability",
-    },
-    {
-      value: "claude-3-opus",
-      label: "Claude 3 Opus",
-      description: "Anthropic's most capable model",
-    },
-    {
-      value: "claude-3-sonnet",
-      label: "Claude 3 Sonnet",
-      description: "Fast and efficient",
-    },
-  ];
-
-  const availableKnowledgeBases = [
-    { id: "kb1", name: "Product Documentation" },
-    { id: "kb2", name: "FAQ Database" },
-    { id: "kb3", name: "Technical Manuals" },
-    { id: "kb4", name: "Creative Writing Guide" },
-  ];
-
-  const availableTools = [
-    {
-      id: "tool1",
-      name: "Search Engine",
-      description: "Web search capabilities",
-    },
-    {
-      id: "tool2",
-      name: "Calculator",
-      description: "Mathematical calculations",
-    },
+  // API integration for assistants
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
+  const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [availableKnowledgeBases, setAvailableKnowledgeBases] = useState<any[]>([]);
+  const [availableTools, setAvailableTools] = useState<any[]>([]);
     {
       id: "tool3",
       name: "Code Interpreter",
@@ -199,10 +111,33 @@ const Assistants: React.FC = () => {
       try {
         setLoading(true);
 
-        // Load assistants
-        setTimeout(() => {
-          setAssistants(mockAssistants);
-        }, 1000);
+        // Load assistants from API
+        const assistantsResponse = await fetch(`${config.apiEndpoints.assistants}/`);
+        if (assistantsResponse.ok) {
+          const assistantsData = await assistantsResponse.json();
+          setAssistants(assistantsData);
+        }
+
+        // Load available models
+        const modelsResponse = await fetch(`${config.apiEndpoints.assistants}/models`);
+        if (modelsResponse.ok) {
+          const modelsData = await modelsResponse.json();
+          setAvailableModels(modelsData);
+        }
+
+        // Load available knowledge bases
+        const kbResponse = await fetch(`${config.apiEndpoints.knowledge}/`);
+        if (kbResponse.ok) {
+          const kbData = await kbResponse.json();
+          setAvailableKnowledgeBases(kbData.documents || []);
+        }
+
+        // Load available tools
+        const toolsResponse = await fetch(`${config.apiEndpoints.tools}/`);
+        if (toolsResponse.ok) {
+          const toolsData = await toolsResponse.json();
+          setAvailableTools(toolsData);
+        }
 
         // Load default assistant ID
         try {
