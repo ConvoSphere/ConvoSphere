@@ -202,30 +202,76 @@ describe('Authentication E2E Tests', () => {
       
       cy.intercept('POST', '/api/v1/auth/forgot-password', {
         statusCode: 200,
-        body: { message: 'Password reset email sent' }
+        body: { 
+          message: 'If the email address exists, a password reset link has been sent.',
+          status: 'success'
+        }
       }).as('forgotPasswordRequest');
 
-      cy.get('[data-testid="email-input"]').type('test@example.com');
-      cy.get('[data-testid="submit-button"]').click();
+      cy.get('input[placeholder*="email"]').type('test@example.com');
+      cy.get('button').contains('Reset-E-Mail senden').click();
 
       cy.wait('@forgotPasswordRequest');
-      cy.get('[data-testid="success-message"]').should('contain', 'Password reset email sent');
+      cy.get('h2').should('contain', 'Überprüfen Sie Ihre E-Mail');
+    });
+
+    it('should validate reset token', () => {
+      cy.visit('/reset-password?token=valid-token');
+      
+      cy.intercept('POST', '/api/v1/auth/validate-reset-token', {
+        statusCode: 200,
+        body: { 
+          valid: true,
+          message: 'Token is valid'
+        }
+      }).as('validateToken');
+
+      cy.wait('@validateToken');
+      cy.get('h2').should('contain', 'Passwort zurücksetzen');
     });
 
     it('should reset password with valid token', () => {
       cy.visit('/reset-password?token=valid-token');
       
+      cy.intercept('POST', '/api/v1/auth/validate-reset-token', {
+        statusCode: 200,
+        body: { 
+          valid: true,
+          message: 'Token is valid'
+        }
+      }).as('validateToken');
+
       cy.intercept('POST', '/api/v1/auth/reset-password', {
         statusCode: 200,
-        body: { message: 'Password reset successfully' }
+        body: { 
+          message: 'Password reset successfully',
+          status: 'success'
+        }
       }).as('resetPasswordRequest');
 
-      cy.get('[data-testid="password-input"]').type('newpassword123');
-      cy.get('[data-testid="confirm-password-input"]').type('newpassword123');
-      cy.get('[data-testid="submit-button"]').click();
+      cy.wait('@validateToken');
+      cy.get('input[placeholder*="neues Passwort"]').type('NewPassword123!');
+      cy.get('input[placeholder*="Bestätigen"]').type('NewPassword123!');
+      cy.get('button').contains('Passwort zurücksetzen').click();
 
       cy.wait('@resetPasswordRequest');
-      cy.url().should('include', '/login');
+      cy.get('h2').should('contain', 'Passwort-Reset erfolgreich');
+    });
+
+    it('should handle invalid token', () => {
+      cy.visit('/reset-password?token=invalid-token');
+      
+      cy.intercept('POST', '/api/v1/auth/validate-reset-token', {
+        statusCode: 200,
+        body: { 
+          valid: false,
+          message: 'Token is invalid or expired'
+        }
+      }).as('validateToken');
+
+      cy.wait('@validateToken');
+      cy.get('h2').should('contain', 'Ungültiger Token');
+      cy.get('button').contains('Neuen Token anfordern').should('be.visible');
     });
   });
 
