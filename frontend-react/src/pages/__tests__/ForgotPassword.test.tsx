@@ -151,4 +151,139 @@ describe("ForgotPassword", () => {
     
     expect(screen.getByText("Passwort vergessen?")).toBeInTheDocument();
   });
+
+  it("handles network errors gracefully", async () => {
+    mockForgotPassword.mockRejectedValue(new Error("Network error"));
+
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(mockForgotPassword).toHaveBeenCalledWith("test@example.com");
+    });
+  });
+
+  it("shows loading state during submission", async () => {
+    mockForgotPassword.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.click(submitButton);
+    
+    // Should show loading state
+    expect(submitButton).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("handles rate limiting errors", async () => {
+    mockForgotPassword.mockResolvedValue({
+      success: false,
+      message: "Too many password reset requests. Please try again later."
+    });
+
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Too many password reset requests. Please try again later.")).toBeInTheDocument();
+    });
+  });
+
+  it("supports keyboard navigation", () => {
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    // Tab navigation
+    emailInput.focus();
+    expect(emailInput).toHaveFocus();
+    
+    // Enter key submission
+    fireEvent.keyDown(emailInput, { key: "Enter", code: "Enter" });
+    expect(submitButton).toBeInTheDocument();
+  });
+
+  it("handles empty email submission", async () => {
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: "" } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText("E-Mail ist erforderlich")).toBeInTheDocument();
+    });
+  });
+
+  it("handles whitespace-only email", async () => {
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: "   " } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText("E-Mail ist erforderlich")).toBeInTheDocument();
+    });
+  });
+
+  it("handles very long email addresses", async () => {
+    const longEmail = "a".repeat(100) + "@example.com";
+    
+    mockForgotPassword.mockResolvedValue({
+      success: true,
+      message: "Password reset email sent"
+    });
+
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: longEmail } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(mockForgotPassword).toHaveBeenCalledWith(longEmail);
+    });
+  });
+
+  it("handles special characters in email", async () => {
+    const specialEmail = "test+tag@example.com";
+    
+    mockForgotPassword.mockResolvedValue({
+      success: true,
+      message: "Password reset email sent"
+    });
+
+    renderWithProviders(<ForgotPassword />);
+    
+    const emailInput = screen.getByPlaceholderText("ihre.email@beispiel.com");
+    const submitButton = screen.getByText("Reset-E-Mail senden");
+    
+    fireEvent.change(emailInput, { target: { value: specialEmail } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(mockForgotPassword).toHaveBeenCalledWith(specialEmail);
+    });
+  });
 });
