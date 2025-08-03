@@ -37,6 +37,9 @@ import {
   LazyConversationsPage,
   LazyMcpToolsPage,
   LazySystemStatusPage,
+  LazyConversationIntelligencePage,
+  LazyDomainGroupsPage,
+  LazyExportBackupPage,
 } from "./components/LazyComponents";
 
 // Simple theme configuration to avoid complex theme store issues
@@ -444,6 +447,48 @@ const App: React.FC = () => {
                         <ErrorBoundary>
                           <Suspense fallback={<LoadingSpinner />}>
                             <LazySystemStatusPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/conversation-intelligence"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyConversationIntelligencePage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/domain-groups"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyDomainGroupsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/export-backup"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyExportBackupPage />
                           </Suspense>
                         </ErrorBoundary>
                       </Layout>

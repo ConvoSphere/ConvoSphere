@@ -7,6 +7,16 @@ import {
   Alert,
   Typography,
   Space,
+  Tabs,
+  Button,
+  Select,
+  DatePicker,
+  Table,
+  List,
+  Avatar,
+  Tooltip,
+  Popconfirm,
+  message,
 } from "antd";
 import {
   ResponsiveContainer,
@@ -15,15 +25,23 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
 } from "recharts";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";
-import api from "../services/api";
+import { useMonitoringStore } from "../store/monitoringStore";
+import { RangePickerProps } from "antd/es/date-picker";
+import dayjs from "dayjs";
 
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
+import ModernSelect from "../components/ModernSelect";
+import SystemMetrics from "../components/monitoring/SystemMetrics";
 import {
   DatabaseOutlined,
   CloudOutlined,
@@ -36,7 +54,18 @@ import {
   HddOutlined,
   CloudServerOutlined,
   SafetyOutlined,
+  MonitorOutlined,
+  DownloadOutlined,
+  SettingOutlined,
+  WarningOutlined,
+  InfoCircleOutlined,
+  ThunderboltOutlined,
+  DesktopOutlined,
+  MemoryOutlined,
+  WifiOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
+import type { Alert as AlertType, ServiceHealth } from "../services/monitoring";
 
 const { Title, Text } = Typography;
 
@@ -60,6 +89,8 @@ const SystemStatus: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const isAdmin =
     user && (user.role === "admin" || user.role === "super_admin");
+  
+  // Legacy state for backward compatibility
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,20 +98,54 @@ const SystemStatus: React.FC = () => {
   const cpuHistory = useRef<{ time: string; cpu: number }[]>([]);
   const ramHistory = useRef<{ time: string; ram: number }[]>([]);
 
+  // New monitoring store
+  const {
+    systemMetrics,
+    performanceData,
+    alerts,
+    serviceHealth,
+    loading: monitoringLoading,
+    error: monitoringError,
+    fetchSystemMetrics,
+    fetchPerformanceData,
+    fetchAlerts,
+    fetchServiceHealth,
+    acknowledgeAlert,
+    triggerHealthCheck,
+    exportMonitoringData,
+    clearError,
+  } = useMonitoringStore();
+
+  // Local state
+  const [activeTab, setActiveTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState('1h');
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+
   const fetchStatus = async () => {
     try {
-      const res = await api.get("/users/admin/system-status");
-      setData(res.data);
-      const now = new Date().toLocaleTimeString();
-      // CPU
-      cpuHistory.current.push({ time: now, cpu: res.data.system.cpu_percent });
-      if (cpuHistory.current.length > MAX_POINTS) cpuHistory.current.shift();
-      // RAM
-      ramHistory.current.push({ time: now, ram: res.data.system.ram.percent });
-      if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
+      // Use new monitoring service for system metrics
+      await fetchSystemMetrics();
+      await fetchPerformanceData(timeRange);
+      await fetchAlerts();
+      await fetchServiceHealth();
+      
+      // Legacy API call for backward compatibility
+      const res = await fetch("/api/v1/users/admin/system-status");
+      if (res.ok) {
+        const legacyData = await res.json();
+        setData(legacyData);
+        const now = new Date().toLocaleTimeString();
+        // CPU
+        cpuHistory.current.push({ time: now, cpu: legacyData.system.cpu_percent });
+        if (cpuHistory.current.length > MAX_POINTS) cpuHistory.current.shift();
+        // RAM
+        ramHistory.current.push({ time: now, ram: legacyData.system.ram.percent });
+        if (ramHistory.current.length > MAX_POINTS) ramHistory.current.shift();
+      }
+      
       setLastUpdate(new Date());
       setError(null);
-    } catch {
+    } catch (err) {
       setError(t("system.load_failed"));
     } finally {
       setLoading(false);
@@ -96,7 +161,49 @@ const SystemStatus: React.FC = () => {
     const timer: NodeJS.Timeout = setInterval(fetchStatus, 5000);
 
     return () => clearInterval(timer);
-  }, [isAdmin]);
+  }, [isAdmin, timeRange]);
+
+  // Handle alert acknowledgment
+  const handleAcknowledgeAlert = async (alertId: string) => {
+    if (!user?.id) return;
+    try {
+      await acknowledgeAlert(alertId, user.id);
+      message.success(t('monitoring.alert_acknowledged'));
+    } catch (error) {
+      message.error(t('monitoring.acknowledge_error'));
+    }
+  };
+
+  // Handle manual health check
+  const handleHealthCheck = async (serviceId?: string) => {
+    try {
+      await triggerHealthCheck(serviceId);
+      message.success(t('monitoring.health_check_triggered'));
+    } catch (error) {
+      message.error(t('monitoring.health_check_error'));
+    }
+  };
+
+  // Handle export
+  const handleExport = async (format: 'csv' | 'json' = 'csv') => {
+    try {
+      await exportMonitoringData(format);
+      message.success(t('monitoring.export_success'));
+    } catch (error) {
+      message.error(t('monitoring.export_error'));
+    }
+  };
+
+  // Format uptime for display
+  const formatUptime = (seconds: number) => {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   const getStatusColor = (healthy: boolean) => {
     return healthy ? colors.colorSuccess : colors.colorError;
@@ -201,7 +308,68 @@ const SystemStatus: React.FC = () => {
       }}
     >
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-        <ModernCard variant="gradient" size="lg" className="stagger-children">
+        {/* Header */}
+        <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+          <Col>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
+              <MonitorOutlined style={{ marginRight: '8px' }} />
+              {t('monitoring.system_status')}
+            </Title>
+            <Text type="secondary" style={{ color: colors.colorTextSecondary }}>
+              {t('monitoring.system_status_description')}
+            </Text>
+          </Col>
+          <Col>
+            <Space>
+              <Tooltip title={t('monitoring.refresh_data')}>
+                <ModernButton
+                  icon={<ReloadOutlined />}
+                  onClick={fetchStatus}
+                  loading={loading || monitoringLoading}
+                >
+                  {t('monitoring.refresh')}
+                </ModernButton>
+              </Tooltip>
+              <Tooltip title={t('monitoring.export_data')}>
+                <ModernButton
+                  icon={<DownloadOutlined />}
+                  onClick={() => handleExport('csv')}
+                >
+                  {t('monitoring.export')}
+                </ModernButton>
+              </Tooltip>
+            </Space>
+          </Col>
+        </Row>
+
+        {/* Error Alert */}
+        {(error || monitoringError) && (
+          <Alert
+            message={t('monitoring.error')}
+            description={error || monitoringError}
+            type="error"
+            showIcon
+            closable
+            onClose={() => {
+              setError(null);
+              clearError();
+            }}
+            style={{ marginBottom: '16px' }}
+          />
+        )}
+
+        {/* Main Content Tabs */}
+        <Tabs activeKey={activeTab} onChange={setActiveTab} type="card">
+          <Tabs.TabPane
+            tab={
+              <span>
+                <MonitorOutlined />
+                {t('monitoring.overview')}
+              </span>
+            }
+            key="overview"
+          >
+            <ModernCard variant="gradient" size="lg" className="stagger-children">
           <div style={{ textAlign: "center", padding: "32px 0" }}>
             <div
               style={{
@@ -583,6 +751,246 @@ const SystemStatus: React.FC = () => {
             </ModernCard>
           </Col>
         </Row>
+            </ModernCard>
+          </Tabs.TabPane>
+
+          {/* System Metrics Tab */}
+          <Tabs.TabPane
+            tab={
+              <span>
+                <DesktopOutlined />
+                {t('monitoring.system_metrics')}
+              </span>
+            }
+            key="metrics"
+          >
+            <Spin spinning={monitoringLoading}>
+              <SystemMetrics data={systemMetrics} loading={monitoringLoading} />
+            </Spin>
+          </Tabs.TabPane>
+
+          {/* Performance Tab */}
+          <Tabs.TabPane
+            tab={
+              <span>
+                <LineChartOutlined />
+                {t('monitoring.performance')}
+              </span>
+            }
+            key="performance"
+          >
+            <ModernCard>
+              <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+                <Col xs={24} sm={12} md={6}>
+                  <ModernSelect
+                    value={timeRange}
+                    onChange={setTimeRange}
+                    style={{ width: '100%' }}
+                  >
+                    <Select.Option value="1h">{t('monitoring.last_hour')}</Select.Option>
+                    <Select.Option value="6h">{t('monitoring.last_6_hours')}</Select.Option>
+                    <Select.Option value="24h">{t('monitoring.last_24_hours')}</Select.Option>
+                    <Select.Option value="7d">{t('monitoring.last_7_days')}</Select.Option>
+                  </ModernSelect>
+                </Col>
+              </Row>
+              
+              {performanceData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={performanceData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="timestamp" 
+                      tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                    />
+                    <YAxis />
+                    <RechartsTooltip 
+                      labelFormatter={(value) => new Date(value).toLocaleString()}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="responseTime" 
+                      stroke="#1890ff" 
+                      name={t('monitoring.response_time')}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="throughput" 
+                      stroke="#52c41a" 
+                      name={t('monitoring.throughput')}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="errorRate" 
+                      stroke="#ff4d4f" 
+                      name={t('monitoring.error_rate')}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <Text type="secondary">{t('monitoring.no_performance_data')}</Text>
+                </div>
+              )}
+            </ModernCard>
+          </Tabs.TabPane>
+
+          {/* Alerts Tab */}
+          <Tabs.TabPane
+            tab={
+              <span>
+                <WarningOutlined />
+                {t('monitoring.alerts')}
+                {alerts.length > 0 && (
+                  <Tag color="red" style={{ marginLeft: 8 }}>
+                    {alerts.filter(a => !a.acknowledged).length}
+                  </Tag>
+                )}
+              </span>
+            }
+            key="alerts"
+          >
+            <ModernCard>
+              {alerts.length > 0 ? (
+                <List
+                  dataSource={alerts}
+                  renderItem={(alert: AlertType) => (
+                    <List.Item
+                      actions={[
+                        !alert.acknowledged && (
+                          <ModernButton
+                            key="acknowledge"
+                            size="small"
+                            onClick={() => handleAcknowledgeAlert(alert.id)}
+                          >
+                            {t('monitoring.acknowledge')}
+                          </ModernButton>
+                        ),
+                      ].filter(Boolean)}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar
+                            icon={
+                              alert.type === 'critical' ? <ExclamationCircleOutlined /> :
+                              alert.type === 'error' ? <ExclamationCircleOutlined /> :
+                              alert.type === 'warning' ? <WarningOutlined /> :
+                              <InfoCircleOutlined />
+                            }
+                            style={{
+                              backgroundColor: 
+                                alert.type === 'critical' ? '#ff4d4f' :
+                                alert.type === 'error' ? '#ff7875' :
+                                alert.type === 'warning' ? '#faad14' :
+                                '#1890ff'
+                            }}
+                          />
+                        }
+                        title={
+                          <Space>
+                            <Text strong>{alert.title}</Text>
+                            <Tag color={
+                              alert.severity === 'critical' ? 'red' :
+                              alert.severity === 'high' ? 'orange' :
+                              alert.severity === 'medium' ? 'gold' :
+                              'blue'
+                            }>
+                              {t(`monitoring.severity.${alert.severity}`)}
+                            </Tag>
+                            {alert.acknowledged && (
+                              <Tag color="green">{t('monitoring.acknowledged')}</Tag>
+                            )}
+                          </Space>
+                        }
+                        description={
+                          <Space direction="vertical" size="small">
+                            <Text>{alert.message}</Text>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              {t('monitoring.source')}: {alert.source} | 
+                              {t('monitoring.timestamp')}: {new Date(alert.timestamp).toLocaleString()}
+                            </Text>
+                          </Space>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <Text type="secondary">{t('monitoring.no_alerts')}</Text>
+                </div>
+              )}
+            </ModernCard>
+          </Tabs.TabPane>
+
+          {/* Service Health Tab */}
+          <Tabs.TabPane
+            tab={
+              <span>
+                <SafetyOutlined />
+                {t('monitoring.service_health')}
+              </span>
+            }
+            key="services"
+          >
+            <ModernCard>
+              <Row gutter={[16, 16]}>
+                {serviceHealth.map((service: ServiceHealth) => (
+                  <Col xs={24} sm={12} lg={8} key={service.service}>
+                    <Card size="small">
+                      <div style={{ textAlign: 'center' }}>
+                        <Avatar
+                          size={48}
+                          icon={
+                            service.status === 'healthy' ? <CheckCircleOutlined /> :
+                            service.status === 'degraded' ? <WarningOutlined /> :
+                            <ExclamationCircleOutlined />
+                          }
+                          style={{
+                            backgroundColor: 
+                              service.status === 'healthy' ? '#52c41a' :
+                              service.status === 'degraded' ? '#faad14' :
+                              '#ff4d4f',
+                            marginBottom: 8
+                          }}
+                        />
+                        <Title level={5} style={{ marginTop: 8 }}>
+                          {service.service}
+                        </Title>
+                        <Space direction="vertical" size="small">
+                          <Tag color={
+                            service.status === 'healthy' ? 'success' :
+                            service.status === 'degraded' ? 'warning' :
+                            'error'
+                          }>
+                            {t(`monitoring.status.${service.status}`)}
+                          </Tag>
+                          <Text type="secondary">
+                            {t('monitoring.response_time')}: {service.responseTime}ms
+                          </Text>
+                          <Text type="secondary">
+                            {t('monitoring.uptime')}: {formatUptime(service.uptime)}
+                          </Text>
+                          <Text type="secondary">
+                            {t('monitoring.version')}: {service.version}
+                          </Text>
+                        </Space>
+                        <div style={{ marginTop: 8 }}>
+                          <ModernButton
+                            size="small"
+                            onClick={() => handleHealthCheck(service.service)}
+                          >
+                            {t('monitoring.check_health')}
+                          </ModernButton>
+                        </div>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </ModernCard>
+          </Tabs.TabPane>
+        </Tabs>
       </div>
     </div>
   );
