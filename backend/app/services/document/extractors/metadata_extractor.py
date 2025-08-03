@@ -4,8 +4,8 @@ Metadata extractor.
 This module extracts metadata from documents.
 """
 
-import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -14,10 +14,11 @@ class MetadataExtractor:
 
     def extract(self, file_path: str, content: dict[str, Any]) -> dict[str, Any]:
         """Extract metadata from a document."""
-        file_stat = os.stat(file_path)
+        path = Path(file_path)
+        file_stat = path.stat()
 
         metadata = {
-            "file_name": os.path.basename(file_path),
+            "file_name": path.name,
             "file_size": file_stat.st_size,
             "created_time": datetime.fromtimestamp(file_stat.st_ctime),
             "modified_time": datetime.fromtimestamp(file_stat.st_mtime),

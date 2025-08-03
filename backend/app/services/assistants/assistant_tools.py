@@ -9,7 +9,9 @@ from typing import Any
 
 from loguru import logger
 
-from backend.app.services.tool_executor_v2 import enhanced_tool_executor as tool_executor
+from backend.app.services.tool_executor_v2 import (
+    enhanced_tool_executor as tool_executor,
+)
 from backend.app.services.tool_service import tool_service
 
 

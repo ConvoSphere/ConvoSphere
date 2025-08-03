@@ -4,7 +4,7 @@ File validator.
 This module validates document files.
 """
 
-import os
+from pathlib import Path
 
 import magic
 
@@ -26,13 +26,14 @@ class FileValidator:
 
     def validate_file(self, file_path: str) -> bool:
         """Validate a file for processing."""
-        if not os.path.exists(file_path):
+        path = Path(file_path)
+        if not path.exists():
             return False
 
-        if not os.path.isfile(file_path):
+        if not path.is_file():
             return False
 
-        file_size = os.path.getsize(file_path)
+        file_size = path.stat().st_size
         if file_size > self.MAX_FILE_SIZE:
             return False
 

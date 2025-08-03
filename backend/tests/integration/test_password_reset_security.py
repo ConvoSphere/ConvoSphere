@@ -5,14 +5,14 @@ This module tests the integration of rate limiting, CSRF protection,
 and audit logging for password reset operations.
 """
 
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 from backend.app.main import app
-from backend.app.core.database import get_db
-from backend.app.models.user import User
 from backend.app.models.audit_extended import ExtendedAuditLog
+from backend.app.models.user import User
 
 
 class TestPasswordResetRateLimiting:
@@ -211,7 +211,7 @@ class TestPasswordResetAuditLogging:
         """Test audit logging for successful password reset."""
         mock_send_notification.return_value = True
         
-        response = client.post(
+        client.post(
             "/api/v1/auth/reset-password",
             json={
                 "token": "valid-token-123",

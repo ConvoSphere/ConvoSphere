@@ -5,7 +5,6 @@ This module provides the main assistant engine with hybrid chat/agent mode
 capabilities, structured output, and integration with the HybridModeManager.
 """
 
-import asyncio
 from datetime import UTC, datetime
 from typing import Any
 

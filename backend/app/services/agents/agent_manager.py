@@ -18,11 +18,12 @@ from backend.app.schemas.agent import (
     AgentResponse,
     AgentUpdate,
 )
+
+from .agent_collaboration import agent_collaboration_service
+from .agent_handoff import agent_handoff_service
+from .agent_performance import agent_performance_service
 from .agent_registry import agent_registry
 from .agent_state import agent_state_manager
-from .agent_handoff import agent_handoff_service
-from .agent_collaboration import agent_collaboration_service
-from .agent_performance import agent_performance_service
 
 
 class AgentManager:

@@ -6,13 +6,14 @@ wrapping the UserService for authentication operations.
 """
 
 from datetime import datetime
+
+from backend.app.core.config import get_settings
 from backend.app.core.security import get_password_hash, verify_password
 from backend.app.models.user import User
 from backend.app.schemas.user import UserCreate, UserUpdate
-from backend.app.services.user_service import UserService
 from backend.app.services.email_service import email_service
 from backend.app.services.token_service import token_service
-from backend.app.core.config import get_settings
+from backend.app.services.user_service import UserService
 
 
 class AuthService:

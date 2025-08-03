@@ -5,12 +5,13 @@ This module tests the security hardening functionality
 for password reset operations.
 """
 
-import pytest
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-from backend.app.core.security_hardening import SSOSecurityValidator
+import pytest
+
 from backend.app.core.csrf_protection import CSRFProtection
+from backend.app.core.security_hardening import SSOSecurityValidator
 
 
 class TestPasswordResetRateLimiting:
@@ -184,7 +185,7 @@ class TestCSRFProtection:
         """Test cleanup of expired tokens."""
         # Generate some tokens
         token1 = csrf_protection.generate_csrf_token()
-        token2 = csrf_protection.generate_csrf_token()
+        csrf_protection.generate_csrf_token()
         
         # Mock time to expire one token
         with patch('time.time') as mock_time:

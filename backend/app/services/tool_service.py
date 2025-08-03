@@ -126,7 +126,7 @@ class ToolService:
 
         # Validate category
         try:
-            category = ToolCategory(tool_data["category"])
+            ToolCategory(tool_data["category"])
         except ValueError:
             raise ValueError(f"Invalid tool category: {tool_data['category']}") from None
 

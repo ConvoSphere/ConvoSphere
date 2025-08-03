@@ -15,6 +15,16 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
+def utc_now() -> datetime:
+    """
+    Get current UTC datetime.
+
+    Returns:
+        datetime: Current UTC datetime
+    """
+    return datetime.now(UTC)
+
+
 def format_datetime(dt: datetime, format_str: str = "%Y-%m-%d %H:%M:%S") -> str:
     """
     Format datetime to string.

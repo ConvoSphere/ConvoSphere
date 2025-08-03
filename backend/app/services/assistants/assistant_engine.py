@@ -13,15 +13,15 @@ from loguru import logger
 
 from backend.app.core.config import get_settings
 from backend.app.schemas.hybrid_mode import (
-    AgentMemory,
     ConversationMode,
     StructuredResponse,
 )
-from .assistant_processor import AssistantProcessor
+
 from .assistant_context import AssistantContextManager
+from .assistant_memory import AssistantMemoryManager
+from .assistant_processor import AssistantProcessor
 from .assistant_response import AssistantResponseGenerator
 from .assistant_tools import AssistantToolsManager
-from .assistant_memory import AssistantMemoryManager
 
 
 class ProcessingRequest:

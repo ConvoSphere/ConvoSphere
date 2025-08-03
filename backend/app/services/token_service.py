@@ -8,12 +8,14 @@ for password reset operations.
 import secrets
 import string
 from datetime import datetime, timedelta
+from backend.app.utils.helpers import utc_now
 from typing import Optional
+
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
 from backend.app.models.user import User
-from sqlalchemy.orm import Session
 
 
 class TokenService:
@@ -62,7 +64,7 @@ class TokenService:
             return False
 
         # Check if token has expired
-        if user.password_reset_expires_at and user.password_reset_expires_at < datetime.utcnow():
+        if user.password_reset_expires_at and user.password_reset_expires_at < utc_now():
             logger.warning(f"Expired password reset token: {token[:8]}...")
             return False
 
@@ -96,7 +98,7 @@ class TokenService:
         token = self.generate_password_reset_token()
         
         # Set expiration time
-        expires_at = datetime.utcnow() + timedelta(minutes=self.token_expire_minutes)
+        expires_at = utc_now() + timedelta(minutes=self.token_expire_minutes)
         
         # Update user with token and expiration
         user.password_reset_token = token
@@ -132,7 +134,7 @@ class TokenService:
         Returns:
             int: Number of tokens cleaned up
         """
-        now = datetime.utcnow()
+        now = utc_now()
         expired_users = db.query(User).filter(
             User.password_reset_expires_at < now,
             User.password_reset_token.isnot(None)

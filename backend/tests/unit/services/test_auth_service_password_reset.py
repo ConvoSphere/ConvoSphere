@@ -4,12 +4,12 @@ Unit tests for AuthService password reset functionality.
 This module tests the password reset features added to the AuthService.
 """
 
-import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
-from backend.app.services.auth_service import AuthService
+import pytest
+
 from backend.app.models.user import User
+from backend.app.services.auth_service import AuthService
 
 
 class TestAuthServicePasswordReset:

@@ -13,6 +13,7 @@ import hashlib
 import json
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from backend.app.utils.helpers import utc_now
 from enum import Enum
 from functools import wraps
 from typing import Any
@@ -74,19 +75,19 @@ class CacheEntry:
     def __init__(self, key: str, value: Any, ttl: int = 3600):
         self.key = key
         self.value = value
-        self.created_at = datetime.utcnow()
-        self.last_accessed = datetime.utcnow()
+        self.created_at = utc_now()
+        self.last_accessed = utc_now()
         self.access_count = 0
         self.ttl = ttl
         self.expires_at = self.created_at + timedelta(seconds=ttl)
 
     def is_expired(self) -> bool:
         """Check if entry is expired."""
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
     def access(self):
         """Record access to entry."""
-        self.last_accessed = datetime.utcnow()
+        self.last_accessed = utc_now()
         self.access_count += 1
 
     def to_dict(self) -> dict[str, Any]:
@@ -477,7 +478,7 @@ class CacheDecorator:
         }
 
         key_string = json.dumps(key_data, sort_keys=True)
-        key_hash = hashlib.md5(key_string.encode()).hexdigest()
+        key_hash = hashlib.md5(key_string.encode(), usedforsecurity=False).hexdigest()
 
         return f"{self.key_prefix}:{key_hash}"
 

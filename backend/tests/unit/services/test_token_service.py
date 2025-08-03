@@ -4,12 +4,13 @@ Unit tests for TokenService.
 This module tests the token service functionality for password reset operations.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from backend.app.services.token_service import TokenService
+import pytest
+
 from backend.app.models.user import User
+from backend.app.services.token_service import TokenService
 
 
 class TestTokenService:

@@ -16,6 +16,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
+from backend.app.core.csrf_protection import generate_csrf_token
 from backend.app.core.database import get_db
 from backend.app.core.dependencies import require_admin_role
 from backend.app.core.security import (
@@ -34,14 +35,13 @@ from backend.app.core.security_hardening import (
     sso_security_validator,
     validate_sso_request,
 )
-from backend.app.core.csrf_protection import generate_csrf_token
 from backend.app.models.user import User, UserRole
 from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
 from backend.app.services.audit_service import audit_service
+from backend.app.services.auth_service import AuthService
 from backend.app.services.oauth_service import oauth_service
 from backend.app.services.saml_service import saml_service
 from backend.app.services.user_service import UserService
-from backend.app.services.auth_service import AuthService
 
 router = APIRouter()
 
