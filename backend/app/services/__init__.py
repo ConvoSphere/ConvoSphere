@@ -8,10 +8,16 @@ from .assistant_service import AssistantService
 from .conversation_service import ConversationService
 from .tool_service import ToolService
 from .user_service import UserService
+from .email_service import EmailService, email_service
+from .token_service import TokenService, token_service
 
 __all__ = [
     "AssistantService",
     "ConversationService",
     "ToolService",
     "UserService",
+    "EmailService",
+    "email_service",
+    "TokenService",
+    "token_service",
 ]

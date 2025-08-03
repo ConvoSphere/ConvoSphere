@@ -490,10 +490,63 @@ def document_processing_handler(job_metadata: JobMetadata) -> dict[str, Any]:
 
 
 def email_sending_handler(job_metadata: JobMetadata) -> dict[str, Any]:
-    """Example handler for email sending jobs."""
-    # Simulate email sending
-    time.sleep(2)
-    return {"sent": True, "recipient": job_metadata.result.get("recipient")}
+    """Handler for email sending jobs."""
+    try:
+        from backend.app.services.email_service import email_service
+        
+        email_type = job_metadata.result.get("email_type")
+        recipient = job_metadata.result.get("recipient")
+        
+        if email_type == "password_reset":
+            # Send password reset email
+            token = job_metadata.result.get("token")
+            reset_url = job_metadata.result.get("reset_url")
+            language = job_metadata.result.get("language", "de")
+            
+            success = email_service.send_password_reset_email(
+                email=recipient,
+                token=token,
+                reset_url=reset_url,
+                language=language
+            )
+            
+            return {
+                "sent": success,
+                "recipient": recipient,
+                "email_type": email_type
+            }
+            
+        elif email_type == "password_changed":
+            # Send password changed notification
+            language = job_metadata.result.get("language", "de")
+            
+            success = email_service.send_password_changed_notification(
+                email=recipient,
+                language=language
+            )
+            
+            return {
+                "sent": success,
+                "recipient": recipient,
+                "email_type": email_type
+            }
+        
+        else:
+            # Generic email sending (fallback)
+            time.sleep(2)  # Simulate email sending
+            return {
+                "sent": True,
+                "recipient": recipient,
+                "email_type": email_type or "generic"
+            }
+            
+    except Exception as e:
+        logger.error(f"Email sending failed: {e}")
+        return {
+            "sent": False,
+            "recipient": job_metadata.result.get("recipient"),
+            "error": str(e)
+        }
 
 
 # Register default handlers

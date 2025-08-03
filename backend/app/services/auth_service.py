@@ -5,10 +5,14 @@ This module provides authentication-specific functionality,
 wrapping the UserService for authentication operations.
 """
 
+from datetime import datetime
 from backend.app.core.security import get_password_hash, verify_password
 from backend.app.models.user import User
 from backend.app.schemas.user import UserCreate, UserUpdate
 from backend.app.services.user_service import UserService
+from backend.app.services.email_service import email_service
+from backend.app.services.token_service import token_service
+from backend.app.core.config import get_settings
 
 
 class AuthService:
@@ -160,3 +164,108 @@ class AuthService:
         user.is_active = True
         self.db_session.commit()
         return True
+
+    def request_password_reset(self, email: str) -> bool:
+        """
+        Request a password reset for a user.
+
+        Args:
+            email: User email address
+
+        Returns:
+            bool: True if reset request was successful
+
+        Raises:
+            ValueError: If user not found
+        """
+        user = self.user_service.get_user_by_email(email)
+        if not user:
+            raise ValueError("User not found")
+
+        # Generate password reset token
+        token = token_service.create_password_reset_token(user, self.db_session)
+
+        # Build reset URL
+        settings = get_settings()
+        base_url = getattr(settings, 'password_reset_base_url', 'http://localhost:3000')
+        reset_url = f"{base_url}/reset-password?token={token}"
+
+        # Send password reset email
+        success = email_service.send_password_reset_email(
+            email=user.email,
+            token=token,
+            reset_url=reset_url,
+            language=user.language
+        )
+
+        if success:
+            # Log the password reset request
+            from backend.app.services.audit_service import audit_service
+            audit_service.log_security_event(
+                user_id=user.id,
+                event_type="password_reset_requested",
+                details={"email": user.email, "ip_address": "unknown"}
+            )
+
+        return success
+
+    def reset_password_with_token(self, token: str, new_password: str) -> bool:
+        """
+        Reset password using a valid token.
+
+        Args:
+            token: Password reset token
+            new_password: New password
+
+        Returns:
+            bool: True if password was reset successfully
+
+        Raises:
+            ValueError: If token is invalid or expired
+        """
+        # Validate token
+        if not token_service.validate_password_reset_token(token, self.db_session):
+            raise ValueError("Invalid or expired token")
+
+        # Get user by token
+        user = token_service.get_user_by_reset_token(token, self.db_session)
+        if not user:
+            raise ValueError("User not found")
+
+        # Update password
+        user.hashed_password = get_password_hash(new_password)
+        user.password_changed_at = datetime.utcnow()
+        
+        # Clear reset token
+        token_service.clear_password_reset_token(user, self.db_session)
+        
+        # Commit changes
+        self.db_session.commit()
+
+        # Send password changed notification
+        email_service.send_password_changed_notification(
+            email=user.email,
+            language=user.language
+        )
+
+        # Log the password reset
+        from backend.app.services.audit_service import audit_service
+        audit_service.log_security_event(
+            user_id=user.id,
+            event_type="password_reset_completed",
+            details={"email": user.email, "ip_address": "unknown"}
+        )
+
+        return True
+
+    def validate_reset_token(self, token: str) -> bool:
+        """
+        Validate a password reset token without resetting password.
+
+        Args:
+            token: Password reset token
+
+        Returns:
+            bool: True if token is valid, False otherwise
+        """
+        return token_service.validate_password_reset_token(token, self.db_session)

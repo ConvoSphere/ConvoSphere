@@ -40,6 +40,7 @@ from backend.app.services.audit_service import audit_service
 from backend.app.services.oauth_service import oauth_service
 from backend.app.services.saml_service import saml_service
 from backend.app.services.user_service import UserService
+from backend.app.services.auth_service import AuthService
 
 router = APIRouter()
 
@@ -897,3 +898,115 @@ async def bulk_sync_users(
 #     description="Permission denied for endpoint X",
 #     severity="warning"
 # )
+
+
+# Password Reset Endpoints
+@router.post("/forgot-password")
+async def forgot_password(
+    request_data: PasswordResetRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Request a password reset for a user.
+    
+    This endpoint will send a password reset email if the user exists.
+    For security reasons, it always returns success even if the user doesn't exist.
+    """
+    try:
+        auth_service = AuthService(db)
+        
+        # Try to request password reset
+        try:
+            success = auth_service.request_password_reset(request_data.email)
+            if success:
+                logger.info(f"Password reset email sent to {request_data.email}")
+            else:
+                logger.warning(f"Failed to send password reset email to {request_data.email}")
+        except ValueError:
+            # User not found - don't reveal this information
+            logger.info(f"Password reset requested for non-existent email: {request_data.email}")
+        
+        # Always return success for security reasons
+        return {
+            "message": "If the email address exists, a password reset link has been sent.",
+            "status": "success"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in forgot password endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while processing your request"
+        )
+
+
+@router.post("/reset-password")
+async def reset_password(
+    reset_data: PasswordResetConfirm,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Reset password using a valid token.
+    """
+    try:
+        auth_service = AuthService(db)
+        
+        # Reset password with token
+        success = auth_service.reset_password_with_token(
+            reset_data.token,
+            reset_data.new_password
+        )
+        
+        if success:
+            logger.info("Password reset completed successfully")
+            return {
+                "message": "Password reset successfully",
+                "status": "success"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to reset password"
+            )
+            
+    except ValueError as e:
+        logger.warning(f"Invalid password reset attempt: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+    except Exception as e:
+        logger.error(f"Error in reset password endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while resetting your password"
+        )
+
+
+@router.post("/validate-reset-token")
+async def validate_reset_token(
+    token_data: dict,
+    db: Session = Depends(get_db),
+):
+    """
+    Validate a password reset token without resetting password.
+    """
+    try:
+        auth_service = AuthService(db)
+        
+        # Validate token
+        is_valid = auth_service.validate_reset_token(token_data.get("token", ""))
+        
+        return {
+            "valid": is_valid,
+            "message": "Token is valid" if is_valid else "Token is invalid or expired"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error validating reset token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while validating the token"
+        )

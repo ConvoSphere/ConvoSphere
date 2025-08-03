@@ -159,6 +159,10 @@ class User(Base):
     password_changed_at = Column(DateTime(timezone=True), nullable=True)
     failed_login_attempts = Column(String(10), default="0", nullable=False)
     locked_until = Column(DateTime(timezone=True), nullable=True)
+    
+    # Password reset fields
+    password_reset_token = Column(String(255), nullable=True, index=True)
+    password_reset_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Preferences
     language = Column(String(10), default="de", nullable=False)
