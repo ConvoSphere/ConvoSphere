@@ -96,7 +96,7 @@ class AIResponse:
 class AssistantEngine:
     """
     Main assistant engine for processing user messages with hybrid mode support.
-    
+
     This is a facade that delegates to the modular assistant engine implementation.
     """
 

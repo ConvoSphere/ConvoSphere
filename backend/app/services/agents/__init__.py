@@ -14,7 +14,7 @@ from .agent_state import AgentStateManager
 
 __all__ = [
     "AgentRegistry",
-    "AgentManager", 
+    "AgentManager",
     "AgentHandoffService",
     "AgentCollaborationService",
     "AgentPerformanceService",

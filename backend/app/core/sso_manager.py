@@ -778,9 +778,7 @@ class OAuthProvider(SSOProvider):
             "client_secret": self.client_secret,
         }
 
-        response = requests.post(
-            self.token_url, data=token_data, timeout=30
-        )  # nosec B113 - timeout added
+        response = requests.post(self.token_url, data=token_data, timeout=30)  # nosec B113 - timeout added
         response.raise_for_status()
 
         return response.json()
@@ -788,9 +786,7 @@ class OAuthProvider(SSOProvider):
     async def _get_user_info(self, access_token: str) -> dict[str, Any]:
         """Get user information from OAuth provider."""
         headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get(
-            self.userinfo_url, headers=headers, timeout=30
-        )  # nosec B113 - timeout added
+        response = requests.get(self.userinfo_url, headers=headers, timeout=30)  # nosec B113 - timeout added
         response.raise_for_status()
 
         return response.json()

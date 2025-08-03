@@ -181,19 +181,23 @@ class AgentRegistry:
             if active_only and not entry.is_active:
                 continue
 
-            agents.append({
-                "id": agent_id,
-                "name": entry.config.name,
-                "description": entry.config.description,
-                "model": entry.config.model,
-                "temperature": entry.config.temperature,
-                "tools": entry.config.tools,
-                "is_active": entry.is_active,
-                "usage_count": entry.usage_count,
-                "last_used": entry.last_used.isoformat() if entry.last_used else None,
-                "created_at": entry.created_at.isoformat(),
-                "updated_at": entry.updated_at.isoformat(),
-            })
+            agents.append(
+                {
+                    "id": agent_id,
+                    "name": entry.config.name,
+                    "description": entry.config.description,
+                    "model": entry.config.model,
+                    "temperature": entry.config.temperature,
+                    "tools": entry.config.tools,
+                    "is_active": entry.is_active,
+                    "usage_count": entry.usage_count,
+                    "last_used": entry.last_used.isoformat()
+                    if entry.last_used
+                    else None,
+                    "created_at": entry.created_at.isoformat(),
+                    "updated_at": entry.updated_at.isoformat(),
+                }
+            )
 
         return agents
 

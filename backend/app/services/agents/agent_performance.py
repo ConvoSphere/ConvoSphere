@@ -170,16 +170,18 @@ class AgentPerformanceService:
         total_interactions = len(metrics)
         avg_response_time = sum(m.response_time for m in metrics) / total_interactions
         avg_success_rate = sum(m.success_rate for m in metrics) / total_interactions
-        avg_user_satisfaction = sum(m.user_satisfaction for m in metrics) / total_interactions
+        avg_user_satisfaction = (
+            sum(m.user_satisfaction for m in metrics) / total_interactions
+        )
         total_tokens_used = sum(m.tokens_used for m in metrics)
         total_errors = sum(m.error_count for m in metrics)
 
         # Calculate performance score (weighted average)
         performance_score = (
-            (avg_success_rate * 0.4) +
-            (avg_user_satisfaction / 5.0 * 100 * 0.3) +
-            (max(0, 100 - avg_response_time * 10) * 0.2) +
-            (max(0, 100 - total_errors * 5) * 0.1)
+            (avg_success_rate * 0.4)
+            + (avg_user_satisfaction / 5.0 * 100 * 0.3)
+            + (max(0, 100 - avg_response_time * 10) * 0.2)
+            + (max(0, 100 - total_errors * 5) * 0.1)
         )
 
         return {
@@ -222,24 +224,31 @@ class AgentPerformanceService:
 
             # Get metrics for this interval
             interval_metrics = [
-                m for m in self.performance_history
+                m
+                for m in self.performance_history
                 if m.agent_id == agent_id
                 and current_start <= m.created_at < current_end
             ]
 
             if interval_metrics:
-                avg_response_time = sum(m.response_time for m in interval_metrics) / len(interval_metrics)
-                avg_success_rate = sum(m.success_rate for m in interval_metrics) / len(interval_metrics)
-                avg_user_satisfaction = sum(m.user_satisfaction for m in interval_metrics) / len(interval_metrics)
+                avg_response_time = sum(
+                    m.response_time for m in interval_metrics
+                ) / len(interval_metrics)
+                avg_success_rate = sum(m.success_rate for m in interval_metrics) / len(
+                    interval_metrics
+                )
+                avg_user_satisfaction = sum(
+                    m.user_satisfaction for m in interval_metrics
+                ) / len(interval_metrics)
                 total_interactions = len(interval_metrics)
                 total_errors = sum(m.error_count for m in interval_metrics)
 
                 # Calculate performance score
                 performance_score = (
-                    (avg_success_rate * 0.4) +
-                    (avg_user_satisfaction / 5.0 * 100 * 0.3) +
-                    (max(0, 100 - avg_response_time * 10) * 0.2) +
-                    (max(0, 100 - total_errors * 5) * 0.1)
+                    (avg_success_rate * 0.4)
+                    + (avg_user_satisfaction / 5.0 * 100 * 0.3)
+                    + (max(0, 100 - avg_response_time * 10) * 0.2)
+                    + (max(0, 100 - total_errors * 5) * 0.1)
                 )
 
                 trend = PerformanceTrend(
@@ -265,7 +274,7 @@ class AgentPerformanceService:
             for i in range(1, len(trends)):
                 prev_score = trends[i - 1].performance_score
                 curr_score = trends[i].performance_score
-                
+
                 if curr_score > prev_score + 5:
                     trends[i].trend_direction = "improving"
                 elif curr_score < prev_score - 5:
@@ -289,8 +298,7 @@ class AgentPerformanceService:
             dict: Conversation performance summary
         """
         conversation_metrics = [
-            m for m in self.performance_history
-            if m.conversation_id == conversation_id
+            m for m in self.performance_history if m.conversation_id == conversation_id
         ]
 
         if not conversation_metrics:
@@ -306,8 +314,12 @@ class AgentPerformanceService:
 
         # Calculate overall metrics
         total_interactions = len(conversation_metrics)
-        avg_response_time = sum(m.response_time for m in conversation_metrics) / total_interactions
-        avg_success_rate = sum(m.success_rate for m in conversation_metrics) / total_interactions
+        avg_response_time = (
+            sum(m.response_time for m in conversation_metrics) / total_interactions
+        )
+        avg_success_rate = (
+            sum(m.success_rate for m in conversation_metrics) / total_interactions
+        )
         total_tokens_used = sum(m.tokens_used for m in conversation_metrics)
         total_errors = sum(m.error_count for m in conversation_metrics)
 
@@ -317,8 +329,10 @@ class AgentPerformanceService:
             agent_metrics = [m for m in conversation_metrics if m.agent_id == agent_id]
             agent_performance[agent_id] = {
                 "interactions": len(agent_metrics),
-                "avg_response_time": sum(m.response_time for m in agent_metrics) / len(agent_metrics),
-                "avg_success_rate": sum(m.success_rate for m in agent_metrics) / len(agent_metrics),
+                "avg_response_time": sum(m.response_time for m in agent_metrics)
+                / len(agent_metrics),
+                "avg_success_rate": sum(m.success_rate for m in agent_metrics)
+                / len(agent_metrics),
                 "total_tokens_used": sum(m.tokens_used for m in agent_metrics),
                 "total_errors": sum(m.error_count for m in agent_metrics),
             }
@@ -355,8 +369,7 @@ class AgentPerformanceService:
 
         # Get all agents with metrics in time period
         agent_ids = set(
-            m.agent_id for m in self.performance_history
-            if m.created_at >= cutoff_time
+            m.agent_id for m in self.performance_history if m.created_at >= cutoff_time
         )
 
         agent_performances = []
@@ -390,8 +403,7 @@ class AgentPerformanceService:
         cutoff_time = datetime.now(UTC) - timedelta(hours=time_period_hours)
 
         recent_metrics = [
-            m for m in self.performance_history
-            if m.created_at >= cutoff_time
+            m for m in self.performance_history if m.created_at >= cutoff_time
         ]
 
         # Group by agent
@@ -406,18 +418,27 @@ class AgentPerformanceService:
             avg_response_time = sum(m.response_time for m in metrics) / len(metrics)
             total_errors = sum(m.error_count for m in metrics)
             total_interactions = len(metrics)
-            error_rate = (total_errors / total_interactions) * 100 if total_interactions > 0 else 0
+            error_rate = (
+                (total_errors / total_interactions) * 100
+                if total_interactions > 0
+                else 0
+            )
 
-            if avg_response_time > threshold_response_time or error_rate > threshold_error_rate:
-                alerts.append({
-                    "agent_id": agent_id,
-                    "avg_response_time": round(avg_response_time, 3),
-                    "error_rate": round(error_rate, 2),
-                    "total_interactions": total_interactions,
-                    "threshold_response_time": threshold_response_time,
-                    "threshold_error_rate": threshold_error_rate,
-                    "alert_type": "performance_degradation",
-                })
+            if (
+                avg_response_time > threshold_response_time
+                or error_rate > threshold_error_rate
+            ):
+                alerts.append(
+                    {
+                        "agent_id": agent_id,
+                        "avg_response_time": round(avg_response_time, 3),
+                        "error_rate": round(error_rate, 2),
+                        "total_interactions": total_interactions,
+                        "threshold_response_time": threshold_response_time,
+                        "threshold_error_rate": threshold_error_rate,
+                        "alert_type": "performance_degradation",
+                    }
+                )
 
         return alerts
 
@@ -427,17 +448,17 @@ class AgentPerformanceService:
 
         # Clean up performance history
         self.performance_history = [
-            m for m in self.performance_history
-            if m.created_at >= cutoff_time
+            m for m in self.performance_history if m.created_at >= cutoff_time
         ]
 
         # Clean up snapshots
         self.performance_snapshots = [
-            s for s in self.performance_snapshots
-            if s.timestamp >= cutoff_time
+            s for s in self.performance_snapshots if s.timestamp >= cutoff_time
         ]
 
-        logger.debug(f"Cleaned up performance data older than {self.retention_days} days")
+        logger.debug(
+            f"Cleaned up performance data older than {self.retention_days} days"
+        )
 
     def get_stats(self) -> dict[str, Any]:
         """
@@ -455,9 +476,16 @@ class AgentPerformanceService:
 
         # Calculate overall averages
         if total_metrics > 0:
-            avg_response_time = sum(m.response_time for m in self.performance_history) / total_metrics
-            avg_success_rate = sum(m.success_rate for m in self.performance_history) / total_metrics
-            avg_user_satisfaction = sum(m.user_satisfaction for m in self.performance_history) / total_metrics
+            avg_response_time = (
+                sum(m.response_time for m in self.performance_history) / total_metrics
+            )
+            avg_success_rate = (
+                sum(m.success_rate for m in self.performance_history) / total_metrics
+            )
+            avg_user_satisfaction = (
+                sum(m.user_satisfaction for m in self.performance_history)
+                / total_metrics
+            )
             total_tokens_used = sum(m.tokens_used for m in self.performance_history)
             total_errors = sum(m.error_count for m in self.performance_history)
         else:

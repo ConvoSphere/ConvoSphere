@@ -4,7 +4,6 @@ Audit alert management.
 This module handles audit alert creation and management.
 """
 
-from datetime import datetime
 from typing import Any
 
 from sqlalchemy.exc import SQLAlchemyError

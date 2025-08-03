@@ -585,7 +585,9 @@ class AuditPerformanceMonitor:
                 "system_status": (
                     "healthy"
                     if total_errors / total_events < 0.1
-                    else "degraded" if total_events > 0 else "unknown"
+                    else "degraded"
+                    if total_events > 0
+                    else "unknown"
                 ),
             }
 

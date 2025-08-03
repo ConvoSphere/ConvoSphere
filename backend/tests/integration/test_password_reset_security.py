@@ -30,7 +30,7 @@ class TestPasswordResetRateLimiting:
             email="test@example.com",
             username="testuser",
             hashed_password="hashed_password",
-            is_active=True
+            is_active=True,
         )
         db_session.add(user)
         db_session.commit()
@@ -41,15 +41,13 @@ class TestPasswordResetRateLimiting:
         # Make 5 requests (limit)
         for i in range(5):
             response = client.post(
-                "/api/v1/auth/forgot-password",
-                json={"email": "test@example.com"}
+                "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
             )
             assert response.status_code == 200
-        
+
         # 6th request should be rate limited
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "test@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
         )
         assert response.status_code == 429
         assert "Too many password reset requests" in response.json()["detail"]
@@ -59,35 +57,34 @@ class TestPasswordResetRateLimiting:
         # Make 3 requests (limit)
         for i in range(3):
             response = client.post(
-                "/api/v1/auth/forgot-password",
-                json={"email": "test@example.com"}
+                "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
             )
             assert response.status_code == 200
-        
+
         # 4th request should be rate limited
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "test@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
         )
         assert response.status_code == 429
-        assert "Too many password reset requests for this email" in response.json()["detail"]
+        assert (
+            "Too many password reset requests for this email"
+            in response.json()["detail"]
+        )
 
     def test_forgot_password_rate_limit_case_insensitive(self, client, test_user):
         """Test that email rate limiting is case insensitive."""
         # Make 3 requests with different cases
         emails = ["test@example.com", "TEST@EXAMPLE.COM", "Test@Example.com"]
-        
+
         for email in emails:
             response = client.post(
-                "/api/v1/auth/forgot-password",
-                json={"email": email}
+                "/api/v1/auth/forgot-password", json={"email": email}
             )
             assert response.status_code == 200
-        
+
         # 4th request should be rate limited regardless of case
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "test@EXAMPLE.com"}
+            "/api/v1/auth/forgot-password", json={"email": "test@EXAMPLE.com"}
         )
         assert response.status_code == 429
 
@@ -96,34 +93,35 @@ class TestPasswordResetRateLimiting:
         # Use up limit for first email
         for i in range(3):
             response = client.post(
-                "/api/v1/auth/forgot-password",
-                json={"email": "test@example.com"}
+                "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
             )
             assert response.status_code == 200
-        
+
         # Different email should still be allowed
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "other@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "other@example.com"}
         )
         assert response.status_code == 200
 
-    @patch('backend.app.services.email_service.email_service.send_password_reset_email')
-    def test_forgot_password_audit_logging(self, mock_send_email, client, test_user, db_session):
+    @patch("backend.app.services.email_service.email_service.send_password_reset_email")
+    def test_forgot_password_audit_logging(
+        self, mock_send_email, client, test_user, db_session
+    ):
         """Test audit logging for forgot password requests."""
         mock_send_email.return_value = True
-        
+
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "test@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
         )
         assert response.status_code == 200
-        
+
         # Check audit log
-        audit_logs = db_session.query(ExtendedAuditLog).filter(
-            ExtendedAuditLog.event_type == "password_reset_requested"
-        ).all()
-        
+        audit_logs = (
+            db_session.query(ExtendedAuditLog)
+            .filter(ExtendedAuditLog.event_type == "password_reset_requested")
+            .all()
+        )
+
         assert len(audit_logs) == 1
         audit_log = audit_logs[0]
         assert audit_log.event_category == "authentication"
@@ -131,22 +129,25 @@ class TestPasswordResetRateLimiting:
         assert audit_log.context["email"] == "test@example.com"
         assert audit_log.context["success"] is True
 
-    @patch('backend.app.services.email_service.email_service.send_password_reset_email')
-    def test_forgot_password_audit_logging_user_not_found(self, mock_send_email, client, db_session):
+    @patch("backend.app.services.email_service.email_service.send_password_reset_email")
+    def test_forgot_password_audit_logging_user_not_found(
+        self, mock_send_email, client, db_session
+    ):
         """Test audit logging for forgot password with non-existent user."""
         mock_send_email.return_value = True
-        
+
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "nonexistent@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "nonexistent@example.com"}
         )
         assert response.status_code == 200
-        
+
         # Check audit log
-        audit_logs = db_session.query(ExtendedAuditLog).filter(
-            ExtendedAuditLog.event_type == "password_reset_requested"
-        ).all()
-        
+        audit_logs = (
+            db_session.query(ExtendedAuditLog)
+            .filter(ExtendedAuditLog.event_type == "password_reset_requested")
+            .all()
+        )
+
         assert len(audit_logs) == 1
         audit_log = audit_logs[0]
         assert audit_log.context["email"] == "nonexistent@example.com"
@@ -165,7 +166,7 @@ class TestPasswordResetCSRFProtection:
     def test_csrf_token_generation(self, client):
         """Test CSRF token generation endpoint."""
         response = client.get("/api/v1/auth/csrf-token")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert "csrf_token" in data
@@ -177,7 +178,7 @@ class TestPasswordResetCSRFProtection:
         """Test CSRF token generation with session ID header."""
         headers = {"X-Session-ID": "test-session-123"}
         response = client.get("/api/v1/auth/csrf-token", headers=headers)
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["session_id"] == "test-session-123"
@@ -200,30 +201,33 @@ class TestPasswordResetAuditLogging:
             hashed_password="hashed_password",
             is_active=True,
             password_reset_token="valid-token-123",
-            password_reset_expires_at="2024-12-31T23:59:59Z"
+            password_reset_expires_at="2024-12-31T23:59:59Z",
         )
         db_session.add(user)
         db_session.commit()
         return user
 
-    @patch('backend.app.services.email_service.email_service.send_password_changed_notification')
-    def test_reset_password_audit_logging_success(self, mock_send_notification, client, test_user_with_token, db_session):
+    @patch(
+        "backend.app.services.email_service.email_service.send_password_changed_notification"
+    )
+    def test_reset_password_audit_logging_success(
+        self, mock_send_notification, client, test_user_with_token, db_session
+    ):
         """Test audit logging for successful password reset."""
         mock_send_notification.return_value = True
-        
+
         client.post(
             "/api/v1/auth/reset-password",
-            json={
-                "token": "valid-token-123",
-                "new_password": "NewPassword123!"
-            }
+            json={"token": "valid-token-123", "new_password": "NewPassword123!"},
         )
-        
+
         # Check audit log for successful reset
-        audit_logs = db_session.query(ExtendedAuditLog).filter(
-            ExtendedAuditLog.event_type == "password_reset_completed"
-        ).all()
-        
+        audit_logs = (
+            db_session.query(ExtendedAuditLog)
+            .filter(ExtendedAuditLog.event_type == "password_reset_completed")
+            .all()
+        )
+
         assert len(audit_logs) == 1
         audit_log = audit_logs[0]
         assert audit_log.event_category == "authentication"
@@ -234,19 +238,18 @@ class TestPasswordResetAuditLogging:
         """Test audit logging for failed password reset."""
         response = client.post(
             "/api/v1/auth/reset-password",
-            json={
-                "token": "invalid-token",
-                "new_password": "NewPassword123!"
-            }
+            json={"token": "invalid-token", "new_password": "NewPassword123!"},
         )
-        
+
         assert response.status_code == 400
-        
+
         # Check audit log for failed reset
-        audit_logs = db_session.query(ExtendedAuditLog).filter(
-            ExtendedAuditLog.event_type == "password_reset_failed"
-        ).all()
-        
+        audit_logs = (
+            db_session.query(ExtendedAuditLog)
+            .filter(ExtendedAuditLog.event_type == "password_reset_failed")
+            .all()
+        )
+
         assert len(audit_logs) == 1
         audit_log = audit_logs[0]
         assert audit_log.event_category == "authentication"
@@ -266,10 +269,9 @@ class TestPasswordResetSecurityHeaders:
     def test_forgot_password_security_headers(self, client):
         """Test security headers for forgot password endpoint."""
         response = client.post(
-            "/api/v1/auth/forgot-password",
-            json={"email": "test@example.com"}
+            "/api/v1/auth/forgot-password", json={"email": "test@example.com"}
         )
-        
+
         # Check for security headers
         assert "X-Content-Type-Options" in response.headers
         assert "X-Frame-Options" in response.headers
@@ -279,12 +281,9 @@ class TestPasswordResetSecurityHeaders:
         """Test security headers for reset password endpoint."""
         response = client.post(
             "/api/v1/auth/reset-password",
-            json={
-                "token": "test-token",
-                "new_password": "NewPassword123!"
-            }
+            json={"token": "test-token", "new_password": "NewPassword123!"},
         )
-        
+
         # Check for security headers
         assert "X-Content-Type-Options" in response.headers
         assert "X-Frame-Options" in response.headers
@@ -293,7 +292,7 @@ class TestPasswordResetSecurityHeaders:
     def test_csrf_token_security_headers(self, client):
         """Test security headers for CSRF token endpoint."""
         response = client.get("/api/v1/auth/csrf-token")
-        
+
         # Check for security headers
         assert "X-Content-Type-Options" in response.headers
         assert "X-Frame-Options" in response.headers

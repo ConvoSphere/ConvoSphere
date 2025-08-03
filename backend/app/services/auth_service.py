@@ -188,24 +188,22 @@ class AuthService:
 
         # Build reset URL
         settings = get_settings()
-        base_url = getattr(settings, 'password_reset_base_url', 'http://localhost:3000')
+        base_url = getattr(settings, "password_reset_base_url", "http://localhost:3000")
         reset_url = f"{base_url}/reset-password?token={token}"
 
         # Send password reset email
         success = email_service.send_password_reset_email(
-            email=user.email,
-            token=token,
-            reset_url=reset_url,
-            language=user.language
+            email=user.email, token=token, reset_url=reset_url, language=user.language
         )
 
         if success:
             # Log the password reset request
             from backend.app.services.audit_service import audit_service
+
             audit_service.log_security_event(
                 user_id=user.id,
                 event_type="password_reset_requested",
-                details={"email": user.email, "ip_address": "unknown"}
+                details={"email": user.email, "ip_address": "unknown"},
             )
 
         return success
@@ -236,25 +234,25 @@ class AuthService:
         # Update password
         user.hashed_password = get_password_hash(new_password)
         user.password_changed_at = datetime.utcnow()
-        
+
         # Clear reset token
         token_service.clear_password_reset_token(user, self.db_session)
-        
+
         # Commit changes
         self.db_session.commit()
 
         # Send password changed notification
         email_service.send_password_changed_notification(
-            email=user.email,
-            language=user.language
+            email=user.email, language=user.language
         )
 
         # Log the password reset
         from backend.app.services.audit_service import audit_service
+
         audit_service.log_security_event(
             user_id=user.id,
             event_type="password_reset_completed",
-            details={"email": user.email, "ip_address": "unknown"}
+            details={"email": user.email, "ip_address": "unknown"},
         )
 
         return True

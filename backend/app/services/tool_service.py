@@ -128,7 +128,9 @@ class ToolService:
         try:
             ToolCategory(tool_data["category"])
         except ValueError:
-            raise ValueError(f"Invalid tool category: {tool_data['category']}") from None
+            raise ValueError(
+                f"Invalid tool category: {tool_data['category']}"
+            ) from None
 
     def create_tool(
         self,
@@ -235,7 +237,9 @@ class ToolService:
                 try:
                     tool.category = ToolCategory(tool_data["category"])
                 except ValueError:
-                    raise ValueError(f"Invalid tool category: {tool_data['category']}") from None
+                    raise ValueError(
+                        f"Invalid tool category: {tool_data['category']}"
+                    ) from None
 
             if "parameters_schema" in tool_data:
                 tool.parameters_schema = tool_data["parameters_schema"]

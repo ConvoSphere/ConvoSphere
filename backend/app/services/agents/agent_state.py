@@ -180,9 +180,7 @@ class AgentStateManager:
         Returns:
             bool: True if updated, False if not found
         """
-        return self.update_agent_state(
-            conversation_id, agent_id, context=context
-        )
+        return self.update_agent_state(conversation_id, agent_id, context=context)
 
     def set_agent_status(
         self,
@@ -223,9 +221,7 @@ class AgentStateManager:
             return False
 
         new_step = state_entry.state.current_step + 1
-        return self.update_agent_state(
-            conversation_id, agent_id, current_step=new_step
-        )
+        return self.update_agent_state(conversation_id, agent_id, current_step=new_step)
 
     def set_agent_steps(
         self,
@@ -247,7 +243,10 @@ class AgentStateManager:
             bool: True if updated, False if not found
         """
         return self.update_agent_state(
-            conversation_id, agent_id, current_step=current_step, total_steps=total_steps
+            conversation_id,
+            agent_id,
+            current_step=current_step,
+            total_steps=total_steps,
         )
 
     def get_conversation_agent_states(
@@ -315,7 +314,9 @@ class AgentStateManager:
         for key in keys_to_remove:
             del self.agent_states[key]
 
-        logger.info(f"Cleaned up {removed_count} agent states for conversation {conversation_id}")
+        logger.info(
+            f"Cleaned up {removed_count} agent states for conversation {conversation_id}"
+        )
         return removed_count
 
     def get_agent_activity(
@@ -336,14 +337,16 @@ class AgentStateManager:
         activity = []
         for state_entry in self.agent_states.values():
             if state_entry.agent_id == agent_id:
-                activity.append({
-                    "conversation_id": state_entry.conversation_id,
-                    "status": state_entry.state.status,
-                    "current_step": state_entry.state.current_step,
-                    "total_steps": state_entry.state.total_steps,
-                    "last_activity": state_entry.last_activity.isoformat(),
-                    "created_at": state_entry.created_at.isoformat(),
-                })
+                activity.append(
+                    {
+                        "conversation_id": state_entry.conversation_id,
+                        "status": state_entry.state.status,
+                        "current_step": state_entry.state.current_step,
+                        "total_steps": state_entry.state.total_steps,
+                        "last_activity": state_entry.last_activity.isoformat(),
+                        "created_at": state_entry.created_at.isoformat(),
+                    }
+                )
 
         # Sort by last activity (most recent first)
         activity.sort(key=lambda x: x["last_activity"], reverse=True)
@@ -410,8 +413,7 @@ class AgentStateManager:
         """
         total_states = len(self.agent_states)
         active_states = sum(
-            1 for entry in self.agent_states.values()
-            if entry.state.status == "active"
+            1 for entry in self.agent_states.values() if entry.state.status == "active"
         )
         total_history = len(self.state_history)
 

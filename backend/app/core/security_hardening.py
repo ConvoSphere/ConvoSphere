@@ -204,7 +204,9 @@ class SSOSecurityValidator:
         Returns:
             bool: True if request is allowed
         """
-        return self.rate_limit_password_reset(f"pw_reset_ip:{ip_address}", max_requests, window)
+        return self.rate_limit_password_reset(
+            f"pw_reset_ip:{ip_address}", max_requests, window
+        )
 
     def rate_limit_password_reset_by_email(
         self,
@@ -223,7 +225,9 @@ class SSOSecurityValidator:
         Returns:
             bool: True if request is allowed
         """
-        return self.rate_limit_password_reset(f"pw_reset_email:{email.lower()}", max_requests, window)
+        return self.rate_limit_password_reset(
+            f"pw_reset_email:{email.lower()}", max_requests, window
+        )
 
     def validate_user_attributes(self, user_attributes: dict) -> tuple[bool, str]:
         """

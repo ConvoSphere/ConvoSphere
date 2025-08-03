@@ -35,7 +35,9 @@ from backend.app.utils.exceptions import (
 
 # Error message constants
 INSUFFICIENT_PERMISSIONS_CREATE_GROUPS = "Insufficient permissions to create groups"
-INSUFFICIENT_PERMISSIONS_GROUP_ASSIGNMENTS = "Insufficient permissions for group assignments"
+INSUFFICIENT_PERMISSIONS_GROUP_ASSIGNMENTS = (
+    "Insufficient permissions for group assignments"
+)
 USER_NOT_FOUND_TEMPLATE = "User with ID {} not found"
 
 

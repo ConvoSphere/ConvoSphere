@@ -49,7 +49,7 @@ class AssistantContextManager:
             conversation = await self.conversation_service.get_conversation(
                 request.conversation_id
             )
-            
+
             if not conversation:
                 return {
                     "messages": [],
@@ -78,10 +78,14 @@ class AssistantContextManager:
                 "user_id": request.user_id,
                 "assistant_id": request.assistant_id,
                 "hybrid_mode_state": mode_state.dict() if mode_state else None,
-                "conversation_metadata": conversation.conversation_metadata if conversation else {},
+                "conversation_metadata": conversation.conversation_metadata
+                if conversation
+                else {},
             }
 
-            logger.debug(f"Retrieved context for conversation {request.conversation_id}")
+            logger.debug(
+                f"Retrieved context for conversation {request.conversation_id}"
+            )
             return context
 
         except Exception as e:
@@ -120,12 +124,14 @@ class AssistantContextManager:
 
             # Format knowledge context
             knowledge_context = "Relevante Informationen aus der Wissensdatenbank:\n\n"
-            
+
             for i, result in enumerate(search_results, 1):
                 knowledge_context += f"{i}. {result.get('title', 'Unbekannt')}\n"
                 knowledge_context += f"   {result.get('content', '')[:200]}...\n\n"
 
-            logger.debug(f"Prepared knowledge context with {len(search_results)} chunks")
+            logger.debug(
+                f"Prepared knowledge context with {len(search_results)} chunks"
+            )
             return knowledge_context
 
         except Exception as e:
@@ -155,8 +161,10 @@ class AssistantContextManager:
             }
 
             await self.hybrid_mode_manager.change_mode(mode_request)
-            
-            logger.info(f"Updated conversation mode to {new_mode} for {request.conversation_id}")
+
+            logger.info(
+                f"Updated conversation mode to {new_mode} for {request.conversation_id}"
+            )
             return True
 
         except Exception as e:
@@ -193,7 +201,9 @@ class AssistantContextManager:
                 metadata={
                     "model_used": structured_response.metadata.get("model_used"),
                     "tokens_used": structured_response.metadata.get("tokens_used"),
-                    "processing_time": structured_response.metadata.get("processing_time"),
+                    "processing_time": structured_response.metadata.get(
+                        "processing_time"
+                    ),
                     "tool_calls": structured_response.metadata.get("tool_calls", []),
                     "structured_response": structured_response.dict(),
                 },
@@ -219,7 +229,9 @@ class AssistantContextManager:
             dict: Conversation summary or None if not found
         """
         try:
-            conversation = await self.conversation_service.get_conversation(conversation_id)
+            conversation = await self.conversation_service.get_conversation(
+                conversation_id
+            )
             if not conversation:
                 return None
 
@@ -232,7 +244,9 @@ class AssistantContextManager:
                 "title": conversation.title,
                 "message_count": len(messages),
                 "total_tokens": conversation.total_tokens,
-                "created_at": conversation.created_at.isoformat() if conversation.created_at else None,
+                "created_at": conversation.created_at.isoformat()
+                if conversation.created_at
+                else None,
                 "last_message": messages[-1].dict() if messages else None,
                 "metadata": conversation.conversation_metadata,
             }
@@ -254,7 +268,7 @@ class AssistantContextManager:
         try:
             # Clean up hybrid mode state
             self.hybrid_mode_manager.cleanup_conversation(conversation_id)
-            
+
             logger.info(f"Cleaned up context for conversation {conversation_id}")
             return True
 
@@ -271,7 +285,7 @@ class AssistantContextManager:
         """
         try:
             hybrid_stats = self.hybrid_mode_manager.get_stats()
-            
+
             return {
                 "hybrid_mode_manager": hybrid_stats,
                 "active_conversations": hybrid_stats.get("active_conversations", 0),

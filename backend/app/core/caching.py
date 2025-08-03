@@ -12,7 +12,7 @@ This module provides a comprehensive caching system using Redis with:
 import hashlib
 import json
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import timedelta
 from backend.app.utils.helpers import utc_now
 from enum import Enum
 from functools import wraps

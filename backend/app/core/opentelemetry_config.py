@@ -133,7 +133,8 @@ class OpenTelemetryConfig:
             metric_exporter = ConsoleMetricExporter()
 
         metric_reader = PeriodicExportingMetricReader(
-            metric_exporter, export_interval_millis=60000  # Export every minute
+            metric_exporter,
+            export_interval_millis=60000,  # Export every minute
         )
 
         self.meter_provider = MeterProvider(

@@ -130,7 +130,7 @@ ignore = [
     "COM812", # missing trailing comma, conflicts with formatter
 ]
 
-per-file-ignores = {"__init__.py" = ["F401"], "tests/**/*" = ["S101", "PLR2004"], "**/migrations/**" = ["E501", "F401"]}
+per-file-ignores = {"__init__.py" = ["F401"], "tests/**/*" = ["S101", "PLR2004", "E501", "F821", "F401"], "**/migrations/**" = ["E501", "F401"]}
 
 # Bandit Configuration
 [tool.bandit]

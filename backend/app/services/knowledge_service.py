@@ -40,10 +40,11 @@ from backend.app.services.document.recovery_manager import (
 from .ai_service import AIService
 from .document.document_service import DocumentService
 
-# Create a document processor instance
-document_processor = DocumentService(db=None)
 from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
+
+# Create a document processor instance
+document_processor = DocumentService(db=None)
 
 try:
     import pypdf
@@ -365,7 +366,7 @@ class KnowledgeService:
 
             if not result["success"]:
                 raise ValueError(
-                    f"Document processing failed: {result.get('error', 'Unknown error')}",
+                    f"Document processing failed: {result.get('error', 'Unknown error')}"
                 )
 
             # Create document chunks from processed chunks
@@ -467,7 +468,7 @@ class KnowledgeService:
             self.db.commit()
 
             logger.info(
-                f"Successfully processed document {document_id} with {len(chunks)} chunks",
+                f"Successfully processed document {document_id} with {len(chunks)} chunks"
             )
             return True
 
@@ -507,7 +508,8 @@ class KnowledgeService:
                 )
             except Exception as backup_error:
                 logger.warning(
-                    f"Failed to create backup for document {document_id}: {backup_error}"
+                    f"Failed to create backup for document {document_id}: "
+                    f"{backup_error}"
                 )
 
         return success
@@ -825,7 +827,6 @@ class KnowledgeService:
             elif file_type in ["doc", "docx"]:
                 # Implement Word document text extraction
                 try:
-                    import docx
                     from docx import Document
 
                     doc = Document(file_path)

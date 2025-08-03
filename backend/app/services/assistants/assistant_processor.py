@@ -34,7 +34,9 @@ class AssistantProcessor:
     def __init__(self):
         """Initialize the processor."""
 
-    async def validate_request(self, request: ProcessingRequest) -> tuple[bool, str | None]:
+    async def validate_request(
+        self, request: ProcessingRequest
+    ) -> tuple[bool, str | None]:
         """
         Validate processing request.
 
@@ -107,16 +109,16 @@ class AssistantProcessor:
             request.metadata["preprocessed"] = True
             request.metadata["original_message_length"] = len(request.message)
 
-            logger.debug(f"Preprocessed request for conversation {request.conversation_id}")
+            logger.debug(
+                f"Preprocessed request for conversation {request.conversation_id}"
+            )
             return request
 
         except Exception as e:
             logger.error(f"Error preprocessing request: {e}")
             return request
 
-    async def postprocess_result(
-        self, result: ProcessingResult
-    ) -> ProcessingResult:
+    async def postprocess_result(self, result: ProcessingResult) -> ProcessingResult:
         """
         Postprocess the result.
 
@@ -139,7 +141,10 @@ class AssistantProcessor:
                     result.metadata["content_truncated"] = True
 
                 # Check for potential issues
-                if "error" in result.content.lower() or "exception" in result.content.lower():
+                if (
+                    "error" in result.content.lower()
+                    or "exception" in result.content.lower()
+                ):
                     result.metadata["potential_issues"] = True
 
             logger.debug(f"Postprocessed result for request {result.request_id}")
@@ -178,10 +183,24 @@ class AssistantProcessor:
 
             # Analyze for complex keywords
             complex_keywords = [
-                "analyze", "compare", "research", "investigate", "calculate",
-                "compute", "generate", "create", "build", "develop",
-                "implement", "optimize", "debug", "test", "validate",
-                "verify", "synthesize", "integrate",
+                "analyze",
+                "compare",
+                "research",
+                "investigate",
+                "calculate",
+                "compute",
+                "generate",
+                "create",
+                "build",
+                "develop",
+                "implement",
+                "optimize",
+                "debug",
+                "test",
+                "validate",
+                "verify",
+                "synthesize",
+                "integrate",
             ]
 
             found_keywords = []
@@ -192,8 +211,15 @@ class AssistantProcessor:
 
             # Analyze for multi-step indicators
             step_indicators = [
-                "first", "then", "next", "finally", "after", "before",
-                "step", "phase", "stage",
+                "first",
+                "then",
+                "next",
+                "finally",
+                "after",
+                "before",
+                "step",
+                "phase",
+                "stage",
             ]
 
             step_count = 0
@@ -282,10 +308,46 @@ class AssistantProcessor:
 
             # Define intent patterns
             intent_patterns = {
-                "question": ["was", "wie", "wann", "wo", "warum", "wer", "which", "what", "when", "where", "why", "who", "how"],
-                "calculation": ["berechnen", "rechnen", "calculate", "compute", "math", "sum", "multiply", "divide"],
-                "search": ["suchen", "finden", "search", "find", "lookup", "recherchieren"],
-                "analysis": ["analysieren", "analyze", "auswerten", "evaluate", "examine"],
+                "question": [
+                    "was",
+                    "wie",
+                    "wann",
+                    "wo",
+                    "warum",
+                    "wer",
+                    "which",
+                    "what",
+                    "when",
+                    "where",
+                    "why",
+                    "who",
+                    "how",
+                ],
+                "calculation": [
+                    "berechnen",
+                    "rechnen",
+                    "calculate",
+                    "compute",
+                    "math",
+                    "sum",
+                    "multiply",
+                    "divide",
+                ],
+                "search": [
+                    "suchen",
+                    "finden",
+                    "search",
+                    "find",
+                    "lookup",
+                    "recherchieren",
+                ],
+                "analysis": [
+                    "analysieren",
+                    "analyze",
+                    "auswerten",
+                    "evaluate",
+                    "examine",
+                ],
                 "creation": ["erstellen", "create", "generate", "build", "make"],
                 "help": ["hilfe", "help", "support", "assist"],
             }

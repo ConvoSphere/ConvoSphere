@@ -1117,7 +1117,9 @@ def assistant_list():
                 else (
                     "⏸️"
                     if assistant.status == AssistantStatus.INACTIVE
-                    else "📝" if assistant.status == AssistantStatus.DRAFT else "🔧"
+                    else "📝"
+                    if assistant.status == AssistantStatus.DRAFT
+                    else "🔧"
                 )
             )
             public_icon = "🌐" if assistant.is_public else "🔒"

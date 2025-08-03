@@ -7,7 +7,7 @@ for password reset operations.
 
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import timedelta
 from backend.app.utils.helpers import utc_now
 from typing import Optional
 
@@ -26,7 +26,7 @@ class TokenService:
         self.settings = get_settings()
         self.token_length = 32
         self.token_expire_minutes = getattr(
-            self.settings, 'password_reset_token_expire_minutes', 60
+            self.settings, "password_reset_token_expire_minutes", 60
         )
 
     def generate_password_reset_token(self) -> str:
@@ -38,8 +38,8 @@ class TokenService:
         """
         # Generate a cryptographically secure random token
         alphabet = string.ascii_letters + string.digits
-        token = ''.join(secrets.choice(alphabet) for _ in range(self.token_length))
-        
+        token = "".join(secrets.choice(alphabet) for _ in range(self.token_length))
+
         logger.debug(f"Generated password reset token: {token[:8]}...")
         return token
 
@@ -64,7 +64,10 @@ class TokenService:
             return False
 
         # Check if token has expired
-        if user.password_reset_expires_at and user.password_reset_expires_at < utc_now():
+        if (
+            user.password_reset_expires_at
+            and user.password_reset_expires_at < utc_now()
+        ):
             logger.warning(f"Expired password reset token: {token[:8]}...")
             return False
 
@@ -96,17 +99,17 @@ class TokenService:
         """
         # Generate new token
         token = self.generate_password_reset_token()
-        
+
         # Set expiration time
         expires_at = utc_now() + timedelta(minutes=self.token_expire_minutes)
-        
+
         # Update user with token and expiration
         user.password_reset_token = token
         user.password_reset_expires_at = expires_at
-        
+
         # Commit changes
         db.commit()
-        
+
         logger.info(f"Created password reset token for user {user.email}")
         return token
 
@@ -121,7 +124,7 @@ class TokenService:
         user.password_reset_token = None
         user.password_reset_expires_at = None
         db.commit()
-        
+
         logger.info(f"Cleared password reset token for user {user.email}")
 
     def cleanup_expired_tokens(self, db: Session) -> int:
@@ -135,21 +138,25 @@ class TokenService:
             int: Number of tokens cleaned up
         """
         now = utc_now()
-        expired_users = db.query(User).filter(
-            User.password_reset_expires_at < now,
-            User.password_reset_token.isnot(None)
-        ).all()
-        
+        expired_users = (
+            db.query(User)
+            .filter(
+                User.password_reset_expires_at < now,
+                User.password_reset_token.isnot(None),
+            )
+            .all()
+        )
+
         count = 0
         for user in expired_users:
             user.password_reset_token = None
             user.password_reset_expires_at = None
             count += 1
-        
+
         if count > 0:
             db.commit()
             logger.info(f"Cleaned up {count} expired password reset tokens")
-        
+
         return count
 
 

@@ -110,7 +110,10 @@ class AssistantToolsManager:
 
             # Check tool name and description
             for category, keywords in tool_keywords.items():
-                if any(keyword in tool_name or keyword in tool_description for keyword in keywords):
+                if any(
+                    keyword in tool_name or keyword in tool_description
+                    for keyword in keywords
+                ):
                     if any(keyword in user_message_lower for keyword in keywords):
                         is_relevant = True
                         break
@@ -178,15 +181,19 @@ class AssistantToolsManager:
 
                 except Exception as e:
                     logger.error(f"Error executing tool {tool_name}: {e}")
-                    results.append({
-                        "tool_id": tool_id,
-                        "tool_name": tool_name,
-                        "success": False,
-                        "error": str(e),
-                        "execution_time": 0.0,
-                    })
+                    results.append(
+                        {
+                            "tool_id": tool_id,
+                            "tool_name": tool_name,
+                            "success": False,
+                            "error": str(e),
+                            "execution_time": 0.0,
+                        }
+                    )
 
-            logger.info(f"Executed {len(tool_calls)} tools, {len([r for r in results if r['success']])} successful")
+            logger.info(
+                f"Executed {len(tool_calls)} tools, {len([r for r in results if r['success']])} successful"
+            )
             return results
 
         except Exception as e:
@@ -259,9 +266,13 @@ class AssistantToolsManager:
                     if expected_type:
                         if expected_type == "string" and not isinstance(arg_value, str):
                             return False, f"Argument '{arg_name}' must be a string"
-                        elif expected_type == "number" and not isinstance(arg_value, (int, float)):
+                        elif expected_type == "number" and not isinstance(
+                            arg_value, (int, float)
+                        ):
                             return False, f"Argument '{arg_name}' must be a number"
-                        elif expected_type == "boolean" and not isinstance(arg_value, bool):
+                        elif expected_type == "boolean" and not isinstance(
+                            arg_value, bool
+                        ):
                             return False, f"Argument '{arg_name}' must be a boolean"
 
             return True, None
@@ -269,9 +280,7 @@ class AssistantToolsManager:
         except Exception as e:
             return False, f"Schema validation error: {str(e)}"
 
-    async def get_tool_usage_stats(
-        self, time_period_hours: int = 24
-    ) -> dict[str, Any]:
+    async def get_tool_usage_stats(self, time_period_hours: int = 24) -> dict[str, Any]:
         """
         Get tool usage statistics.
 
@@ -307,7 +316,9 @@ class AssistantToolsManager:
         """
         try:
             tools = await self.tool_service.get_available_tools()
-            categories = set(tool.get("category") for tool in tools if tool.get("category"))
+            categories = set(
+                tool.get("category") for tool in tools if tool.get("category")
+            )
             return list(categories)
 
         except Exception as e:

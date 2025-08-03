@@ -197,8 +197,8 @@ class AssistantEngine:
             # Prepare knowledge context
             knowledge_context = ""
             if request.use_knowledge_base:
-                knowledge_context = await self.context_manager.prepare_knowledge_context(
-                    request
+                knowledge_context = (
+                    await self.context_manager.prepare_knowledge_context(request)
                 )
 
             # Prepare tools
@@ -224,8 +224,10 @@ class AssistantEngine:
             await self.memory_manager.update_memory(request, ai_response)
 
             # Save response to conversation
-            structured_response = await self.response_generator.create_structured_response(
-                request, ai_response
+            structured_response = (
+                await self.response_generator.create_structured_response(
+                    request, ai_response
+                )
             )
             await self.context_manager.save_response_to_conversation(
                 request, structured_response
@@ -289,14 +291,18 @@ class AssistantEngine:
             "request": {
                 "user_id": request.user_id,
                 "conversation_id": request.conversation_id,
-                "message": request.message[:100] + "..." if len(request.message) > 100 else request.message,
+                "message": request.message[:100] + "..."
+                if len(request.message) > 100
+                else request.message,
                 "assistant_id": request.assistant_id,
             },
             "result": {
                 "success": result.success if result else None,
                 "processing_time": result.processing_time if result else None,
                 "error_message": result.error_message if result else None,
-            } if result else None,
+            }
+            if result
+            else None,
         }
 
     def get_stats(self) -> dict[str, Any]:
@@ -308,19 +314,26 @@ class AssistantEngine:
         """
         total_requests = len(self.processing_requests)
         total_results = len(self.processing_results)
-        successful_results = len([r for r in self.processing_results.values() if r.success])
+        successful_results = len(
+            [r for r in self.processing_results.values() if r.success]
+        )
         failed_results = total_results - successful_results
 
         avg_processing_time = 0.0
         if total_results > 0:
-            avg_processing_time = sum(r.processing_time for r in self.processing_results.values()) / total_results
+            avg_processing_time = (
+                sum(r.processing_time for r in self.processing_results.values())
+                / total_results
+            )
 
         return {
             "active_requests": total_requests,
             "total_processed": total_results,
             "successful_requests": successful_results,
             "failed_requests": failed_results,
-            "success_rate": (successful_results / total_results * 100) if total_results > 0 else 0,
+            "success_rate": (successful_results / total_results * 100)
+            if total_results > 0
+            else 0,
             "average_processing_time": round(avg_processing_time, 3),
             "max_concurrent_requests": self.max_concurrent_requests,
             "default_model": self.default_model,

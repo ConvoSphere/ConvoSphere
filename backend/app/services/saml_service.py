@@ -6,7 +6,7 @@ and assertion processing for enterprise SSO integration.
 """
 
 import base64
-import tempfile
+import tempfile as tempfile_module
 from datetime import datetime
 from typing import Any
 
@@ -153,12 +153,12 @@ class SAMLService:
             )
 
             # Create temporary files
-            cert_file = tempfile.NamedTemporaryFile(
+            cert_file = tempfile_module.NamedTemporaryFile(
                 mode="w",
                 suffix=".crt",
                 delete=False,
             )
-            key_file = tempfile.NamedTemporaryFile(
+            key_file = tempfile_module.NamedTemporaryFile(
                 mode="w",
                 suffix=".key",
                 delete=False,
@@ -186,9 +186,7 @@ class SAMLService:
         except Exception as e:
             logger.error(f"Failed to create temporary certificates: {e}")
             # Return dummy files in temp directory
-            import tempfile
-
-            temp_dir = tempfile.gettempdir()
+            temp_dir = tempfile_module.gettempdir()
             return (
                 f"{temp_dir}/dummy.crt",
                 f"{temp_dir}/dummy.key",

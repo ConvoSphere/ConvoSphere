@@ -178,9 +178,7 @@ class AgentCollaborationService:
 
         # Update agent states
         for agent_id in session.agent_ids:
-            self.state_manager.set_agent_status(
-                conversation_id, agent_id, "idle"
-            )
+            self.state_manager.set_agent_status(conversation_id, agent_id, "idle")
 
         # Calculate duration
         duration = (datetime.now(UTC) - session.start_time).total_seconds()
@@ -220,9 +218,9 @@ class AgentCollaborationService:
 
         if session.coordination_strategy == "round_robin":
             agent_id = session.agent_ids[session.current_agent_index]
-            session.current_agent_index = (
-                session.current_agent_index + 1
-            ) % len(session.agent_ids)
+            session.current_agent_index = (session.current_agent_index + 1) % len(
+                session.agent_ids
+            )
             if session.current_agent_index == 0:
                 session.round_count += 1
             return agent_id
@@ -235,9 +233,9 @@ class AgentCollaborationService:
             # For now, use round-robin for expertise
             # In the future, this could be based on agent expertise matching
             agent_id = session.agent_ids[session.current_agent_index]
-            session.current_agent_index = (
-                session.current_agent_index + 1
-            ) % len(session.agent_ids)
+            session.current_agent_index = (session.current_agent_index + 1) % len(
+                session.agent_ids
+            )
             return agent_id
 
         return None
@@ -302,9 +300,7 @@ class AgentCollaborationService:
             history = [h for h in history if h.conversation_id == conversation_id]
 
         if agent_id:
-            history = [
-                h for h in history if agent_id in h.agent_ids
-            ]
+            history = [h for h in history if agent_id in h.agent_ids]
 
         # Sort by timestamp (most recent first)
         history.sort(key=lambda x: x.timestamp, reverse=True)
@@ -312,17 +308,19 @@ class AgentCollaborationService:
         # Convert to dict format
         result = []
         for event in history[:limit]:
-            result.append({
-                "conversation_id": event.conversation_id,
-                "agent_ids": event.agent_ids,
-                "collaboration_type": event.collaboration_type,
-                "coordination_strategy": event.coordination_strategy,
-                "shared_context": event.shared_context,
-                "timestamp": event.timestamp.isoformat(),
-                "success": event.success,
-                "error_message": event.error_message,
-                "duration_seconds": event.duration_seconds,
-            })
+            result.append(
+                {
+                    "conversation_id": event.conversation_id,
+                    "agent_ids": event.agent_ids,
+                    "collaboration_type": event.collaboration_type,
+                    "coordination_strategy": event.coordination_strategy,
+                    "shared_context": event.shared_context,
+                    "timestamp": event.timestamp.isoformat(),
+                    "success": event.success,
+                    "error_message": event.error_message,
+                    "duration_seconds": event.duration_seconds,
+                }
+            )
 
         return result
 
@@ -342,20 +340,16 @@ class AgentCollaborationService:
         cutoff_time = datetime.now(UTC) - datetime.timedelta(hours=time_period_hours)
 
         recent_collaborations = [
-            h for h in self.collaboration_history
-            if h.timestamp >= cutoff_time
+            h for h in self.collaboration_history if h.timestamp >= cutoff_time
         ]
 
-        successful_collaborations = [
-            h for h in recent_collaborations if h.success
-        ]
-        failed_collaborations = [
-            h for h in recent_collaborations if not h.success
-        ]
+        successful_collaborations = [h for h in recent_collaborations if h.success]
+        failed_collaborations = [h for h in recent_collaborations if not h.success]
 
         # Calculate average duration
         durations = [
-            h.duration_seconds for h in successful_collaborations
+            h.duration_seconds
+            for h in successful_collaborations
             if h.duration_seconds is not None
         ]
         avg_duration = sum(durations) / len(durations) if durations else 0
@@ -373,7 +367,8 @@ class AgentCollaborationService:
             "failed_collaborations": len(failed_collaborations),
             "success_rate": (
                 len(successful_collaborations) / len(recent_collaborations) * 100
-                if recent_collaborations else 0
+                if recent_collaborations
+                else 0
             ),
             "average_duration_seconds": avg_duration,
             "collaboration_type_distribution": type_counts,
@@ -398,13 +393,12 @@ class AgentCollaborationService:
         cutoff_time = datetime.now(UTC) - datetime.timedelta(hours=time_period_hours)
 
         agent_collaborations = [
-            h for h in self.collaboration_history
+            h
+            for h in self.collaboration_history
             if h.timestamp >= cutoff_time and agent_id in h.agent_ids
         ]
 
-        successful_collaborations = [
-            h for h in agent_collaborations if h.success
-        ]
+        successful_collaborations = [h for h in agent_collaborations if h.success]
 
         # Get collaboration partners
         partners = set()
@@ -420,7 +414,8 @@ class AgentCollaborationService:
             "successful_collaborations": len(successful_collaborations),
             "success_rate": (
                 len(successful_collaborations) / len(agent_collaborations) * 100
-                if agent_collaborations else 0
+                if agent_collaborations
+                else 0
             ),
             "collaboration_partners": list(partners),
             "partner_count": len(partners),
@@ -434,12 +429,12 @@ class AgentCollaborationService:
             dict: Service statistics
         """
         total_collaborations = len(self.collaboration_history)
-        successful_collaborations = len([
-            h for h in self.collaboration_history if h.success
-        ])
-        failed_collaborations = len([
-            h for h in self.collaboration_history if not h.success
-        ])
+        successful_collaborations = len(
+            [h for h in self.collaboration_history if h.success]
+        )
+        failed_collaborations = len(
+            [h for h in self.collaboration_history if not h.success]
+        )
 
         # Get unique conversations and agents
         conversations = set(h.conversation_id for h in self.collaboration_history)
@@ -453,7 +448,8 @@ class AgentCollaborationService:
             "failed_collaborations": failed_collaborations,
             "success_rate": (
                 successful_collaborations / total_collaborations * 100
-                if total_collaborations else 0
+                if total_collaborations
+                else 0
             ),
             "unique_conversations": len(conversations),
             "unique_agents": len(agents),
