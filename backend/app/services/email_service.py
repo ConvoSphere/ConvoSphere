@@ -7,9 +7,10 @@ from environment variables.
 
 import smtplib
 import ssl
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Optional
+
 from loguru import logger
 
 from backend.app.core.config import get_settings
@@ -28,7 +29,11 @@ class EmailService:
         self.from_email = self.settings.email_from_address or self.smtp_user
 
     def _create_message(
-        self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: Optional[str] = None,
     ) -> MIMEMultipart:
         """Create a multipart email message."""
         message = MIMEMultipart("alternative")
@@ -65,7 +70,9 @@ class EmailService:
             logger.error(f"Failed to send email to {message['To']}: {str(e)}")
             return False
 
-    def send_password_reset_email(self, email: str, token: str, reset_url: str, language: str = "de") -> bool:
+    def send_password_reset_email(
+        self, email: str, token: str, reset_url: str, language: str = "de"
+    ) -> bool:
         """
         Send password reset email.
 
@@ -80,7 +87,7 @@ class EmailService:
         """
         # Email content based on language
         content = self._get_password_reset_email_content(language, reset_url)
-        
+
         subject = content["subject"]
         html_content = content["html"]
         text_content = content["text"]
@@ -88,7 +95,9 @@ class EmailService:
         message = self._create_message(email, subject, html_content, text_content)
         return self._send_email(message)
 
-    def send_password_changed_notification(self, email: str, language: str = "de") -> bool:
+    def send_password_changed_notification(
+        self, email: str, language: str = "de"
+    ) -> bool:
         """
         Send password changed notification email.
 
@@ -100,7 +109,7 @@ class EmailService:
             bool: True if email sent successfully, False otherwise
         """
         content = self._get_password_changed_email_content(language)
-        
+
         subject = content["subject"]
         html_content = content["html"]
         text_content = content["text"]
@@ -140,7 +149,7 @@ class EmailService:
 
                 Mit freundlichen Grüßen
                 Ihr AI Assistant Platform Team
-                """
+                """,
             },
             "en": {
                 "subject": "Reset Password - AI Assistant Platform",
@@ -171,7 +180,7 @@ class EmailService:
 
                 Best regards
                 Your AI Assistant Platform Team
-                """
+                """,
             },
             "fr": {
                 "subject": "Réinitialiser le mot de passe - AI Assistant Platform",
@@ -202,7 +211,7 @@ class EmailService:
 
                 Cordialement
                 Votre équipe AI Assistant Platform
-                """
+                """,
             },
             "es": {
                 "subject": "Restablecer contraseña - AI Assistant Platform",
@@ -233,8 +242,8 @@ class EmailService:
 
                 Saludos cordiales
                 Su equipo de AI Assistant Platform
-                """
-            }
+                """,
+            },
         }
 
         return content.get(language, content["en"])
@@ -263,7 +272,7 @@ class EmailService:
 
                 Mit freundlichen Grüßen
                 Ihr AI Assistant Platform Team
-                """
+                """,
             },
             "en": {
                 "subject": "Password Changed - AI Assistant Platform",
@@ -286,8 +295,8 @@ class EmailService:
 
                 Best regards
                 Your AI Assistant Platform Team
-                """
-            }
+                """,
+            },
         }
 
         return content.get(language, content["en"])

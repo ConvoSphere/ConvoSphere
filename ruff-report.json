@@ -1,0 +1,512 @@
+[
+  {
+    "cell": null,
+    "code": "F823",
+    "end_location": {
+      "column": 34,
+      "row": 305
+    },
+    "filename": "/workspace/backend/admin.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 305
+    },
+    "message": "Local variable `shutil` referenced before assignment",
+    "noqa_row": 305,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-local"
+  },
+  {
+    "cell": null,
+    "code": "F823",
+    "end_location": {
+      "column": 31,
+      "row": 380
+    },
+    "filename": "/workspace/backend/admin.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 380
+    },
+    "message": "Local variable `shutil` referenced before assignment",
+    "noqa_row": 380,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-local"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 39,
+      "row": 906
+    },
+    "filename": "/workspace/backend/app/api/v1/endpoints/auth.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 906
+    },
+    "message": "Undefined name `PasswordResetRequest`",
+    "noqa_row": 906,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 1000
+    },
+    "filename": "/workspace/backend/app/api/v1/endpoints/auth.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 1000
+    },
+    "message": "Undefined name `PasswordResetConfirm`",
+    "noqa_row": 1000,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 301
+    },
+    "filename": "/workspace/backend/app/api/v1/endpoints/sso.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 301
+    },
+    "message": "Undefined name `entity_descriptor`",
+    "noqa_row": 301,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 61,
+      "row": 342
+    },
+    "filename": "/workspace/backend/app/api/v1/endpoints/sso.py",
+    "fix": null,
+    "location": {
+      "column": 52,
+      "row": 342
+    },
+    "message": "Undefined name `urlencode`",
+    "noqa_row": 342,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 11,
+      "row": 190
+    },
+    "filename": "/workspace/backend/app/core/security.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 190
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 190,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 24,
+      "row": 224
+    },
+    "filename": "/workspace/backend/app/core/security.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 224
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 224,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 11,
+      "row": 225
+    },
+    "filename": "/workspace/backend/app/core/security.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 225
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 225,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 11,
+      "row": 248
+    },
+    "filename": "/workspace/backend/app/core/security.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 248
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 248,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 20,
+      "row": 91
+    },
+    "filename": "/workspace/backend/app/models/abac.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 91
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 91,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 51,
+      "row": 114
+    },
+    "filename": "/workspace/backend/app/models/abac.py",
+    "fix": null,
+    "location": {
+      "column": 47,
+      "row": 114
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 114,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 20,
+      "row": 281
+    },
+    "filename": "/workspace/backend/app/models/abac.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 281
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 281,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 20,
+      "row": 112
+    },
+    "filename": "/workspace/backend/app/models/permissions.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 112
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 112,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 20,
+      "row": 131
+    },
+    "filename": "/workspace/backend/app/models/permissions.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 131
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 131,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 20,
+      "row": 240
+    },
+    "filename": "/workspace/backend/app/models/permissions.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 240
+    },
+    "message": "Undefined name `User`",
+    "noqa_row": 240,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 91
+    },
+    "filename": "/workspace/backend/app/models/tool.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 91
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 91,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 96
+    },
+    "filename": "/workspace/backend/app/models/tool.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 96
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 96,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 99
+    },
+    "filename": "/workspace/backend/app/models/tool.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 99
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 99,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 19,
+      "row": 336
+    },
+    "filename": "/workspace/backend/app/models/user.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 336
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 336,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 23,
+      "row": 361
+    },
+    "filename": "/workspace/backend/app/models/user.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 361
+    },
+    "message": "Undefined name `logger`",
+    "noqa_row": 361,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 80
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 80
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 80,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 171
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 171
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 171,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 174
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 174
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 174,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 177
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 177
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 177,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 193
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 30,
+      "row": 193
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 193,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 210
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 210
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 210,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 213
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 213
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 213,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 227
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 227
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 227,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 241
+    },
+    "filename": "/workspace/backend/tests/unit/services/test_auth_service_password_reset.py",
+    "fix": null,
+    "location": {
+      "column": 30,
+      "row": 241
+    },
+    "message": "Undefined name `mock_db`",
+    "noqa_row": 241,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  }
+]

@@ -6,10 +6,10 @@ This package contains business logic services for the platform.
 
 from .assistant_service import AssistantService
 from .conversation_service import ConversationService
-from .tool_service import ToolService
-from .user_service import UserService
 from .email_service import EmailService, email_service
 from .token_service import TokenService, token_service
+from .tool_service import ToolService
+from .user_service import UserService
 
 __all__ = [
     "AssistantService",

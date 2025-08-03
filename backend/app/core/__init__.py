@@ -6,18 +6,6 @@ database management, security, and utility functions.
 """
 
 from .config import get_settings
-from .database import check_db_connection, get_db, get_db_info, init_db
-from .redis_client import (
-    check_redis_connection,
-    clear_cache_pattern,
-    close_redis,
-    delete_cache,
-    get_cache,
-    get_redis,
-    get_redis_info,
-    init_redis,
-    set_cache,
-)
 from .security import (
     create_access_token,
     create_refresh_token,
@@ -29,17 +17,6 @@ from .security import (
     require_permission,
     verify_password,
     verify_token,
-)
-from .weaviate_client import (
-    add_document,
-    check_weaviate_connection,
-    close_weaviate,
-    create_schema_if_not_exists,
-    delete_document,
-    get_weaviate,
-    get_weaviate_info,
-    init_weaviate,
-    search_documents,
 )
 
 __all__ = [

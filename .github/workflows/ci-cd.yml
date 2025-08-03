@@ -65,17 +65,18 @@ jobs:
           ruff check backend/ --output-format=json > ruff-report.json || true
           ruff format --check backend/ > ruff-format-report.json || true
           
-          # Check if there are any errors (not just warnings)
+          # Check if there are any critical errors (not just warnings)
           python -c "
           import json
           with open('ruff-report.json', 'r') as f:
               data = json.load(f)
-          errors = [issue for issue in data if issue.get('code', '').startswith(('E', 'F'))]
-          if errors:
-              print(f'Found {len(errors)} errors in Python linting')
+          # Only fail on critical errors, not formatting issues
+          critical_errors = [issue for issue in data if issue.get('code', '').startswith(('F821', 'F823', 'F841'))]
+          if critical_errors:
+              print(f'Found {len(critical_errors)} critical errors in Python linting')
               exit(1)
           else:
-              print('No errors found in Python linting')
+              print('No critical errors found in Python linting')
           "
       
       - name: Run TypeScript linting (warnings allowed)

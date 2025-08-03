@@ -64,7 +64,9 @@ class AssistantMemoryManager:
                 content={
                     "user_message": request.message,
                     "assistant_response": ai_response.content,
-                    "tools_used": ai_response.tool_calls if ai_response.tool_calls else [],
+                    "tools_used": ai_response.tool_calls
+                    if ai_response.tool_calls
+                    else [],
                     "model_used": ai_response.metadata.get("model_used"),
                     "processing_time": ai_response.metadata.get("processing_time"),
                 },
@@ -112,7 +114,9 @@ class AssistantMemoryManager:
                     importance=memory.importance,
                 )
 
-            logger.debug(f"Updated memory with {len(memory_entries)} entries for conversation {request.conversation_id}")
+            logger.debug(
+                f"Updated memory with {len(memory_entries)} entries for conversation {request.conversation_id}"
+            )
             return memory_entries
 
         except Exception as e:
@@ -143,7 +147,9 @@ class AssistantMemoryManager:
                 limit=5,
             )
 
-            logger.debug(f"Retrieved {len(relevant_memories)} relevant memories for conversation {request.conversation_id}")
+            logger.debug(
+                f"Retrieved {len(relevant_memories)} relevant memories for conversation {request.conversation_id}"
+            )
             return relevant_memories
 
         except Exception as e:
@@ -189,16 +195,16 @@ class AssistantMemoryManager:
 
             # Get recent memories (last 10)
             recent_memories = sorted(
-                all_memories,
-                key=lambda x: x.created_at,
-                reverse=True
+                all_memories, key=lambda x: x.created_at, reverse=True
             )[:10]
 
             return {
                 "conversation_id": conversation_id,
                 "total_memories": len(all_memories),
                 "memory_types": memory_types,
-                "average_importance": total_importance / len(all_memories) if all_memories else 0.0,
+                "average_importance": total_importance / len(all_memories)
+                if all_memories
+                else 0.0,
                 "recent_memories": [
                     {
                         "type": memory.memory_type,
@@ -230,7 +236,7 @@ class AssistantMemoryManager:
 
             # Get current memories
             current_memories = memory_manager.memories.get(conversation_id, [])
-            
+
             if not current_memories:
                 return 0
 
@@ -241,7 +247,9 @@ class AssistantMemoryManager:
             remaining_memories = memory_manager.memories.get(conversation_id, [])
             cleaned_count = len(current_memories) - len(remaining_memories)
 
-            logger.info(f"Cleaned up {cleaned_count} old memories for conversation {conversation_id}")
+            logger.info(
+                f"Cleaned up {cleaned_count} old memories for conversation {conversation_id}"
+            )
             return cleaned_count
 
         except Exception as e:
@@ -300,21 +308,19 @@ class AssistantMemoryManager:
                         topics[topic] = topics.get(topic, 0) + 1
 
             # Get frequent topics
-            frequent_topics = sorted(
-                topics.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:10]
+            frequent_topics = sorted(topics.items(), key=lambda x: x[1], reverse=True)[
+                :10
+            ]
 
             return {
                 "user_id": user_id,
                 "total_memories": len(user_memories),
                 "memory_patterns": memory_types,
                 "frequent_topics": [
-                    {"topic": topic, "count": count}
-                    for topic, count in frequent_topics
+                    {"topic": topic, "count": count} for topic, count in frequent_topics
                 ],
-                "average_importance": sum(m.importance for m in user_memories) / len(user_memories),
+                "average_importance": sum(m.importance for m in user_memories)
+                / len(user_memories),
             }
 
         except Exception as e:
@@ -332,7 +338,9 @@ class AssistantMemoryManager:
             # Get memory manager from hybrid mode manager
             memory_manager = self.hybrid_mode_manager.memory_manager
 
-            total_memories = sum(len(memories) for memories in memory_manager.memories.values())
+            total_memories = sum(
+                len(memories) for memories in memory_manager.memories.values()
+            )
             total_conversations = len(memory_manager.memories)
 
             # Calculate average memories per conversation
@@ -343,7 +351,9 @@ class AssistantMemoryManager:
             return {
                 "total_memories": total_memories,
                 "total_conversations": total_conversations,
-                "average_memories_per_conversation": round(avg_memories_per_conversation, 2),
+                "average_memories_per_conversation": round(
+                    avg_memories_per_conversation, 2
+                ),
                 "memory_retention_hours": memory_manager.config.memory_retention_hours,
             }
 

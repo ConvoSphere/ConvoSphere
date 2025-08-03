@@ -8,6 +8,7 @@ for sensitive operations like password reset.
 import secrets
 import time
 from typing import Optional
+
 from loguru import logger
 
 from backend.app.core.config import get_settings
@@ -35,14 +36,14 @@ class CSRFProtection:
         """
         token = secrets.token_urlsafe(self.token_length)
         expires_at = time.time() + (self.token_expire_minutes * 60)
-        
+
         # Store token with expiration
         self.token_cache[token] = {
             "expires_at": expires_at,
             "session_id": session_id,
-            "created_at": time.time()
+            "created_at": time.time(),
         }
-        
+
         logger.debug(f"Generated CSRF token: {token[:8]}...")
         return token
 
@@ -75,7 +76,11 @@ class CSRFProtection:
             return False
 
         # Check session ID if provided
-        if session_id and token_data["session_id"] and token_data["session_id"] != session_id:
+        if (
+            session_id
+            and token_data["session_id"]
+            and token_data["session_id"] != session_id
+        ):
             logger.warning(f"CSRF token session mismatch: {token[:8]}...")
             return False
 
@@ -112,16 +117,17 @@ class CSRFProtection:
         """
         current_time = time.time()
         expired_tokens = [
-            token for token, data in self.token_cache.items()
+            token
+            for token, data in self.token_cache.items()
             if current_time > data["expires_at"]
         ]
-        
+
         for token in expired_tokens:
             self._remove_token(token)
-        
+
         if expired_tokens:
             logger.info(f"Cleaned up {len(expired_tokens)} expired CSRF tokens")
-        
+
         return len(expired_tokens)
 
     def get_token_info(self, token: str) -> Optional[dict]:

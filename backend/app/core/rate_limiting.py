@@ -112,7 +112,9 @@ class RateLimiter:
 
             # Get all requests in current window
             requests = await self.redis.zrangebyscore(
-                rate_key, current_time - 3600, current_time  # Last hour
+                rate_key,
+                current_time - 3600,
+                current_time,  # Last hour
             )
 
             return {

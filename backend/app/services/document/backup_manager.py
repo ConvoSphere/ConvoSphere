@@ -295,7 +295,7 @@ class DocumentBackupManager:
                     )
                     file_backup_path.parent.mkdir(exist_ok=True)
 
-                    if os.path.exists(document.file_path):
+                    if Path(document.file_path).exists():
                         shutil.copy2(document.file_path, file_backup_path)
                         file_path = str(file_backup_path)
 
@@ -466,7 +466,20 @@ class DocumentBackupManager:
         """Decompress backup archive."""
         try:
             with tarfile.open(compressed_path, "r:gz") as tar:
-                tar.extractall(extract_path.parent)
+                # Security: Validate tar members before extraction
+                for member in tar.getmembers():
+                    # Check for path traversal attacks
+                    if member.name.startswith(("/", "..", "~")):
+                        raise ValueError(f"Dangerous path in archive: {member.name}")
+                    # Check for absolute paths
+                    if os.path.isabs(member.name):
+                        raise ValueError(f"Absolute path in archive: {member.name}")
+                    # Check for symlinks (potential security risk)
+                    if member.issym() or member.islnk():
+                        raise ValueError(f"Symlink in archive: {member.name}")
+
+                # Extract to specific directory
+                tar.extractall(extract_path.parent, members=tar.getmembers())
         except Exception as e:
             logger.error(f"Failed to decompress backup: {e}")
             raise
@@ -528,12 +541,13 @@ class DocumentBackupManager:
                 await self._restore_chunks(document_backup)
 
                 # Restore file if it exists
-                if document_backup.file_path and os.path.exists(
+                if (
                     document_backup.file_path
+                    and Path(document_backup.file_path).exists()
                 ):
                     original_path = document_backup.document_data["file_path"]
-                    if original_path and not os.path.exists(original_path):
-                        os.makedirs(os.path.dirname(original_path), exist_ok=True)
+                    if original_path and not Path(original_path).exists():
+                        Path(original_path).parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(document_backup.file_path, original_path)
 
             except Exception as e:
@@ -546,6 +560,7 @@ class DocumentBackupManager:
         """Restore document chunks."""
         try:
             # Delete existing chunks
+            from backend.app.models.knowledge import DocumentChunk
             self.db.query(DocumentChunk).filter(
                 DocumentChunk.document_id == document_backup.document_id
             ).delete()

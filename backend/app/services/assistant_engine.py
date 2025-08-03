@@ -5,7 +5,6 @@ This module provides the main assistant engine with hybrid chat/agent mode
 capabilities, structured output, and integration with the HybridModeManager.
 """
 
-import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
@@ -97,7 +96,7 @@ class AIResponse:
 class AssistantEngine:
     """
     Main assistant engine for processing user messages with hybrid mode support.
-    
+
     This is a facade that delegates to the modular assistant engine implementation.
     """
 

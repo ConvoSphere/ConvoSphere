@@ -80,7 +80,9 @@ class AssistantResponseGenerator:
             )
 
             # Create system message
-            system_message = self._create_system_message(mode_decision, knowledge_context)
+            system_message = self._create_system_message(
+                mode_decision, knowledge_context
+            )
 
             # Generate AI response
             ai_response = await self.ai_service.generate_response(
@@ -106,7 +108,9 @@ class AssistantResponseGenerator:
                 },
             )
 
-            logger.debug(f"Generated response for conversation {request.conversation_id}")
+            logger.debug(
+                f"Generated response for conversation {request.conversation_id}"
+            )
             return response
 
         except Exception as e:
@@ -141,16 +145,20 @@ class AssistantResponseGenerator:
         conversation_messages = context.get("messages", [])
         for msg in conversation_messages[-10:]:  # Last 10 messages
             if msg.get("role") in ["user", "assistant"]:
-                messages.append({
-                    "role": msg["role"],
-                    "content": msg["content"],
-                })
+                messages.append(
+                    {
+                        "role": msg["role"],
+                        "content": msg["content"],
+                    }
+                )
 
         # Add current user message
-        messages.append({
-            "role": "user",
-            "content": request.message,
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": request.message,
+            }
+        )
 
         return messages
 
@@ -171,11 +179,17 @@ class AssistantResponseGenerator:
         if mode_decision and mode_decision.recommended_mode:
             mode = mode_decision.recommended_mode
             if mode == "agent":
-                system_message += " Du arbeitest im Agent-Modus und kannst Tools verwenden."
+                system_message += (
+                    " Du arbeitest im Agent-Modus und kannst Tools verwenden."
+                )
             elif mode == "chat":
-                system_message += " Du arbeitest im Chat-Modus für natürliche Konversation."
+                system_message += (
+                    " Du arbeitest im Chat-Modus für natürliche Konversation."
+                )
             else:
-                system_message += " Du arbeitest im Hybrid-Modus und passt dich automatisch an."
+                system_message += (
+                    " Du arbeitest im Hybrid-Modus und passt dich automatisch an."
+                )
 
         # Add knowledge context if available
         if knowledge_context:
@@ -300,7 +314,7 @@ class AssistantResponseGenerator:
         """
         try:
             ai_stats = self.ai_service.get_stats()
-            
+
             return {
                 "ai_service": ai_stats,
                 "total_responses_generated": ai_stats.get("total_requests", 0),

@@ -206,7 +206,9 @@ class ToolDependencyManager:
             deps = self.dependencies.get(tool, [])
             for dep in deps:
                 if dep not in tools:
-                    logger.warning(f"Tool {tool} depends on {dep} which is not available")
+                    logger.warning(
+                        f"Tool {tool} depends on {dep} which is not available"
+                    )
                     return False
         return True
 
@@ -250,7 +252,9 @@ class EnhancedToolExecutor:
             result.error = str(e)
             result.end_time = datetime.now(UTC)
             if result.start_time:
-                result.execution_time = (result.end_time - result.start_time).total_seconds()
+                result.execution_time = (
+                    result.end_time - result.start_time
+                ).total_seconds()
             logger.error(f"Tool execution failed: {e}")
             raise ToolError(
                 f"Tool execution failed: {str(e)}",
@@ -278,7 +282,9 @@ class EnhancedToolExecutor:
                         result.cache_hit = True
                         result.end_time = datetime.now(UTC)
                         if result.start_time:
-                            result.execution_time = (result.end_time - result.start_time).total_seconds()
+                            result.execution_time = (
+                                result.end_time - result.start_time
+                            ).total_seconds()
                         logger.info(f"Cache hit for tool {request.tool_name}")
                         return result
 
@@ -288,7 +294,9 @@ class EnhancedToolExecutor:
                 result.status = "completed"
                 result.end_time = datetime.now(UTC)
                 if result.start_time:
-                    result.execution_time = (result.end_time - result.start_time).total_seconds()
+                    result.execution_time = (
+                        result.end_time - result.start_time
+                    ).total_seconds()
 
                 # Cache result if successful
                 if request.cache_result:
@@ -316,7 +324,9 @@ class EnhancedToolExecutor:
         result.error = last_error
         result.end_time = datetime.now(UTC)
         if result.start_time:
-            result.execution_time = (result.end_time - result.start_time).total_seconds()
+            result.execution_time = (
+                result.end_time - result.start_time
+            ).total_seconds()
 
         raise ToolError(
             f"Tool execution failed after {request.retry_count + 1} attempts: {last_error}",
@@ -450,7 +460,9 @@ class EnhancedToolExecutor:
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": successful_executions / total_executions if total_executions > 0 else 0.0,
+            "success_rate": successful_executions / total_executions
+            if total_executions > 0
+            else 0.0,
             "average_execution_time": avg_execution_time,
             "cache_stats": self.cache.get_stats(),
         }
@@ -475,9 +487,12 @@ class EnhancedToolExecutor:
             executions = [ex for ex in executions if ex.user_id == user_id]
 
         # Sort by start time (most recent first)
-        executions.sort(key=lambda x: x.start_time or datetime.min.replace(tzinfo=UTC), reverse=True)
+        executions.sort(
+            key=lambda x: x.start_time or datetime.min.replace(tzinfo=UTC), reverse=True
+        )
 
         return executions[:limit]
+
 
 # Create a global instance of the enhanced tool executor
 enhanced_tool_executor = EnhancedToolExecutor()

@@ -88,7 +88,7 @@ async def get_redis() -> redis.Redis | None:
         # Quick health check
         await asyncio.wait_for(redis_client.ping(), timeout=1.0)
         return redis_client
-    except Exception:
+    except (redis.ConnectionError, redis.TimeoutError, asyncio.TimeoutError):
         return None
 
 
@@ -104,7 +104,7 @@ async def close_redis() -> None:
         redis_client = None
         redis_available = False
         logger.info("Redis connection closed gracefully")
-    except Exception as e:
+    except (redis.ConnectionError, redis.TimeoutError) as e:
         logger.warning(f"Error during Redis shutdown: {e}")
 
 
@@ -130,7 +130,7 @@ async def check_redis_connection() -> bool:
         await asyncio.wait_for(test_client.ping(), timeout=2.0)
         await test_client.aclose()
         return True
-    except Exception as e:
+    except (redis.ConnectionError, redis.TimeoutError, asyncio.TimeoutError) as e:
         logger.debug(f"Redis connection check failed: {e}")
         return False
 
@@ -166,7 +166,7 @@ async def get_redis_info() -> dict[str, Any]:
             "keyspace_hits": info.get("keyspace_hits", 0),
             "keyspace_misses": info.get("keyspace_misses", 0),
         }
-    except Exception as e:
+    except (redis.ConnectionError, redis.TimeoutError, asyncio.TimeoutError) as e:
         logger.error(f"Failed to get Redis info: {e}")
         return {"status": "error", "error": str(e)}
 

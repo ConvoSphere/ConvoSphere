@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from backend.app.core.exceptions import ConversationError
 from backend.app.schemas.agent import AgentHandoffRequest
+
 from .agent_state import agent_state_manager
 
 
@@ -163,7 +164,8 @@ class AgentHandoffService:
 
         if agent_id:
             history = [
-                h for h in history
+                h
+                for h in history
                 if h.from_agent_id == agent_id or h.to_agent_id == agent_id
             ]
 
@@ -173,17 +175,19 @@ class AgentHandoffService:
         # Convert to dict format
         result = []
         for event in history[:limit]:
-            result.append({
-                "conversation_id": event.conversation_id,
-                "from_agent": event.from_agent_id,
-                "to_agent": event.to_agent_id,
-                "reason": event.reason,
-                "context": event.context,
-                "priority": event.priority,
-                "timestamp": event.timestamp.isoformat(),
-                "success": event.success,
-                "error_message": event.error_message,
-            })
+            result.append(
+                {
+                    "conversation_id": event.conversation_id,
+                    "from_agent": event.from_agent_id,
+                    "to_agent": event.to_agent_id,
+                    "reason": event.reason,
+                    "context": event.context,
+                    "priority": event.priority,
+                    "timestamp": event.timestamp.isoformat(),
+                    "success": event.success,
+                    "error_message": event.error_message,
+                }
+            )
 
         return result
 
@@ -205,7 +209,8 @@ class AgentHandoffService:
         cutoff_time = datetime.now(UTC) - datetime.timedelta(hours=time_period_hours)
 
         recent_handoffs = [
-            h for h in self.handoff_history
+            h
+            for h in self.handoff_history
             if h.timestamp >= cutoff_time
             and (h.from_agent_id == agent_id or h.to_agent_id == agent_id)
         ]
@@ -226,7 +231,8 @@ class AgentHandoffService:
             "failed_handoffs": len(failed_handoffs),
             "success_rate": (
                 len(successful_handoffs) / len(recent_handoffs) * 100
-                if recent_handoffs else 0
+                if recent_handoffs
+                else 0
             ),
             "most_common_reason": self._get_most_common_reason(recent_handoffs),
         }
@@ -260,8 +266,7 @@ class AgentHandoffService:
             dict: Handoff summary
         """
         conversation_handoffs = [
-            h for h in self.handoff_history
-            if h.conversation_id == conversation_id
+            h for h in self.handoff_history if h.conversation_id == conversation_id
         ]
 
         if not conversation_handoffs:
@@ -281,13 +286,15 @@ class AgentHandoffService:
         # Create handoff flow
         handoff_flow = []
         for handoff in conversation_handoffs:
-            handoff_flow.append({
-                "from_agent": handoff.from_agent_id,
-                "to_agent": handoff.to_agent_id,
-                "reason": handoff.reason,
-                "timestamp": handoff.timestamp.isoformat(),
-                "success": handoff.success,
-            })
+            handoff_flow.append(
+                {
+                    "from_agent": handoff.from_agent_id,
+                    "to_agent": handoff.to_agent_id,
+                    "reason": handoff.reason,
+                    "timestamp": handoff.timestamp.isoformat(),
+                    "success": handoff.success,
+                }
+            )
 
         return {
             "conversation_id": conversation_id,

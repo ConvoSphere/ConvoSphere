@@ -7,7 +7,10 @@ This module handles the logging of audit events.
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+
+from backend.app.utils.helpers import utc_now
 
 from backend.app.models.audit import AuditLog
 
@@ -25,12 +28,12 @@ class AuditLogger:
                 event_type=event_type,
                 user_id=user_id,
                 details=details,
-                timestamp=datetime.utcnow(),
+                timestamp=utc_now(),
             )
             self.db.add(audit_log)
             self.db.commit()
             return True
-        except Exception:
+        except SQLAlchemyError:
             self.db.rollback()
             return False
 

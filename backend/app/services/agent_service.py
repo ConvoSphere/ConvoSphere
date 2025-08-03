@@ -7,7 +7,6 @@ It integrates with the new modular AgentManager and follows the existing service
 """
 
 from typing import Any
-from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.orm import Session

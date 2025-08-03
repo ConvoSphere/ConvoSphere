@@ -18,11 +18,12 @@ from backend.app.schemas.agent import (
     AgentResponse,
     AgentUpdate,
 )
+
+from .agent_collaboration import agent_collaboration_service
+from .agent_handoff import agent_handoff_service
+from .agent_performance import agent_performance_service
 from .agent_registry import agent_registry
 from .agent_state import agent_state_manager
-from .agent_handoff import agent_handoff_service
-from .agent_collaboration import agent_collaboration_service
-from .agent_performance import agent_performance_service
 
 
 class AgentManager:
@@ -264,7 +265,9 @@ class AgentManager:
                 )
 
             # Set initial agent as active
-            self.state_manager.set_agent_status(conversation_id, initial_agent, "active")
+            self.state_manager.set_agent_status(
+                conversation_id, initial_agent, "active"
+            )
 
             # Record usage for initial agent
             self.registry.record_usage(initial_agent)
@@ -317,18 +320,24 @@ class AgentManager:
             if not agent_entry:
                 raise ConversationError(f"Agent {target_agent} not found")
 
-            agent_state = self.state_manager.get_agent_state(conversation_id, target_agent)
+            agent_state = self.state_manager.get_agent_state(
+                conversation_id, target_agent
+            )
             if not agent_state:
                 raise ConversationError(f"Agent {target_agent} not in conversation")
 
             # Update agent state to processing
-            self.state_manager.set_agent_status(conversation_id, target_agent, "processing")
+            self.state_manager.set_agent_status(
+                conversation_id, target_agent, "processing"
+            )
 
             # Record usage
             self.registry.record_usage(target_agent)
 
             # Generate response (simplified - in real implementation, this would call AI service)
-            response_content = f"Response from {agent_entry.config.name}: {user_message}"
+            response_content = (
+                f"Response from {agent_entry.config.name}: {user_message}"
+            )
 
             # Update agent state back to active
             self.state_manager.set_agent_status(conversation_id, target_agent, "active")
@@ -367,7 +376,9 @@ class AgentManager:
             dict: Conversation state or None if not found
         """
         try:
-            agent_states = self.state_manager.get_conversation_agent_states(conversation_id)
+            agent_states = self.state_manager.get_conversation_agent_states(
+                conversation_id
+            )
             if not agent_states:
                 return None
 
@@ -375,8 +386,8 @@ class AgentManager:
             current_agent = active_agents[0] if active_agents else None
 
             # Check for active collaboration
-            collaboration_session = self.collaboration_service.get_collaboration_session(
-                conversation_id
+            collaboration_session = (
+                self.collaboration_service.get_collaboration_session(conversation_id)
             )
 
             return {
@@ -385,7 +396,9 @@ class AgentManager:
                 "current_agent": current_agent,
                 "agent_states": [state.dict() for state in agent_states],
                 "collaboration_active": collaboration_session is not None,
-                "collaboration_info": collaboration_session.dict() if collaboration_session else None,
+                "collaboration_info": collaboration_session.dict()
+                if collaboration_session
+                else None,
             }
 
         except Exception as e:
