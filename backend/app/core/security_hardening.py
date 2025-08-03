@@ -168,6 +168,63 @@ class SSOSecurityValidator:
         self.rate_limit_cache[identifier].append(current_time)
         return True
 
+    def rate_limit_password_reset(
+        self,
+        identifier: str,
+        max_requests: int = 3,
+        window: int = 3600,  # 1 hour
+    ) -> bool:
+        """
+        Check rate limit specifically for password reset requests.
+
+        Args:
+            identifier: Unique identifier (IP or email)
+            max_requests: Maximum password reset requests allowed
+            window: Time window in seconds (default: 1 hour)
+
+        Returns:
+            bool: True if request is allowed
+        """
+        return self.rate_limit_check(identifier, max_requests, window)
+
+    def rate_limit_password_reset_by_ip(
+        self,
+        ip_address: str,
+        max_requests: int = 5,
+        window: int = 3600,  # 1 hour
+    ) -> bool:
+        """
+        Check rate limit for password reset by IP address.
+
+        Args:
+            ip_address: Client IP address
+            max_requests: Maximum requests allowed per IP
+            window: Time window in seconds
+
+        Returns:
+            bool: True if request is allowed
+        """
+        return self.rate_limit_password_reset(f"pw_reset_ip:{ip_address}", max_requests, window)
+
+    def rate_limit_password_reset_by_email(
+        self,
+        email: str,
+        max_requests: int = 3,
+        window: int = 3600,  # 1 hour
+    ) -> bool:
+        """
+        Check rate limit for password reset by email address.
+
+        Args:
+            email: Email address
+            max_requests: Maximum requests allowed per email
+            window: Time window in seconds
+
+        Returns:
+            bool: True if request is allowed
+        """
+        return self.rate_limit_password_reset(f"pw_reset_email:{email.lower()}", max_requests, window)
+
     def validate_user_attributes(self, user_attributes: dict) -> tuple[bool, str]:
         """
         Validate user attributes from SSO providers.

@@ -34,6 +34,7 @@ from backend.app.core.security_hardening import (
     sso_security_validator,
     validate_sso_request,
 )
+from backend.app.core.csrf_protection import generate_csrf_token
 from backend.app.models.user import User, UserRole
 from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
 from backend.app.services.audit_service import audit_service
@@ -914,6 +915,25 @@ async def forgot_password(
     For security reasons, it always returns success even if the user doesn't exist.
     """
     try:
+        # Get client IP for rate limiting
+        client_ip = get_client_ip(request)
+        
+        # Rate limiting by IP address
+        if not sso_security_validator.rate_limit_password_reset_by_ip(client_ip):
+            logger.warning(f"Rate limit exceeded for password reset by IP: {client_ip}")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many password reset requests. Please try again later."
+            )
+        
+        # Rate limiting by email address
+        if not sso_security_validator.rate_limit_password_reset_by_email(request_data.email):
+            logger.warning(f"Rate limit exceeded for password reset by email: {request_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many password reset requests for this email. Please try again later."
+            )
+        
         auth_service = AuthService(db)
         
         # Try to request password reset
@@ -921,11 +941,36 @@ async def forgot_password(
             success = auth_service.request_password_reset(request_data.email)
             if success:
                 logger.info(f"Password reset email sent to {request_data.email}")
+                
+                # Log successful password reset request
+                await audit_service.log_security_event(
+                    user_id=None,
+                    event_type="password_reset_requested",
+                    details={
+                        "email": request_data.email,
+                        "ip_address": client_ip,
+                        "user_agent": request.headers.get("user-agent", ""),
+                        "success": True
+                    }
+                )
             else:
                 logger.warning(f"Failed to send password reset email to {request_data.email}")
         except ValueError:
             # User not found - don't reveal this information
             logger.info(f"Password reset requested for non-existent email: {request_data.email}")
+            
+            # Log failed password reset request
+            await audit_service.log_security_event(
+                user_id=None,
+                event_type="password_reset_requested",
+                details={
+                    "email": request_data.email,
+                    "ip_address": client_ip,
+                    "user_agent": request.headers.get("user-agent", ""),
+                    "success": False,
+                    "reason": "user_not_found"
+                }
+            )
         
         # Always return success for security reasons
         return {
@@ -933,6 +978,8 @@ async def forgot_password(
             "status": "success"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in forgot password endpoint: {e}")
         raise HTTPException(
@@ -951,6 +998,9 @@ async def reset_password(
     Reset password using a valid token.
     """
     try:
+        # Get client IP for logging
+        client_ip = get_client_ip(request)
+        
         auth_service = AuthService(db)
         
         # Reset password with token
@@ -961,6 +1011,18 @@ async def reset_password(
         
         if success:
             logger.info("Password reset completed successfully")
+            
+            # Log successful password reset
+            await audit_service.log_security_event(
+                user_id=None,
+                event_type="password_reset_completed",
+                details={
+                    "ip_address": client_ip,
+                    "user_agent": request.headers.get("user-agent", ""),
+                    "success": True
+                }
+            )
+            
             return {
                 "message": "Password reset successfully",
                 "status": "success"
@@ -973,6 +1035,19 @@ async def reset_password(
             
     except ValueError as e:
         logger.warning(f"Invalid password reset attempt: {e}")
+        
+        # Log failed password reset attempt
+        await audit_service.log_security_event(
+            user_id=None,
+            event_type="password_reset_failed",
+            details={
+                "ip_address": get_client_ip(request),
+                "user_agent": request.headers.get("user-agent", ""),
+                "reason": str(e),
+                "token_provided": bool(reset_data.token)
+            }
+        )
+        
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired token"
@@ -1009,4 +1084,30 @@ async def validate_reset_token(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while validating the token"
+        )
+
+
+@router.get("/csrf-token")
+async def get_csrf_token(request: Request):
+    """
+    Generate a CSRF token for form protection.
+    """
+    try:
+        # Generate session ID from request
+        session_id = request.headers.get("X-Session-ID") or str(uuid.uuid4())
+        
+        # Generate CSRF token
+        csrf_token = generate_csrf_token(session_id)
+        
+        return {
+            "csrf_token": csrf_token,
+            "expires_in": 30 * 60,  # 30 minutes in seconds
+            "session_id": session_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating CSRF token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while generating CSRF token"
         )

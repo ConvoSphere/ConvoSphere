@@ -150,6 +150,15 @@ class Settings(BaseSettings):
     # Password Reset Configuration
     password_reset_token_expire_minutes: int = Field(default=60, description="Password reset token expiration time in minutes")
     password_reset_base_url: str = Field(default="http://localhost:3000", description="Base URL for password reset links")
+    
+    # Rate Limiting Configuration
+    password_reset_rate_limit_ip_max: int = Field(default=5, description="Maximum password reset requests per IP per hour")
+    password_reset_rate_limit_email_max: int = Field(default=3, description="Maximum password reset requests per email per hour")
+    password_reset_rate_limit_window: int = Field(default=3600, description="Rate limiting window in seconds (1 hour)")
+    
+    # CSRF Protection Configuration
+    csrf_token_expire_minutes: int = Field(default=30, description="CSRF token expiration time in minutes")
+    csrf_protection_enabled: bool = Field(default=True, description="Enable CSRF protection for sensitive operations")
 
     # External Services
     serper_api_key: str | None = Field(default=None, description="Serper API key")
