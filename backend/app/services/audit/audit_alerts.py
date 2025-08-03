@@ -7,7 +7,10 @@ This module handles audit alert creation and management.
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+
+from backend.app.utils.helpers import utc_now
 
 from backend.app.models.audit_extended import AuditAlert
 
@@ -25,13 +28,13 @@ class AlertManager:
                 alert_type=alert_type,
                 message=message,
                 severity=severity,
-                created_at=datetime.utcnow(),
+                created_at=utc_now(),
                 is_resolved=False,
             )
             self.db.add(alert)
             self.db.commit()
             return True
-        except Exception:
+        except SQLAlchemyError:
             self.db.rollback()
             return False
 
@@ -55,11 +58,11 @@ class AlertManager:
             alert = self.db.query(AuditAlert).filter(AuditAlert.id == alert_id).first()
             if alert:
                 alert.is_resolved = True
-                alert.resolved_at = datetime.utcnow()
+                alert.resolved_at = utc_now()
                 self.db.commit()
                 return True
             return False
-        except Exception:
+        except SQLAlchemyError:
             self.db.rollback()
             return False
 

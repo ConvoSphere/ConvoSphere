@@ -510,9 +510,8 @@ class RAGService:
         results: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Format knowledge base results."""
-        formatted_results = []
-        for result in results:
-            formatted_result = {
+        return [
+            {
                 "content": result.get("content", ""),
                 "source": "knowledge_base",
                 "source_type": "document",
@@ -522,17 +521,16 @@ class RAGService:
                 "created_at": result.get("created_at"),
                 "metadata": result.get("metadata", {}),
             }
-            formatted_results.append(formatted_result)
-        return formatted_results
+            for result in results
+        ]
 
     def _format_conversation_results(
         self,
         results: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Format conversation results."""
-        formatted_results = []
-        for result in results:
-            formatted_result = {
+        return [
+            {
                 "content": result.get("content", ""),
                 "source": "conversation",
                 "source_type": "message",
@@ -541,8 +539,8 @@ class RAGService:
                 "created_at": result.get("created_at"),
                 "metadata": result.get("metadata", {}),
             }
-            formatted_results.append(formatted_result)
-        return formatted_results
+            for result in results
+        ]
 
     async def _get_conversation_history(
         self,
