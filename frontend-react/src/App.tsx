@@ -39,6 +39,7 @@ import {
   LazySystemStatusPage,
   LazyConversationIntelligencePage,
   LazyDomainGroupsPage,
+  LazyExportBackupPage,
 } from "./components/LazyComponents";
 
 // Simple theme configuration to avoid complex theme store issues
@@ -474,6 +475,20 @@ const App: React.FC = () => {
                         <ErrorBoundary>
                           <Suspense fallback={<LoadingSpinner />}>
                             <LazyDomainGroupsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/export-backup"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyExportBackupPage />
                           </Suspense>
                         </ErrorBoundary>
                       </Layout>

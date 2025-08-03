@@ -48,6 +48,9 @@ export const config = {
     monitoring: "/api/v1/monitoring",
     search: "/api/v1/search",
     rag: "/api/v1/rag",
+    export: "/api/v1/export",
+    backup: "/api/v1/backup",
+    config: "/api/v1/config",
   },
 };
 

@@ -42,6 +42,7 @@ export const LazyMcpTools = lazy(() => import("../pages/McpTools"));
 export const LazySystemStatus = lazy(() => import("../pages/SystemStatus"));
 export const LazyConversationIntelligence = lazy(() => import("../pages/ConversationIntelligence"));
 export const LazyDomainGroups = lazy(() => import("../pages/DomainGroups"));
+export const LazyExportBackup = lazy(() => import("../pages/ExportBackup"));
 
 // Lazy-Loaded Feature Components
 export const LazyVirtualizedChat = lazy(() => import("./VirtualizedChat"));
@@ -65,3 +66,4 @@ export const LazyMcpToolsPage: React.FC = () => <LazyMcpTools />;
 export const LazySystemStatusPage: React.FC = () => <LazySystemStatus />;
 export const LazyConversationIntelligencePage: React.FC = () => <LazyConversationIntelligence />;
 export const LazyDomainGroupsPage: React.FC = () => <LazyDomainGroups />;
+export const LazyExportBackupPage: React.FC = () => <LazyExportBackup />;

@@ -103,6 +103,11 @@ const Sidebar: React.FC = () => {
       label: t("navigation.domain_groups"),
     },
     {
+      key: "/export-backup",
+      icon: <DownloadOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      label: t("navigation.export_backup"),
+    },
+    {
       key: "/mcp-tools",
       icon: <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
       label: t("navigation.mcp_tools"),
