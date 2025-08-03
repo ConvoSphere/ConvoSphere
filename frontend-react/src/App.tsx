@@ -22,6 +22,8 @@ import "./styles/chat.css";
 // Import auth components directly to ensure they are loaded
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 import {
   LazyHomePage,
@@ -267,6 +269,26 @@ const App: React.FC = () => {
                     <ErrorBoundary>
                       <Suspense fallback={<LoadingSpinner />}>
                         <Register />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ForgotPassword />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/reset-password"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ResetPassword />
                       </Suspense>
                     </ErrorBoundary>
                   }

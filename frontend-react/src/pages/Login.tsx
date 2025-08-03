@@ -29,7 +29,7 @@ const Login: React.FC = () => {
   const colors = getCurrentColors();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [forgotVisible, setForgotVisible] = useState(false);
+
   const [ssoProviders, setSsoProviders] = useState<SSOProvider[]>([]);
   const [ssoLoading, setSsoLoading] = useState(false);
 
@@ -302,7 +302,7 @@ const Login: React.FC = () => {
           <ModernButton
             variant="ghost"
             size="sm"
-            onClick={() => setForgotVisible(true)}
+            onClick={() => navigate("/forgot-password")}
             aria-label={t("auth.forgot_password")}
           >
             {t("auth.forgot_password")}
@@ -310,19 +310,7 @@ const Login: React.FC = () => {
         </div>
       </ModernCard>
 
-      <Modal
-        open={forgotVisible}
-        onCancel={() => setForgotVisible(false)}
-        title={t("auth.forgot_password")}
-        footer={
-          <ModernButton onClick={() => setForgotVisible(false)}>
-            {t("common.close")}
-          </ModernButton>
-        }
-        style={{ borderRadius: "16px" }}
-      >
-        <p>{t("auth.forgot_password_message")}</p>
-      </Modal>
+
     </div>
   );
 };

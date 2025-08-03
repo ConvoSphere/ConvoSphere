@@ -139,3 +139,62 @@ export function logout() {
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("token_expiry");
 }
+
+// Password Reset Functions
+export async function forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await authApi.post(`${config.apiEndpoints.auth}/forgot-password`, {
+      email,
+    });
+    
+    return {
+      success: true,
+      message: response.data.message || "Password reset email sent"
+    };
+  } catch (error: any) {
+    console.error("Forgot password failed:", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Failed to send password reset email"
+    };
+  }
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await authApi.post(`${config.apiEndpoints.auth}/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+    
+    return {
+      success: true,
+      message: response.data.message || "Password reset successfully"
+    };
+  } catch (error: any) {
+    console.error("Reset password failed:", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || "Failed to reset password"
+    };
+  }
+}
+
+export async function validateResetToken(token: string): Promise<{ valid: boolean; message: string }> {
+  try {
+    const response = await authApi.post(`${config.apiEndpoints.auth}/validate-reset-token`, {
+      token,
+    });
+    
+    return {
+      valid: response.data.valid,
+      message: response.data.message
+    };
+  } catch (error: any) {
+    console.error("Token validation failed:", error);
+    return {
+      valid: false,
+      message: error.response?.data?.detail || "Failed to validate token"
+    };
+  }
+}
