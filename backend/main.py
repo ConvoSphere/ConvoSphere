@@ -35,6 +35,7 @@ from backend.app.core.weaviate_client import (
     create_schema_if_not_exists,
     init_weaviate,
 )
+from backend.app.core.sso_manager import init_sso_manager
 from backend.app.services.audit_service import audit_service
 from backend.app.services.enhanced_background_job_service import job_manager
 from backend.app.services.performance_monitor import performance_monitor
@@ -84,6 +85,10 @@ async def lifespan(_):
         # Start enhanced job manager
         job_manager.start()
         logger.info("Enhanced job manager started")
+
+        # Initialize SSO manager
+        init_sso_manager()
+        logger.info("SSO manager initialized")
 
         logger.info("All services initialized successfully")
 

@@ -1,12 +1,12 @@
 # ConvoSphere
 
-A modern, full-stack AI chat application built with **FastAPI** (Backend) and **React** (Frontend), featuring comprehensive test coverage, real-time messaging, and advanced AI capabilities.
+A modern, full-stack AI assistant platform built with **FastAPI** (Backend) and **React** (Frontend), featuring comprehensive SSO integration, advanced knowledge management, and enterprise-grade AI capabilities.
 
-> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
+> **🚀 Production Ready**: This is a mature platform with enterprise features including SSO, advanced document processing, and comprehensive admin tools.
 
 <div align="center">
 
-![ConvoSphere](https://img.shields.io/badge/ConvoSphere-Beta%200.1.0-blue)
+![ConvoSphere](https://img.shields.io/badge/ConvoSphere-Production%20Ready-green)
 ![Python](https://img.shields.io/badge/Python-3.11+-green)
 ![React](https://img.shields.io/badge/React-18+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
@@ -36,29 +36,30 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides.
+**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides, including [SSO Setup](docs/SSO_SETUP.md) and [Knowledge Base Settings](docs/KNOWLEDGE_BASE_SETTINGS.md).
 
 ## ✨ Key Features
 
 ### Core Capabilities
+- **Enterprise SSO**: Comprehensive Single Sign-On with Google, Microsoft, GitHub, SAML, and OIDC
+- **Advanced Knowledge Management**: Document processing with configurable chunking, embedding models, and semantic search
+- **AI Assistant Platform**: Create and manage custom AI assistants with different personalities and capabilities
 - **Real-time Chat**: WebSocket-based messaging with instant delivery and file attachments
-- **AI Integration**: Powered by LiteLLM with support for multiple AI providers
-- **User Authentication**: JWT-based authentication with role-based access control
-- **File Upload**: Support for PDF, DOCX, and text files with AI processing
-- **Knowledge Base**: Advanced document storage and semantic search capabilities
-- **Conversation Management**: Organize and manage chat conversations with history
-- **AI Assistants**: Create and manage custom AI assistants with different personalities
+- **AI Integration**: Powered by LiteLLM with support for multiple AI providers (OpenAI, Anthropic, Google)
+- **User Authentication**: JWT-based authentication with role-based access control (User, Admin, Super Admin)
+- **Document Processing**: Support for PDF, DOCX, TXT, MD with AI-powered metadata extraction
+- **Conversation Intelligence**: Advanced analytics and insights from conversations
 - **Tool Integration**: MCP (Model Context Protocol) tools and custom tool management
-- **Responsive Design**: Mobile-first design with dark/light theme support
-- **Internationalization**: Multi-language support (EN/DE) with i18next
+- **Responsive Design**: Modern UI with dark/light theme support and accessibility features
 
 ### Advanced Features
-- **Voice Input**: Speech-to-text functionality
-- **Message Formatting**: Markdown support with rich text editing
-- **Search & Export**: Advanced search and conversation export
-- **Performance Monitoring**: Real-time system health monitoring
-- **Rate Limiting**: API protection against abuse
-- **CORS Support**: Cross-origin resource sharing enabled
+- **Knowledge Base Settings**: Configurable document processing, embedding models, and search algorithms
+- **Conversation Analytics**: Sentiment analysis, topic clustering, and user behavior insights
+- **Domain Groups**: Enterprise user management with LDAP/AD integration
+- **Export & Backup**: Comprehensive data export and backup capabilities
+- **Performance Monitoring**: Real-time system health monitoring and alerting
+- **Rate Limiting**: API protection with configurable limits
+- **Audit Logging**: Complete audit trail for compliance and security
 
 ## 🏗️ Architecture
 
@@ -120,10 +121,11 @@ graph TB
 - **React 18**: Modern React with TypeScript and concurrent features
 - **TypeScript**: Type-safe JavaScript development
 - **Zustand**: Lightweight state management
-- **Ant Design**: Enterprise UI component library with responsive design
+- **Ant Design**: Enterprise UI component library with modern design system
 - **React Router**: Client-side routing with protected routes
 - **WebSocket**: Real-time communication
 - **i18next**: Internationalization (EN/DE)
+- **Modern UI Components**: Custom ModernCard, ModernButton, ModernInput components
 - **Performance Monitoring**: Real-time performance tracking
 
 ### Development & Testing
@@ -224,16 +226,31 @@ npm run cypress:run
 #### Backend (.env)
 ```env
 # Database
-DATABASE_URL=postgresql://user:password@localhost/ai_chat_app
+DATABASE_URL=postgresql://user:password@localhost/convosphere
 
 # Security
 SECRET_KEY=your-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# SSO Configuration
+SSO_GOOGLE_ENABLED=false
+SSO_GOOGLE_CLIENT_ID=your-google-client-id
+SSO_GOOGLE_CLIENT_SECRET=your-google-client-secret
+SSO_GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/sso/callback/google
+
+SSO_MICROSOFT_ENABLED=false
+SSO_MICROSOFT_CLIENT_ID=your-microsoft-client-id
+SSO_MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+
+SSO_GITHUB_ENABLED=false
+SSO_GITHUB_CLIENT_ID=your-github-client-id
+SSO_GITHUB_CLIENT_SECRET=your-github-client-secret
 
 # AI Services
-LITELLM_API_KEY=your-litellm-key
-OPENAI_API_KEY=your-openai-key
+OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+GOOGLE_API_KEY=your-google-api-key
 
 # External Services
 WEAVIATE_URL=http://localhost:8080
@@ -283,17 +300,21 @@ serve -s build -l 8081
 
 ### Key Endpoints
 - `POST /api/v1/auth/login` - User authentication
+- `GET /api/v1/auth/sso/providers` - List SSO providers
 - `POST /api/v1/chat/messages` - Send chat message
 - `GET /api/v1/conversations/` - List conversations
 - `POST /api/v1/knowledge/upload` - Upload documents
+- `GET /api/v1/knowledge/settings` - Knowledge base settings
 - `POST /api/v1/search` - Semantic search
+- `GET /api/v1/admin/users` - Admin user management
 - `GET /health` - Health check
 
 ## 🔒 Security
 
 ### Authentication & Authorization
 - JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
+- Enterprise SSO integration (Google, Microsoft, GitHub, SAML, OIDC)
+- Role-based access control (User, Admin, Super Admin)
 - Password hashing with bcrypt
 - Rate limiting on API endpoints
 - CORS configuration for cross-origin requests

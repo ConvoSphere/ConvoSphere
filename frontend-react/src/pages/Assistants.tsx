@@ -89,22 +89,6 @@ const Assistants: React.FC = () => {
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const [availableKnowledgeBases, setAvailableKnowledgeBases] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
-    {
-      id: "tool3",
-      name: "Code Interpreter",
-      description: "Code execution and analysis",
-    },
-    {
-      id: "tool4",
-      name: "File Manager",
-      description: "File system operations",
-    },
-    {
-      id: "tool5",
-      name: "Image Generator",
-      description: "Create images from text",
-    },
-  ];
 
   useEffect(() => {
     const loadData = async () => {

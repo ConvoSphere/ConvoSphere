@@ -54,6 +54,7 @@ import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
+import KnowledgeBaseSettings from "../components/knowledge/KnowledgeBaseSettings";
 
 
 const { Title, Text } = Typography;
@@ -702,7 +703,7 @@ const KnowledgeBase: React.FC = () => {
                               <Text type="secondary">
                                 {t("knowledge.settings.description")}
                               </Text>
-                              {/* TODO: Implement Settings component */}
+                              <KnowledgeBaseSettings />
                             </ModernCard>
                           </div>
                         ),
