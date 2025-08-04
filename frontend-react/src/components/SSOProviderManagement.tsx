@@ -75,17 +75,20 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
   const handleViewConfig = async (providerId: string) => {
     try {
-      // This would fetch provider configuration from backend
-      // const config = await getSSOProviderConfig(providerId);
-      const mockConfig = {
-        client_id: "***hidden***",
-        redirect_uri: "https://example.com/callback",
-        scopes: ["openid", "email", "profile"],
-        metadata_url: "https://example.com/metadata",
-      };
+      const response = await fetch(`/api/v1/auth/sso/providers/${providerId}/config`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      setConfigData(mockConfig);
-      setShowConfigModal(providerId);
+      if (response.ok) {
+        const config = await response.json();
+        setConfigData(config);
+        setShowConfigModal(providerId);
+      } else {
+        throw new Error("Failed to load provider configuration");
+      }
     } catch (_err) {
       setError(t("sso.config_load_failed"));
     }

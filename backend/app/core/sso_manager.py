@@ -981,14 +981,120 @@ class SSOManager:
 sso_manager = None
 
 
-def init_sso_manager(config: dict[str, Any]):
+def load_sso_config_from_env() -> dict[str, Any]:
+    """Load SSO configuration from environment variables."""
+    from backend.app.core.config import get_settings
+    
+    settings = get_settings()
+    config = {"providers": {}}
+    
+    # Google OAuth2
+    if settings.sso_google_enabled and settings.sso_google_client_id:
+        config["providers"]["google"] = {
+            "name": "Google",
+            "type": "oauth",
+            "enabled": True,
+            "priority": 1,
+            "config": {
+                "client_id": settings.sso_google_client_id,
+                "client_secret": settings.sso_google_client_secret,
+                "redirect_uri": settings.sso_google_redirect_uri,
+                "authorization_url": "https://accounts.google.com/o/oauth2/auth",
+                "token_url": "https://oauth2.googleapis.com/token",
+                "userinfo_url": "https://www.googleapis.com/oauth2/v2/userinfo",
+                "scopes": ["openid", "email", "profile"],
+            }
+        }
+    
+    # Microsoft OAuth2
+    if settings.sso_microsoft_enabled and settings.sso_microsoft_client_id:
+        config["providers"]["microsoft"] = {
+            "name": "Microsoft",
+            "type": "oauth",
+            "enabled": True,
+            "priority": 2,
+            "config": {
+                "client_id": settings.sso_microsoft_client_id,
+                "client_secret": settings.sso_microsoft_client_secret,
+                "redirect_uri": settings.sso_microsoft_redirect_uri,
+                "tenant_id": settings.sso_microsoft_tenant_id,
+                "authorization_url": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id or 'common'}/oauth2/v2.0/authorize",
+                "token_url": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id or 'common'}/oauth2/v2.0/token",
+                "userinfo_url": "https://graph.microsoft.com/v1.0/me",
+                "scopes": ["openid", "email", "profile", "User.Read"],
+            }
+        }
+    
+    # GitHub OAuth2
+    if settings.sso_github_enabled and settings.sso_github_client_id:
+        config["providers"]["github"] = {
+            "name": "GitHub",
+            "type": "oauth",
+            "enabled": True,
+            "priority": 3,
+            "config": {
+                "client_id": settings.sso_github_client_id,
+                "client_secret": settings.sso_github_client_secret,
+                "redirect_uri": settings.sso_github_redirect_uri,
+                "authorization_url": "https://github.com/login/oauth/authorize",
+                "token_url": "https://github.com/login/oauth/access_token",
+                "userinfo_url": "https://api.github.com/user",
+                "scopes": ["read:user", "user:email"],
+            }
+        }
+    
+    # SAML
+    if settings.sso_saml_enabled and settings.sso_saml_metadata_url:
+        config["providers"]["saml"] = {
+            "name": "SAML",
+            "type": "saml",
+            "enabled": True,
+            "priority": 4,
+            "config": {
+                "metadata_url": settings.sso_saml_metadata_url,
+                "entity_id": settings.sso_saml_entity_id,
+                "acs_url": settings.sso_saml_acs_url,
+                "cert_file": settings.sso_saml_cert_file,
+                "key_file": settings.sso_saml_key_file,
+            }
+        }
+    
+    # OIDC
+    if settings.sso_oidc_enabled and settings.sso_oidc_issuer_url:
+        config["providers"]["oidc"] = {
+            "name": "OIDC",
+            "type": "oauth",  # OIDC uses OAuth2 flow
+            "enabled": True,
+            "priority": 5,
+            "config": {
+                "client_id": settings.sso_oidc_client_id,
+                "client_secret": settings.sso_oidc_client_secret,
+                "redirect_uri": settings.sso_oidc_redirect_uri,
+                "issuer_url": settings.sso_oidc_issuer_url,
+                "authorization_url": f"{settings.sso_oidc_issuer_url}/authorize",
+                "token_url": f"{settings.sso_oidc_issuer_url}/token",
+                "userinfo_url": f"{settings.sso_oidc_issuer_url}/userinfo",
+                "scopes": ["openid", "email", "profile"],
+            }
+        }
+    
+    return config
+
+
+def init_sso_manager(config: dict[str, Any] = None):
     """Initialize global SSO manager."""
     global sso_manager
+    
+    if config is None:
+        config = load_sso_config_from_env()
+    
     sso_manager = SSOManager(config)
+    logger.info(f"SSO Manager initialized with {len(config.get('providers', {}))} providers")
 
 
 def get_sso_manager() -> SSOManager:
     """Get global SSO manager instance."""
     if sso_manager is None:
-        raise SSOConfigurationError("SSO manager not initialized")
+        # Auto-initialize if not already done
+        init_sso_manager()
     return sso_manager
