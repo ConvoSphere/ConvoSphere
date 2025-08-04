@@ -39,6 +39,7 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         description="Frontend URL for CORS configuration",
     )
+    # CORS Configuration
     cors_origins: list[str] = Field(
         default=[
             "http://localhost:5173",
@@ -46,6 +47,22 @@ class Settings(BaseSettings):
             "http://localhost:8081",
         ],
         description="List of allowed CORS origins - restrict in production",
+    )
+    cors_allow_credentials: bool = Field(
+        default=True,
+        description="Allow credentials in CORS requests",
+    )
+    cors_allow_methods: list[str] = Field(
+        default=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        description="Allowed HTTP methods for CORS",
+    )
+    cors_allow_headers: list[str] = Field(
+        default=["*"],
+        description="Allowed headers for CORS",
+    )
+    cors_max_age: int = Field(
+        default=86400,
+        description="CORS preflight cache time in seconds",
     )
 
     # Database
@@ -345,9 +362,11 @@ class Settings(BaseSettings):
                 "http://localhost:8081",
             ]
 
-        # Security check for production
-        if os.getenv("ENVIRONMENT", "development") == "production":
-            # In production, only allow HTTPS origins
+        # Security checks based on environment
+        environment = os.getenv("ENVIRONMENT", "development")
+        
+        if environment == "production":
+            # In production, enforce strict CORS rules
             insecure_origins = [
                 origin for origin in origins if origin.startswith("http://")
             ]
@@ -359,6 +378,28 @@ class Settings(BaseSettings):
             # Check for wildcard origins
             if "*" in origins:
                 raise ValueError("Wildcard CORS origins not allowed in production")
+                
+            # Validate HTTPS origins
+            for origin in origins:
+                if not origin.startswith("https://"):
+                    raise ValueError(f"Production CORS origins must use HTTPS: {origin}")
+                    
+        elif environment == "staging":
+            # In staging, allow HTTP for local development but warn
+            insecure_origins = [
+                origin for origin in origins if origin.startswith("http://")
+            ]
+            if insecure_origins:
+                import warnings
+                warnings.warn(
+                    f"Insecure CORS origins in staging environment: {insecure_origins}"
+                )
+                
+        # Development environment allows more flexibility
+        # but still warns about wildcards
+        if "*" in origins and environment != "development":
+            import warnings
+            warnings.warn("Wildcard CORS origins should be avoided in non-development environments")
 
         return origins
 

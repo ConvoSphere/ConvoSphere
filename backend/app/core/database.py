@@ -69,23 +69,42 @@ def create_default_admin_user():
     try:
         from datetime import UTC, datetime
         from uuid import uuid4
+        import os
 
         from backend.app.core.security import get_password_hash
         from backend.app.models.user import User
+
+        # Only create default admin if explicitly requested
+        if not os.getenv("CREATE_DEFAULT_ADMIN", "false").lower() == "true":
+            logger.info("CREATE_DEFAULT_ADMIN not set to true, skipping default admin creation")
+            return None
 
         db = next(get_db())
 
         existing_admin = db.query(User).filter(User.role == "admin").first()
         if existing_admin:
+            logger.info("Admin user already exists, skipping default admin creation")
             return existing_admin
 
-        logger.warning("No admin user found – creating development admin 'admin@local'")
+        # Get admin credentials from environment variables
+        admin_email = os.getenv("DEFAULT_ADMIN_EMAIL")
+        admin_username = os.getenv("DEFAULT_ADMIN_USERNAME")
+        admin_password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+
+        if not all([admin_email, admin_username, admin_password]):
+            logger.warning(
+                "DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_USERNAME, and DEFAULT_ADMIN_PASSWORD "
+                "must be set to create default admin user"
+            )
+            return None
+
+        logger.info(f"Creating default admin user: {admin_email}")
 
         admin_user = User(
             id=uuid4(),
-            email="admin@local",
-            username="admin",
-            hashed_password=get_password_hash("admin123"),
+            email=admin_email,
+            username=admin_username,
+            hashed_password=get_password_hash(admin_password),
             role="admin",
             is_verified=True,
             language="en",
@@ -97,6 +116,7 @@ def create_default_admin_user():
         db.commit()
         db.refresh(admin_user)
 
+        logger.info(f"Successfully created default admin user: {admin_user.id}")
         return admin_user
     except Exception as exc:  # pragma: no cover
         logger.error(f"Failed to create default admin user: {exc}")
@@ -106,10 +126,16 @@ def create_default_admin_user():
 
 
 def create_default_assistant():
-    """Create a default assistant if none exists."""
+    """Create a default assistant if explicitly requested."""
     try:
+        import os
         from backend.app.models.assistant import Assistant, AssistantStatus
         from backend.app.models.user import User
+
+        # Only create default assistant if explicitly requested
+        if not os.getenv("CREATE_DEFAULT_ASSISTANT", "false").lower() == "true":
+            logger.info("CREATE_DEFAULT_ASSISTANT not set to true, skipping default assistant creation")
+            return
 
         # Get database session
         db = next(get_db())
@@ -123,21 +149,31 @@ def create_default_assistant():
         # Get or create admin user
         admin_user = db.query(User).filter(User.role == "admin").first()
         if not admin_user:
-            logger.info("No admin user found, creating default admin user")
-            admin_user = create_default_admin_user()
-            if not admin_user:
-                logger.warning(
-                    "Failed to create admin user, cannot create default assistant"
-                )
-                return
+            logger.warning(
+                "No admin user found, cannot create default assistant. "
+                "Please create an admin user first or set CREATE_DEFAULT_ADMIN=true"
+            )
+            return
+
+        # Get assistant configuration from environment variables
+        assistant_name = os.getenv("DEFAULT_ASSISTANT_NAME", "Default Assistant")
+        assistant_description = os.getenv(
+            "DEFAULT_ASSISTANT_DESCRIPTION", 
+            "A general-purpose AI assistant for everyday tasks"
+        )
+        assistant_system_prompt = os.getenv(
+            "DEFAULT_ASSISTANT_SYSTEM_PROMPT",
+            "You are a helpful AI assistant that can help with various tasks including answering questions, writing content, and solving problems."
+        )
+        assistant_model = os.getenv("DEFAULT_ASSISTANT_MODEL", "gpt-4")
 
         # Create default assistant
         default_assistant = Assistant(
             creator_id=admin_user.id,
-            name="Default Assistant",
-            description="A general-purpose AI assistant for everyday tasks",
-            system_prompt="You are a helpful AI assistant that can help with various tasks including answering questions, writing content, and solving problems.",
-            model="gpt-4",
+            name=assistant_name,
+            description=assistant_description,
+            system_prompt=assistant_system_prompt,
+            model=assistant_model,
             temperature=0.7,
             max_tokens=4096,
             status=AssistantStatus.ACTIVE,

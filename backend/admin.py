@@ -646,12 +646,52 @@ def dev_test_data(users=5):
 
 
 def user_create_admin():
-    """Create an initial admin user."""
-    email = input("Email: ")
-    username = input("Username: ")
-    password = input("Password: ")
-    first_name = input("First name (optional): ") or None
-    last_name = input("Last name (optional): ") or None
+    """Create an initial admin user with secure password validation."""
+    import getpass
+    import re
+    
+    print_info("Creating admin user...")
+    print_info("Password requirements:")
+    print_info("- At least 8 characters long")
+    print_info("- Contains at least one uppercase letter")
+    print_info("- Contains at least one lowercase letter")
+    print_info("- Contains at least one number")
+    print_info("- Contains at least one special character")
+    
+    email = input("Email: ").strip()
+    username = input("Username: ").strip()
+    
+    # Secure password input
+    password = getpass.getpass("Password: ")
+    password_confirm = getpass.getpass("Confirm password: ")
+    
+    if password != password_confirm:
+        print_error("Passwords do not match")
+        return
+    
+    # Password validation
+    if len(password) < 8:
+        print_error("Password must be at least 8 characters long")
+        return
+    
+    if not re.search(r"[A-Z]", password):
+        print_error("Password must contain at least one uppercase letter")
+        return
+    
+    if not re.search(r"[a-z]", password):
+        print_error("Password must contain at least one lowercase letter")
+        return
+    
+    if not re.search(r"\d", password):
+        print_error("Password must contain at least one number")
+        return
+    
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        print_error("Password must contain at least one special character")
+        return
+    
+    first_name = input("First name (optional): ").strip() or None
+    last_name = input("Last name (optional): ").strip() or None
 
     try:
         # Import backend dependencies
@@ -674,7 +714,8 @@ def user_create_admin():
         )
 
         user = user_service.create_user(user_data)
-        print_success(f"Admin user created: {user.email} ({user.id})")
+        print_success(f"Admin user created successfully: {user.email} ({user.id})")
+        print_info("Please keep the credentials secure and change the password after first login")
 
     except ImportError as e:
         print_error(f"Backend dependencies not available: {e}")
@@ -682,6 +723,68 @@ def user_create_admin():
         sys.exit(1)
     except Exception as e:
         print_error(f"Error creating admin user: {e}")
+        sys.exit(1)
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+def user_create_secure():
+    """Create a user with credentials from environment variables (for automation)."""
+    try:
+        # Import backend dependencies
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.user import UserRole, UserStatus
+        from backend.app.schemas.user import UserCreate
+        from backend.app.services.user_service import UserService
+
+        # Get credentials from environment variables
+        email = os.getenv("ADMIN_EMAIL")
+        username = os.getenv("ADMIN_USERNAME")
+        password = os.getenv("ADMIN_PASSWORD")
+        first_name = os.getenv("ADMIN_FIRST_NAME")
+        last_name = os.getenv("ADMIN_LAST_NAME")
+        role = os.getenv("ADMIN_ROLE", "admin")
+
+        if not all([email, username, password]):
+            print_error("ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD must be set")
+            return
+
+        # Validate role
+        valid_roles = ["admin", "super_admin", "manager", "user"]
+        if role not in valid_roles:
+            print_error(f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+            return
+
+        db = SessionLocal()
+        user_service = UserService(db)
+        
+        # Check if user already exists
+        existing_user = user_service.get_user_by_email(email)
+        if existing_user:
+            print_info(f"User with email {email} already exists")
+            return
+
+        user_data = UserCreate(
+            email=email,
+            username=username,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            role=getattr(UserRole, role.upper()),
+            status=UserStatus.ACTIVE,
+        )
+
+        user = user_service.create_user(user_data)
+        print_success(f"User created successfully: {user.email} ({user.id}) with role {role}")
+
+    except ImportError as e:
+        print_error(f"Backend dependencies not available: {e}")
+        print_info("Please run in a backend environment with dependencies installed")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Error creating user: {e}")
         sys.exit(1)
     finally:
         if "db" in locals():
@@ -1406,7 +1509,8 @@ def main():
     # User commands
     user_parser = subparsers.add_parser("user", help="User management")
     user_subparsers = user_parser.add_subparsers(dest="user_command")
-    user_subparsers.add_parser("create-admin", help="Create admin user")
+    user_subparsers.add_parser("create-admin", help="Create admin user interactively")
+    user_subparsers.add_parser("create-secure", help="Create user from environment variables")
     user_subparsers.add_parser("list", help="List all users")
     user_subparsers.add_parser("reset-password", help="Reset user password")
 
@@ -1579,6 +1683,8 @@ def main():
     elif args.command == "user":
         if args.user_command == "create-admin":
             user_create_admin()
+        elif args.user_command == "create-secure":
+            user_create_secure()
         elif args.user_command == "list":
             user_list()
         elif args.user_command == "show":

@@ -22,7 +22,8 @@ class CSRFProtection:
         self.settings = get_settings()
         self.token_cache = {}
         self.token_length = 32
-        self.token_expire_minutes = 30  # 30 minutes default
+        self.token_expire_minutes = self.settings.csrf_token_expire_minutes
+        self.enabled = self.settings.csrf_protection_enabled
 
     def generate_csrf_token(self, session_id: str = None) -> str:
         """
@@ -34,6 +35,10 @@ class CSRFProtection:
         Returns:
             str: Generated CSRF token
         """
+        if not self.enabled:
+            logger.debug("CSRF protection is disabled")
+            return ""
+
         token = secrets.token_urlsafe(self.token_length)
         expires_at = time.time() + (self.token_expire_minutes * 60)
 
@@ -58,6 +63,10 @@ class CSRFProtection:
         Returns:
             bool: True if token is valid
         """
+        if not self.enabled:
+            logger.debug("CSRF protection is disabled")
+            return True
+
         if not token:
             logger.warning("CSRF token is empty")
             return False
@@ -97,10 +106,15 @@ class CSRFProtection:
         Returns:
             bool: True if token was valid and consumed
         """
+        if not self.enabled:
+            logger.debug("CSRF protection is disabled")
+            return True
+
         if self.validate_csrf_token(token, session_id):
             self._remove_token(token)
-            logger.debug(f"CSRF token consumed: {token[:8]}...")
+            logger.debug(f"Consumed CSRF token: {token[:8]}...")
             return True
+
         return False
 
     def _remove_token(self, token: str) -> None:
@@ -110,10 +124,10 @@ class CSRFProtection:
 
     def cleanup_expired_tokens(self) -> int:
         """
-        Clean up expired tokens.
+        Clean up expired tokens from cache.
 
         Returns:
-            int: Number of tokens cleaned up
+            int: Number of tokens removed
         """
         current_time = time.time()
         expired_tokens = [
@@ -132,17 +146,48 @@ class CSRFProtection:
 
     def get_token_info(self, token: str) -> Optional[dict]:
         """
-        Get information about a CSRF token.
+        Get information about a token.
 
         Args:
             token: CSRF token
 
         Returns:
-            dict: Token information or None if not found
+            Optional[dict]: Token information or None if not found
         """
         if token in self.token_cache:
             return self.token_cache[token].copy()
         return None
+
+    def is_enabled(self) -> bool:
+        """
+        Check if CSRF protection is enabled.
+
+        Returns:
+            bool: True if CSRF protection is enabled
+        """
+        return self.enabled
+
+    def get_stats(self) -> dict:
+        """
+        Get CSRF protection statistics.
+
+        Returns:
+            dict: Statistics about CSRF tokens
+        """
+        current_time = time.time()
+        active_tokens = [
+            token
+            for token, data in self.token_cache.items()
+            if current_time <= data["expires_at"]
+        ]
+
+        return {
+            "enabled": self.enabled,
+            "total_tokens": len(self.token_cache),
+            "active_tokens": len(active_tokens),
+            "expired_tokens": len(self.token_cache) - len(active_tokens),
+            "token_expire_minutes": self.token_expire_minutes,
+        }
 
 
 # Global CSRF protection instance
@@ -162,3 +207,13 @@ def validate_csrf_token(token: str, session_id: str = None) -> bool:
 def consume_csrf_token(token: str, session_id: str = None) -> bool:
     """Consume a CSRF token."""
     return csrf_protection.consume_csrf_token(token, session_id)
+
+
+def is_csrf_enabled() -> bool:
+    """Check if CSRF protection is enabled."""
+    return csrf_protection.is_enabled()
+
+
+def get_csrf_stats() -> dict:
+    """Get CSRF protection statistics."""
+    return csrf_protection.get_stats()

@@ -10,28 +10,33 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://convosphere:convosphere_password@postgres:5432/convosphere
-      - REDIS_URL=redis://redis:6379
-      - WEAVIATE_URL=http://weaviate:8080
-      - OPENAI_API_KEY=sk-3dd4I14gJ4rqM3mWsVbGRw
+      - DATABASE_URL=${DATABASE_URL:-postgresql://convosphere:${POSTGRES_PASSWORD:-convosphere_password}@postgres:5432/convosphere}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - WEAVIATE_URL=${WEAVIATE_URL:-http://weaviate:8080}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LITELLM_PROXY_HOST=https://admin-litellm.internal.sanjo.foo
-      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-in-production-minimum-32-chars}
-      - ALGORITHM=${ALGORITHM:-HS256}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LITELLM_PROXY_HOST=${LITELLM_PROXY_HOST}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
       - UPLOAD_DIR=/app/uploads
       - CHUNK_SIZE=${CHUNK_SIZE:-500}
       - CHUNK_OVERLAP=${CHUNK_OVERLAP:-50}
       - DEFAULT_EMBEDDING_MODEL=${DEFAULT_EMBEDDING_MODEL:-text-embedding-ada-002}
       - DEFAULT_CHAT_MODEL=${DEFAULT_CHAT_MODEL:-gpt-3.5-turbo}
-      - SUPPORTED_LANGUAGES=en,de,fr,es,ar,ja
+      - SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES:-en,de,fr,es,ar,ja}
       - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-en}
       - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
       - WS_URL=${WS_URL:-ws://backend:8000}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend:8080}
-      - DEBUG=true
-      - ENVIRONMENT=development
-
+      - DEBUG=${DEBUG:-true}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:8081}
+      - CSRF_PROTECTION_ENABLED=${CSRF_PROTECTION_ENABLED:-true}
+      - CSRF_TOKEN_EXPIRE_MINUTES=${CSRF_TOKEN_EXPIRE_MINUTES:-30}
+    env_file:
+      - .env
     volumes:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs
@@ -56,6 +61,9 @@ services:
     environment:
       - VITE_API_URL=${BACKEND_URL:-http://backend:8000}
       - VITE_WS_URL=${WS_URL:-ws://backend:8000}
+      - VITE_ENVIRONMENT=${ENVIRONMENT:-development}
+    env_file:
+      - .env
     depends_on:
       - backend
     restart: unless-stopped
@@ -65,9 +73,9 @@ services:
   postgres:
     image: postgres:15
     environment:
-      - POSTGRES_DB=convosphere
-      - POSTGRES_USER=convosphere
-      - POSTGRES_PASSWORD=convosphere_password
+      - POSTGRES_DB=${POSTGRES_DB:-convosphere}
+      - POSTGRES_USER=${POSTGRES_USER:-convosphere}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-convosphere_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -77,7 +85,7 @@ services:
     networks:
       - convosphere-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U convosphere -d convosphere"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-convosphere} -d ${POSTGRES_DB:-convosphere}"]
       interval: 10s
       timeout: 5s
       retries: 5
