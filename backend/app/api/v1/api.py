@@ -29,6 +29,7 @@ from backend.app.api.v1.endpoints import (
     websocket,
 )
 from backend.app.api.v1.endpoints.audit import router as audit_router
+from backend.app.api.v1 import storage
 
 # Main API v1 router
 api_router = APIRouter()
@@ -76,3 +77,6 @@ api_router.include_router(logs.router, prefix="/logs", tags=["Logs"])
 api_router.include_router(
     statistics_endpoints.router, prefix="/statistics", tags=["Statistics"]
 )
+
+# Storage router
+api_router.include_router(storage.router, prefix="/storage", tags=["Storage"])

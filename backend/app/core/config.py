@@ -144,6 +144,31 @@ class Settings(BaseSettings):
     upload_dir: str = Field(default="./uploads", description="Upload directory")
     backup_dir: str = Field(default="./backups", description="Backup directory")
 
+    # Storage Configuration
+    storage_provider: str = Field(default="local", description="Storage provider (local, minio, s3, gcs, azure)")
+    storage_bucket_name: str = Field(default="knowledge-base", description="Storage bucket/container name")
+    
+    # MinIO Configuration (default cloud storage)
+    minio_endpoint: str = Field(default="localhost:9000", description="MinIO endpoint")
+    minio_access_key: str = Field(default="minioadmin", description="MinIO access key")
+    minio_secret_key: str = Field(default="minioadmin", description="MinIO secret key")
+    minio_secure: bool = Field(default=False, description="Use secure connection for MinIO")
+    
+    # S3 Configuration
+    s3_endpoint_url: str | None = Field(default=None, description="S3 endpoint URL")
+    s3_access_key_id: str | None = Field(default=None, description="S3 access key ID")
+    s3_secret_access_key: str | None = Field(default=None, description="S3 secret access key")
+    s3_region: str | None = Field(default=None, description="S3 region")
+    
+    # GCS Configuration
+    gcs_project_id: str | None = Field(default=None, description="Google Cloud project ID")
+    gcs_credentials_file: str | None = Field(default=None, description="GCS credentials file path")
+    
+    # Azure Configuration
+    azure_account_name: str | None = Field(default=None, description="Azure storage account name")
+    azure_account_key: str | None = Field(default=None, description="Azure storage account key")
+    azure_connection_string: str | None = Field(default=None, description="Azure connection string")
+
     # Logging
     log_level: str = Field(default="INFO", description="Log level")
     log_file: str = Field(default="./logs/app.log", description="Log file")
