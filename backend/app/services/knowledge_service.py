@@ -39,9 +39,10 @@ from backend.app.services.document.recovery_manager import (
 
 from .ai_service import AIService
 from .document.document_service import DocumentService
-
 from .embedding_service import embedding_service
 from .weaviate_service import WeaviateService
+from .storage.manager import StorageManager
+from .storage.config import StorageConfig
 
 # Create a document processor instance
 document_processor = DocumentService(db=None)
@@ -214,11 +215,33 @@ class KnowledgeService:
         self.state_manager = get_state_manager(self.db)
         self.backup_manager = get_backup_manager(self.db)
 
-        # Ensure upload directory exists
-        self.upload_dir = Path(get_settings().upload_dir)
+        # Initialize storage manager
+        settings = get_settings()
+        storage_config = StorageConfig(
+            provider=settings.storage_provider,
+            bucket_name=settings.storage_bucket_name,
+            minio_endpoint=settings.minio_endpoint,
+            minio_access_key=settings.minio_access_key,
+            minio_secret_key=settings.minio_secret_key,
+            minio_secure=settings.minio_secure,
+            s3_endpoint_url=settings.s3_endpoint_url,
+            s3_access_key_id=settings.s3_access_key_id,
+            s3_secret_access_key=settings.s3_secret_access_key,
+            s3_region=settings.s3_region,
+            gcs_project_id=settings.gcs_project_id,
+            gcs_credentials_file=settings.gcs_credentials_file,
+            azure_account_name=settings.azure_account_name,
+            azure_account_key=settings.azure_account_key,
+            azure_connection_string=settings.azure_connection_string,
+            local_base_path=settings.upload_dir
+        )
+        self.storage_manager = StorageManager(storage_config)
+
+        # Ensure upload directory exists (for local storage fallback)
+        self.upload_dir = Path(settings.upload_dir)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
 
-    def create_document(
+    async def create_document(
         self,
         user_id: str,
         title: str,
@@ -228,7 +251,7 @@ class KnowledgeService:
         tags: list[str] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Document:
-        """Create a new document and save it to storage."""
+        """Create a new document and save it to cloud storage."""
         try:
             # Generate unique filename
             file_id = str(uuid.uuid4())
@@ -238,18 +261,26 @@ class KnowledgeService:
             # Determine MIME type
             mime_type, _ = mimetypes.guess_type(file_name)
 
-            # Save file to storage
-            file_path = self.upload_dir / f"{file_id}{file_extension}"
-            with open(file_path, "wb") as f:
-                f.write(file_content)
+            # Prepare metadata for storage
+            storage_metadata = {
+                "content_type": mime_type,
+                "original_filename": file_name,
+                "user_id": user_id,
+                "file_type": file_type,
+                "file_size": len(file_content),
+                "title": title,
+                "description": description or "",
+            }
+            if metadata:
+                storage_metadata.update(metadata)
+
+            # Upload to cloud storage
+            storage_path = await self.storage_manager.upload_document(
+                file_id, file_content, storage_metadata
+            )
 
             # Determine document type
             document_type = self._determine_document_type(file_type, mime_type)
-
-            # Extract metadata from file
-            extracted_metadata = self._extract_document_metadata(file_path, file_type)
-            if metadata:
-                extracted_metadata.update(metadata)
 
             # Create document record
             document = Document(
@@ -258,12 +289,12 @@ class KnowledgeService:
                 title=title,
                 description=description or "",
                 file_name=file_name,
-                file_path=str(file_path),
+                file_path=storage_path,  # Now contains cloud storage path
                 file_type=file_type,
                 file_size=len(file_content),
                 mime_type=mime_type,
                 document_type=document_type,
-                **extracted_metadata,
+                **storage_metadata,
             )
 
             self.db.add(document)
@@ -275,7 +306,7 @@ class KnowledgeService:
                 for tag_name in tags:
                     document.add_tag(tag_name, self.db)
 
-            logger.info(f"Created document {document.id} for user {user_id}")
+            logger.info(f"Created document {document.id} for user {user_id} in {storage_path}")
             return document
 
         except Exception as e:
@@ -354,9 +385,8 @@ class KnowledgeService:
             if not document:
                 raise ValueError(f"Document {document_id} not found")
 
-            # Read file content
-            with open(document.file_path, "rb") as f:
-                file_content = f.read()
+            # Download file content from cloud storage
+            file_content = await self.storage_manager.download_document(document.file_path)
 
             # Process document using document processor
             result = document_processor.process_document(
@@ -609,8 +639,8 @@ class KnowledgeService:
 
         return document
 
-    def delete_document(self, document_id: str, user_id: str) -> bool:
-        """Delete a document and its chunks."""
+    async def delete_document(self, document_id: str, user_id: str) -> bool:
+        """Delete a document and its chunks from cloud storage."""
         try:
             document = self.get_document(document_id, user_id)
             if not document:
@@ -619,9 +649,8 @@ class KnowledgeService:
             # Delete from Weaviate
             self.weaviate_service.delete_document_chunks(str(document.id))
 
-            # Delete file from storage
-            if os.path.exists(document.file_path):
-                os.remove(document.file_path)
+            # Delete from cloud storage
+            await self.storage_manager.delete_document(document.file_path)
 
             # Delete from database (cascade will delete chunks)
             self.db.delete(document)
