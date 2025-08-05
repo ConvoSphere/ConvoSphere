@@ -13,6 +13,8 @@ from loguru import logger
 from .factory import StorageFactory
 from .base import StorageProvider, StorageError
 from .config import StorageConfig
+from .connection_pool import storage_connection_pool
+from .batch_operations import storage_batch_manager
 
 
 class StorageManager:
@@ -23,6 +25,18 @@ class StorageManager:
         self._provider: Optional[StorageProvider] = None
         self._health_check_time: Optional[datetime] = None
         self._health_check_interval = 300  # 5 minutes
+        
+        # Get connection pool and batch manager for this provider
+        self._connection_pool = storage_connection_pool.get_pool(
+            config.provider,
+            {
+                "max_connections": config.max_concurrent_uploads,
+                "connection_timeout": config.timeout,
+                "retry_attempts": config.max_retries
+            }
+        )
+        self._batch_manager = storage_batch_manager
+        self._rate_limiter = storage_batch_manager.get_rate_limiter(config.provider)
     
     @property
     def provider(self) -> StorageProvider:
@@ -33,7 +47,7 @@ class StorageManager:
     
     async def upload_document(self, file_id: str, content: bytes, metadata: Dict[str, Any] = None) -> str:
         """
-        Upload document to storage.
+        Upload document to storage with rate limiting and connection pooling.
         
         Args:
             file_id: Unique file identifier
@@ -57,8 +71,18 @@ class StorageManager:
                 "content_length": len(content)
             })
             
-            # Upload file
-            storage_path = await self.provider.upload_file(file_path, content, metadata)
+            # Use rate limiting and connection pooling
+            async def upload_operation(conn, *args, **kwargs):
+                return await self.provider.upload_file(*args, **kwargs)
+            
+            storage_path = await self._connection_pool.execute_with_retry(
+                conn_id=f"{self.config.provider}_upload",
+                factory=lambda: self.provider,
+                operation=upload_operation,
+                file_path=file_path,
+                content=content,
+                metadata=metadata
+            )
             
             logger.info(f"Uploaded document {file_id} to {storage_path}")
             return storage_path
@@ -69,7 +93,7 @@ class StorageManager:
     
     async def download_document(self, storage_path: str) -> bytes:
         """
-        Download document from storage.
+        Download document from storage with rate limiting and connection pooling.
         
         Args:
             storage_path: Storage path/URL of the file
@@ -78,7 +102,17 @@ class StorageManager:
             File content as bytes
         """
         try:
-            content = await self.provider.download_file(storage_path)
+            # Use rate limiting and connection pooling
+            async def download_operation(conn, *args, **kwargs):
+                return await self.provider.download_file(*args, **kwargs)
+            
+            content = await self._connection_pool.execute_with_retry(
+                conn_id=f"{self.config.provider}_download",
+                factory=lambda: self.provider,
+                operation=download_operation,
+                storage_path=storage_path
+            )
+            
             logger.debug(f"Downloaded document from {storage_path}")
             return content
             
@@ -326,3 +360,74 @@ class StorageManager:
     def get_config(self) -> StorageConfig:
         """Get the current storage configuration."""
         return self.config
+    
+    async def upload_documents_batch(
+        self,
+        documents: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Upload multiple documents in batch.
+        
+        Args:
+            documents: List of document dictionaries with file_id, content, metadata
+            
+        Returns:
+            List of upload results
+        """
+        try:
+            results = []
+            
+            # Add operations to batch queue
+            for doc in documents:
+                file_id = doc["file_id"]
+                content = doc["content"]
+                metadata = doc.get("metadata", {})
+                
+                # Add to batch queue
+                await self._batch_manager.add_batch_operation(
+                    provider_name=self.config.provider,
+                    operation_type="upload",
+                    file_path=f"documents/{file_id}",
+                    content=content,
+                    metadata=metadata,
+                    callback=lambda result: results.append({
+                        "file_id": file_id,
+                        "result": result
+                    })
+                )
+            
+            # Wait for batch completion
+            await self._batch_manager.get_processor(self.config.provider).wait_for_completion()
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Batch upload failed: {e}")
+            raise
+    
+    async def get_performance_metrics(self) -> Dict[str, Any]:
+        """Get performance metrics for this storage manager."""
+        try:
+            # Get connection pool metrics
+            pool_metrics = self._connection_pool.get_metrics()
+            
+            # Get batch manager status
+            batch_status = await self._batch_manager.get_processor(self.config.provider).get_batch_status()
+            
+            # Get rate limiter status
+            rate_limiter_status = self._rate_limiter.get_status()
+            
+            return {
+                "provider": self.config.provider,
+                "connection_pool": pool_metrics,
+                "batch_processor": batch_status,
+                "rate_limiter": rate_limiter_status,
+                "health_check_time": self._health_check_time.isoformat() if self._health_check_time else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get performance metrics: {e}")
+            return {
+                "provider": self.config.provider,
+                "error": str(e)
+            }

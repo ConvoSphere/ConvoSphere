@@ -82,9 +82,14 @@ async def get_storage_info(
     """
     try:
         info = await storage_manager.get_storage_info()
+        metrics = await storage_manager.get_performance_metrics()
+        
         return {
             "success": True,
-            "data": info
+            "data": {
+                **info,
+                "performance_metrics": metrics
+            }
         }
     except Exception as e:
         logger.error(f"Failed to get storage info: {e}")
@@ -254,6 +259,64 @@ async def cleanup_orphaned_files(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Storage cleanup failed: {str(e)}"
+        )
+
+
+@router.post("/batch-upload")
+async def batch_upload_documents(
+    documents: List[Dict[str, Any]],
+    current_user: User = Depends(get_current_user),
+    storage_manager: StorageManager = Depends(get_storage_manager)
+) -> Dict[str, Any]:
+    """
+    Upload multiple documents in batch.
+    
+    Args:
+        documents: List of document dictionaries with file_id, content, metadata
+        
+    Returns:
+        Batch upload results
+    """
+    try:
+        results = await storage_manager.upload_documents_batch(documents)
+        
+        return {
+            "success": True,
+            "results": results,
+            "total_documents": len(documents),
+            "successful_uploads": len([r for r in results if r.get("result", {}).get("status") == "uploaded"])
+        }
+    except Exception as e:
+        logger.error(f"Batch upload failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Batch upload failed: {str(e)}"
+        )
+
+
+@router.get("/performance")
+async def get_performance_metrics(
+    current_user: User = Depends(get_current_user),
+    storage_manager: StorageManager = Depends(get_storage_manager)
+) -> Dict[str, Any]:
+    """
+    Get detailed performance metrics.
+    
+    Returns:
+        Performance metrics including connection pool, batch processor, and rate limiter
+    """
+    try:
+        metrics = await storage_manager.get_performance_metrics()
+        
+        return {
+            "success": True,
+            "metrics": metrics
+        }
+    except Exception as e:
+        logger.error(f"Failed to get performance metrics: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get performance metrics: {str(e)}"
         )
 
 
