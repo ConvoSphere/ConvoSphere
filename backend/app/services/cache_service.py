@@ -6,7 +6,8 @@ AI responses, tool results, and other frequently accessed data.
 """
 
 import json
-import pickle
+import hmac
+import hashlib
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -205,13 +206,24 @@ class CacheService:
     def _serialize_data(self, data: Any) -> bytes:
         """Serialize data for storage."""
         try:
-            if self.config.enable_compression:
-                # Use pickle for complex objects with compression
-                return pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL)
-            # Use JSON for simple objects
+            # Use JSON for all data types - safer than pickle
             if isinstance(data, dict | list | str | int | float | bool | type(None)):
                 return json.dumps(data, default=str).encode("utf-8")
-            return pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL)
+            
+            # For complex objects, use a safe serialization approach
+            # Convert to dict representation if possible
+            if hasattr(data, '__dict__'):
+                return json.dumps({
+                    '__type__': type(data).__name__,
+                    '__module__': type(data).__module__,
+                    'data': data.__dict__
+                }, default=str).encode("utf-8")
+            
+            # Fallback to string representation
+            return json.dumps({
+                '__type__': 'str_representation',
+                'data': str(data)
+            }, default=str).encode("utf-8")
         except Exception as e:
             logger.error(f"Failed to serialize data: {e}")
             raise
@@ -219,25 +231,23 @@ class CacheService:
     def _deserialize_data(self, data: bytes) -> Any:
         """Deserialize data from storage."""
         try:
-            if self.config.enable_compression:
-                # Try pickle first (safe for internal cache data)
-                try:
-                    return pickle.loads(data)
-                except (
-                    pickle.UnpicklingError,
-                    AttributeError,
-                    EOFError,
-                    ImportError,
-                    IndexError,
-                ):
-                    # Fallback to JSON if pickle fails
-                    return json.loads(data.decode("utf-8"))
-            # Try JSON first, fallback to pickle
-            try:
-                return json.loads(data.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                # Fallback to pickle (safe for internal cache data)
-                return pickle.loads(data)
+            # Always use JSON - safer than pickle
+            json_data = json.loads(data.decode("utf-8"))
+            
+            # Handle special serialized objects
+            if isinstance(json_data, dict) and '__type__' in json_data:
+                obj_type = json_data.get('__type__')
+                if obj_type == 'str_representation':
+                    return json_data.get('data', '')
+                else:
+                    # For complex objects, return the data dict
+                    # Note: Full object reconstruction would require additional security measures
+                    return json_data.get('data', json_data)
+            
+            return json_data
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            logger.error(f"Failed to deserialize data: {e}")
+            raise
         except Exception as e:
             logger.error(f"Failed to deserialize data: {e}")
             raise
