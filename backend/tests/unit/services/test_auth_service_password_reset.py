@@ -55,6 +55,7 @@ class TestAuthServicePasswordReset:
         auth_service,
         mock_user_service,
         sample_user,
+        mock_db,
     ):
         """Test successful password reset request."""
         # Mock settings
@@ -91,6 +92,7 @@ class TestAuthServicePasswordReset:
         mock_token_service,
         auth_service,
         mock_user_service,
+        mock_db,
     ):
         """Test password reset request for non-existent user."""
         # Mock user service returning None
@@ -117,6 +119,7 @@ class TestAuthServicePasswordReset:
         auth_service,
         mock_user_service,
         sample_user,
+        mock_db,
     ):
         """Test password reset request when email sending fails."""
         # Mock settings
@@ -150,6 +153,7 @@ class TestAuthServicePasswordReset:
         auth_service,
         mock_user_service,
         sample_user,
+        mock_db,
     ):
         """Test successful password reset with valid token."""
         # Mock token service
@@ -180,7 +184,7 @@ class TestAuthServicePasswordReset:
         mock_email_service.send_password_changed_notification.assert_called_once()
 
     @patch("backend.app.services.auth_service.token_service")
-    def test_reset_password_with_token_invalid(self, mock_token_service, auth_service):
+    def test_reset_password_with_token_invalid(self, mock_token_service, auth_service, mock_db):
         """Test password reset with invalid token."""
         # Mock token service returning False
         mock_token_service.validate_password_reset_token.return_value = False
@@ -195,7 +199,7 @@ class TestAuthServicePasswordReset:
 
     @patch("backend.app.services.auth_service.token_service")
     def test_reset_password_with_token_user_not_found(
-        self, mock_token_service, auth_service
+        self, mock_token_service, auth_service, mock_db
     ):
         """Test password reset when user not found."""
         # Mock token service
@@ -214,7 +218,7 @@ class TestAuthServicePasswordReset:
         )
 
     @patch("backend.app.services.auth_service.token_service")
-    def test_validate_reset_token_valid(self, mock_token_service, auth_service):
+    def test_validate_reset_token_valid(self, mock_token_service, auth_service, mock_db):
         """Test validation of valid reset token."""
         # Mock token service returning True
         mock_token_service.validate_password_reset_token.return_value = True
@@ -228,7 +232,7 @@ class TestAuthServicePasswordReset:
         )
 
     @patch("backend.app.services.auth_service.token_service")
-    def test_validate_reset_token_invalid(self, mock_token_service, auth_service):
+    def test_validate_reset_token_invalid(self, mock_token_service, auth_service, mock_db):
         """Test validation of invalid reset token."""
         # Mock token service returning False
         mock_token_service.validate_password_reset_token.return_value = False
