@@ -4,6 +4,7 @@ API tools for the AI Assistant Platform.
 This module provides tools for making HTTP requests.
 """
 
+import requests
 from typing import Any
 
 from .base import BaseTool
@@ -45,8 +46,6 @@ class HTTPRequestTool(BaseTool):
     ) -> dict[str, Any]:
         """Make an HTTP request."""
         try:
-            import requests
-
             response = requests.request(
                 method=method.upper(),
                 url=url,
@@ -62,9 +61,21 @@ class HTTPRequestTool(BaseTool):
                 "content": response.text,
                 "url": url,
             }
+        except requests.RequestException as e:
+            return {
+                "success": False,
+                "error": f"Request failed: {str(e)}",
+                "url": url,
+            }
+        except (ValueError, TypeError) as e:
+            return {
+                "success": False,
+                "error": f"Invalid parameters: {str(e)}",
+                "url": url,
+            }
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
+                "error": f"Unexpected error: {str(e)}",
                 "url": url,
             }

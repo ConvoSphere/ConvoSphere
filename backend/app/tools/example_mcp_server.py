@@ -345,11 +345,45 @@ class ExampleMCPServer:
             expression = arguments.get("expression", "")
 
             try:
-                # Safe evaluation (in production, use a proper math library)
-                import ast
+                # Safe mathematical expression evaluation
+                import re
+                import operator
+                from typing import Dict, Callable
 
-                result = ast.literal_eval(expression)
-                return f"Result: {result}"
+                # Define safe operations
+                safe_operators: Dict[str, Callable] = {
+                    '+': operator.add,
+                    '-': operator.sub,
+                    '*': operator.mul,
+                    '/': operator.truediv,
+                    '**': operator.pow,
+                    '//': operator.floordiv,
+                    '%': operator.mod,
+                }
+
+                # Validate expression contains only safe characters
+                if not re.match(r'^[\d\s\+\-\*\/\*\*\/\/\%\(\)\.]+$', expression):
+                    return "Calculation error: Invalid characters in expression"
+
+                # Additional safety check - no function calls or imports
+                dangerous_patterns = [
+                    'import', 'exec', 'eval', '__', 'open', 'file', 'system',
+                    'subprocess', 'os.', 'sys.', 'globals', 'locals'
+                ]
+                
+                for pattern in dangerous_patterns:
+                    if pattern in expression.lower():
+                        return "Calculation error: Invalid expression"
+
+                # Use a safer evaluation method
+                # For production, consider using libraries like 'simpleeval' or 'asteval'
+                try:
+                    # Basic arithmetic evaluation (very limited scope)
+                    result = eval(expression, {"__builtins__": {}}, safe_operators)
+                    return f"Result: {result}"
+                except (NameError, SyntaxError, ZeroDivisionError) as e:
+                    return f"Calculation error: {str(e)}"
+                    
             except Exception as e:
                 return f"Calculation error: {str(e)}"
 

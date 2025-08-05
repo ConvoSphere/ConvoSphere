@@ -2,10 +2,16 @@
 
 import html
 import re
+import logging
+import secrets
+import string
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 
 from backend.app.core.redis_client import get_redis
+
+logger = logging.getLogger(__name__)
 
 RATE_LIMIT = 100  # requests
 RATE_PERIOD = 60  # seconds
@@ -109,10 +115,12 @@ async def check_rate_limit(user_id: str, action: str, limit: int, window: int) -
         await redis.incr(key)
         return True
 
+    except (ConnectionError, TimeoutError, ValueError) as e:
+        logger.warning("Rate limiting error: %s", str(e))
+        # Fallback to allow request if Redis is unavailable
+        return True
     except Exception as e:
-        import logging
-
-        logging.exception(f"Rate limiting error: {e}")
+        logger.error("Unexpected error in rate limiting: %s", str(e))
         # Fallback to allow request if Redis is unavailable
         return True
 
@@ -141,8 +149,5 @@ def generate_secure_token(length: int = 32) -> str:
     Returns:
         str: Secure token
     """
-    import secrets
-    import string
-
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))

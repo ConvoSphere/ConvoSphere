@@ -1,10 +1,10 @@
 """
-Main FastAPI application for the AI Assistant Platform.
+AI Assistant Platform - Main Application Entry Point
 
-This module serves as the entry point for the FastAPI application,
-configuring middleware, routes, and application lifecycle events.
+This module contains the main FastAPI application setup and configuration.
 """
 
+import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
@@ -19,15 +19,13 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from backend.app.api.v1.api import api_router
 from backend.app.core.config import get_settings
-from backend.app.core.database import check_db_connection, init_db
+from backend.app.core.database import check_db_connection, init_db, engine
 from backend.app.core.i18n import I18nMiddleware, i18n_manager, t
-
-# OpenTelemetry Configuration
 from backend.app.core.opentelemetry_config import (
     initialize_opentelemetry,
     shutdown_opentelemetry,
 )
-from backend.app.core.redis_client import close_redis, init_redis
+from backend.app.core.redis_client import close_redis, init_redis, redis_client, check_redis_connection, get_redis_info
 from backend.app.core.security_middleware import setup_security_middleware
 from backend.app.core.sso_manager import init_sso_manager
 from backend.app.core.weaviate_client import (
@@ -122,10 +120,9 @@ def configure_opentelemetry(app, db_engine=None, redis_client=None):
 
 def create_application() -> FastAPI:
     """Create and configure the FastAPI application."""
-
     # Configure logging to console for now (file logging disabled due to permission issues)
     logger.add(
-        lambda msg: print(msg, end=""),
+        sys.stdout.write,
         level=get_settings().log_level,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}",
     )
@@ -140,10 +137,7 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
-    # Initialize OpenTelemetry
-    from backend.app.core.database import engine
-    from backend.app.core.redis_client import redis_client
-
+    
     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Setup security middleware first
@@ -216,16 +210,18 @@ def create_application() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint with service status."""
-        from backend.app.core.redis_client import check_redis_connection, get_redis_info
-
         # Check Redis status
         try:
             redis_connected = await check_redis_connection()
             redis_info = await get_redis_info()
             redis_status = "connected" if redis_connected else "unavailable"
-        except Exception as e:
+        except (ConnectionError, TimeoutError) as e:
             redis_status = "error"
             redis_info = {"error": str(e)}
+        except Exception as e:
+            logger.error("Unexpected error in health check: %s", str(e))
+            redis_status = "error"
+            redis_info = {"error": "Internal error"}
 
         return {
             "status": "healthy",
@@ -278,14 +274,8 @@ def create_application() -> FastAPI:
         """Legacy AI models endpoint."""
         return {"message": "Use /api/v1/ai/models instead"}
 
-    # Initialize OAuth
-    # oauth_service.oauth.init_app(app)  # Commented out - Starlette OAuth doesn't need init_app
-
     # Add routes
     app.include_router(api_router, prefix="/api/v1")
-
-    # Add legacy routes for frontend compatibility - REMOVED DUPLICATE
-    # app.include_router(api_router, prefix="/api")  # This was causing 307 redirects
 
     # Root endpoint
     @app.get("/")
