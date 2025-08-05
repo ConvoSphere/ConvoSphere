@@ -98,16 +98,32 @@ class PerformanceIntegration:
                     await cache_service.initialize()
                     self.services_status["cache"] = True
                     logger.info("Cache service initialized")
+                except (ConnectionError, TimeoutError) as e:
+                    logger.warning(f"Cache service initialization failed (connection error): {e}")
+                    self.services_status["cache"] = False
+                except ValueError as e:
+                    logger.warning(f"Cache service initialization failed (configuration error): {e}")
+                    self.services_status["cache"] = False
                 except Exception as e:
-                    logger.warning(f"Cache service initialization failed: {e}")
+                    logger.warning(f"Cache service initialization failed (unexpected error): {e}")
                     self.services_status["cache"] = False
 
             # Initialize async processor
             if self.config.enable_async_processing:
-                initialize_default_handlers()
-                await async_processor.start()
-                self.services_status["async_processor"] = True
-                logger.info("Async processor initialized")
+                try:
+                    initialize_default_handlers()
+                    await async_processor.start()
+                    self.services_status["async_processor"] = True
+                    logger.info("Async processor initialized")
+                except (ConnectionError, TimeoutError) as e:
+                    logger.warning(f"Async processor initialization failed (connection error): {e}")
+                    self.services_status["async_processor"] = False
+                except ValueError as e:
+                    logger.warning(f"Async processor initialization failed (configuration error): {e}")
+                    self.services_status["async_processor"] = False
+                except Exception as e:
+                    logger.warning(f"Async processor initialization failed (unexpected error): {e}")
+                    self.services_status["async_processor"] = False
 
             # Initialize monitoring
             if self.config.enable_monitoring:
@@ -117,8 +133,14 @@ class PerformanceIntegration:
             self.initialized = True
             logger.info("Performance integration services initialized successfully")
 
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to initialize performance services (connection error): {e}")
+            raise ConfigurationError(f"Performance initialization failed: {str(e)}")
+        except ValueError as e:
+            logger.error(f"Failed to initialize performance services (configuration error): {e}")
+            raise ConfigurationError(f"Performance initialization failed: {str(e)}")
         except Exception as e:
-            logger.error(f"Failed to initialize performance services: {e}")
+            logger.error(f"Failed to initialize performance services (unexpected error): {e}")
             raise ConfigurationError(f"Performance initialization failed: {str(e)}")
 
     async def shutdown(self) -> None:
@@ -128,13 +150,23 @@ class PerformanceIntegration:
 
             # Shutdown async processor
             if self.services_status["async_processor"]:
-                await async_processor.stop()
-                self.services_status["async_processor"] = False
+                try:
+                    await async_processor.stop()
+                    self.services_status["async_processor"] = False
+                except (ConnectionError, TimeoutError) as e:
+                    logger.warning(f"Async processor shutdown failed (connection error): {e}")
+                except Exception as e:
+                    logger.warning(f"Async processor shutdown failed (unexpected error): {e}")
 
             # Shutdown cache service
             if self.services_status["cache"]:
-                await cache_service.close()
-                self.services_status["cache"] = False
+                try:
+                    await cache_service.close()
+                    self.services_status["cache"] = False
+                except (ConnectionError, TimeoutError) as e:
+                    logger.warning(f"Cache service shutdown failed (connection error): {e}")
+                except Exception as e:
+                    logger.warning(f"Cache service shutdown failed (unexpected error): {e}")
 
             self.initialized = False
             logger.info("Performance integration services shut down successfully")
@@ -159,8 +191,14 @@ class PerformanceIntegration:
 
         try:
             return await conversation_cache.get_conversation(conversation_id)
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to get cached conversation (connection error): {e}")
+            return None
+        except ValueError as e:
+            logger.error(f"Failed to get cached conversation (invalid data): {e}")
+            return None
         except Exception as e:
-            logger.error(f"Failed to get cached conversation: {e}")
+            logger.error(f"Failed to get cached conversation (unexpected error): {e}")
             return None
 
     async def cache_conversation(
@@ -193,8 +231,14 @@ class PerformanceIntegration:
                 performance_monitor.record_cache_operation(cache_metric)
 
             return success
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to cache conversation (connection error): {e}")
+            return False
+        except ValueError as e:
+            logger.error(f"Failed to cache conversation (invalid data): {e}")
+            return False
         except Exception as e:
-            logger.error(f"Failed to cache conversation: {e}")
+            logger.error(f"Failed to cache conversation (unexpected error): {e}")
             return False
 
     async def get_cached_ai_response(

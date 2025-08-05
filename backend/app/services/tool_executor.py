@@ -1,13 +1,12 @@
 """
-Tool Executor for MCP (Model Context Protocol) tool execution.
+Tool execution service for the AI Assistant Platform.
 
-This module provides a comprehensive tool execution framework for
-MCP tools with validation, error handling, and result processing.
+This module provides tool execution capabilities for various tool types.
 """
 
 import asyncio
-from collections.abc import Callable
-from typing import Any
+import logging
+from typing import Any, Callable
 
 from loguru import logger
 
@@ -20,6 +19,9 @@ from backend.app.services.tool_executor_base import (
     ToolType,
 )
 from backend.app.services.tool_service import tool_service
+from backend.app.tools.mcp_tool import mcp_manager
+
+logger = logging.getLogger(__name__)
 
 
 class ToolExecutor(BaseToolExecutor):
@@ -124,12 +126,16 @@ class ToolExecutor(BaseToolExecutor):
         user_id: str,
     ) -> Any:
         """Execute MCP tool."""
-        from backend.app.tools.mcp_tool import mcp_manager
-
         try:
             return await mcp_manager.execute_tool(tool_def.name, parameters)
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"MCP tool execution failed (connection error): {e}")
+            raise
+        except ValueError as e:
+            logger.error(f"MCP tool execution failed (invalid parameters): {e}")
+            raise
         except Exception as e:
-            logger.error(f"MCP tool execution failed: {e}")
+            logger.error(f"MCP tool execution failed (unexpected error): {e}")
             raise
 
     async def _execute_function_tool(

@@ -6,6 +6,7 @@ This module provides test data and configuration for all test modules.
 
 import uuid
 from datetime import datetime, timedelta
+from datetime import UTC
 
 # Test User Credentials
 TEST_USER_CREDENTIALS = {
@@ -320,12 +321,12 @@ TEST_UUIDS = {
 
 # Test Timestamps
 TEST_TIMESTAMPS = {
-    "past_1_hour": datetime.now() - timedelta(hours=1),
-    "past_1_day": datetime.now() - timedelta(days=1),
-    "past_1_week": datetime.now() - timedelta(weeks=1),
-    "past_1_month": datetime.now() - timedelta(days=30),
-    "future_1_hour": datetime.now() + timedelta(hours=1),
-    "future_1_day": datetime.now() + timedelta(days=1),
+    "past_1_hour": datetime.now(UTC) - timedelta(hours=1),
+    "past_1_day": datetime.now(UTC) - timedelta(days=1),
+    "past_1_week": datetime.now(UTC) - timedelta(weeks=1),
+    "past_1_month": datetime.now(UTC) - timedelta(days=30),
+    "future_1_hour": datetime.now(UTC) + timedelta(hours=1),
+    "future_1_day": datetime.now(UTC) + timedelta(days=1),
 }
 
 # Test Configuration
@@ -379,7 +380,7 @@ TEST_FILTERS = {
     "by_category": {"category": "utility"},
     "date_range": {
         "created_after": TEST_TIMESTAMPS["past_1_week"],
-        "created_before": datetime.now(),
+        "created_before": datetime.now(UTC),
     },
     "search": {"search": "test"},
     "tags": {"tags": ["test", "document"]},

@@ -121,8 +121,8 @@ class BaseToolExecutor(ABC):
     ) -> list[ToolExecution]:
         """Get executions for a user."""
         user_executions = [
-            exec for exec in self.executions.values()
-            if exec.user_id == user_id
+            execution for execution in self.executions.values()
+            if execution.user_id == user_id
         ]
         return sorted(
             user_executions,
@@ -144,16 +144,16 @@ class BaseToolExecutor(ABC):
         """Get execution statistics."""
         total_executions = len(self.executions)
         completed = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.COMPLETED
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.COMPLETED
         )
         failed = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.FAILED
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.FAILED
         )
         running = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.RUNNING
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.RUNNING
         )
 
         return {
@@ -252,12 +252,12 @@ class BaseToolExecutor(ABC):
         """Clean up old executions."""
         cutoff_time = datetime.now(UTC) - timedelta(hours=max_age_hours)
         old_executions = [
-            exec_id for exec_id, execution in self.executions.items()
+            execution_id for execution_id, execution in self.executions.items()
             if execution.start_time < cutoff_time
         ]
 
-        for exec_id in old_executions:
-            del self.executions[exec_id]
+        for execution_id in old_executions:
+            del self.executions[execution_id]
 
         logger.info(f"Cleaned up {len(old_executions)} old executions")
         return len(old_executions)

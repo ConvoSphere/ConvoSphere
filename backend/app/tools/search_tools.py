@@ -30,17 +30,21 @@ class WebSearchTool(BaseTool):
         """Execute a web search."""
         try:
             # Placeholder implementation - in production, integrate with a search API
+            # Generate multiple results based on max_results parameter
+            results = []
+            for i in range(min(max_results, 3)):  # Limit to 3 for placeholder
+                results.append({
+                    "title": f"Search result {i+1} for: {query}",
+                    "url": f"https://example{i+1}.com",
+                    "snippet": f"This is a placeholder result {i+1} for the query: {query}",
+                })
+            
             return {
                 "success": True,
-                "results": [
-                    {
-                        "title": f"Search result for: {query}",
-                        "url": "https://example.com",
-                        "snippet": f"This is a placeholder result for the query: {query}",
-                    },
-                ],
+                "results": results,
                 "query": query,
-                "total_results": 1,
+                "total_results": len(results),
+                "max_results_requested": max_results,
             }
         except Exception as e:
             return {

@@ -7,11 +7,16 @@ This module provides integration with Weaviate for:
 """
 
 import os
+import logging
 from typing import Any
 
 import weaviate
 from loguru import logger
 from weaviate.classes.init import Auth
+from weaviate import Client, WeaviateClient
+from weaviate.auth import AuthApiKey
+
+logger = logging.getLogger(__name__)
 
 
 class WeaviateService:
@@ -22,51 +27,36 @@ class WeaviateService:
         self.api_key = os.getenv("WEAVIATE_API_KEY")
         self.client = self._init_client()
 
-    def _init_client(self):
+    def _init_client(self) -> WeaviateClient | None:
+        """Initialize Weaviate client."""
         try:
-            # Parse URL to extract host and port
-            if self.url.startswith("http://"):
-                host = self.url[7:]  # Remove "http://"
-            elif self.url.startswith("https://"):
-                host = self.url[8:]  # Remove "https://"
-            else:
-                host = self.url
-
-            # Extract host and port
-            if ":" in host:
-                host, port_str = host.split(":", 1)
-                port = int(port_str)
-            else:
-                port = 8080
-
-            # Create auth credentials if API key is provided
-            auth_credentials = None
-            if self.api_key:
-                auth_credentials = Auth.api_key(self.api_key)
-
-            # Use v4 API to connect to Weaviate
-            client = weaviate.connect_to_custom(
-                http_host=host,
-                http_port=port,
-                http_secure=False,
-                grpc_host=host,
-                grpc_port=50051,
-                grpc_secure=False,
-                auth_credentials=auth_credentials,
+            auth_credentials = AuthApiKey(api_key=self.api_key)
+            client = Client(
+                url=self.url,
+                auth_client_secret=auth_credentials,
             )
 
             logger.info(f"Connected to Weaviate at {self.url}")
             return client
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to connect to Weaviate (connection error): {e}")
+            return None
+        except ValueError as e:
+            logger.error(f"Failed to connect to Weaviate (invalid configuration): {e}")
+            return None
         except Exception as e:
-            logger.error(f"Failed to connect to Weaviate: {e}")
+            logger.error(f"Failed to connect to Weaviate (unexpected error): {e}")
             return None
 
     def health(self) -> bool:
         """Check Weaviate health."""
         try:
             return self.client.is_ready() if self.client else False
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Weaviate health check failed (connection error): {e}")
+            return False
         except Exception as e:
-            logger.error(f"Weaviate health check failed: {e}")
+            logger.error(f"Weaviate health check failed (unexpected error): {e}")
             return False
 
     def index_message(
@@ -94,8 +84,12 @@ class WeaviateService:
             # Use v4 API for data insertion
             self.client.data.insert(obj, collection_name="ChatMessage")
             logger.info(f"Indexed message {message_id} in Weaviate")
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to index message (connection error): {e}")
+        except ValueError as e:
+            logger.error(f"Failed to index message (invalid data): {e}")
         except Exception as e:
-            logger.error(f"Failed to index message: {e}")
+            logger.error(f"Failed to index message (unexpected error): {e}")
 
     def semantic_search_messages(
         self,
@@ -131,8 +125,14 @@ class WeaviateService:
 
             result = query_builder.do()
             return result["data"]["Get"]["ChatMessage"]
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Semantic search failed (connection error): {e}")
+            return []
+        except ValueError as e:
+            logger.error(f"Semantic search failed (invalid query): {e}")
+            return []
         except Exception as e:
-            logger.error(f"Semantic search failed: {e}")
+            logger.error(f"Semantic search failed (unexpected error): {e}")
             return []
 
     def index_knowledge(
@@ -158,20 +158,25 @@ class WeaviateService:
             # Use v4 API for data insertion
             self.client.data.insert(obj, collection_name="Knowledge")
             logger.info(f"Indexed knowledge doc {doc_id} in Weaviate")
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Failed to index knowledge (connection error): {e}")
+        except ValueError as e:
+            logger.error(f"Failed to index knowledge (invalid data): {e}")
         except Exception as e:
-            logger.error(f"Failed to index knowledge: {e}")
+            logger.error(f"Failed to index knowledge (unexpected error): {e}")
 
     def semantic_search_knowledge(
         self,
         query: str,
         limit: int = 5,
     ) -> list[dict[str, Any]]:
-        """Semantic search in knowledge base."""
+        """Semantic search in knowledge documents."""
         try:
             if not self.client:
                 logger.warning("Weaviate client not available")
                 return []
 
+            # Build query using v4 API
             result = (
                 self.client.query.get(
                     "Knowledge",
@@ -182,8 +187,14 @@ class WeaviateService:
                 .do()
             )
             return result["data"]["Get"]["Knowledge"]
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Knowledge search failed (connection error): {e}")
+            return []
+        except ValueError as e:
+            logger.error(f"Knowledge search failed (invalid query): {e}")
+            return []
         except Exception as e:
-            logger.error(f"Knowledge search failed: {e}")
+            logger.error(f"Knowledge search failed (unexpected error): {e}")
             return []
 
 

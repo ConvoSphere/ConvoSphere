@@ -156,7 +156,7 @@ class ExampleMCPServer:
 
     async def handle_initialize(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle initialize request."""
@@ -181,7 +181,7 @@ class ExampleMCPServer:
 
     async def handle_list_tools(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle tools/list request."""
@@ -252,15 +252,25 @@ class ExampleMCPServer:
 
     async def handle_list_resources(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle resources/list request."""
+        resources_data = [
+            {
+                "uri": resource["uri"],
+                "name": resource["name"],
+                "description": resource["description"],
+                "mimeType": resource["mimeType"],
+            }
+            for resource in self.resources
+        ]
+
         response = {
             "jsonrpc": "2.0",
             "id": request_id,
             "result": {
-                "resources": self.resources,
+                "resources": resources_data,
             },
         }
 
@@ -435,7 +445,7 @@ class ExampleMCPServer:
 
         return web.json_response(response)
 
-    async def health_check(self, request: web.Request) -> web.Response:
+    async def health_check(self, _request: web.Request) -> web.Response:  # Unused parameter, marked with underscore
         """Health check endpoint."""
         return web.json_response(
             {
