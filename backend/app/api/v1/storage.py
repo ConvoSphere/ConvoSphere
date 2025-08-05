@@ -5,16 +5,17 @@ This module provides endpoints for managing storage providers,
 monitoring storage health, and configuring storage settings.
 """
 
-from typing import Dict, Any
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 
 from backend.app.core.auth import get_current_user
 from backend.app.core.config import get_settings
 from backend.app.models.user import User
-from backend.app.services.storage.manager import StorageManager
 from backend.app.services.storage.config import StorageConfig
 from backend.app.services.storage.factory import StorageFactory
+from backend.app.services.storage.manager import StorageManager
 
 router = APIRouter(prefix="/storage", tags=["storage"])
 
@@ -47,10 +48,10 @@ def get_storage_manager() -> StorageManager:
 async def get_storage_health(
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get storage health status.
-    
+
     Returns:
         Health status of the storage provider
     """
@@ -73,17 +74,17 @@ async def get_storage_health(
 async def get_storage_info(
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get storage information and statistics.
-    
+
     Returns:
         Storage information including provider, statistics, and configuration
     """
     try:
         info = await storage_manager.get_storage_info()
         metrics = await storage_manager.get_performance_metrics()
-        
+
         return {
             "success": True,
             "data": {
@@ -102,10 +103,10 @@ async def get_storage_info(
 @router.get("/providers")
 async def get_available_providers(
     current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get list of available storage providers.
-    
+
     Returns:
         List of available storage providers
     """
@@ -126,22 +127,22 @@ async def get_available_providers(
 
 @router.post("/test")
 async def test_storage_config(
-    config: Dict[str, Any],
+    config: dict[str, Any],
     current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Test storage configuration.
-    
+
     Args:
         config: Storage configuration to test
-        
+
     Returns:
         Test results
     """
     try:
         storage_config = StorageConfig(**config)
         is_valid = StorageFactory.test_provider(storage_config)
-        
+
         return {
             "success": True,
             "valid": is_valid,
@@ -159,10 +160,10 @@ async def test_storage_config(
 @router.get("/config")
 async def get_storage_config(
     current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get current storage configuration.
-    
+
     Returns:
         Current storage configuration (without sensitive data)
     """
@@ -177,7 +178,7 @@ async def get_storage_config(
             "gcs_project_id": settings.gcs_project_id,
             "azure_account_name": settings.azure_account_name,
         }
-        
+
         return {
             "success": True,
             "config": config
@@ -192,19 +193,19 @@ async def get_storage_config(
 
 @router.post("/migrate")
 async def migrate_storage(
-    source_config: Dict[str, Any],
-    target_config: Dict[str, Any],
+    source_config: dict[str, Any],
+    target_config: dict[str, Any],
     document_paths: list[str],
     current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Migrate documents between storage providers.
-    
+
     Args:
         source_config: Source storage configuration
         target_config: Target storage configuration
         document_paths: List of document paths to migrate
-        
+
     Returns:
         Migration results
     """
@@ -212,14 +213,14 @@ async def migrate_storage(
         # Create storage managers
         source_storage_config = StorageConfig(**source_config)
         target_storage_config = StorageConfig(**target_config)
-        
+
         source_manager = StorageManager(source_storage_config)
-        
+
         # Perform migration
         results = await source_manager.migrate_storage(
             source_storage_config, target_storage_config, document_paths
         )
-        
+
         return {
             "success": True,
             "migration_results": results
@@ -237,19 +238,19 @@ async def cleanup_orphaned_files(
     valid_storage_paths: list[str],
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Clean up orphaned files in storage.
-    
+
     Args:
         valid_storage_paths: List of valid storage paths
-        
+
     Returns:
         Cleanup results
     """
     try:
         results = await storage_manager.cleanup_orphaned_files(valid_storage_paths)
-        
+
         return {
             "success": True,
             "cleanup_results": results
@@ -264,22 +265,22 @@ async def cleanup_orphaned_files(
 
 @router.post("/batch-upload")
 async def batch_upload_documents(
-    documents: List[Dict[str, Any]],
+    documents: List[dict[str, Any]],
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Upload multiple documents in batch.
-    
+
     Args:
         documents: List of document dictionaries with file_id, content, metadata
-        
+
     Returns:
         Batch upload results
     """
     try:
         results = await storage_manager.upload_documents_batch(documents)
-        
+
         return {
             "success": True,
             "results": results,
@@ -298,16 +299,16 @@ async def batch_upload_documents(
 async def get_performance_metrics(
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get detailed performance metrics.
-    
+
     Returns:
         Performance metrics including connection pool, batch processor, and rate limiter
     """
     try:
         metrics = await storage_manager.get_performance_metrics()
-        
+
         return {
             "success": True,
             "metrics": metrics
@@ -326,14 +327,14 @@ async def get_document_url(
     expires_in: int = 3600,
     current_user: User = Depends(get_current_user),
     storage_manager: StorageManager = Depends(get_storage_manager)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get presigned URL for document access.
-    
+
     Args:
         document_id: Document ID
         expires_in: URL expiration time in seconds
-        
+
     Returns:
         Presigned URL for document access
     """

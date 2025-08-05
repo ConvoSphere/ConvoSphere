@@ -29,13 +29,13 @@ from backend.app.core.opentelemetry_config import (
 )
 from backend.app.core.redis_client import close_redis, init_redis
 from backend.app.core.security_middleware import setup_security_middleware
+from backend.app.core.sso_manager import init_sso_manager
 from backend.app.core.weaviate_client import (
     check_weaviate_connection,
     close_weaviate,
     create_schema_if_not_exists,
     init_weaviate,
 )
-from backend.app.core.sso_manager import init_sso_manager
 from backend.app.services.audit_service import audit_service
 from backend.app.services.enhanced_background_job_service import job_manager
 from backend.app.services.performance_monitor import performance_monitor

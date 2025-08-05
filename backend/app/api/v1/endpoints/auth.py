@@ -1030,11 +1030,10 @@ async def reset_password(
             )
 
             return {"message": "Password reset successfully", "status": "success"}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to reset password",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to reset password",
+        )
 
     except ValueError as e:
         logger.warning(f"Invalid password reset attempt: {e}")

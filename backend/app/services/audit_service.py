@@ -61,14 +61,13 @@ class AuditService:
 
                 # Flush batch if full or timeout reached
                 current_time = datetime.now(UTC)
-                if len(batch) >= self._batch_size or (
+                if (len(batch) >= self._batch_size or (
                     batch
                     and (current_time - last_flush).seconds >= self._flush_interval
-                ):
-                    if batch:
-                        await self._flush_batch(batch)
-                        batch = []
-                        last_flush = current_time
+                )) and batch:
+                    await self._flush_batch(batch)
+                    batch = []
+                    last_flush = current_time
 
             except Exception as e:
                 logger.error(f"Error in audit worker: {e}")

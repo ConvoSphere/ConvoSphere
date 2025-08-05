@@ -13,7 +13,6 @@ import hashlib
 import json
 from collections.abc import Callable
 from datetime import timedelta
-from backend.app.utils.helpers import utc_now
 from enum import Enum
 from functools import wraps
 from typing import Any
@@ -22,6 +21,7 @@ from loguru import logger
 
 from backend.app.core.config import get_settings
 from backend.app.core.redis_client import get_redis
+from backend.app.utils.helpers import utc_now
 
 
 class CacheLevel(Enum):

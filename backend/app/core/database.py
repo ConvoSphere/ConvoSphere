@@ -67,15 +67,15 @@ def get_db() -> Generator[Session, None, None]:
 def create_default_admin_user():
     """Create and return a fallback admin user (development only)."""
     try:
+        import os
         from datetime import UTC, datetime
         from uuid import uuid4
-        import os
 
         from backend.app.core.security import get_password_hash
         from backend.app.models.user import User
 
         # Only create default admin if explicitly requested
-        if not os.getenv("CREATE_DEFAULT_ADMIN", "false").lower() == "true":
+        if os.getenv("CREATE_DEFAULT_ADMIN", "false").lower() != "true":
             logger.info("CREATE_DEFAULT_ADMIN not set to true, skipping default admin creation")
             return None
 
@@ -129,11 +129,12 @@ def create_default_assistant():
     """Create a default assistant if explicitly requested."""
     try:
         import os
+
         from backend.app.models.assistant import Assistant, AssistantStatus
         from backend.app.models.user import User
 
         # Only create default assistant if explicitly requested
-        if not os.getenv("CREATE_DEFAULT_ASSISTANT", "false").lower() == "true":
+        if os.getenv("CREATE_DEFAULT_ASSISTANT", "false").lower() != "true":
             logger.info("CREATE_DEFAULT_ASSISTANT not set to true, skipping default assistant creation")
             return
 
@@ -158,7 +159,7 @@ def create_default_assistant():
         # Get assistant configuration from environment variables
         assistant_name = os.getenv("DEFAULT_ASSISTANT_NAME", "Default Assistant")
         assistant_description = os.getenv(
-            "DEFAULT_ASSISTANT_DESCRIPTION", 
+            "DEFAULT_ASSISTANT_DESCRIPTION",
             "A general-purpose AI assistant for everyday tasks"
         )
         assistant_system_prompt = os.getenv(

@@ -9,9 +9,8 @@ from typing import Any
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from backend.app.utils.helpers import utc_now
-
 from backend.app.models.audit_extended import AuditAlert
+from backend.app.utils.helpers import utc_now
 
 
 class AlertManager:

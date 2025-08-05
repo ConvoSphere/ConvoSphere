@@ -310,7 +310,7 @@ class AgentPerformanceService:
             }
 
         # Get unique agents
-        agents_involved = list(set(m.agent_id for m in conversation_metrics))
+        agents_involved = list({m.agent_id for m in conversation_metrics})
 
         # Calculate overall metrics
         total_interactions = len(conversation_metrics)
@@ -368,9 +368,9 @@ class AgentPerformanceService:
         cutoff_time = datetime.now(UTC) - timedelta(hours=time_period_hours)
 
         # Get all agents with metrics in time period
-        agent_ids = set(
+        agent_ids = {
             m.agent_id for m in self.performance_history if m.created_at >= cutoff_time
-        )
+        }
 
         agent_performances = []
         for agent_id in agent_ids:
@@ -471,8 +471,8 @@ class AgentPerformanceService:
         total_snapshots = len(self.performance_snapshots)
 
         # Get unique agents and conversations
-        unique_agents = set(m.agent_id for m in self.performance_history)
-        unique_conversations = set(m.conversation_id for m in self.performance_history)
+        unique_agents = {m.agent_id for m in self.performance_history}
+        unique_conversations = {m.conversation_id for m in self.performance_history}
 
         # Calculate overall averages
         if total_metrics > 0:

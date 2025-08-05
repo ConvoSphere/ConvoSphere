@@ -9,7 +9,6 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
 
 from loguru import logger
 
@@ -33,7 +32,7 @@ class EmailService:
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None,
+        text_content: str | None = None,
     ) -> MIMEMultipart:
         """Create a multipart email message."""
         message = MIMEMultipart("alternative")

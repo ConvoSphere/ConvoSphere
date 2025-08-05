@@ -147,23 +147,23 @@ class Settings(BaseSettings):
     # Storage Configuration
     storage_provider: str = Field(default="local", description="Storage provider (local, minio, s3, gcs, azure)")
     storage_bucket_name: str = Field(default="knowledge-base", description="Storage bucket/container name")
-    
+
     # MinIO Configuration (default cloud storage)
     minio_endpoint: str = Field(default="localhost:9000", description="MinIO endpoint")
     minio_access_key: str = Field(default="minioadmin", description="MinIO access key")
     minio_secret_key: str = Field(default="minioadmin", description="MinIO secret key")
     minio_secure: bool = Field(default=False, description="Use secure connection for MinIO")
-    
+
     # S3 Configuration
     s3_endpoint_url: str | None = Field(default=None, description="S3 endpoint URL")
     s3_access_key_id: str | None = Field(default=None, description="S3 access key ID")
     s3_secret_access_key: str | None = Field(default=None, description="S3 secret access key")
     s3_region: str | None = Field(default=None, description="S3 region")
-    
+
     # GCS Configuration
     gcs_project_id: str | None = Field(default=None, description="Google Cloud project ID")
     gcs_credentials_file: str | None = Field(default=None, description="GCS credentials file path")
-    
+
     # Azure Configuration
     azure_account_name: str | None = Field(default=None, description="Azure storage account name")
     azure_account_key: str | None = Field(default=None, description="Azure storage account key")
@@ -389,7 +389,7 @@ class Settings(BaseSettings):
 
         # Security checks based on environment
         environment = os.getenv("ENVIRONMENT", "development")
-        
+
         if environment == "production":
             # In production, enforce strict CORS rules
             insecure_origins = [
@@ -403,12 +403,12 @@ class Settings(BaseSettings):
             # Check for wildcard origins
             if "*" in origins:
                 raise ValueError("Wildcard CORS origins not allowed in production")
-                
+
             # Validate HTTPS origins
             for origin in origins:
                 if not origin.startswith("https://"):
                     raise ValueError(f"Production CORS origins must use HTTPS: {origin}")
-                    
+
         elif environment == "staging":
             # In staging, allow HTTP for local development but warn
             insecure_origins = [
@@ -417,14 +417,14 @@ class Settings(BaseSettings):
             if insecure_origins:
                 import warnings
                 warnings.warn(
-                    f"Insecure CORS origins in staging environment: {insecure_origins}"
+                    f"Insecure CORS origins in staging environment: {insecure_origins}", stacklevel=2
                 )
-                
+
         # Development environment allows more flexibility
         # but still warns about wildcards
         if "*" in origins and environment != "development":
             import warnings
-            warnings.warn("Wildcard CORS origins should be avoided in non-development environments")
+            warnings.warn("Wildcard CORS origins should be avoided in non-development environments", stacklevel=2)
 
         return origins
 

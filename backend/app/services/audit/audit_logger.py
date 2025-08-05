@@ -10,9 +10,8 @@ from typing import Any
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from backend.app.utils.helpers import utc_now
-
 from backend.app.models.audit import AuditLog
+from backend.app.utils.helpers import utc_now
 
 
 class AuditLogger:
