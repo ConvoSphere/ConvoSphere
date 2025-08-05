@@ -7,6 +7,7 @@ LDAP, SAML, and OAuth providers with user management and group synchronization.
 
 import logging
 from datetime import UTC, datetime
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -298,7 +299,7 @@ async def saml_metadata():
             )
 
         # Generate SP metadata
-        return entity_descriptor(provider.saml_config)
+        return provider.get_metadata()
 
     except SSOConfigurationError as e:
         raise HTTPException(

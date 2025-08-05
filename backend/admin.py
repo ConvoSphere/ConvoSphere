@@ -94,6 +94,17 @@ def db_status():
 
 def db_downgrade(revision):
     """Downgrade DB to a specific revision."""
+    # Input validation for revision parameter
+    if not revision or not isinstance(revision, str):
+        print_error("Invalid revision parameter. Must be a non-empty string.")
+        sys.exit(1)
+    
+    # Sanitize revision to prevent command injection
+    import re
+    if not re.match(r'^[a-zA-Z0-9_-]+$', revision):
+        print_error("Invalid revision format. Only alphanumeric characters, hyphens, and underscores are allowed.")
+        sys.exit(1)
+    
     try:
         alembic_path = shutil.which("alembic")
         if not alembic_path:
@@ -282,6 +293,18 @@ def backup_create(output=None):
     if not output:
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         output = f"backup_{timestamp}.sql"
+    
+    # Input validation for output path
+    if output and not isinstance(output, str):
+        print_error("Invalid output parameter. Must be a string.")
+        sys.exit(1)
+    
+    # Sanitize output path to prevent path traversal
+    if output:
+        output_path = Path(output)
+        if ".." in str(output_path) or output_path.is_absolute():
+            print_error("Invalid output path. Cannot use absolute paths or path traversal.")
+            sys.exit(1)
 
     try:
         # Try to get database URL from environment
@@ -336,8 +359,6 @@ def backup_create(output=None):
                 sys.exit(1)
         else:
             # SQLite backup
-            import shutil
-
             db_file = db_url.replace("sqlite:///", "")
             shutil.copy2(db_file, output)
             print_success(f"Database backup created: {output}")
@@ -349,7 +370,18 @@ def backup_create(output=None):
 
 def backup_restore(backup_file, confirm=False):
     """Restore database from backup."""
-    if not Path(backup_file).exists():
+    # Input validation for backup file
+    if not backup_file or not isinstance(backup_file, str):
+        print_error("Invalid backup file parameter. Must be a non-empty string.")
+        sys.exit(1)
+    
+    # Sanitize backup file path to prevent path traversal
+    backup_path = Path(backup_file)
+    if ".." in str(backup_path) or backup_path.is_absolute():
+        print_error("Invalid backup file path. Cannot use absolute paths or path traversal.")
+        sys.exit(1)
+    
+    if not backup_path.exists():
         print_error(f"Backup file not found: {backup_file}")
         sys.exit(1)
 
@@ -411,8 +443,6 @@ def backup_restore(backup_file, confirm=False):
                 sys.exit(1)
         else:
             # SQLite restore
-            import shutil
-
             db_file = db_url.replace("sqlite:///", "")
             shutil.copy2(backup_file, db_file)
             print_success("Database restored successfully")
