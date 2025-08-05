@@ -111,6 +111,17 @@ ipython_config.py
 .env.test
 .env.*.local
 
+# Security scan reports
+bandit-report*.json
+bandit-report*.txt
+bandit-report*.xml
+ruff-report*.json
+ruff-report*.txt
+ruff-report*.xml
+security-report*.json
+security-report*.txt
+security-report*.xml
+
 # Secrets and certificates
 secrets/
 *.key
