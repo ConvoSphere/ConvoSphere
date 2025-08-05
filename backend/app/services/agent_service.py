@@ -196,8 +196,7 @@ class AgentService:
             dict: Agent state or None if not found
         """
         try:
-            state = await self.agent_manager.get_agent_state(conversation_id, agent_id)
-            return state
+            return await self.agent_manager.get_agent_state(conversation_id, agent_id)
 
         except Exception as e:
             logger.error(f"Error retrieving agent state: {e}")
@@ -216,8 +215,7 @@ class AgentService:
             dict: Conversation state or None if not found
         """
         try:
-            state = self.agent_manager.get_conversation_state(conversation_id)
-            return state
+            return self.agent_manager.get_conversation_state(conversation_id)
 
         except Exception as e:
             logger.error(f"Error retrieving conversation state: {e}")

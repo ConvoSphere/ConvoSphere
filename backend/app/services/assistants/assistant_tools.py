@@ -109,14 +109,13 @@ class AssistantToolsManager:
             is_relevant = False
 
             # Check tool name and description
-            for category, keywords in tool_keywords.items():
+            for keywords in tool_keywords.values():
                 if any(
                     keyword in tool_name or keyword in tool_description
                     for keyword in keywords
-                ):
-                    if any(keyword in user_message_lower for keyword in keywords):
-                        is_relevant = True
-                        break
+                ) and any(keyword in user_message_lower for keyword in keywords):
+                    is_relevant = True
+                    break
 
             # Check tool category
             if tool_category in user_message_lower:
@@ -266,11 +265,11 @@ class AssistantToolsManager:
                     if expected_type:
                         if expected_type == "string" and not isinstance(arg_value, str):
                             return False, f"Argument '{arg_name}' must be a string"
-                        elif expected_type == "number" and not isinstance(
-                            arg_value, (int, float)
+                        if expected_type == "number" and not isinstance(
+                            arg_value, int | float
                         ):
                             return False, f"Argument '{arg_name}' must be a number"
-                        elif expected_type == "boolean" and not isinstance(
+                        if expected_type == "boolean" and not isinstance(
                             arg_value, bool
                         ):
                             return False, f"Argument '{arg_name}' must be a boolean"
@@ -316,9 +315,9 @@ class AssistantToolsManager:
         """
         try:
             tools = await self.tool_service.get_available_tools()
-            categories = set(
+            categories = {
                 tool.get("category") for tool in tools if tool.get("category")
-            )
+            }
             return list(categories)
 
         except Exception as e:

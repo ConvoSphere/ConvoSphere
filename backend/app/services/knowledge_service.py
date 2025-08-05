@@ -7,7 +7,6 @@ in the knowledge base for retrieval-augmented generation.
 
 import logging
 import mimetypes
-import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -40,9 +39,9 @@ from backend.app.services.document.recovery_manager import (
 from .ai_service import AIService
 from .document.document_service import DocumentService
 from .embedding_service import embedding_service
-from .weaviate_service import WeaviateService
-from .storage.manager import StorageManager
 from .storage.config import StorageConfig
+from .storage.manager import StorageManager
+from .weaviate_service import WeaviateService
 
 # Create a document processor instance
 document_processor = DocumentService(db=None)

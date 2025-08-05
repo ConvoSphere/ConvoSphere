@@ -1,12 +1,12 @@
 """
-Tool Executor for MCP (Model Context Protocol) tool execution.
+Tool execution service for the AI Assistant Platform.
 
-This module provides a comprehensive tool execution framework for
-MCP tools with validation, error handling, and result processing.
+This module provides tool execution capabilities for various tool types.
 """
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+import logging
+from typing import Any, Callable
 
 from loguru import logger
 
@@ -19,9 +19,9 @@ from backend.app.services.tool_executor_base import (
     ToolType,
 )
 from backend.app.services.tool_service import tool_service
+from backend.app.tools.mcp_tool import mcp_manager
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
+logger = logging.getLogger(__name__)
 
 
 class ToolExecutor(BaseToolExecutor):
@@ -30,7 +30,7 @@ class ToolExecutor(BaseToolExecutor):
     def __init__(self):
         """Initialize the tool executor."""
         super().__init__()
-        self.execution_handlers: Dict[str, Callable] = {}
+        self.execution_handlers: dict[str, Callable] = {}
         self._load_tools()
 
     def _load_tools(self):
@@ -44,7 +44,7 @@ class ToolExecutor(BaseToolExecutor):
         except Exception as e:
             logger.error(f"Failed to load tools: {e}")
 
-    def _create_tool_definition(self, tool_data: Dict[str, Any]) -> ToolDefinition:
+    def _create_tool_definition(self, tool_data: dict[str, Any]) -> ToolDefinition:
         """Create tool definition from tool data."""
         parameters = []
         for param_data in tool_data.get("parameters", []):
@@ -75,10 +75,10 @@ class ToolExecutor(BaseToolExecutor):
     async def execute_tool(
         self,
         tool_id: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
-        conversation_id: Optional[str] = None,
-        timeout: Optional[int] = None,
+        conversation_id: str | None = None,
+        timeout: int | None = None,
     ) -> ToolExecution:
         """Execute a tool."""
         # Get tool definition
@@ -122,23 +122,26 @@ class ToolExecutor(BaseToolExecutor):
     async def _execute_mcp_tool(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
     ) -> Any:
         """Execute MCP tool."""
-        from backend.app.tools.mcp_tool import mcp_manager
-
         try:
-            result = await mcp_manager.execute_tool(tool_def.name, parameters)
-            return result
+            return await mcp_manager.execute_tool(tool_def.name, parameters)
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"MCP tool execution failed (connection error): {e}")
+            raise
+        except ValueError as e:
+            logger.error(f"MCP tool execution failed (invalid parameters): {e}")
+            raise
         except Exception as e:
-            logger.error(f"MCP tool execution failed: {e}")
+            logger.error(f"MCP tool execution failed (unexpected error): {e}")
             raise
 
     async def _execute_function_tool(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
     ) -> Any:
         """Execute function tool."""
@@ -159,7 +162,7 @@ class ToolExecutor(BaseToolExecutor):
     async def _execute_api_tool(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
     ) -> Any:
         """Execute API tool."""
@@ -169,28 +172,28 @@ class ToolExecutor(BaseToolExecutor):
     async def _execute_custom_tool(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
     ) -> Any:
         """Execute custom tool."""
         # Implementation for custom tools
         raise NotImplementedError("Custom tool execution not implemented")
 
-    def get_tool_definition(self, tool_id: str) -> Optional[ToolDefinition]:
+    def get_tool_definition(self, tool_id: str) -> ToolDefinition | None:
         """Get tool definition by ID."""
         return self.tools.get(tool_id)
 
-    def get_available_tools(self) -> List[ToolDefinition]:
+    def get_available_tools(self) -> list[ToolDefinition]:
         """Get list of available tools."""
         return list(self.tools.values())
 
-    def get_tool_schema(self, tool_id: str) -> Optional[Dict[str, Any]]:
+    def get_tool_schema(self, tool_id: str) -> dict[str, Any] | None:
         """Get tool schema for API documentation."""
         tool_def = self.get_tool_definition(tool_id)
         if not tool_def:
             return None
 
-        schema = {
+        return {
             "id": tool_def.id,
             "name": tool_def.name,
             "description": tool_def.description,
@@ -214,7 +217,6 @@ class ToolExecutor(BaseToolExecutor):
             "metadata": tool_def.metadata,
         }
 
-        return schema
 
     def register_handler(self, tool_id: str, handler: Callable) -> None:
         """Register a handler for a function tool."""

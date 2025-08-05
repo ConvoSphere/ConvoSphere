@@ -109,13 +109,11 @@ class AIService:
     def _setup_litellm(self):
         """Setup LiteLLM configuration."""
         try:
+            import litellm
+
             # Configure LiteLLM
             litellm.set_verbose = get_settings().debug
 
-            # Set default model
-            litellm.default_model = get_settings().default_ai_model
-
-            # Configure proxy host if provided
             if get_settings().litellm_proxy_host:
                 import os
 
@@ -125,8 +123,14 @@ class AIService:
                 )
 
             logger.info("LiteLLM configured successfully")
+        except ImportError as e:
+            logger.error(f"Failed to import LiteLLM: {e}")
+            self.enabled = False
+        except ValueError as e:
+            logger.error(f"Failed to configure LiteLLM (invalid configuration): {e}")
+            self.enabled = False
         except Exception as e:
-            logger.error(f"Failed to configure LiteLLM: {e}")
+            logger.error(f"Failed to configure LiteLLM (unexpected error): {e}")
             self.enabled = False
 
     def _load_providers(self):
@@ -227,101 +231,62 @@ class AIService:
         conversation_id: str | None = None,
         **kwargs,
     ):
-        """
-        Stream chat completion responses.
-
-        Yields:
-            dict: Streaming response chunks
-        """
+        """Stream chat completion from AI model."""
         if not self.enabled:
-            logger.error("AI service is disabled")
-            return
+            raise RuntimeError("AI service is not enabled")
 
         try:
-            # Get default model if none specified
-            if not model:
-                model = self.default_model
+            import litellm
 
-            # Prepare completion parameters
-            completion_params = {
-                "model": model,
-                "messages": messages,
+            # Prepare messages
+            formatted_messages = []
+            for msg in messages:
+                if msg.get("role") == "system":
+                    formatted_messages.append({"role": "system", "content": msg["content"]})
+                elif msg.get("role") == "user":
+                    formatted_messages.append({"role": "user", "content": msg["content"]})
+                elif msg.get("role") == "assistant":
+                    formatted_messages.append({"role": "assistant", "content": msg["content"]})
+                elif msg.get("role") == "tool":
+                    formatted_messages.append({"role": "tool", "content": msg["content"], "tool_call_id": msg.get("tool_call_id")})
+
+            # Prepare parameters
+            params = {
+                "model": model or self.default_model,
+                "messages": formatted_messages,
                 "temperature": temperature,
-                "stream": True,  # Enable streaming
+                "stream": True,
             }
 
             if max_tokens:
-                completion_params["max_tokens"] = max_tokens
+                params["max_tokens"] = max_tokens
 
             if tools:
-                completion_params["tools"] = tools
-                completion_params["tool_choice"] = tool_choice
+                params["tools"] = tools
+                params["tool_choice"] = tool_choice
 
-            # Add any additional parameters
-            completion_params.update(kwargs)
+            # Add additional parameters
+            params.update(kwargs)
 
-            logger.info(f"Starting streaming completion with model: {model}")
-
-            # Stream the response
-            async for chunk in acompletion(**completion_params):
+            # Stream response
+            async for chunk in litellm.acompletion(**params):
                 if chunk and chunk.choices:
                     choice = chunk.choices[0]
+                    if choice.delta and choice.delta.content:
+                        yield choice.delta.content
 
-                    # Track cost if available
-                    if hasattr(chunk, "usage") and chunk.usage:
-                        self._track_cost(
-                            {"usage": chunk.usage},
-                            model,
-                            user_id,
-                            conversation_id,
-                        )
-
-                    yield {
-                        "id": chunk.id if hasattr(chunk, "id") else None,
-                        "object": chunk.object if hasattr(chunk, "object") else None,
-                        "created": chunk.created if hasattr(chunk, "created") else None,
-                        "model": chunk.model if hasattr(chunk, "model") else model,
-                        "choices": [
-                            {
-                                "index": choice.index,
-                                "delta": {
-                                    "content": (
-                                        choice.delta.content
-                                        if hasattr(choice.delta, "content")
-                                        else None
-                                    ),
-                                    "role": (
-                                        choice.delta.role
-                                        if hasattr(choice.delta, "role")
-                                        else None
-                                    ),
-                                    "tool_calls": (
-                                        choice.delta.tool_calls
-                                        if hasattr(choice.delta, "tool_calls")
-                                        else None
-                                    ),
-                                },
-                                "finish_reason": (
-                                    choice.finish_reason
-                                    if hasattr(choice, "finish_reason")
-                                    else None
-                                ),
-                            }
-                        ],
-                        "usage": chunk.usage if hasattr(chunk, "usage") else None,
-                    }
-
+        except ImportError as e:
+            logger.error(f"Failed to import LiteLLM: {e}")
+            raise RuntimeError("LiteLLM not available")
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"AI service connection error: {e}")
+            raise RuntimeError(f"AI service unavailable: {e}")
+        except ValueError as e:
+            logger.error(f"Invalid parameters for AI completion: {e}")
+            raise ValueError(f"Invalid request parameters: {e}")
         except Exception as e:
-            logger.error(f"Streaming completion error: {e}")
-            yield {
-                "error": str(e),
-                "choices": [
-                    {
-                        "delta": {"content": f"Error: {str(e)}"},
-                        "finish_reason": "error",
-                    }
-                ],
-            }
+            logger.error(f"Unexpected error in AI completion: {e}")
+            raise RuntimeError(f"AI service error: {e}")
 
     async def chat_completion(
         self,
@@ -335,68 +300,63 @@ class AIService:
         conversation_id: str | None = None,
         **kwargs,
     ) -> dict[str, Any]:
-        """
-        Generate chat completion using LiteLLM.
-
-        Args:
-            messages: List of message dictionaries
-            model: AI model to use
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
-            tools: List of tools for function calling
-            tool_choice: Tool choice strategy
-            user_id: User ID for cost tracking
-            conversation_id: Conversation ID for cost tracking
-            **kwargs: Additional parameters
-
-        Returns:
-            Completion response
-        """
+        """Get chat completion from AI model."""
         if not self.enabled:
-            raise RuntimeError("AI service is disabled")
-
-        # Use default model if none specified
-        if not model:
-            model = get_settings().default_ai_model
-
-        # Validate model
-        if model not in self.models:
-            raise ValueError(f"Model {model} not supported")
-
-        # Get model info
-        model_info = self.models[model]
-
-        # Set max_tokens if not provided
-        if not max_tokens:
-            max_tokens = model_info["max_tokens"]
-
-        # Prepare completion parameters
-        completion_params = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            **kwargs,
-        }
-
-        # Add tools if supported
-        if tools and model_info["supports_tools"]:
-            completion_params["tools"] = tools
-            completion_params["tool_choice"] = tool_choice
+            raise RuntimeError("AI service is not enabled")
 
         try:
-            # Generate completion
-            logger.info(f"Generating completion with model {model}")
-            response = await acompletion(**completion_params)
+            import litellm
+
+            # Prepare messages
+            formatted_messages = []
+            for msg in messages:
+                if msg.get("role") == "system":
+                    formatted_messages.append({"role": "system", "content": msg["content"]})
+                elif msg.get("role") == "user":
+                    formatted_messages.append({"role": "user", "content": msg["content"]})
+                elif msg.get("role") == "assistant":
+                    formatted_messages.append({"role": "assistant", "content": msg["content"]})
+                elif msg.get("role") == "tool":
+                    formatted_messages.append({"role": "tool", "content": msg["content"], "tool_call_id": msg.get("tool_call_id")})
+
+            # Prepare parameters
+            params = {
+                "model": model or self.default_model,
+                "messages": formatted_messages,
+                "temperature": temperature,
+            }
+
+            if max_tokens:
+                params["max_tokens"] = max_tokens
+
+            if tools:
+                params["tools"] = tools
+                params["tool_choice"] = tool_choice
+
+            # Add additional parameters
+            params.update(kwargs)
+
+            # Get response
+            response = await litellm.acompletion(**params)
 
             # Track cost
-            self._track_cost(response, model, user_id, conversation_id)
+            if response and response.choices:
+                self._track_cost(response.model_dump(), model or self.default_model, user_id, conversation_id)
 
-            return response
+            return response.model_dump() if response else {}
 
+        except ImportError as e:
+            logger.error(f"Failed to import LiteLLM: {e}")
+            raise RuntimeError("LiteLLM not available")
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"AI service connection error: {e}")
+            raise RuntimeError(f"AI service unavailable: {e}")
+        except ValueError as e:
+            logger.error(f"Invalid parameters for AI completion: {e}")
+            raise ValueError(f"Invalid request parameters: {e}")
         except Exception as e:
-            logger.error(f"Error generating completion: {e}")
-            raise
+            logger.error(f"Unexpected error in AI completion: {e}")
+            raise RuntimeError(f"AI service error: {e}")
 
     def _track_cost(
         self,
@@ -437,35 +397,28 @@ class AIService:
         text: str,
         model: str = "text-embedding-ada-002",
     ) -> list[float]:
-        """
-        Generate embeddings for text.
-
-        Args:
-            text: Text to embed
-            model: Embedding model to use
-
-        Returns:
-            List of embedding values
-        """
+        """Get embeddings for text."""
         if not self.enabled:
-            raise RuntimeError("AI service is disabled")
+            raise RuntimeError("AI service is not enabled")
 
         try:
-            # Use LiteLLM for embeddings
-            response = await acompletion(
-                model=model,
-                messages=[{"role": "user", "content": text}],
-                max_tokens=1,  # We only need embeddings, not completion
-            )
+            import litellm
 
-            # Extract embeddings from response
-            # Note: This is a simplified approach. In practice, you'd use
-            # the embeddings endpoint directly
-            return response.get("embeddings", [])
+            response = await litellm.aembedding(model=model, input=text)
+            return response.data[0].embedding if response and response.data else []
 
+        except ImportError as e:
+            logger.error(f"Failed to import LiteLLM: {e}")
+            raise RuntimeError("LiteLLM not available")
+        except (ConnectionError, TimeoutError) as e:
+            logger.error(f"Embedding service connection error: {e}")
+            raise RuntimeError(f"Embedding service unavailable: {e}")
+        except ValueError as e:
+            logger.error(f"Invalid parameters for embeddings: {e}")
+            raise ValueError(f"Invalid request parameters: {e}")
         except Exception as e:
-            logger.error(f"Error generating embeddings: {e}")
-            raise
+            logger.error(f"Unexpected error in embeddings: {e}")
+            raise RuntimeError(f"Embedding service error: {e}")
 
     def get_available_models(self) -> dict[str, dict]:
         """Get list of available models."""

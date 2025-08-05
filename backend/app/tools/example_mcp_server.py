@@ -156,7 +156,7 @@ class ExampleMCPServer:
 
     async def handle_initialize(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle initialize request."""
@@ -181,7 +181,7 @@ class ExampleMCPServer:
 
     async def handle_list_tools(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle tools/list request."""
@@ -252,15 +252,25 @@ class ExampleMCPServer:
 
     async def handle_list_resources(
         self,
-        data: dict[str, Any],
+        _data: dict[str, Any],  # Unused parameter, marked with underscore
         request_id: int,
     ) -> web.Response:
         """Handle resources/list request."""
+        resources_data = [
+            {
+                "uri": resource["uri"],
+                "name": resource["name"],
+                "description": resource["description"],
+                "mimeType": resource["mimeType"],
+            }
+            for resource in self.resources
+        ]
+
         response = {
             "jsonrpc": "2.0",
             "id": request_id,
             "result": {
-                "resources": self.resources,
+                "resources": resources_data,
             },
         }
 
@@ -345,11 +355,45 @@ class ExampleMCPServer:
             expression = arguments.get("expression", "")
 
             try:
-                # Safe evaluation (in production, use a proper math library)
-                import ast
+                # Safe mathematical expression evaluation
+                import re
+                import operator
+                from typing import Dict, Callable
 
-                result = ast.literal_eval(expression)
-                return f"Result: {result}"
+                # Define safe operations
+                safe_operators: Dict[str, Callable] = {
+                    '+': operator.add,
+                    '-': operator.sub,
+                    '*': operator.mul,
+                    '/': operator.truediv,
+                    '**': operator.pow,
+                    '//': operator.floordiv,
+                    '%': operator.mod,
+                }
+
+                # Validate expression contains only safe characters
+                if not re.match(r'^[\d\s\+\-\*\/\*\*\/\/\%\(\)\.]+$', expression):
+                    return "Calculation error: Invalid characters in expression"
+
+                # Additional safety check - no function calls or imports
+                dangerous_patterns = [
+                    'import', 'exec', 'eval', '__', 'open', 'file', 'system',
+                    'subprocess', 'os.', 'sys.', 'globals', 'locals'
+                ]
+                
+                for pattern in dangerous_patterns:
+                    if pattern in expression.lower():
+                        return "Calculation error: Invalid expression"
+
+                # Use a safer evaluation method
+                # For production, consider using libraries like 'simpleeval' or 'asteval'
+                try:
+                    # Basic arithmetic evaluation (very limited scope)
+                    result = eval(expression, {"__builtins__": {}}, safe_operators)
+                    return f"Result: {result}"
+                except (NameError, SyntaxError, ZeroDivisionError) as e:
+                    return f"Calculation error: {str(e)}"
+                    
             except Exception as e:
                 return f"Calculation error: {str(e)}"
 
@@ -401,7 +445,7 @@ class ExampleMCPServer:
 
         return web.json_response(response)
 
-    async def health_check(self, request: web.Request) -> web.Response:
+    async def health_check(self, _request: web.Request) -> web.Response:  # Unused parameter, marked with underscore
         """Health check endpoint."""
         return web.json_response(
             {

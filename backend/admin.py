@@ -649,7 +649,7 @@ def user_create_admin():
     """Create an initial admin user with secure password validation."""
     import getpass
     import re
-    
+
     print_info("Creating admin user...")
     print_info("Password requirements:")
     print_info("- At least 8 characters long")
@@ -657,39 +657,39 @@ def user_create_admin():
     print_info("- Contains at least one lowercase letter")
     print_info("- Contains at least one number")
     print_info("- Contains at least one special character")
-    
+
     email = input("Email: ").strip()
     username = input("Username: ").strip()
-    
+
     # Secure password input
     password = getpass.getpass("Password: ")
     password_confirm = getpass.getpass("Confirm password: ")
-    
+
     if password != password_confirm:
         print_error("Passwords do not match")
         return
-    
+
     # Password validation
     if len(password) < 8:
         print_error("Password must be at least 8 characters long")
         return
-    
+
     if not re.search(r"[A-Z]", password):
         print_error("Password must contain at least one uppercase letter")
         return
-    
+
     if not re.search(r"[a-z]", password):
         print_error("Password must contain at least one lowercase letter")
         return
-    
+
     if not re.search(r"\d", password):
         print_error("Password must contain at least one number")
         return
-    
+
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
         print_error("Password must contain at least one special character")
         return
-    
+
     first_name = input("First name (optional): ").strip() or None
     last_name = input("Last name (optional): ").strip() or None
 
@@ -759,7 +759,7 @@ def user_create_secure():
 
         db = SessionLocal()
         user_service = UserService(db)
-        
+
         # Check if user already exists
         existing_user = user_service.get_user_by_email(email)
         if existing_user:

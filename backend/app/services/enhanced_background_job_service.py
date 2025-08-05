@@ -509,7 +509,7 @@ def email_sending_handler(job_metadata: JobMetadata) -> dict[str, Any]:
 
             return {"sent": success, "recipient": recipient, "email_type": email_type}
 
-        elif email_type == "password_changed":
+        if email_type == "password_changed":
             # Send password changed notification
             language = job_metadata.result.get("language", "de")
 
@@ -519,14 +519,13 @@ def email_sending_handler(job_metadata: JobMetadata) -> dict[str, Any]:
 
             return {"sent": success, "recipient": recipient, "email_type": email_type}
 
-        else:
-            # Generic email sending (fallback)
-            time.sleep(2)  # Simulate email sending
-            return {
-                "sent": True,
-                "recipient": recipient,
-                "email_type": email_type or "generic",
-            }
+        # Generic email sending (fallback)
+        time.sleep(2)  # Simulate email sending
+        return {
+            "sent": True,
+            "recipient": recipient,
+            "email_type": email_type or "generic",
+        }
 
     except Exception as e:
         logger.error(f"Email sending failed: {e}")

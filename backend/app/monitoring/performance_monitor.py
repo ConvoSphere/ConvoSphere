@@ -13,6 +13,7 @@ This module provides comprehensive performance monitoring including:
 """
 
 import asyncio
+import contextlib
 import json
 import statistics
 import time
@@ -21,7 +22,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import psutil
 from fastapi import Request
@@ -32,7 +33,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.app.core.caching import get_cache_manager
 from backend.app.core.config import get_settings
-from backend.app.core.database import get_db
 
 
 class MetricType(Enum):
@@ -71,9 +71,9 @@ class Metric:
     value: float
     metric_type: MetricType
     timestamp: datetime
-    tags: Dict[str, str] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
     description: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -87,9 +87,9 @@ class Alert:
     metric_name: str
     threshold: float
     current_value: float
-    tags: Dict[str, str] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
     channel: AlertChannel = AlertChannel.LOG
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -100,7 +100,7 @@ class PerformanceSnapshot:
     cpu_percent: float
     memory_percent: float
     disk_usage_percent: float
-    network_io: Dict[str, float]
+    network_io: dict[str, float]
     active_connections: int
     request_count: int
     error_count: int
@@ -108,7 +108,7 @@ class PerformanceSnapshot:
     cache_hit_rate: float
     database_connections: int
     slow_queries: int
-    custom_metrics: Dict[str, float] = field(default_factory=dict)
+    custom_metrics: dict[str, float] = field(default_factory=dict)
 
 
 class MetricsCollector:
@@ -118,10 +118,10 @@ class MetricsCollector:
         self.max_metrics = max_metrics
         self.retention_hours = retention_hours
         self.metrics: deque = deque(maxlen=max_metrics)
-        self.counters: Dict[str, int] = defaultdict(int)
-        self.gauges: Dict[str, float] = defaultdict(float)
-        self.histograms: Dict[str, List[float]] = defaultdict(list)
-        self.timers: Dict[str, List[float]] = defaultdict(list)
+        self.counters: dict[str, int] = defaultdict(int)
+        self.gauges: dict[str, float] = defaultdict(float)
+        self.histograms: dict[str, list[float]] = defaultdict(list)
+        self.timers: dict[str, list[float]] = defaultdict(list)
         self.aggregation_interval = 60  # seconds
         self.last_aggregation = time.time()
 
@@ -130,9 +130,9 @@ class MetricsCollector:
         name: str,
         value: float,
         metric_type: MetricType,
-        tags: Optional[Dict[str, str]] = None,
+        tags: dict[str, str] | None = None,
         description: str = "",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Record a metric with enhanced metadata."""
         if tags is None:
@@ -172,49 +172,49 @@ class MetricsCollector:
             self.last_aggregation = current_time
 
     def increment_counter(
-        self, 
-        name: str, 
-        value: int = 1, 
-        tags: Optional[Dict[str, str]] = None
+        self,
+        name: str,
+        value: int = 1,
+        tags: dict[str, str] | None = None
     ) -> None:
         """Increment a counter metric."""
         self.record_metric(name, value, MetricType.COUNTER, tags)
 
     def set_gauge(
-        self, 
-        name: str, 
-        value: float, 
-        tags: Optional[Dict[str, str]] = None
+        self,
+        name: str,
+        value: float,
+        tags: dict[str, str] | None = None
     ) -> None:
         """Set a gauge metric."""
         self.record_metric(name, value, MetricType.GAUGE, tags)
 
     def record_histogram(
-        self, 
-        name: str, 
-        value: float, 
-        tags: Optional[Dict[str, str]] = None
+        self,
+        name: str,
+        value: float,
+        tags: dict[str, str] | None = None
     ) -> None:
         """Record a histogram metric."""
         self.record_metric(name, value, MetricType.HISTOGRAM, tags)
 
     def record_timer(
-        self, 
-        name: str, 
-        duration: float, 
-        tags: Optional[Dict[str, str]] = None
+        self,
+        name: str,
+        duration: float,
+        tags: dict[str, str] | None = None
     ) -> None:
         """Record a timer metric."""
         self.record_metric(name, duration, MetricType.TIMER, tags)
 
     def get_metrics(
         self,
-        name: Optional[str] = None,
-        metric_type: Optional[MetricType] = None,
-        since: Optional[datetime] = None,
-        tags: Optional[Dict[str, str]] = None,
-        limit: Optional[int] = None,
-    ) -> List[Metric]:
+        name: str | None = None,
+        metric_type: MetricType | None = None,
+        since: datetime | None = None,
+        tags: dict[str, str] | None = None,
+        limit: int | None = None,
+    ) -> list[Metric]:
         """Get metrics with filtering and pagination."""
         filtered_metrics = []
 
@@ -248,15 +248,15 @@ class MetricsCollector:
 
         return filtered_metrics
 
-    def get_statistics(self, name: str, metric_type: MetricType) -> Dict[str, float]:
+    def get_statistics(self, name: str, metric_type: MetricType) -> dict[str, float]:
         """Get statistical summary for a metric."""
         metrics = self.get_metrics(name=name, metric_type=metric_type)
-        
+
         if not metrics:
             return {}
 
         values = [m.value for m in metrics]
-        
+
         stats = {
             "count": len(values),
             "min": min(values),
@@ -278,7 +278,7 @@ class MetricsCollector:
 
         return stats
 
-    def get_metric_summary(self) -> Dict[str, Any]:
+    def get_metric_summary(self) -> dict[str, Any]:
         """Get summary of all metrics."""
         summary = {
             "total_metrics": len(self.metrics),
@@ -297,7 +297,7 @@ class MetricsCollector:
     def _cleanup_old_metrics(self) -> None:
         """Remove metrics older than retention period."""
         cutoff_time = datetime.now() - timedelta(hours=self.retention_hours)
-        
+
         # Remove old metrics from deque
         while self.metrics and self.metrics[0].timestamp < cutoff_time:
             self.metrics.popleft()
@@ -326,33 +326,31 @@ class MetricsCollector:
         # - Downsampling old data
         # - Computing percentiles
         # - Sending aggregated data to external systems
-        pass
 
     def export_metrics(self, format: str = "json") -> str:
         """Export metrics in various formats."""
         if format == "json":
             return json.dumps(self.get_metric_summary(), default=str)
-        elif format == "prometheus":
+        if format == "prometheus":
             return self._export_prometheus_format()
-        else:
-            raise ValueError(f"Unsupported export format: {format}")
+        raise ValueError(f"Unsupported export format: {format}")
 
     def _export_prometheus_format(self) -> str:
         """Export metrics in Prometheus format."""
         lines = []
-        
+
         # Counters
         for name, value in self.counters.items():
             lines.append(f"# HELP {name} Counter metric")
             lines.append(f"# TYPE {name} counter")
             lines.append(f"{name} {value}")
-        
+
         # Gauges
         for name, value in self.gauges.items():
             lines.append(f"# HELP {name} Gauge metric")
             lines.append(f"# TYPE {name} gauge")
             lines.append(f"{name} {value}")
-        
+
         # Histograms
         for name, values in self.histograms.items():
             if values:
@@ -360,8 +358,8 @@ class MetricsCollector:
                 lines.append(f"# TYPE {name} histogram")
                 lines.append(f"{name}_count {len(values)}")
                 lines.append(f"{name}_sum {sum(values)}")
-                lines.append(f"{name}_bucket{{le=\"+Inf\"}} {len(values)}")
-        
+                lines.append(f'{name}_bucket{{le="+Inf"}} {len(values)}')
+
         return "\n".join(lines)
 
 
@@ -369,11 +367,11 @@ class AlertManager:
     """Enhanced alert manager with multiple notification channels."""
 
     def __init__(self):
-        self.alert_rules: Dict[str, Dict[str, Any]] = {}
-        self.alerts: List[Alert] = []
-        self.alert_handlers: Dict[AlertChannel, List[Callable]] = defaultdict(list)
+        self.alert_rules: dict[str, dict[str, Any]] = {}
+        self.alerts: list[Alert] = []
+        self.alert_handlers: dict[AlertChannel, list[Callable]] = defaultdict(list)
         self.alert_history: deque = deque(maxlen=1000)
-        self.suppression_rules: Dict[str, datetime] = {}
+        self.suppression_rules: dict[str, datetime] = {}
         self.suppression_window = 300  # 5 minutes
 
     def add_alert_rule(
@@ -383,9 +381,9 @@ class AlertManager:
         threshold: float,
         severity: AlertSeverity,
         condition: str = "gt",  # gt, lt, eq, gte, lte
-        tags: Optional[Dict[str, str]] = None,
-        channels: Optional[List[AlertChannel]] = None,
-        suppression_window: Optional[int] = None,
+        tags: dict[str, str] | None = None,
+        channels: list[AlertChannel] | None = None,
+        suppression_window: int | None = None,
     ) -> None:
         """Add an alert rule with enhanced configuration."""
         if tags is None:
@@ -406,7 +404,7 @@ class AlertManager:
 
         logger.info(f"Added alert rule: {name} for {metric_name}")
 
-    def check_alerts(self, metrics_collector: MetricsCollector) -> List[Alert]:
+    def check_alerts(self, metrics_collector: MetricsCollector) -> list[Alert]:
         """Check all alert rules and generate alerts."""
         new_alerts = []
         current_time = datetime.now()
@@ -459,8 +457,8 @@ class AlertManager:
         return new_alerts
 
     def add_alert_handler(
-        self, 
-        channel: AlertChannel, 
+        self,
+        channel: AlertChannel,
         handler: Callable[[Alert], None]
     ) -> None:
         """Add an alert handler for a specific channel."""
@@ -481,10 +479,10 @@ class AlertManager:
                 logger.warning(f"Unknown alert channel: {channel}")
 
     def get_alerts(
-        self, 
-        severity: Optional[AlertSeverity] = None, 
-        since: Optional[datetime] = None
-    ) -> List[Alert]:
+        self,
+        severity: AlertSeverity | None = None,
+        since: datetime | None = None
+    ) -> list[Alert]:
         """Get alerts with filtering."""
         filtered_alerts = []
 
@@ -497,11 +495,11 @@ class AlertManager:
 
         return sorted(filtered_alerts, key=lambda x: x.timestamp, reverse=True)
 
-    def get_alert_summary(self) -> Dict[str, Any]:
+    def get_alert_summary(self) -> dict[str, Any]:
         """Get summary of alerts."""
         total_alerts = len(self.alerts)
         recent_alerts = len(self.get_alerts(since=datetime.now() - timedelta(hours=1)))
-        
+
         severity_counts = defaultdict(int)
         for alert in self.alerts:
             severity_counts[alert.severity.value] += 1
@@ -517,51 +515,48 @@ class AlertManager:
     def _is_alert_suppressed(self, rule_name: str, current_time: datetime) -> bool:
         """Check if an alert is currently suppressed."""
         suppression_end = self.suppression_rules.get(rule_name)
-        if suppression_end and current_time < suppression_end:
-            return True
-        return False
+        return bool(suppression_end and current_time < suppression_end)
 
     def _suppress_alert(self, rule_name: str, suppression_window: int) -> None:
         """Suppress an alert for a specified window."""
         self.suppression_rules[rule_name] = datetime.now() + timedelta(seconds=suppression_window)
 
     def _get_current_metric_value(
-        self, 
-        metrics_collector: MetricsCollector, 
-        metric_name: str, 
-        tags: Dict[str, str]
-    ) -> Optional[float]:
+        self,
+        metrics_collector: MetricsCollector,
+        metric_name: str,
+        tags: dict[str, str]
+    ) -> float | None:
         """Get the current value of a metric."""
         recent_metrics = metrics_collector.get_metrics(
-            name=metric_name, 
-            tags=tags, 
+            name=metric_name,
+            tags=tags,
             limit=1
         )
-        
+
         if recent_metrics:
             return recent_metrics[0].value
         return None
 
     def _check_condition(
-        self, 
-        value: float, 
-        threshold: float, 
+        self,
+        value: float,
+        threshold: float,
         condition: str
     ) -> bool:
         """Check if a condition is met."""
         if condition == "gt":
             return value > threshold
-        elif condition == "gte":
+        if condition == "gte":
             return value >= threshold
-        elif condition == "lt":
+        if condition == "lt":
             return value < threshold
-        elif condition == "lte":
+        if condition == "lte":
             return value <= threshold
-        elif condition == "eq":
+        if condition == "eq":
             return value == threshold
-        else:
-            logger.warning(f"Unknown condition: {condition}")
-            return False
+        logger.warning(f"Unknown condition: {condition}")
+        return False
 
 
 class SystemMonitor:
@@ -571,27 +566,27 @@ class SystemMonitor:
         self.last_network_io = psutil.net_io_counters()
         self.last_network_time = time.time()
 
-    def get_system_metrics(self) -> Dict[str, float]:
+    def get_system_metrics(self) -> dict[str, float]:
         """Get comprehensive system metrics."""
         # CPU metrics
         cpu_percent = psutil.cpu_percent(interval=1)
         cpu_count = psutil.cpu_count()
         cpu_freq = psutil.cpu_freq()
-        
+
         # Memory metrics
         memory = psutil.virtual_memory()
-        
+
         # Disk metrics
-        disk = psutil.disk_usage('/')
-        
+        disk = psutil.disk_usage("/")
+
         # Network metrics
         current_network_io = psutil.net_io_counters()
         current_time = time.time()
         time_diff = current_time - self.last_network_time
-        
+
         network_sent_rate = (current_network_io.bytes_sent - self.last_network_io.bytes_sent) / time_diff
         network_recv_rate = (current_network_io.bytes_recv - self.last_network_io.bytes_recv) / time_diff
-        
+
         self.last_network_io = current_network_io
         self.last_network_time = current_time
 
@@ -600,30 +595,30 @@ class SystemMonitor:
         process_memory = process.memory_info()
         process_cpu = process.cpu_percent()
 
-        metrics = {
+        return {
             # CPU
             "cpu_percent": cpu_percent,
             "cpu_count": cpu_count,
             "cpu_freq_mhz": cpu_freq.current if cpu_freq else 0,
-            
+
             # Memory
             "memory_percent": memory.percent,
             "memory_available_gb": memory.available / (1024**3),
             "memory_used_gb": memory.used / (1024**3),
             "memory_total_gb": memory.total / (1024**3),
-            
+
             # Disk
             "disk_percent": disk.percent,
             "disk_free_gb": disk.free / (1024**3),
             "disk_used_gb": disk.used / (1024**3),
             "disk_total_gb": disk.total / (1024**3),
-            
+
             # Network
             "network_sent_rate_mbps": network_sent_rate * 8 / (1024**2),
             "network_recv_rate_mbps": network_recv_rate * 8 / (1024**2),
             "network_sent_total_mb": current_network_io.bytes_sent / (1024**2),
             "network_recv_total_mb": current_network_io.bytes_recv / (1024**2),
-            
+
             # Process
             "process_memory_mb": process_memory.rss / (1024**2),
             "process_cpu_percent": process_cpu,
@@ -632,14 +627,13 @@ class SystemMonitor:
             "process_connections": len(process.connections()),
         }
 
-        return metrics
 
-    def get_detailed_system_info(self) -> Dict[str, Any]:
+    def get_detailed_system_info(self) -> dict[str, Any]:
         """Get detailed system information."""
         return {
             "platform": {
                 "system": psutil.sys.platform,
-                "release": psutil.sys.getwindowsversion() if hasattr(psutil.sys, 'getwindowsversion') else "Unknown",
+                "release": psutil.sys.getwindowsversion() if hasattr(psutil.sys, "getwindowsversion") else "Unknown",
                 "version": psutil.sys.version,
             },
             "cpu": {
@@ -677,8 +671,8 @@ class DatabaseMonitor:
 
     def __init__(self, db: Session):
         self.db = db
-        self.query_times: List[float] = []
-        self.slow_queries: List[Dict[str, Any]] = []
+        self.query_times: list[float] = []
+        self.slow_queries: list[dict[str, Any]] = []
         self.query_count = 0
         self.error_count = 0
         self._setup_query_monitoring()
@@ -708,7 +702,7 @@ class DatabaseMonitor:
             if len(self.slow_queries) > 100:
                 self.slow_queries = self.slow_queries[-100:]
 
-    def get_database_metrics(self) -> Dict[str, Any]:
+    def get_database_metrics(self) -> dict[str, Any]:
         """Get database performance metrics."""
         if not self.query_times:
             return {
@@ -730,11 +724,11 @@ class DatabaseMonitor:
             "query_per_second": self.query_count / max(1, (time.time() - self.query_times[0] if self.query_times else 1)),
         }
 
-    def get_slow_queries(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_slow_queries(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent slow queries."""
         return sorted(
-            self.slow_queries, 
-            key=lambda x: x["execution_time"], 
+            self.slow_queries,
+            key=lambda x: x["execution_time"],
             reverse=True
         )[:limit]
 
@@ -773,10 +767,10 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
         try:
             # Process request
             response = await call_next(request)
-            
+
             # Calculate response time
             response_time = time.time() - start_time
-            
+
             # Record successful request
             self.metrics_collector.record_timer(
                 "http_request_duration_seconds",
@@ -787,7 +781,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
                     "status_code": str(response.status_code),
                 }
             )
-            
+
             self.metrics_collector.increment_counter(
                 "http_requests_total",
                 tags={
@@ -799,7 +793,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             )
 
             # Record response size
-            if hasattr(response, 'body'):
+            if hasattr(response, "body"):
                 response_size = len(response.body) if response.body else 0
                 self.metrics_collector.record_histogram(
                     "http_response_size_bytes",
@@ -816,7 +810,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             # Record error
             self.error_count += 1
             response_time = time.time() - start_time
-            
+
             self.metrics_collector.increment_counter(
                 "http_requests_total",
                 tags={
@@ -825,7 +819,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
                     "status": "error",
                 }
             )
-            
+
             self.metrics_collector.record_timer(
                 "http_request_duration_seconds",
                 response_time,
@@ -835,7 +829,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
                     "status": "error",
                 }
             )
-            
+
             logger.error(f"Request failed: {request.method} {request.url.path} - {e}")
             raise
 
@@ -852,10 +846,10 @@ class PerformanceMonitor:
         self.monitoring_enabled = get_settings().performance_monitoring_enabled
         self.monitoring_interval = get_settings().performance_monitoring_interval
         self.alert_thresholds = get_settings().performance_alert_thresholds
-        
+
         self._setup_default_alerts()
         self._setup_alert_handlers()
-        self._monitoring_task: Optional[asyncio.Task] = None
+        self._monitoring_task: asyncio.Task | None = None
 
     def _setup_default_alerts(self):
         """Set up default performance alerts."""
@@ -910,7 +904,7 @@ class PerformanceMonitor:
                 AlertSeverity.ERROR: logger.error,
                 AlertSeverity.CRITICAL: logger.critical,
             }.get(alert.severity, logger.warning)
-            
+
             log_level(
                 f"Performance Alert: {alert.name} - {alert.message} "
                 f"(Value: {alert.current_value}, Threshold: {alert.threshold})"
@@ -935,10 +929,8 @@ class PerformanceMonitor:
         """Stop the monitoring task."""
         if self._monitoring_task and not self._monitoring_task.done():
             self._monitoring_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._monitoring_task
-            except asyncio.CancelledError:
-                pass
             logger.info("Performance monitoring stopped")
 
     async def _monitoring_loop(self):
@@ -984,13 +976,13 @@ class PerformanceMonitor:
         """Get a comprehensive performance snapshot."""
         system_metrics = self.system_monitor.get_system_metrics()
         db_metrics = self.database_monitor.get_database_metrics()
-        
+
         # Get recent request metrics
         recent_requests = self.metrics_collector.get_metrics(
             name="http_requests_total",
             since=datetime.now() - timedelta(minutes=5)
         )
-        
+
         recent_response_times = self.metrics_collector.get_metrics(
             name="http_request_duration_seconds",
             since=datetime.now() - timedelta(minutes=5)
@@ -1014,21 +1006,21 @@ class PerformanceMonitor:
             slow_queries=db_metrics.get("slow_query_count", 0),
         )
 
-    def get_performance_report(self, since: Optional[datetime] = None) -> Dict[str, Any]:
+    def get_performance_report(self, since: datetime | None = None) -> dict[str, Any]:
         """Get a comprehensive performance report."""
         if since is None:
             since = datetime.now() - timedelta(hours=1)
 
         # Get metrics for the time period
         metrics = self.metrics_collector.get_metrics(since=since)
-        
+
         # Group metrics by name
         metric_groups = defaultdict(list)
         for metric in metrics:
             metric_groups[metric.name].append(metric)
 
         # Calculate statistics for each metric group
-        report = {
+        return {
             "period": {
                 "start": since.isoformat(),
                 "end": datetime.now().isoformat(),
@@ -1053,9 +1045,8 @@ class PerformanceMonitor:
             "recommendations": self._generate_recommendations(metric_groups),
         }
 
-        return report
 
-    def _generate_recommendations(self, metric_groups: Dict[str, List[Metric]]) -> List[str]:
+    def _generate_recommendations(self, metric_groups: dict[str, list[Metric]]) -> list[str]:
         """Generate performance recommendations based on metrics."""
         recommendations = []
 
@@ -1095,13 +1086,13 @@ class PerformanceMonitor:
         """Export metrics in various formats."""
         return self.metrics_collector.export_metrics(format)
 
-    def get_alert_history(self) -> List[Alert]:
+    def get_alert_history(self) -> list[Alert]:
         """Get alert history."""
         return list(self.alert_manager.alert_history)
 
 
 # Global performance monitor instance
-performance_monitor: Optional[PerformanceMonitor] = None
+performance_monitor: PerformanceMonitor | None = None
 
 
 def get_performance_monitor(db: Session) -> PerformanceMonitor:
@@ -1119,23 +1110,23 @@ def monitor_performance(func: Callable):
         try:
             result = await func(*args, **kwargs)
             execution_time = time.time() - start_time
-            
+
             # Record metric
             if performance_monitor:
                 performance_monitor.metrics_collector.record_timer(
                     f"function_{func.__name__}_duration_seconds",
                     execution_time,
                 )
-            
+
             return result
-        except Exception as e:
+        except Exception:
             execution_time = time.time() - start_time
-            
+
             # Record error metric
             if performance_monitor:
                 performance_monitor.metrics_collector.increment_counter(
                     f"function_{func.__name__}_errors_total",
                 )
-            
+
             raise
     return wrapper

@@ -197,7 +197,7 @@ class AssistantResponseGenerator:
 
         # Add general instructions
         system_message += """
-        
+
         Wichtige Hinweise:
         - Antworte in der Sprache der Benutzerfrage
         - Sei hilfreich und präzise

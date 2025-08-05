@@ -166,7 +166,7 @@ class AgentHandoffService:
             history = [
                 h
                 for h in history
-                if h.from_agent_id == agent_id or h.to_agent_id == agent_id
+                if agent_id in (h.from_agent_id, h.to_agent_id)
             ]
 
         # Sort by timestamp (most recent first)
@@ -212,7 +212,7 @@ class AgentHandoffService:
             h
             for h in self.handoff_history
             if h.timestamp >= cutoff_time
-            and (h.from_agent_id == agent_id or h.to_agent_id == agent_id)
+            and (agent_id in (h.from_agent_id, h.to_agent_id))
         ]
 
         handoffs_from = [h for h in recent_handoffs if h.from_agent_id == agent_id]
@@ -317,7 +317,7 @@ class AgentHandoffService:
         failed_handoffs = len([h for h in self.handoff_history if not h.success])
 
         # Get unique conversations and agents
-        conversations = set(h.conversation_id for h in self.handoff_history)
+        conversations = {h.conversation_id for h in self.handoff_history}
         agents = set()
         for handoff in self.handoff_history:
             agents.add(handoff.from_agent_id)

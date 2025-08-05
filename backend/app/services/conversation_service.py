@@ -4,6 +4,7 @@ from typing import Any
 
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from backend.app.core.database import get_db
 from backend.app.core.exceptions import (
@@ -30,10 +31,10 @@ class ConversationService:
         conversation_data: ConversationCreate,
     ) -> dict[str, Any]:
         """
-        Create a new conversation with validation.
+        Create a new conversation.
 
         Args:
-            conversation_data: Conversation creation data
+            conversation_data: Conversation data
 
         Returns:
             Dict[str, Any]: Created conversation data
@@ -44,19 +45,24 @@ class ConversationService:
         """
         try:
             # Validate conversation data
+            if not conversation_data.user_id or not conversation_data.user_id.strip():
+                raise ValidationError("user_id", "User ID is required")
+
             if not conversation_data.title or not conversation_data.title.strip():
-                raise ValidationError("title", "Conversation title is required")
+                raise ValidationError("title", "Title is required")
 
             # Create conversation
             from datetime import UTC, datetime
+            import uuid
 
             now = datetime.now(UTC)
             conversation = Conversation(
-                user_id=str(conversation_data.user_id),
-                assistant_id=str(conversation_data.assistant_id),
+                id=conversation_data.id or str(uuid.uuid4()),
+                user_id=conversation_data.user_id.strip(),
+                assistant_id=conversation_data.assistant_id,
                 title=conversation_data.title.strip(),
                 description=conversation_data.description,
-                conversation_metadata=conversation_data.conversation_metadata,
+                metadata=conversation_data.metadata or {},
                 is_active=True,
                 created_at=now,
                 updated_at=now,
@@ -68,10 +74,17 @@ class ConversationService:
 
             return conversation.to_dict()
 
+        except (ValidationError, ConversationError):
+            self.db.rollback()
+            raise
+        except (IntegrityError, SQLAlchemyError) as e:
+            self.db.rollback()
+            raise DatabaseError(
+                f"Database error creating conversation: {str(e)}",
+                operation="create_conversation",
+            )
         except Exception as e:
             self.db.rollback()
-            if isinstance(e, ValidationError | ConversationError):
-                raise
             raise DatabaseError(
                 f"Failed to create conversation: {str(e)}",
                 operation="create_conversation",
@@ -121,9 +134,14 @@ class ConversationService:
 
             return conversation.to_dict()
 
+        except (ValidationError, NotFoundError):
+            raise
+        except (IntegrityError, SQLAlchemyError) as e:
+            raise DatabaseError(
+                f"Database error getting conversation: {str(e)}",
+                operation="get_conversation",
+            )
         except Exception as e:
-            if isinstance(e, ValidationError | NotFoundError):
-                raise
             raise DatabaseError(
                 f"Failed to get conversation: {str(e)}",
                 operation="get_conversation",
@@ -202,10 +220,10 @@ class ConversationService:
         message_data: MessageCreate,
     ) -> dict[str, Any]:
         """
-        Add a message to a conversation with validation.
+        Add a message to a conversation.
 
         Args:
-            message_data: Message creation data
+            message_data: Message data
 
         Returns:
             Dict[str, Any]: Created message data
@@ -217,49 +235,61 @@ class ConversationService:
         """
         try:
             # Validate message data
+            if not message_data.conversation_id or not message_data.conversation_id.strip():
+                raise ValidationError("conversation_id", "Conversation ID is required")
+
             if not message_data.content or not message_data.content.strip():
                 raise ValidationError("content", "Message content is required")
+
+            if not message_data.role or not message_data.role.strip():
+                raise ValidationError("role", "Message role is required")
 
             # Check if conversation exists
             conversation = (
                 self.db.query(Conversation)
-                .filter(Conversation.id == message_data.conversation_id)
+                .filter(Conversation.id == message_data.conversation_id.strip())
                 .first()
             )
 
             if not conversation:
-                raise NotFoundError("Conversation", str(message_data.conversation_id))
+                raise NotFoundError("Conversation", message_data.conversation_id)
 
             # Create message
+            from datetime import UTC, datetime
+            import uuid
+
+            now = datetime.now(UTC)
             message = Message(
-                conversation_id=str(message_data.conversation_id),
+                id=message_data.id or str(uuid.uuid4()),
+                conversation_id=message_data.conversation_id.strip(),
+                role=message_data.role.strip(),
                 content=message_data.content.strip(),
-                role=message_data.role,
-                message_type=message_data.message_type,
-                tool_name=message_data.tool_name,
-                tool_input=message_data.tool_input,
-                tool_output=message_data.tool_output,
-                tokens_used=message_data.tokens_used or 0,
-                model_used=message_data.model_used,
-                message_metadata=message_data.message_metadata or {},
+                metadata=message_data.metadata or {},
+                created_at=now,
+                updated_at=now,
             )
 
             self.db.add(message)
-
-            # Update conversation statistics
-            conversation.message_count += 1
-            if message.tokens_used:
-                conversation.total_tokens += message.tokens_used
-
             self.db.commit()
             self.db.refresh(message)
 
+            # Update conversation timestamp
+            conversation.updated_at = now
+            self.db.commit()
+
             return message.to_dict()
 
+        except (ValidationError, NotFoundError):
+            self.db.rollback()
+            raise
+        except (IntegrityError, SQLAlchemyError) as e:
+            self.db.rollback()
+            raise DatabaseError(
+                f"Database error adding message: {str(e)}",
+                operation="add_message",
+            )
         except Exception as e:
             self.db.rollback()
-            if isinstance(e, ValidationError | NotFoundError):
-                raise
             raise DatabaseError(
                 f"Failed to add message: {str(e)}",
                 operation="add_message",

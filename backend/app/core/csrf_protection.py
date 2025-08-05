@@ -7,7 +7,6 @@ for sensitive operations like password reset.
 
 import secrets
 import time
-from typing import Optional
 
 from loguru import logger
 
@@ -144,7 +143,7 @@ class CSRFProtection:
 
         return len(expired_tokens)
 
-    def get_token_info(self, token: str) -> Optional[dict]:
+    def get_token_info(self, token: str) -> dict | None:
         """
         Get information about a token.
 

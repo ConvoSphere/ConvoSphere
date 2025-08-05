@@ -249,12 +249,11 @@ class AssistantProcessor:
         """Get complexity level based on score."""
         if score < 0.3:
             return "simple"
-        elif score < 0.6:
+        if score < 0.6:
             return "moderate"
-        elif score < 0.8:
+        if score < 0.8:
             return "complex"
-        else:
-            return "very_complex"
+        return "very_complex"
 
     async def suggest_processing_mode(
         self, request: ProcessingRequest, complexity_analysis: dict[str, Any]
@@ -277,10 +276,9 @@ class AssistantProcessor:
             # Simple rules for mode suggestion
             if complexity_score > 0.7 or len(complex_keywords) > 2:
                 return ConversationMode.AGENT
-            elif complexity_score < 0.3 and word_count < 20:
+            if complexity_score < 0.3 and word_count < 20:
                 return ConversationMode.CHAT
-            else:
-                return ConversationMode.AUTO
+            return ConversationMode.AUTO
 
         except Exception as e:
             logger.error(f"Error suggesting processing mode: {e}")

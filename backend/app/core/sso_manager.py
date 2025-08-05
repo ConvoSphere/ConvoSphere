@@ -984,10 +984,10 @@ sso_manager = None
 def load_sso_config_from_env() -> dict[str, Any]:
     """Load SSO configuration from environment variables."""
     from backend.app.core.config import get_settings
-    
+
     settings = get_settings()
     config = {"providers": {}}
-    
+
     # Google OAuth2
     if settings.sso_google_enabled and settings.sso_google_client_id:
         config["providers"]["google"] = {
@@ -1005,7 +1005,7 @@ def load_sso_config_from_env() -> dict[str, Any]:
                 "scopes": ["openid", "email", "profile"],
             }
         }
-    
+
     # Microsoft OAuth2
     if settings.sso_microsoft_enabled and settings.sso_microsoft_client_id:
         config["providers"]["microsoft"] = {
@@ -1024,7 +1024,7 @@ def load_sso_config_from_env() -> dict[str, Any]:
                 "scopes": ["openid", "email", "profile", "User.Read"],
             }
         }
-    
+
     # GitHub OAuth2
     if settings.sso_github_enabled and settings.sso_github_client_id:
         config["providers"]["github"] = {
@@ -1042,7 +1042,7 @@ def load_sso_config_from_env() -> dict[str, Any]:
                 "scopes": ["read:user", "user:email"],
             }
         }
-    
+
     # SAML
     if settings.sso_saml_enabled and settings.sso_saml_metadata_url:
         config["providers"]["saml"] = {
@@ -1058,7 +1058,7 @@ def load_sso_config_from_env() -> dict[str, Any]:
                 "key_file": settings.sso_saml_key_file,
             }
         }
-    
+
     # OIDC
     if settings.sso_oidc_enabled and settings.sso_oidc_issuer_url:
         config["providers"]["oidc"] = {
@@ -1077,17 +1077,17 @@ def load_sso_config_from_env() -> dict[str, Any]:
                 "scopes": ["openid", "email", "profile"],
             }
         }
-    
+
     return config
 
 
 def init_sso_manager(config: dict[str, Any] = None):
     """Initialize global SSO manager."""
     global sso_manager
-    
+
     if config is None:
         config = load_sso_config_from_env()
-    
+
     sso_manager = SSOManager(config)
     logger.info(f"SSO Manager initialized with {len(config.get('providers', {}))} providers")
 

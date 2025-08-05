@@ -5,12 +5,11 @@ This module provides the base classes and interfaces for tool execution
 to eliminate code duplication between different tool executor implementations.
 """
 
-import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -44,9 +43,9 @@ class ToolParameter:
     description: str
     required: bool = False
     default: Any = None
-    enum: Optional[List[str]] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
+    enum: list[str] | None = None
+    min_value: float | None = None
+    max_value: float | None = None
 
 
 @dataclass
@@ -57,11 +56,11 @@ class ToolDefinition:
     name: str
     description: str
     type: ToolType
-    parameters: List[ToolParameter] = field(default_factory=list)
-    returns: Optional[str] = None
+    parameters: list[ToolParameter] = field(default_factory=list)
+    returns: str | None = None
     timeout: int = 30
     enabled: bool = True
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -71,15 +70,15 @@ class ToolExecution:
     id: str
     tool_id: str
     user_id: str
-    conversation_id: Optional[str]
-    parameters: Dict[str, Any]
+    conversation_id: str | None
+    parameters: dict[str, Any]
     status: ToolExecutionStatus
     start_time: datetime
     result: Any = None
-    error: Optional[str] = None
-    end_time: Optional[datetime] = None
-    execution_time: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    end_time: datetime | None = None
+    execution_time: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class BaseToolExecutor(ABC):
@@ -87,8 +86,8 @@ class BaseToolExecutor(ABC):
 
     def __init__(self):
         """Initialize the base tool executor."""
-        self.executions: Dict[str, ToolExecution] = {}
-        self.tools: Dict[str, ToolDefinition] = {}
+        self.executions: dict[str, ToolExecution] = {}
+        self.tools: dict[str, ToolDefinition] = {}
         self.max_concurrent_executions = 10
         self.default_timeout = 30
 
@@ -96,25 +95,22 @@ class BaseToolExecutor(ABC):
     async def execute_tool(
         self,
         tool_id: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         user_id: str,
-        conversation_id: Optional[str] = None,
-        timeout: Optional[int] = None,
+        conversation_id: str | None = None,
+        timeout: int | None = None,
     ) -> ToolExecution:
         """Execute a tool."""
-        pass
 
     @abstractmethod
-    def get_tool_definition(self, tool_id: str) -> Optional[ToolDefinition]:
+    def get_tool_definition(self, tool_id: str) -> ToolDefinition | None:
         """Get tool definition by ID."""
-        pass
 
     @abstractmethod
-    def get_available_tools(self) -> List[ToolDefinition]:
+    def get_available_tools(self) -> list[ToolDefinition]:
         """Get list of available tools."""
-        pass
 
-    def get_execution(self, execution_id: str) -> Optional[ToolExecution]:
+    def get_execution(self, execution_id: str) -> ToolExecution | None:
         """Get execution by ID."""
         return self.executions.get(execution_id)
 
@@ -122,11 +118,11 @@ class BaseToolExecutor(ABC):
         self,
         user_id: str,
         limit: int = 100,
-    ) -> List[ToolExecution]:
+    ) -> list[ToolExecution]:
         """Get executions for a user."""
         user_executions = [
-            exec for exec in self.executions.values()
-            if exec.user_id == user_id
+            execution for execution in self.executions.values()
+            if execution.user_id == user_id
         ]
         return sorted(
             user_executions,
@@ -144,20 +140,20 @@ class BaseToolExecutor(ABC):
             return True
         return False
 
-    def get_execution_stats(self) -> Dict[str, Any]:
+    def get_execution_stats(self) -> dict[str, Any]:
         """Get execution statistics."""
         total_executions = len(self.executions)
         completed = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.COMPLETED
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.COMPLETED
         )
         failed = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.FAILED
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.FAILED
         )
         running = sum(
-            1 for exec in self.executions.values()
-            if exec.status == ToolExecutionStatus.RUNNING
+            1 for execution in self.executions.values()
+            if execution.status == ToolExecutionStatus.RUNNING
         )
 
         return {
@@ -171,52 +167,52 @@ class BaseToolExecutor(ABC):
     def _validate_parameters(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        parameters: dict[str, Any],
+    ) -> dict[str, Any]:
         """Validate tool parameters."""
         validated_params = {}
-        
+
         for param in tool_def.parameters:
             param_name = param.name
-            
+
             # Check required parameters
             if param.required and param_name not in parameters:
                 raise ValueError(f"Required parameter '{param_name}' is missing")
-            
+
             # Get parameter value
             value = parameters.get(param_name, param.default)
-            
+
             # Validate enum values
             if param.enum and value not in param.enum:
                 raise ValueError(
                     f"Parameter '{param_name}' must be one of: {param.enum}"
                 )
-            
+
             # Validate numeric ranges
             if param.min_value is not None and value < param.min_value:
                 raise ValueError(
                     f"Parameter '{param_name}' must be >= {param.min_value}"
                 )
-            
+
             if param.max_value is not None and value > param.max_value:
                 raise ValueError(
                     f"Parameter '{param_name}' must be <= {param.max_value}"
                 )
-            
+
             validated_params[param_name] = value
-        
+
         return validated_params
 
     def _create_execution(
         self,
         tool_id: str,
         user_id: str,
-        conversation_id: Optional[str],
-        parameters: Dict[str, Any],
+        conversation_id: str | None,
+        parameters: dict[str, Any],
     ) -> ToolExecution:
         """Create a new execution instance."""
         execution_id = f"{tool_id}_{user_id}_{datetime.now(UTC).timestamp()}"
-        
+
         execution = ToolExecution(
             id=execution_id,
             tool_id=tool_id,
@@ -226,7 +222,7 @@ class BaseToolExecutor(ABC):
             status=ToolExecutionStatus.PENDING,
             start_time=datetime.now(UTC),
         )
-        
+
         self.executions[execution_id] = execution
         return execution
 
@@ -235,20 +231,20 @@ class BaseToolExecutor(ABC):
         execution: ToolExecution,
         status: ToolExecutionStatus,
         result: Any = None,
-        error: Optional[str] = None,
+        error: str | None = None,
     ) -> None:
         """Update execution status and result."""
         execution.status = status
         execution.end_time = datetime.now(UTC)
-        
+
         if execution.start_time and execution.end_time:
             execution.execution_time = (
                 execution.end_time - execution.start_time
             ).total_seconds()
-        
+
         if result is not None:
             execution.result = result
-        
+
         if error is not None:
             execution.error = error
 
@@ -256,12 +252,12 @@ class BaseToolExecutor(ABC):
         """Clean up old executions."""
         cutoff_time = datetime.now(UTC) - timedelta(hours=max_age_hours)
         old_executions = [
-            exec_id for exec_id, execution in self.executions.items()
+            execution_id for execution_id, execution in self.executions.items()
             if execution.start_time < cutoff_time
         ]
-        
-        for exec_id in old_executions:
-            del self.executions[exec_id]
-        
+
+        for execution_id in old_executions:
+            del self.executions[execution_id]
+
         logger.info(f"Cleaned up {len(old_executions)} old executions")
         return len(old_executions)

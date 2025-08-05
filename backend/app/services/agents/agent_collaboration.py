@@ -225,11 +225,11 @@ class AgentCollaborationService:
                 session.round_count += 1
             return agent_id
 
-        elif session.coordination_strategy == "priority":
+        if session.coordination_strategy == "priority":
             # Return first agent (highest priority)
             return session.agent_ids[0]
 
-        elif session.coordination_strategy == "expertise":
+        if session.coordination_strategy == "expertise":
             # For now, use round-robin for expertise
             # In the future, this could be based on agent expertise matching
             agent_id = session.agent_ids[session.current_agent_index]
@@ -437,7 +437,7 @@ class AgentCollaborationService:
         )
 
         # Get unique conversations and agents
-        conversations = set(h.conversation_id for h in self.collaboration_history)
+        conversations = {h.conversation_id for h in self.collaboration_history}
         agents = set()
         for collab in self.collaboration_history:
             agents.update(collab.agent_ids)
