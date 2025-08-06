@@ -926,9 +926,9 @@ def request_password_reset(email: str) -> bool:
 
 ### Documentation
 
-- [API Documentation](./api/password_reset_api.md)
-- [Security Documentation](./security/password_reset_security.md)
-- [User Guide](./user_guide/password_reset_guide.md)
+- [API Documentation](../api/password_reset_api.md)
+- [Security Documentation](../security/password_reset_security.md)
+- [User Guide](../user_guide/password_reset_guide.md)
 
 ### Code Examples
 
