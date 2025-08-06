@@ -20,6 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from backend.app.api.v1.api import api_router
 from backend.app.core.config import get_settings
 from backend.app.core.database import check_db_connection, init_db, engine
+from backend.app.core.error_responses import CommonErrors, handle_validation_errors
 from backend.app.core.i18n import I18nMiddleware, i18n_manager, t
 from backend.app.core.opentelemetry_config import (
     initialize_opentelemetry,
@@ -146,14 +147,14 @@ def create_application() -> FastAPI:
     setup_security_middleware(app)
 
     # Add CORS middleware with secure configuration
-    cors_origins = [origin.strip() for origin in get_settings().cors_origins.split(",") if origin.strip()]
+    cors_origins = [origin.strip() for origin in get_settings().cors.cors_origins.split(",") if origin.strip()]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
-        allow_credentials=get_settings().cors_allow_credentials,
-        allow_methods=get_settings().cors_allow_methods,
-        allow_headers=get_settings().cors_allow_headers,
-        max_age=get_settings().cors_max_age,
+        allow_credentials=get_settings().cors.cors_allow_credentials,
+        allow_methods=get_settings().cors.cors_allow_methods,
+        allow_headers=get_settings().cors.cors_allow_headers,
+        max_age=get_settings().cors.cors_max_age,
     )
 
     app.add_middleware(
@@ -169,7 +170,7 @@ def create_application() -> FastAPI:
     app.add_middleware(I18nMiddleware, i18n_manager=i18n_manager)
 
     # Add session middleware for OAuth
-    app.add_middleware(SessionMiddleware, secret_key=get_settings().secret_key)
+    app.add_middleware(SessionMiddleware, secret_key=get_settings().security.secret_key)
 
     # Start performance monitoring if enabled
     if performance_monitor.monitoring_enabled:
@@ -186,27 +187,43 @@ def create_application() -> FastAPI:
             None,
             fallback=exc.detail,
         )
+        
+        # Create standardized error response
+        error_response = CommonErrors.internal_server_error(
+            message=translated_detail,
+            status_code=exc.status_code,
+        )
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": translated_detail, "status_code": exc.status_code},
+            content=error_response.dict(),
         )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(_: Any, exc: RequestValidationError) -> JSONResponse:
         """Handle validation exceptions."""
         logger.warning(f"Validation error: {exc.errors()}")
+        
+        # Convert validation errors to standardized format
+        details = handle_validation_errors(exc.errors())
+        error_response = CommonErrors.validation_error(
+            message="Request validation failed",
+            details=details,
+        )
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"detail": exc.errors(), "status_code": 422},
+            content=error_response.dict(),
         )
 
     @app.exception_handler(Exception)
     async def general_exception_handler(_: Any, exc: Exception) -> JSONResponse:
         """Handle general exceptions."""
         logger.error(f"Unhandled exception: {exc}")
+        error_response = CommonErrors.internal_server_error(
+            message="An unexpected error occurred",
+        )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Internal server error", "status_code": 500},
+            content=error_response.dict(),
         )
 
     # Health check endpoint

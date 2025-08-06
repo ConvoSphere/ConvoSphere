@@ -1,105 +1,105 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import autoprefixer from "autoprefixer";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      // Ensure React 18 compatibility
-      jsxRuntime: 'automatic',
+    react(),
+    // Bundle analyzer for development
+    visualizer({
+      filename: 'dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
     }),
   ],
   build: {
+    // Enable source maps for debugging
+    sourcemap: true,
+    // Optimize chunk splitting
     rollupOptions: {
       output: {
+        // Manual chunk splitting for better caching
         manualChunks: {
-          // Simple chunk splitting
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-antd': ['antd', '@ant-design/icons'],
-          'vendor-router': ['react-router-dom'],
-          'vendor-utils': ['axios', 'zustand', 'dayjs'],
-          'vendor-i18n': ['i18next', 'react-i18next'],
+          // Vendor chunks
+          'react-vendor': ['react', 'react-dom'],
+          'antd-vendor': ['antd', '@ant-design/icons'],
+          'router-vendor': ['react-router-dom'],
+          'utils-vendor': ['axios', 'zustand', 'i18next', 'react-i18next'],
+          'charts-vendor': ['recharts', 'chart.js', 'react-chartjs-2'],
+          'formats-vendor': ['date-fns', 'dayjs'],
+          'pdf-vendor': ['jspdf', 'html2pdf.js', 'html2canvas'],
+          'excel-vendor': ['xlsx', 'pptxgenjs'],
         },
-        chunkFileNames: "js/[name]-[hash].js",
-        entryFileNames: "js/[name]-[hash].js",
+        // Optimize chunk naming
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split('/').pop()?.replace('.tsx', '').replace('.ts', '')
+            : 'chunk'
+          return `js/${facadeModuleId}-[hash].js`
+        },
+        entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const name = assetInfo.name;
-          if (!name) return "assets/[name]-[hash].[ext]";
-
-          const info = name.split(".");
-          const ext = info[info.length - 1];
-          if (/\.(css)$/.test(name)) {
-            return `css/[name]-[hash].${ext}`;
+          const info = assetInfo.name?.split('.') || []
+          const ext = info[info.length - 1]
+          if (/\.(css)$/.test(assetInfo.name || '')) {
+            return `css/[name]-[hash].${ext}`
           }
-          if (/\.(png|jpe?g|gif|svg|webp|ico)$/.test(name)) {
-            return `images/[name]-[hash].${ext}`;
+          if (/\.(png|jpe?g|gif|svg|webp|ico)$/.test(assetInfo.name || '')) {
+            return `images/[name]-[hash].${ext}`
           }
-          return `assets/[name]-[hash].${ext}`;
+          return `assets/[name]-[hash].${ext}`
         },
       },
     },
+    // Optimize chunk size warnings
     chunkSizeWarningLimit: 1000,
-    sourcemap: false,
-    minify: "terser",
-    target: "es2015",
-    cssCodeSplit: true,
-    reportCompressedSize: true,
-    emptyOutDir: true,
+    // Enable minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
-  optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
-      "react-router-dom",
-      "antd",
-      "@ant-design/icons",
-      "zustand",
-      "axios",
-      "dayjs",
-      "i18next",
-      "react-i18next",
-    ],
-    force: true,
-  },
+  // Optimize development server
   server: {
-    port: 3000,
+    port: 8080,
     host: true,
+    // Enable HMR optimization
     hmr: {
       overlay: false,
     },
-    proxy: {
-      "/api": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-        secure: false,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'antd',
+      '@ant-design/icons',
+      'react-router-dom',
+      'axios',
+      'zustand',
+      'i18next',
+      'react-i18next',
+    ],
+    exclude: ['@vite/client', '@vite/env'],
+  },
+  // CSS optimization
+  css: {
+    devSourcemap: true,
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
       },
     },
   },
-  preview: {
-    port: 4173,
-    host: true,
+  // Define global constants
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
-  esbuild: {
-    target: "es2015",
-    legalComments: "none",
-  },
-  css: {
-    devSourcemap: false,
-    postcss: {
-      plugins: [
-        autoprefixer({
-          overrideBrowserslist: ["> 1%", "last 2 versions", "not dead"],
-        }),
-      ],
-    },
-  },
-  resolve: {
-    alias: {
-      'react': 'react',
-      'react-dom': 'react-dom',
-    },
-  },
-});
+})

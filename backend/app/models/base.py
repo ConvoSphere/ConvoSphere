@@ -28,7 +28,7 @@ def get_uuid_column() -> Any:
     Returns:
         SQLAlchemy column type that works with both PostgreSQL and SQLite
     """
-    engine_url = get_settings().database_url
+    engine_url = get_settings().database.database_url
 
     if "postgresql" in engine_url:
         return PostgresUUID(as_uuid=True)
@@ -43,7 +43,7 @@ def get_json_column() -> Any:
     Returns:
         SQLAlchemy column type that works with both PostgreSQL and SQLite
     """
-    engine_url = get_settings().database_url
+    engine_url = get_settings().database.database_url
 
     if "postgresql" in engine_url:
         return JSONB
