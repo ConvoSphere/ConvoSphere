@@ -11,6 +11,7 @@ export interface ModernFormProps extends Omit<AntFormProps, "size"> {
   className?: string;
   onSubmit?: (values: any) => void;
   onValuesChange?: (changedValues: any, allValues: any) => void;
+  form?: any; // Ant Design Form instance
 }
 
 export interface ModernFormItemProps {
@@ -32,11 +33,15 @@ const ModernForm: React.FC<ModernFormProps> = ({
   className = "",
   onSubmit,
   onValuesChange,
+  form: externalForm,
   ...props
 }) => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
-  const [form] = AntForm.useForm();
+  const [internalForm] = AntForm.useForm();
+  
+  // Use external form if provided, otherwise use internal form
+  const form = externalForm || internalForm;
 
   const formClasses = [
     "modern-form",

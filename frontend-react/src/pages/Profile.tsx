@@ -29,6 +29,7 @@ import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
+import { Form } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -43,7 +44,7 @@ const Profile: React.FC = () => {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [form] = ModernForm.useForm();
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (!user) fetchProfile();
