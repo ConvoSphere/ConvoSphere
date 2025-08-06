@@ -36,7 +36,14 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides, including [SSO Setup](docs/SSO_SETUP.md), [Knowledge Base Settings](docs/KNOWLEDGE_BASE_SETTINGS.md), and [Security Setup](docs/security/setup.md).
+**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides, including:
+
+- **[Knowledge Base Settings](docs/KNOWLEDGE_BASE_SETTINGS.md)** - Configure document processing and RAG
+- **[RAG Features](docs/RAG_FEATURES.md)** - Advanced retrieval-augmented generation
+- **[Bulk Operations](docs/BULK_OPERATIONS.md)** - Efficient document management
+- **[Storage Integration](docs/STORAGE_INTEGRATION.md)** - Cloud storage setup
+- **[SSO Setup](docs/SSO_SETUP.md)** - Enterprise authentication
+- **[Security Setup](docs/security/setup.md)** - Security configuration
 
 ## ✨ Key Features
 
