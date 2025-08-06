@@ -67,25 +67,25 @@ jobs:
           
           # Check if there are any critical errors (not just warnings)
           python -c "
-          import json
-          try:
-              with open('ruff-report.json', 'r') as f:
-                  data = json.load(f)
-              # Only fail on critical errors, not formatting issues
-              critical_errors = []
-              for issue in data:
-                  code = issue.get('code')
-                  if code and code.startswith(('F821', 'F823', 'F841')):
-                      critical_errors.append(issue)
-              if critical_errors:
-                  print(f'Found {len(critical_errors)} critical errors in Python linting')
-                  exit(1)
-              else:
-                  print('No critical errors found in Python linting')
-          except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-              print(f'Error processing ruff report: {e}')
-              print('No critical errors found in Python linting')
-          "
+import json
+try:
+    with open('ruff-report.json', 'r') as f:
+        data = json.load(f)
+    # Only fail on critical errors, not formatting issues
+    critical_errors = []
+    for issue in data:
+        code = issue.get('code')
+        if code and code.startswith(('F821', 'F823', 'F841')):
+            critical_errors.append(issue)
+    if critical_errors:
+        print(f'Found {len(critical_errors)} critical errors in Python linting')
+        exit(1)
+    else:
+        print('No critical errors found in Python linting')
+except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+    print(f'Error processing ruff report: {e}')
+    print('No critical errors found in Python linting')
+"
       
       - name: Run TypeScript linting (warnings allowed)
         id: typescript-lint
@@ -123,23 +123,23 @@ jobs:
           
           # Check if there are any errors (not just warnings)
           python -c "
-          import json
-          try:
-              with open('mypy-report.json', 'r') as f:
-                  data = json.load(f)
-              errors = []
-              for file_data in data.values():
-                  for issue in file_data:
-                      if issue.get('severity') == 'error':
-                          errors.append(issue)
-              if errors:
-                  print(f'Found {len(errors)} type errors')
-                  exit(1)
-              else:
-                  print('No type errors found')
-          except FileNotFoundError:
-              print('No type checking issues found')
-          "
+import json
+try:
+    with open('mypy-report.json', 'r') as f:
+        data = json.load(f)
+    errors = []
+    for file_data in data.values():
+        for issue in file_data:
+            if issue.get('severity') == 'error':
+                errors.append(issue)
+    if errors:
+        print(f'Found {len(errors)} type errors')
+        exit(1)
+    else:
+        print('No type errors found')
+except FileNotFoundError:
+    print('No type checking issues found')
+"
       
       - name: Upload linting reports
         uses: actions/upload-artifact@v4

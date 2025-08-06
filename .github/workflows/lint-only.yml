@@ -189,23 +189,23 @@ jobs:
           echo "## Python Linting" >> linting-summary.md
           if [ -f "ruff-report.json" ]; then
             python -c "
-            import json
-            try:
-                with open('ruff-report.json', 'r') as f:
-                    data = json.load(f)
-                errors = []
-                warnings = []
-                for issue in data:
-                    code = issue.get('code', '')
-                    if code and code.startswith(('E', 'F')):
-                        errors.append(issue)
-                    else:
-                        warnings.append(issue)
-                print(f'- ✅ Errors: {len(errors)}')
-                print(f'- ⚠️  Warnings: {len(warnings)}')
-            except (FileNotFoundError, json.JSONDecodeError, KeyError):
-                print('- ✅ No issues found')
-            " >> linting-summary.md
+import json
+try:
+    with open('ruff-report.json', 'r') as f:
+        data = json.load(f)
+    errors = []
+    warnings = []
+    for issue in data:
+        code = issue.get('code', '')
+        if code and code.startswith(('E', 'F')):
+            errors.append(issue)
+        else:
+            warnings.append(issue)
+    print(f'- ✅ Errors: {len(errors)}')
+    print(f'- ⚠️  Warnings: {len(warnings)}')
+except (FileNotFoundError, json.JSONDecodeError, KeyError):
+    print('- ✅ No issues found')
+" >> linting-summary.md
           else
             echo "- ✅ No issues found" >> linting-summary.md
           fi
@@ -235,16 +235,16 @@ jobs:
           echo "## Security Checks" >> linting-summary.md
           if [ -f "bandit-report.json" ]; then
             python -c "
-            import json
-            with open('bandit-report.json', 'r') as f:
-                data = json.load(f)
-            high = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'HIGH']
-            medium = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'MEDIUM']
-            low = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'LOW']
-            print(f'- ❌ High: {len(high)}')
-            print(f'- ⚠️  Medium: {len(medium)}')
-            print(f'- ℹ️  Low: {len(low)}')
-            " >> linting-summary.md
+import json
+with open('bandit-report.json', 'r') as f:
+    data = json.load(f)
+high = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'HIGH']
+medium = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'MEDIUM']
+low = [issue for issue in data.get('results', []) if issue.get('issue_severity') == 'LOW']
+print(f'- ❌ High: {len(high)}')
+print(f'- ⚠️  Medium: {len(medium)}')
+print(f'- ℹ️  Low: {len(low)}')
+" >> linting-summary.md
           else
             echo "- ✅ No issues found" >> linting-summary.md
           fi
@@ -254,23 +254,23 @@ jobs:
           echo "## Type Checking" >> linting-summary.md
           if [ -f "mypy-report.json" ]; then
             python -c "
-            import json
-            try:
-                with open('mypy-report.json', 'r') as f:
-                    data = json.load(f)
-                errors = []
-                warnings = []
-                for file_data in data.values():
-                    for issue in file_data:
-                        if issue.get('severity') == 'error':
-                            errors.append(issue)
-                        else:
-                            warnings.append(issue)
-                print(f'- ✅ Errors: {len(errors)}')
-                print(f'- ⚠️  Warnings: {len(warnings)}')
-            except FileNotFoundError:
-                print('- ✅ No issues found')
-            " >> linting-summary.md
+import json
+try:
+    with open('mypy-report.json', 'r') as f:
+        data = json.load(f)
+    errors = []
+    warnings = []
+    for file_data in data.values():
+        for issue in file_data:
+            if issue.get('severity') == 'error':
+                errors.append(issue)
+            else:
+                warnings.append(issue)
+    print(f'- ✅ Errors: {len(errors)}')
+    print(f'- ⚠️  Warnings: {len(warnings)}')
+except FileNotFoundError:
+    print('- ✅ No issues found')
+" >> linting-summary.md
           else
             echo "- ✅ No issues found" >> linting-summary.md
           fi
