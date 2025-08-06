@@ -364,7 +364,7 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
-                  path="/knowledge"
+                  path="/knowledge-base"
                   element={
                     <ProtectedRoute>
                       <Layout>
