@@ -21,7 +21,7 @@ from backend.app.core.config import get_settings
 Base = declarative_base()
 
 
-def get_uuid_column():
+def get_uuid_column() -> Any:
     """
     Get appropriate UUID column type based on database.
 
@@ -36,7 +36,7 @@ def get_uuid_column():
     return String(36)
 
 
-def get_json_column():
+def get_json_column() -> Any:
     """
     Get appropriate JSON column type based on database.
 
