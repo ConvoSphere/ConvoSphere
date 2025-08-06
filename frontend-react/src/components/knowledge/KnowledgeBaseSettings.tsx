@@ -23,6 +23,7 @@ import ModernButton from "../ModernButton";
 import ModernInput from "../ModernInput";
 import ModernSelect from "../ModernSelect";
 import ModernForm, { ModernFormItem } from "../ModernForm";
+import { Form } from "antd";
 import { config } from "../../config";
 
 const { Title, Text, Paragraph } = Typography;
@@ -118,7 +119,7 @@ const KnowledgeBaseSettings: React.FC = () => {
     },
   ]);
 
-  const [form] = ModernForm.useForm();
+  const [form] = Form.useForm();
 
   useEffect(() => {
     loadSettings();
