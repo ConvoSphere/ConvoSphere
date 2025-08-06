@@ -39,8 +39,10 @@ from backend.app.services.enhanced_background_job_service import job_manager
 from backend.app.services.performance_monitor import performance_monitor
 
 
+from typing import Any, AsyncGenerator
+
 @asynccontextmanager
-async def lifespan(_):
+async def lifespan(_: Any) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     # Startup
     logger.info("Starting AI Assistant Platform...")
@@ -113,7 +115,7 @@ async def lifespan(_):
         logger.error(f"Error during shutdown: {e}")
 
 
-def configure_opentelemetry(app, db_engine=None, redis_client=None):
+def configure_opentelemetry(app: FastAPI, db_engine: Any = None, redis_client: Any = None) -> None:
     """Configure OpenTelemetry for the application."""
     initialize_opentelemetry(app, db_engine, redis_client)
 
@@ -174,7 +176,7 @@ def create_application() -> FastAPI:
 
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(_, exc: StarletteHTTPException):
+    async def http_exception_handler(_: Any, exc: StarletteHTTPException) -> JSONResponse:
         """Handle HTTP exceptions."""
         logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
         # Translate error message
@@ -189,7 +191,7 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(_, exc: RequestValidationError):
+    async def validation_exception_handler(_: Any, exc: RequestValidationError) -> JSONResponse:
         """Handle validation exceptions."""
         logger.warning(f"Validation error: {exc.errors()}")
         return JSONResponse(
@@ -198,7 +200,7 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(_, exc: Exception):
+    async def general_exception_handler(_: Any, exc: Exception) -> JSONResponse:
         """Handle general exceptions."""
         logger.error(f"Unhandled exception: {exc}")
         return JSONResponse(
@@ -208,7 +210,7 @@ def create_application() -> FastAPI:
 
     # Health check endpoint
     @app.get("/health")
-    async def health_check():
+    async def health_check() -> dict[str, Any]:
         """Health check endpoint with service status."""
         # Check Redis status
         try:
@@ -234,7 +236,7 @@ def create_application() -> FastAPI:
 
     # Config endpoint for frontend (must be before API routers)
     @app.get("/api/config")
-    async def get_config():
+    async def get_config() -> dict[str, Any]:
         """Get application configuration for frontend."""
         return {
             "apiUrl": "/api",
@@ -260,17 +262,17 @@ def create_application() -> FastAPI:
 
     # Add missing endpoints for frontend compatibility (must be before API routers)
     @app.get("/api/assistants")
-    async def get_assistants_legacy():
+    async def get_assistants_legacy() -> dict[str, str]:
         """Legacy assistants endpoint."""
         return {"message": "Use /api/v1/assistants instead"}
 
     @app.get("/api/knowledge/documents")
-    async def get_knowledge_documents_legacy():
+    async def get_knowledge_documents_legacy() -> dict[str, str]:
         """Legacy knowledge documents endpoint."""
         return {"message": "Use /api/v1/knowledge/documents instead"}
 
     @app.get("/api/ai/models")
-    async def get_ai_models_legacy():
+    async def get_ai_models_legacy() -> dict[str, str]:
         """Legacy AI models endpoint."""
         return {"message": "Use /api/v1/ai/models instead"}
 
@@ -279,7 +281,7 @@ def create_application() -> FastAPI:
 
     # Root endpoint
     @app.get("/")
-    async def root():
+    async def root() -> dict[str, Any]:
         """Root endpoint."""
         return {
             "message": "Welcome to AI Assistant Platform",
