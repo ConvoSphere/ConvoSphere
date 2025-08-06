@@ -1,10 +1,10 @@
-site_name: AI Chat Application
-site_description: Modern, full-stack AI chat application with FastAPI backend and React frontend
-site_author: AI Chat Development Team
-site_url: https://lichtbaer.github.io/ai-chat-app/
+site_name: ConvoSphere
+site_description: Modern, full-stack AI assistant platform with FastAPI backend and React frontend
+site_author: ConvoSphere Development Team
+site_url: https://convosphere.github.io/convosphere/
 
-repo_name: lichtbaer/ai-chat-app
-repo_url: https://github.com/lichtbaer/ai-chat-app
+repo_name: ConvoSphere/ConvoSphere
+repo_url: https://github.com/ConvoSphere/ConvoSphere
 edit_uri: edit/main/docs/
 
 docs_dir: docs
@@ -111,14 +111,14 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/lichtbaer/ai-chat-app
+      link: https://github.com/ConvoSphere/ConvoSphere
     - icon: fontawesome/brands/discord
       link: https://discord.gg/your-server
   version:
     provider: mike
   analytics:
     provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
+    property: ""  # Set your Google Analytics key here
 
 extra_css:
   - stylesheets/extra.css
@@ -136,6 +136,7 @@ nav:
   - Architecture: architecture.md
   - API Reference: api.md
   - Security: security.md
+  - Changelog: changelog.md
   - FAQ: faq.md
   - Development:
     - Test Coverage: development/test_coverage_improvement_plan.md
@@ -159,4 +160,17 @@ nav:
     - Translation Analysis: analysis/translation_analysis_report.md
     - Translation Improvements: analysis/translation_improvements_summary.md
   - Reports:
+    - Overview: reports/README.md
+    - Code Quality:
+      - Type Fixes Summary: reports/code-quality/type_fixes_summary.md
+      - Service Layer Type Fixes: reports/code-quality/service_layer_type_fixes.md
+      - MyPy Analysis Report: reports/code-quality/mypy_analysis_report.md
+      - Code Quality Report: reports/code-quality/code_quality_report.md
+      - Complete Type Analysis: reports/code-quality/complete_type_analysis_final.md
+      - Fixes Summary: reports/code-quality/fixes_summary.md
+      - Final Type Fixes Summary: reports/code-quality/final_type_fixes_summary.md
+    - Development:
+      - Next Steps Completed: reports/development/next_steps_completed.md
+      - Development Priorities: reports/development/priorities.md
+      - GitHub Actions Fixes: reports/development/GITHUB_ACTIONS_FIXES.md
     - Test Results: reports/test_results_summary.md 

@@ -1,6 +1,6 @@
-# AI Chat Application
+# ConvoSphere
 
-A modern, full-stack AI chat application with **FastAPI** backend and **React** frontend, featuring real-time messaging, knowledge base integration, and enterprise-grade AI capabilities.
+A modern, full-stack AI assistant platform with **FastAPI** backend and **React** frontend, featuring real-time messaging, knowledge base integration, and enterprise-grade AI capabilities.
 
 ## 🚀 Quick Start
 
@@ -8,8 +8,8 @@ Get started in under 5 minutes:
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/ai-chat-app.git
-cd ai-chat-app
+git clone https://github.com/ConvoSphere/ConvoSphere.git
+cd ConvoSphere
 
 # Start with Docker (recommended)
 docker-compose up --build
@@ -17,7 +17,7 @@ docker-compose up --build
 
 → Open [http://localhost:8081](http://localhost:8081) (Frontend) | [http://localhost:8000](http://localhost:8000) (Backend API)
 
-> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
+> **⚠️ Beta Version**: This is currently version 0.1.0-beta. Some features may be incomplete or subject to change.
 
 ## ✨ Key Features
 
@@ -134,11 +134,11 @@ npm run dev
 
 ## 🤝 Contributing
 
-We welcome contributions! See [GitHub Issues](https://github.com/lichtbaer/ai-chat-app/issues) for details.
+We welcome contributions! See [GitHub Issues](https://github.com/ConvoSphere/ConvoSphere/issues) for details.
 
 ## 📄 License
 
-MIT License - see [LICENSE](https://github.com/your-org/ai-chat-app/blob/main/LICENSE) for details.
+MIT License - see [LICENSE](https://github.com/ConvoSphere/ConvoSphere/blob/main/LICENSE) for details.
 
 ---
 
