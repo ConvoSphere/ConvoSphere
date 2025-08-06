@@ -135,6 +135,11 @@ nav:
   - Developer Guide: developer-guide.md
   - Architecture: architecture.md
   - API Reference: api.md
+  - Knowledge Base:
+    - Settings: KNOWLEDGE_BASE_SETTINGS.md
+    - RAG Features: RAG_FEATURES.md
+    - Bulk Operations: BULK_OPERATIONS.md
+    - Storage Integration: STORAGE_INTEGRATION.md
   - Security: security.md
   - Changelog: changelog.md
   - FAQ: faq.md
