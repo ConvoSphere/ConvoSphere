@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { List, Badge, Typography, Button, Space, Tag, Avatar, Tooltip } from "antd";
+import { List, Badge, Typography, Space, Tag, Avatar, Tooltip } from "antd";
+import ModernButton from "../ModernButton";
 import {
   BellOutlined,
   CheckOutlined,
@@ -252,9 +253,9 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
       actions={[
         !notification.isRead && (
           <Tooltip title={t("widgets.notifications.mark_as_read")}>
-            <Button
-              type="text"
-              size="small"
+            <ModernButton
+              variant="ghost"
+              size="sm"
               icon={<CheckOutlined />}
               onClick={() => markAsRead(notification.id)}
               style={{ color: colors.colorSuccess }}
@@ -262,9 +263,9 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
           </Tooltip>
         ),
         <Tooltip title={t("widgets.notifications.delete")}>
-          <Button
-            type="text"
-            size="small"
+          <ModernButton
+            variant="ghost"
+            size="sm"
             icon={<DeleteOutlined />}
             onClick={() => deleteNotification(notification.id)}
             style={{ color: colors.colorError }}

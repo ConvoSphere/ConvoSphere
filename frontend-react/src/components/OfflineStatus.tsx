@@ -1,5 +1,6 @@
 import React from "react";
-import { Badge, Card, List, Progress, Space, Typography, Button, Tooltip } from "antd";
+import { Badge, Card, List, Progress, Space, Typography, Tooltip } from "antd";
+import ModernButton from "./ModernButton";
 import { 
   WifiOutlined, 
   WifiOffOutlined, 
@@ -155,25 +156,25 @@ const OfflineStatus: React.FC = () => {
         {/* Action Buttons */}
         <Space>
           <Tooltip title="Clear cache">
-            <Button
-              size="small"
+            <ModernButton
+              size="sm"
               icon={<ClearOutlined />}
               onClick={handleClearCache}
               disabled={stats.cacheSize === 0}
             >
               Clear Cache
-            </Button>
+            </ModernButton>
           </Tooltip>
           <Tooltip title="Clear all offline data">
-            <Button
-              size="small"
-              danger
+            <ModernButton
+              size="sm"
+              variant="error"
               icon={<ClearOutlined />}
               onClick={handleClearQueue}
               disabled={stats.queuedActions === 0}
             >
               Clear Queue
-            </Button>
+            </ModernButton>
           </Tooltip>
         </Space>
 

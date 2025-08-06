@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Form, Input, Button, Space, ColorPicker } from "antd";
+import { Modal, Form, Input, Space, ColorPicker } from "antd";
+import ModernButton from "../ModernButton";
 
 interface EditTagModalProps {
   open: boolean;
@@ -44,10 +45,10 @@ const EditTagModal: React.FC<EditTagModalProps> = ({
       </Form.Item>
       <Form.Item>
         <Space>
-          <Button type="primary" htmlType="submit">
+          <ModernButton variant="primary" htmlType="submit">
             Update Tag
-          </Button>
-          <Button onClick={onCancel}>Cancel</Button>
+          </ModernButton>
+          <ModernButton variant="secondary" onClick={onCancel}>Cancel</ModernButton>
         </Space>
       </Form.Item>
     </Form>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, Button, Space, Tag, Avatar, Typography, Tooltip, Popconfirm, Badge } from 'antd';
+import { Table, Space, Tag, Avatar, Typography, Tooltip, Popconfirm, Badge } from 'antd';
+import ModernButton from '../ModernButton';
 import { 
   TeamOutlined, 
   EditOutlined, 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { List, Typography, Button, Tag, Input, message } from "antd";
+import { List, Typography, Tag, Input, message } from "antd";
+import ModernButton from "../ModernButton";
 import { useTranslation } from "react-i18next";
 import { BookOutlined, SearchOutlined } from "@ant-design/icons";
 import { useKnowledgeStore } from "../../store/knowledgeStore";
@@ -118,16 +119,16 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
             <Text strong style={{ fontSize: "12px" }}>
               {t("knowledge.selected_documents")} ({selectedDocuments.length})
             </Text>
-            <Button
-              type="text"
-              size="small"
+            <ModernButton
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 // TODO: Implement clear all
                 message.info("Clear all coming soon");
               }}
             >
               {t("common.clear_all")}
-            </Button>
+            </ModernButton>
           </div>
           <List
             size="small"
@@ -137,11 +138,10 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
                 key={doc.id}
                 style={{ padding: "4px 0" }}
                 actions={[
-                  <Button
+                  <ModernButton
                     key="remove"
-                    type="text"
-                    size="small"
-                    danger
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       // TODO: Implement remove
@@ -149,7 +149,7 @@ const KnowledgeContext: React.FC<KnowledgeContextProps> = ({
                     }}
                   >
                     {t("common.remove")}
-                  </Button>,
+                  </ModernButton>,
                 ]}
               >
                 <List.Item.Meta

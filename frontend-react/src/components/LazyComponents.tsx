@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import { Spin, Result, Button } from 'antd';
+import { Spin, Result } from 'antd';
+import ModernButton from './ModernButton';
 import { LoadingOutlined } from '@ant-design/icons';
 
 // Enhanced loading component with better UX
@@ -46,13 +47,13 @@ const EnhancedErrorBoundary: React.FC<{
         title="Component failed to load"
         subTitle={error?.message || 'An unexpected error occurred'}
         extra={[
-          <Button 
-            type="primary" 
+          <ModernButton 
+            variant="primary" 
             key="retry"
             onClick={() => window.location.reload()}
           >
             Retry
-          </Button>,
+          </ModernButton>,
         ]}
       />
     );
@@ -79,90 +80,90 @@ const createLazyComponent = (
 
 // Lazy-loaded components with optimized chunk splitting
 export const LazyHomePage = createLazyComponent(
-  () => import('../pages/HomePage'),
+  () => import('../pages/Home'),
   'Loading home page...'
 );
 
 export const LazyDashboardPage = createLazyComponent(
-  () => import('../pages/DashboardPage'),
+  () => import('../pages/Dashboard'),
   'Loading dashboard...'
 );
 
 export const LazyOverviewPage = createLazyComponent(
-  () => import('../pages/OverviewPage'),
+  () => import('../pages/Overview'),
   'Loading overview...'
 );
 
 export const LazyChatPage = createLazyComponent(
-  () => import('../pages/ChatPage'),
+  () => import('../pages/Chat'),
   'Loading chat...'
 );
 
 export const LazyAssistantsPage = createLazyComponent(
-  () => import('../pages/AssistantsPage'),
+  () => import('../pages/Assistants'),
   'Loading assistants...'
 );
 
 export const LazyKnowledgeBasePage = createLazyComponent(
-  () => import('../pages/KnowledgeBasePage'),
+  () => import('../pages/KnowledgeBase'),
   'Loading knowledge base...'
 );
 
 export const LazyToolsPage = createLazyComponent(
-  () => import('../pages/ToolsPage'),
+  () => import('../pages/Tools'),
   'Loading tools...'
 );
 
 export const LazySettingsPage = createLazyComponent(
-  () => import('../pages/SettingsPage'),
+  () => import('../pages/Settings'),
   'Loading settings...'
 );
 
 export const LazyAdminPage = createLazyComponent(
-  () => import('../pages/AdminPage'),
+  () => import('../pages/Admin'),
   'Loading admin panel...'
 );
 
 export const LazyProfilePage = createLazyComponent(
-  () => import('../pages/ProfilePage'),
+  () => import('../pages/Profile'),
   'Loading profile...'
 );
 
 export const LazyConversationsPage = createLazyComponent(
-  () => import('../pages/ConversationsPage'),
+  () => import('../pages/Conversations'),
   'Loading conversations...'
 );
 
 export const LazyMcpToolsPage = createLazyComponent(
-  () => import('../pages/McpToolsPage'),
+  () => import('../pages/McpTools'),
   'Loading MCP tools...'
 );
 
 export const LazySystemStatusPage = createLazyComponent(
-  () => import('../pages/SystemStatusPage'),
+  () => import('../pages/SystemStatus'),
   'Loading system status...'
 );
 
 export const LazyConversationIntelligencePage = createLazyComponent(
-  () => import('../pages/ConversationIntelligencePage'),
+  () => import('../pages/ConversationIntelligence'),
   'Loading conversation intelligence...'
 );
 
 export const LazyDomainGroupsPage = createLazyComponent(
-  () => import('../pages/DomainGroupsPage'),
+  () => import('../pages/DomainGroups'),
   'Loading domain groups...'
 );
 
 export const LazyExportBackupPage = createLazyComponent(
-  () => import('../pages/ExportBackupPage'),
+  () => import('../pages/ExportBackup'),
   'Loading export/backup...'
 );
 
 // Preload critical components for better UX
 export const preloadCriticalComponents = () => {
   // Preload dashboard and chat as they are most commonly used
-  const preloadDashboard = () => import('../pages/DashboardPage');
-  const preloadChat = () => import('../pages/ChatPage');
+  const preloadDashboard = () => import('../pages/Dashboard');
+  const preloadChat = () => import('../pages/Chat');
   
   // Preload after a short delay to not block initial load
   setTimeout(() => {

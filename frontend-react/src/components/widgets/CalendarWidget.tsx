@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import Calendar from "react-calendar";
 import { format, isSameDay, isToday, isYesterday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
-import { List, Tag, Typography, Button, Space, Modal, Form, Input, DatePicker, Select } from "antd";
+import { List, Tag, Typography, Space, Modal, Form, Input, DatePicker, Select } from "antd";
+import ModernButton from "../ModernButton";
 import {
   CalendarOutlined,
   PlusOutlined,

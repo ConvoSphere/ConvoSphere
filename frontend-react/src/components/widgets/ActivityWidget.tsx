@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { List, Avatar, Tag, Typography, Space, Button } from "antd";
+import { List, Avatar, Tag, Typography, Space } from "antd";
+import ModernButton from "../ModernButton";
 import {
   MessageOutlined,
   BookOutlined,
@@ -246,16 +247,16 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
         
         {activities.length > config.settings.maxItems && (
           <div style={{ textAlign: "center", marginTop: 12 }}>
-            <Button
-              type="link"
-              size="small"
+            <ModernButton
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 // TODO: Navigate to full activity page
                 console.log("View all activities");
               }}
             >
               {t("widgets.view_all_activities")}
-            </Button>
+            </ModernButton>
           </div>
         )}
       </div>

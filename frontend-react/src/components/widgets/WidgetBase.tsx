@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Card, Button, Space, Typography, Tooltip, Dropdown } from "antd";
+import { Card, Space, Typography, Tooltip, Dropdown } from "antd";
+import ModernButton from "../ModernButton";
 import {
   MoreOutlined,
   ReloadOutlined,
@@ -168,9 +169,9 @@ const WidgetBase: React.FC<WidgetProps> = ({
           trigger={["click"]}
           placement="bottomRight"
         >
-          <Button
-            type="text"
-            size="small"
+          <ModernButton
+            variant="ghost"
+            size="sm"
             icon={<MoreOutlined />}
             style={{ color: colors.colorTextSecondary }}
           />

@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Space, Button } from "antd";
+import { Card, Space } from "antd";
+import ModernButton from "../ModernButton";
 import {
   HistoryOutlined,
   ExportOutlined,
@@ -22,38 +23,38 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 }) => (
   <Card size="small" title="Quick Actions" style={{ marginBottom: "16px" }}>
     <Space direction="vertical" style={{ width: "100%" }}>
-      <Button
-        type="text"
+      <ModernButton
+        variant="ghost"
         icon={<HistoryOutlined />}
         onClick={onShowHistory}
         style={{ textAlign: "left", width: "100%" }}
       >
         View Conversation History
-      </Button>
-      <Button
-        type="text"
+      </ModernButton>
+      <ModernButton
+        variant="ghost"
         icon={<ExportOutlined />}
         onClick={onExportConversation}
         style={{ textAlign: "left", width: "100%" }}
       >
         Export Conversation
-      </Button>
-      <Button
-        type="text"
+      </ModernButton>
+      <ModernButton
+        variant="ghost"
         icon={<ShareAltOutlined />}
         onClick={onShareConversation}
         style={{ textAlign: "left", width: "100%" }}
       >
         Share Conversation
-      </Button>
-      <Button
-        type="text"
+      </ModernButton>
+      <ModernButton
+        variant="ghost"
         icon={<SettingOutlined />}
         onClick={onShowSettings}
         style={{ textAlign: "left", width: "100%" }}
       >
         Chat Settings
-      </Button>
+      </ModernButton>
     </Space>
   </Card>
 );

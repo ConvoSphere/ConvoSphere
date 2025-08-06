@@ -1,5 +1,6 @@
 import React from "react";
-import { Dropdown, Avatar, Typography, Button, Space, Divider } from "antd";
+import { Dropdown, Avatar, Typography, Space, Divider } from "antd";
+import ModernButton from "./ModernButton";
 import { UserOutlined, SettingOutlined, LogoutOutlined, DashboardOutlined, TeamOutlined, ProfileOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
