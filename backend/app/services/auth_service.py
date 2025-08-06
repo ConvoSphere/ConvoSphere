@@ -19,7 +19,9 @@ from backend.app.services.user_service import UserService
 class AuthService:
     """Service for authentication operations."""
 
-    def __init__(self, db_session):
+from typing import Any
+
+    def __init__(self, db_session: Any) -> None:
         """Initialize AuthService with database session."""
         self.db_session = db_session
         self.user_service = UserService(db_session)

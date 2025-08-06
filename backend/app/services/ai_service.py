@@ -89,7 +89,7 @@ class AIResponse:
 class AIService:
     """AI service for managing multiple providers and models."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize AI service."""
         if not LITELLM_AVAILABLE:
             logger.error("LiteLLM not available. AI service will be disabled.")

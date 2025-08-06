@@ -44,7 +44,9 @@ USER_NOT_FOUND_TEMPLATE = "User with ID {} not found"
 class UserService:
     """Service for managing users with enterprise features."""
 
-    def __init__(self, db=None):
+from typing import Any
+
+    def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

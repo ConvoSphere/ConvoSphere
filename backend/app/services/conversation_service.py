@@ -23,7 +23,7 @@ from backend.app.schemas.conversation import (
 class ConversationService:
     """Service for managing conversations."""
 
-    def __init__(self, db=None):
+    def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()
 
     def create_conversation(
