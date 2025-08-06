@@ -13,8 +13,8 @@ A modern, full-stack AI assistant platform built with **FastAPI** (Backend) and 
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 [![Documentation](https://img.shields.io/badge/Documentation-MkDocs-blue)](https://convosphere.github.io/convosphere/)
-[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/convosphere/convosphere/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/convosphere/convosphere/actions)
+[![Tests](https://img.shields.io/badge/Tests-Passing-green)](https://github.com/ConvoSphere/ConvoSphere/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-90%25+-green)](https://github.com/ConvoSphere/ConvoSphere/actions)
 
 </div>
 
@@ -24,7 +24,7 @@ Get up and running in under 10 minutes:
 
 ```bash
 # Clone the repository
-git clone https://github.com/convosphere/convosphere.git
+git clone https://github.com/ConvoSphere/ConvoSphere.git
 cd convosphere
 
 # Quick setup with Docker (recommended)
@@ -36,7 +36,7 @@ make install
 make dev
 ```
 
-**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides, including [SSO Setup](docs/SSO_SETUP.md) and [Knowledge Base Settings](docs/KNOWLEDGE_BASE_SETTINGS.md).
+**Ready to dive deeper?** Check out our [📚 Documentation](docs/index.md) for detailed guides, including [SSO Setup](docs/SSO_SETUP.md), [Knowledge Base Settings](docs/KNOWLEDGE_BASE_SETTINGS.md), and [Security Setup](docs/security/setup.md).
 
 ## ✨ Key Features
 
@@ -292,7 +292,16 @@ npm run build
 serve -s build -l 8081
 ```
 
-## 📚 API Documentation
+## 📚 Documentation
+
+### Documentation Structure
+Our documentation is organized into several categories:
+
+- **📖 User Documentation**: User guides, quick start, and FAQ
+- **🔧 Developer Documentation**: Architecture, API reference, and development guides
+- **🔒 Security Documentation**: Security setup and best practices
+- **📊 Reports**: Code quality reports, development progress, and analysis
+- **📋 Changelog**: Version history and release notes
 
 ### Interactive API Docs
 - **Swagger UI**: http://localhost:8000/docs
@@ -390,7 +399,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue on GitHub
-- Check the [documentation](https://your-org.github.io/ai-chat-app/)
+- Check the [documentation](https://convosphere.github.io/convosphere/)
 - Review the troubleshooting section
 - Contact the development team
 
