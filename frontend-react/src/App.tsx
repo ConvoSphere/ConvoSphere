@@ -462,7 +462,7 @@ const App: React.FC = () => {
                   }
                 />
                 <Route
-                  path="/system-status"
+                  path="/admin/system-status"
                   element={
                     <ProtectedRoute>
                       <Layout>
