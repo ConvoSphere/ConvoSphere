@@ -6,8 +6,8 @@ Get the AI Chat Application running in under 5 minutes.
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-org/ai-chat-app.git
-cd ai-chat-app
+git clone https://github.com/ConvoSphere/ConvoSphere.git
+cd ConvoSphere
 ```
 
 ### 2. Start Application
@@ -18,7 +18,7 @@ docker-compose up --build
 ### 3. Open Browser
 → [http://localhost:8081](http://localhost:8081)
 
-> **⚠️ Beta Version**: This is currently Beta 0.1.0. Some features may be incomplete or subject to change.
+> **⚠️ Beta Version**: This is currently version 0.1.0-beta. Some features may be incomplete or subject to change.
 
 **That's it!** 🎉
 
@@ -108,5 +108,5 @@ docker-compose up --build
 
 ## 🆘 Need Help?
 
-- **GitHub Issues**: [Report Bug](https://github.com/your-org/ai-chat-app/issues)
+- **GitHub Issues**: [Report Bug](https://github.com/ConvoSphere/ConvoSphere/issues)
 - **Documentation**: [Complete Guides](index.md)

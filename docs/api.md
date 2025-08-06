@@ -9,6 +9,33 @@ The AI Assistant Platform provides a comprehensive REST API for managing assista
 - Development: `http://localhost:8000/api/v1`
 - Production: `https://your-domain.com/api/v1`
 
+## API Endpoints Overview
+
+The API is organized into the following main categories:
+
+- **Authentication** (`/auth`) - User authentication and SSO
+- **User Management** (`/users`) - User profiles and administration
+- **Assistant Management** (`/assistants`) - AI assistant configuration
+- **Agent Management** (`/agents`) - Agent operations
+- **Conversations** (`/conversations`) - Conversation management
+- **Chat** (`/chat`) - Real-time messaging
+- **WebSocket** (`/ws`) - Real-time communication
+- **Knowledge Base** (`/knowledge`) - Document management
+- **Tools** (`/tools`) - Tool management
+- **MCP Tools** (`/mcp`) - Model Context Protocol tools
+- **AI** (`/ai`) - AI service operations
+- **RAG** (`/rag`) - Retrieval-Augmented Generation
+- **Search** (`/search`) - Search functionality
+- **Conversation Intelligence** (`/intelligence`) - Analytics and insights
+- **Domain Groups** (`/domain-groups`) - Enterprise user management
+- **Audit** (`/audit`) - Audit logging
+- **Health** (`/health`) - System health monitoring
+- **Hybrid Mode** (`/hybrid-mode`) - Hybrid AI operations
+- **Monitoring** (`/monitoring`) - System monitoring
+- **Logs** (`/logs`) - Log management
+- **Statistics** (`/statistics`) - Dashboard statistics
+- **Storage** (`/storage`) - File storage operations
+
 ## Authentication
 
 All API endpoints require authentication using JWT tokens.
