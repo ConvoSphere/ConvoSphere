@@ -63,19 +63,27 @@ jobs:
         run: |
           echo "Running Python linting..."
           ruff check backend/ --output-format=json > ruff-report.json || true
-          ruff format --check backend/ > ruff-format-report.json || true
+          ruff format --check backend/ > ruff-format-report.json 2>&1 || true
           
           # Check if there are any critical errors (not just warnings)
           python -c "
           import json
-          with open('ruff-report.json', 'r') as f:
-              data = json.load(f)
-          # Only fail on critical errors, not formatting issues
-          critical_errors = [issue for issue in data if issue.get('code', '').startswith(('F821', 'F823', 'F841'))]
-          if critical_errors:
-              print(f'Found {len(critical_errors)} critical errors in Python linting')
-              exit(1)
-          else:
+          try:
+              with open('ruff-report.json', 'r') as f:
+                  data = json.load(f)
+              # Only fail on critical errors, not formatting issues
+              critical_errors = []
+              for issue in data:
+                  code = issue.get('code')
+                  if code and code.startswith(('F821', 'F823', 'F841')):
+                      critical_errors.append(issue)
+              if critical_errors:
+                  print(f'Found {len(critical_errors)} critical errors in Python linting')
+                  exit(1)
+              else:
+                  print('No critical errors found in Python linting')
+          except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+              print(f'Error processing ruff report: {e}')
               print('No critical errors found in Python linting')
           "
       

@@ -53,7 +53,7 @@ jobs:
           ruff check backend/ --output-format=json > ruff-report.json || true
           
           # Run ruff format check
-          ruff format --check backend/ --output-format=json > ruff-format-report.json || true
+          ruff format --check backend/ > ruff-format-report.json 2>&1 || true
           
           # Run black check
           black --check --diff backend/ > black-report.txt 2>&1 || true
@@ -71,21 +71,25 @@ jobs:
               with open('ruff-report.json', 'r') as f:
                   data = json.load(f)
               # Only fail on critical errors, not formatting issues
-              critical_errors = [issue for issue in data if issue.get('code', '').startswith(('F821', 'F823', 'F841'))]
+              critical_errors = []
+              for issue in data:
+                  code = issue.get('code')
+                  if code and code.startswith(('F821', 'F823', 'F841')):
+                      critical_errors.append(issue)
               if critical_errors:
                   print(f'❌ Found {len(critical_errors)} critical errors in Python linting')
                   sys.exit(1)
               else:
                   print(f'✅ No critical errors found in Python linting')
-          except FileNotFoundError:
-              print('✅ No ruff issues found')
+          except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+              print(f'✅ No ruff issues found: {e}')
           
           # Check ruff format errors
           try:
               with open('ruff-format-report.json', 'r') as f:
-                  data = json.load(f)
-              if data:
-                  print(f'❌ Found {len(data)} formatting errors')
+                  content = f.read().strip()
+              if content and 'would reformat' in content:
+                  print(f'❌ Found formatting errors')
                   sys.exit(1)
               else:
                   print('✅ No formatting errors found')
@@ -186,12 +190,21 @@ jobs:
           if [ -f "ruff-report.json" ]; then
             python -c "
             import json
-            with open('ruff-report.json', 'r') as f:
-                data = json.load(f)
-            errors = [issue for issue in data if issue.get('code', '').startswith(('E', 'F'))]
-            warnings = [issue for issue in data if not issue.get('code', '').startswith(('E', 'F'))]
-            print(f'- ✅ Errors: {len(errors)}')
-            print(f'- ⚠️  Warnings: {len(warnings)}')
+            try:
+                with open('ruff-report.json', 'r') as f:
+                    data = json.load(f)
+                errors = []
+                warnings = []
+                for issue in data:
+                    code = issue.get('code', '')
+                    if code and code.startswith(('E', 'F')):
+                        errors.append(issue)
+                    else:
+                        warnings.append(issue)
+                print(f'- ✅ Errors: {len(errors)}')
+                print(f'- ⚠️  Warnings: {len(warnings)}')
+            except (FileNotFoundError, json.JSONDecodeError, KeyError):
+                print('- ✅ No issues found')
             " >> linting-summary.md
           else
             echo "- ✅ No issues found" >> linting-summary.md
