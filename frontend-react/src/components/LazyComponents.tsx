@@ -1,69 +1,175 @@
-import React, { Suspense, lazy } from "react";
-import { Spin } from "antd";
-import { useThemeStore } from "../store/themeStore";
+import React, { Suspense, lazy } from 'react';
+import { Spin, Result, Button } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
-// Loading Component mit Theme-Aware Styling
-const LoadingSpinner: React.FC<{ size?: "small" | "default" | "large" }> = ({
-  size = "default",
-}) => {
-  const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors();
+// Enhanced loading component with better UX
+const EnhancedLoadingSpinner: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => (
+  <div style={{ 
+    display: 'flex', 
+    flexDirection: 'column',
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '200px',
+    gap: '16px'
+  }}>
+    <Spin 
+      indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} 
+      size="large" 
+    />
+    <div style={{ color: '#666', fontSize: '14px' }}>{message}</div>
+  </div>
+);
 
-  const spinnerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "40px",
-    color: colors.colorTextSecondary,
-  };
+// Enhanced error boundary component
+const EnhancedErrorBoundary: React.FC<{ 
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}> = ({ children, fallback }) => {
+  const [hasError, setHasError] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
 
-  return (
-    <div style={spinnerStyle}>
-      <Spin size={size} />
-    </div>
-  );
+  React.useEffect(() => {
+    const handleError = (error: Error) => {
+      console.error('Lazy component error:', error);
+      setError(error);
+      setHasError(true);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (hasError) {
+    return fallback || (
+      <Result
+        status="error"
+        title="Component failed to load"
+        subTitle={error?.message || 'An unexpected error occurred'}
+        extra={[
+          <Button 
+            type="primary" 
+            key="retry"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>,
+        ]}
+      />
+    );
+  }
+
+  return <>{children}</>;
 };
 
-// Lazy-Loaded Page Components
-export const LazyHome = lazy(() => import("../pages/Home"));
-export const LazyDashboard = lazy(() => import("../pages/Dashboard"));
-export const LazyOverview = lazy(() => import("../pages/Overview"));
-export const LazyChat = lazy(() => import("../pages/Chat"));
-export const LazyAssistants = lazy(() => import("../pages/Assistants"));
-export const LazyKnowledgeBase = lazy(() => import("../pages/KnowledgeBase"));
-export const LazyTools = lazy(() => import("../pages/Tools"));
-export const LazySettings = lazy(() => import("../pages/Settings"));
-export const LazyAdmin = lazy(() => import("../pages/Admin"));
-export const LazyLogin = lazy(() => import("../pages/Login"));
-export const LazyRegister = lazy(() => import("../pages/Register"));
-export const LazyProfile = lazy(() => import("../pages/Profile"));
-export const LazyConversations = lazy(() => import("../pages/Conversations"));
-export const LazyMcpTools = lazy(() => import("../pages/McpTools"));
-export const LazySystemStatus = lazy(() => import("../pages/SystemStatus"));
-export const LazyConversationIntelligence = lazy(() => import("../pages/ConversationIntelligence"));
-export const LazyDomainGroups = lazy(() => import("../pages/DomainGroups"));
-export const LazyExportBackup = lazy(() => import("../pages/ExportBackup"));
+// Wrapper for lazy components with enhanced error handling
+const createLazyComponent = (
+  importFunc: () => Promise<{ default: React.ComponentType<any> }>,
+  loadingMessage?: string
+) => {
+  const LazyComponent = lazy(importFunc);
+  
+  return React.forwardRef<any, any>((props, ref) => (
+    <EnhancedErrorBoundary>
+      <Suspense fallback={<EnhancedLoadingSpinner message={loadingMessage} />}>
+        <LazyComponent {...props} ref={ref} />
+      </Suspense>
+    </EnhancedErrorBoundary>
+  ));
+};
 
-// Lazy-Loaded Feature Components
-export const LazyVirtualizedChat = lazy(() => import("./VirtualizedChat"));
-// IconSystem is not a component; use Icon from './icons' where needed
+// Lazy-loaded components with optimized chunk splitting
+export const LazyHomePage = createLazyComponent(
+  () => import('../pages/HomePage'),
+  'Loading home page...'
+);
 
-// Page-specific Lazy Components - Direct exports without additional Suspense wrapper
-export const LazyHomePage: React.FC = () => <LazyHome />;
-export const LazyDashboardPage: React.FC = () => <LazyDashboard />;
-export const LazyOverviewPage: React.FC = () => <LazyOverview />;
-export const LazyChatPage: React.FC = () => <LazyChat />;
-export const LazyAssistantsPage: React.FC = () => <LazyAssistants />;
-export const LazyKnowledgeBasePage: React.FC = () => <LazyKnowledgeBase />;
-export const LazyToolsPage: React.FC = () => <LazyTools />;
-export const LazySettingsPage: React.FC = () => <LazySettings />;
-export const LazyAdminPage: React.FC = () => <LazyAdmin />;
-export const LazyLoginPage: React.FC = () => <LazyLogin />;
-export const LazyRegisterPage: React.FC = () => <LazyRegister />;
-export const LazyProfilePage: React.FC = () => <LazyProfile />;
-export const LazyConversationsPage: React.FC = () => <LazyConversations />;
-export const LazyMcpToolsPage: React.FC = () => <LazyMcpTools />;
-export const LazySystemStatusPage: React.FC = () => <LazySystemStatus />;
-export const LazyConversationIntelligencePage: React.FC = () => <LazyConversationIntelligence />;
-export const LazyDomainGroupsPage: React.FC = () => <LazyDomainGroups />;
-export const LazyExportBackupPage: React.FC = () => <LazyExportBackup />;
+export const LazyDashboardPage = createLazyComponent(
+  () => import('../pages/DashboardPage'),
+  'Loading dashboard...'
+);
+
+export const LazyOverviewPage = createLazyComponent(
+  () => import('../pages/OverviewPage'),
+  'Loading overview...'
+);
+
+export const LazyChatPage = createLazyComponent(
+  () => import('../pages/ChatPage'),
+  'Loading chat...'
+);
+
+export const LazyAssistantsPage = createLazyComponent(
+  () => import('../pages/AssistantsPage'),
+  'Loading assistants...'
+);
+
+export const LazyKnowledgeBasePage = createLazyComponent(
+  () => import('../pages/KnowledgeBasePage'),
+  'Loading knowledge base...'
+);
+
+export const LazyToolsPage = createLazyComponent(
+  () => import('../pages/ToolsPage'),
+  'Loading tools...'
+);
+
+export const LazySettingsPage = createLazyComponent(
+  () => import('../pages/SettingsPage'),
+  'Loading settings...'
+);
+
+export const LazyAdminPage = createLazyComponent(
+  () => import('../pages/AdminPage'),
+  'Loading admin panel...'
+);
+
+export const LazyProfilePage = createLazyComponent(
+  () => import('../pages/ProfilePage'),
+  'Loading profile...'
+);
+
+export const LazyConversationsPage = createLazyComponent(
+  () => import('../pages/ConversationsPage'),
+  'Loading conversations...'
+);
+
+export const LazyMcpToolsPage = createLazyComponent(
+  () => import('../pages/McpToolsPage'),
+  'Loading MCP tools...'
+);
+
+export const LazySystemStatusPage = createLazyComponent(
+  () => import('../pages/SystemStatusPage'),
+  'Loading system status...'
+);
+
+export const LazyConversationIntelligencePage = createLazyComponent(
+  () => import('../pages/ConversationIntelligencePage'),
+  'Loading conversation intelligence...'
+);
+
+export const LazyDomainGroupsPage = createLazyComponent(
+  () => import('../pages/DomainGroupsPage'),
+  'Loading domain groups...'
+);
+
+export const LazyExportBackupPage = createLazyComponent(
+  () => import('../pages/ExportBackupPage'),
+  'Loading export/backup...'
+);
+
+// Preload critical components for better UX
+export const preloadCriticalComponents = () => {
+  // Preload dashboard and chat as they are most commonly used
+  const preloadDashboard = () => import('../pages/DashboardPage');
+  const preloadChat = () => import('../pages/ChatPage');
+  
+  // Preload after a short delay to not block initial load
+  setTimeout(() => {
+    preloadDashboard();
+    preloadChat();
+  }, 2000);
+};
+
+// Export the enhanced loading component for use elsewhere
+export { EnhancedLoadingSpinner, EnhancedErrorBoundary };

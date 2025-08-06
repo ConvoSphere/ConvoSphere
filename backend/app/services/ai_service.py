@@ -114,12 +114,12 @@ class AIService:
             # Configure LiteLLM
             litellm.set_verbose = get_settings().debug
 
-            if get_settings().litellm_proxy_host:
+            if get_settings().ai.litellm_proxy_host:
                 import os
 
-                os.environ["LITELLM_PROXY_HOST"] = get_settings().litellm_proxy_host
+                os.environ["LITELLM_PROXY_HOST"] = get_settings().ai.litellm_proxy_host
                 logger.info(
-                    f"LiteLLM proxy host configured: {get_settings().litellm_proxy_host}",
+                    f"LiteLLM proxy host configured: {get_settings().ai.litellm_proxy_host}",
                 )
 
             logger.info("LiteLLM configured successfully")
@@ -139,38 +139,38 @@ class AIService:
             "openai": {
                 "name": "OpenAI",
                 "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-                "enabled": bool(get_settings().openai_api_key),
-                "api_key": get_settings().openai_api_key,
+                "enabled": bool(get_settings().ai.openai_api_key),
+                "api_key": get_settings().ai.openai_api_key,
             },
             "anthropic": {
                 "name": "Anthropic",
                 "models": ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
-                "enabled": bool(get_settings().anthropic_api_key),
-                "api_key": get_settings().anthropic_api_key,
+                "enabled": bool(get_settings().ai.anthropic_api_key),
+                "api_key": get_settings().ai.anthropic_api_key,
             },
             "google": {
                 "name": "Google",
                 "models": ["gemini-pro", "gemini-pro-vision"],
-                "enabled": bool(get_settings().google_api_key),
-                "api_key": get_settings().google_api_key,
+                "enabled": bool(get_settings().ai.google_api_key),
+                "api_key": get_settings().ai.google_api_key,
             },
         }
 
         # Set environment variables for LiteLLM
-        if get_settings().openai_api_key:
+        if get_settings().ai.openai_api_key:
             import os
 
-            os.environ["OPENAI_API_KEY"] = get_settings().openai_api_key
+            os.environ["OPENAI_API_KEY"] = get_settings().ai.openai_api_key
 
-        if get_settings().anthropic_api_key:
+        if get_settings().ai.anthropic_api_key:
             import os
 
-            os.environ["ANTHROPIC_API_KEY"] = get_settings().anthropic_api_key
+            os.environ["ANTHROPIC_API_KEY"] = get_settings().ai.anthropic_api_key
 
-        if get_settings().google_api_key:
+        if get_settings().ai.google_api_key:
             import os
 
-            os.environ["GOOGLE_API_KEY"] = get_settings().google_api_key
+            os.environ["GOOGLE_API_KEY"] = get_settings().ai.google_api_key
 
     def _load_models(self):
         """Load available models."""

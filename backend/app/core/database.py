@@ -17,10 +17,10 @@ from .config import get_settings
 
 # Create database engine
 engine = create_engine(
-    get_settings().database_url,
+    get_settings().database.database_url,
     poolclass=QueuePool,
-    pool_size=get_settings().database_pool_size,
-    max_overflow=get_settings().database_max_overflow,
+    pool_size=get_settings().database.database_pool_size,
+    max_overflow=get_settings().database.database_max_overflow,
     pool_pre_ping=True,
     pool_recycle=3600,  # Recycle connections after 1 hour
     echo=get_settings().debug,  # Log SQL queries in debug mode

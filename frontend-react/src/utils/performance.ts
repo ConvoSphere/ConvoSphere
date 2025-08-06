@@ -1,323 +1,321 @@
-// Performance Monitoring Utilities
+import React from 'react';
+
+/**
+ * Frontend Performance Monitoring Utility
+ * 
+ * This module provides comprehensive performance monitoring for the React application,
+ * including bundle analysis, runtime performance tracking, and user experience metrics.
+ */
 
 export interface PerformanceMetrics {
-  fcp: number; // First Contentful Paint
-  lcp: number; // Largest Contentful Paint
-  fid: number; // First Input Delay
-  cls: number; // Cumulative Layout Shift
-  ttfb: number; // Time to First Byte
-  domLoad: number; // DOM Content Loaded
-  windowLoad: number; // Window Load
-  jsHeapSize: number; // JavaScript Heap Size
-  jsHeapUsed: number; // JavaScript Heap Used
+  // Navigation timing
+  navigationStart: number;
+  loadEventEnd: number;
+  domContentLoadedEventEnd: number;
+  
+  // Resource loading
+  resourceCount: number;
+  resourceLoadTime: number;
+  
+  // React performance
+  componentRenderTime: number;
+  bundleSize: number;
+  
+  // User experience
+  firstContentfulPaint: number;
+  largestContentfulPaint: number;
+  cumulativeLayoutShift: number;
+  
+  // Memory usage
+  memoryUsage: number;
+  
+  // Custom metrics
+  customMetrics: Record<string, number>;
 }
 
-export interface NavigationTiming {
-  navigationStart: number;
-  fetchStart: number;
-  domainLookupStart: number;
-  domainLookupEnd: number;
-  connectStart: number;
-  connectEnd: number;
-  requestStart: number;
-  responseStart: number;
-  responseEnd: number;
-  domLoading: number;
-  domInteractive: number;
-  domContentLoadedEventStart: number;
-  domContentLoadedEventEnd: number;
-  domComplete: number;
-  loadEventStart: number;
-  loadEventEnd: number;
+export interface PerformanceObserver {
+  onMetricUpdate: (metrics: Partial<PerformanceMetrics>) => void;
+  onError: (error: Error) => void;
 }
 
 class PerformanceMonitor {
-  private metrics: Partial<PerformanceMetrics> = {};
   private observers: PerformanceObserver[] = [];
-  private isInitialized = false;
+  private metrics: PerformanceMetrics;
+  private isMonitoring = false;
+  private performanceObserver: PerformanceObserver | null = null;
+  private resourceObserver: PerformanceObserver | null = null;
+  private paintObserver: PerformanceObserver | null = null;
+  private layoutShiftObserver: PerformanceObserver | null = null;
 
-  init() {
-    if (this.isInitialized) return;
-
-    this.setupWebVitals();
-    this.setupMemoryMonitoring();
-    this.setupNavigationTiming();
-    this.setupErrorTracking();
-
-    this.isInitialized = true;
-    console.log("Performance Monitor initialized");
+  constructor() {
+    this.metrics = this.initializeMetrics();
   }
 
-  private setupWebVitals() {
-    // First Contentful Paint
-    if ("PerformanceObserver" in window) {
-      try {
-        const fcpObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          const fcpEntry = entries.find(
-            (entry) => entry.name === "first-contentful-paint",
-          );
-          if (fcpEntry) {
-            this.metrics.fcp = fcpEntry.startTime;
-            this.logMetric("FCP", fcpEntry.startTime);
-          }
-        });
-        fcpObserver.observe({ entryTypes: ["paint"] });
-        this.observers.push(fcpObserver);
-      } catch (e) {
-        console.warn("FCP observer failed:", e);
-      }
-
-      // Largest Contentful Paint
-      try {
-        const lcpObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          const lastEntry = entries[entries.length - 1];
-          if (lastEntry) {
-            this.metrics.lcp = lastEntry.startTime;
-            this.logMetric("LCP", lastEntry.startTime);
-          }
-        });
-        lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
-        this.observers.push(lcpObserver);
-      } catch (e) {
-        console.warn("LCP observer failed:", e);
-      }
-
-      // First Input Delay
-      try {
-        const fidObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          entries.forEach((entry) => {
-            const fidEntry = entry as any;
-            this.metrics.fid = fidEntry.processingStart - fidEntry.startTime;
-            this.logMetric("FID", this.metrics.fid);
-          });
-        });
-        fidObserver.observe({ entryTypes: ["first-input"] });
-        this.observers.push(fidObserver);
-      } catch (e) {
-        console.warn("FID observer failed:", e);
-      }
-
-      // Cumulative Layout Shift
-      try {
-        const clsObserver = new PerformanceObserver((list) => {
-          let clsValue = 0;
-          const entries = list.getEntries();
-          entries.forEach((entry) => {
-            const clsEntry = entry as any;
-            if (!clsEntry.hadRecentInput) {
-              clsValue += clsEntry.value;
-            }
-          });
-          this.metrics.cls = clsValue;
-          this.logMetric("CLS", clsValue);
-        });
-        clsObserver.observe({ entryTypes: ["layout-shift"] });
-        this.observers.push(clsObserver);
-      } catch (e) {
-        console.warn("CLS observer failed:", e);
-      }
-    }
-  }
-
-  private setupMemoryMonitoring() {
-    if ("memory" in performance) {
-      const updateMemoryMetrics = () => {
-        const memory = (performance as any).memory;
-        this.metrics.jsHeapSize = memory.usedJSHeapSize;
-        this.metrics.jsHeapUsed = memory.usedJSHeapSize;
-
-        // Log memory usage every 30 seconds
-        this.logMetric("Memory", memory.usedJSHeapSize / 1024 / 1024, "MB");
-      };
-
-      updateMemoryMetrics();
-      setInterval(updateMemoryMetrics, 30000);
-    }
-  }
-
-  private setupNavigationTiming() {
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        const navigation = performance.getEntriesByType(
-          "navigation",
-        )[0] as PerformanceNavigationTiming;
-        if (navigation) {
-          this.metrics.ttfb =
-            navigation.responseStart - navigation.requestStart;
-          this.metrics.domLoad =
-            navigation.domContentLoadedEventEnd -
-            (navigation as any).navigationStart;
-          this.metrics.windowLoad =
-            navigation.loadEventEnd - (navigation as any).navigationStart;
-
-          this.logMetric("TTFB", this.metrics.ttfb);
-          this.logMetric("DOM Load", this.metrics.domLoad);
-          this.logMetric("Window Load", this.metrics.windowLoad);
-        }
-      }, 0);
-    });
-  }
-
-  private setupErrorTracking() {
-    window.addEventListener("error", (event) => {
-      this.logError("JavaScript Error", {
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        error: event.error?.stack,
-      });
-    });
-
-    window.addEventListener("unhandledrejection", (event) => {
-      this.logError("Unhandled Promise Rejection", {
-        reason: event.reason,
-        promise: event.promise,
-      });
-    });
-  }
-
-  private logMetric(name: string, value: number, unit = "ms") {
-    const metric = {
-      name,
-      value,
-      unit,
-      timestamp: Date.now(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
+  private initializeMetrics(): PerformanceMetrics {
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    
+    return {
+      navigationStart: navigation?.startTime || 0,
+      loadEventEnd: navigation?.loadEventEnd || 0,
+      domContentLoadedEventEnd: navigation?.domContentLoadedEventEnd || 0,
+      resourceCount: 0,
+      resourceLoadTime: 0,
+      componentRenderTime: 0,
+      bundleSize: 0,
+      firstContentfulPaint: 0,
+      largestContentfulPaint: 0,
+      cumulativeLayoutShift: 0,
+      memoryUsage: 0,
+      customMetrics: {},
     };
+  }
 
-    console.log(`📊 ${name}: ${value}${unit}`);
+  /**
+   * Start performance monitoring
+   */
+  start(): void {
+    if (this.isMonitoring) return;
+    
+    this.isMonitoring = true;
+    this.setupObservers();
+    this.trackBundleSize();
+    this.trackMemoryUsage();
+    
+    console.log('Performance monitoring started');
+  }
 
-    // Store in localStorage for debugging
-    try {
-      const existingMetrics = JSON.parse(
-        localStorage.getItem("app-metrics") || "[]",
-      );
-      existingMetrics.push(metric);
-      localStorage.setItem(
-        "app-metrics",
-        JSON.stringify(existingMetrics.slice(-50)),
-      ); // Keep last 50 metrics
-    } catch (e) {
-      console.warn("Could not save metric to localStorage:", e);
+  /**
+   * Stop performance monitoring
+   */
+  stop(): void {
+    if (!this.isMonitoring) return;
+    
+    this.isMonitoring = false;
+    this.disconnectObservers();
+    
+    console.log('Performance monitoring stopped');
+  }
+
+  /**
+   * Add performance observer
+   */
+  addObserver(observer: PerformanceObserver): void {
+    this.observers.push(observer);
+  }
+
+  /**
+   * Remove performance observer
+   */
+  removeObserver(observer: PerformanceObserver): void {
+    const index = this.observers.indexOf(observer);
+    if (index > -1) {
+      this.observers.splice(index, 1);
     }
-
-    // Send to analytics service
-    this.sendToAnalytics("metric", metric);
   }
 
-  // Make logError public
-  logError(type: string, data: any) {
-    const error = {
-      type,
-      data,
-      timestamp: Date.now(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-    };
-
-    console.error(`🚨 ${type}:`, data);
-
-    // Send to analytics service
-    this.sendToAnalytics("error", error);
-  }
-
-  private sendToAnalytics(type: "metric" | "error", data: any) {
-    // In a real app, you would send this to your analytics service
-    // Example: Google Analytics, Mixpanel, etc.
-
-    if (process.env.NODE_ENV === "development") {
-      console.log(`📡 Sending ${type} to analytics:`, data);
-    }
-
-    // Simulate sending to analytics
-    setTimeout(() => {
-      // This would be your actual analytics call
-      // gtag('event', 'performance_metric', data);
-    }, 0);
-  }
-
-  getMetrics(): Partial<PerformanceMetrics> {
+  /**
+   * Get current performance metrics
+   */
+  getMetrics(): PerformanceMetrics {
     return { ...this.metrics };
   }
 
-  getNavigationTiming(): NavigationTiming | null {
-    const navigation = performance.getEntriesByType(
-      "navigation",
-    )[0] as PerformanceNavigationTiming;
-    if (!navigation) return null;
-
-    return {
-      navigationStart: (navigation as any).navigationStart,
-      fetchStart: navigation.fetchStart,
-      domainLookupStart: navigation.domainLookupStart,
-      domainLookupEnd: navigation.domainLookupEnd,
-      connectStart: navigation.connectStart,
-      connectEnd: navigation.connectEnd,
-      requestStart: navigation.requestStart,
-      responseStart: navigation.responseStart,
-      responseEnd: navigation.responseEnd,
-      domLoading: (navigation as any).domLoading,
-      domInteractive: navigation.domInteractive,
-      domContentLoadedEventStart: navigation.domContentLoadedEventStart,
-      domContentLoadedEventEnd: navigation.domContentLoadedEventEnd,
-      domComplete: navigation.domComplete,
-      loadEventStart: navigation.loadEventStart,
-      loadEventEnd: navigation.loadEventEnd,
-    };
+  /**
+   * Add custom metric
+   */
+  addCustomMetric(name: string, value: number): void {
+    this.metrics.customMetrics[name] = value;
+    this.notifyObservers({ customMetrics: this.metrics.customMetrics });
   }
 
-  measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    const start = performance.now();
-    return fn().finally(() => {
-      const duration = performance.now() - start;
-      this.logMetric(name, duration);
+  /**
+   * Track component render time
+   */
+  trackComponentRender(componentName: string, renderTime: number): void {
+    this.metrics.componentRenderTime = renderTime;
+    this.addCustomMetric(`${componentName}_render_time`, renderTime);
+  }
+
+  /**
+   * Setup performance observers
+   */
+  private setupObservers(): void {
+    // Navigation timing
+    if ('PerformanceObserver' in window) {
+      // Resource timing
+      this.resourceObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        this.metrics.resourceCount = entries.length;
+        this.metrics.resourceLoadTime = entries.reduce((total, entry) => {
+          return total + (entry.duration || 0);
+        }, 0);
+        this.notifyObservers({
+          resourceCount: this.metrics.resourceCount,
+          resourceLoadTime: this.metrics.resourceLoadTime,
+        });
+      });
+      this.resourceObserver.observe({ entryTypes: ['resource'] });
+
+      // Paint timing
+      this.paintObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach((entry) => {
+          if (entry.name === 'first-contentful-paint') {
+            this.metrics.firstContentfulPaint = entry.startTime;
+            this.notifyObservers({ firstContentfulPaint: this.metrics.firstContentfulPaint });
+          }
+          if (entry.name === 'largest-contentful-paint') {
+            this.metrics.largestContentfulPaint = entry.startTime;
+            this.notifyObservers({ largestContentfulPaint: this.metrics.largestContentfulPaint });
+          }
+        });
+      });
+      this.paintObserver.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
+
+      // Layout shift
+      this.layoutShiftObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        this.metrics.cumulativeLayoutShift = entries.reduce((total, entry: any) => {
+          return total + (entry.value || 0);
+        }, 0);
+        this.notifyObservers({ cumulativeLayoutShift: this.metrics.cumulativeLayoutShift });
+      });
+      this.layoutShiftObserver.observe({ entryTypes: ['layout-shift'] });
+    }
+  }
+
+  /**
+   * Disconnect all observers
+   */
+  private disconnectObservers(): void {
+    if (this.resourceObserver) {
+      this.resourceObserver.disconnect();
+      this.resourceObserver = null;
+    }
+    if (this.paintObserver) {
+      this.paintObserver.disconnect();
+      this.paintObserver = null;
+    }
+    if (this.layoutShiftObserver) {
+      this.layoutShiftObserver.disconnect();
+      this.layoutShiftObserver = null;
+    }
+  }
+
+  /**
+   * Track bundle size
+   */
+  private trackBundleSize(): void {
+    // Estimate bundle size from performance entries
+    const resources = performance.getEntriesByType('resource');
+    const scriptResources = resources.filter(entry => 
+      entry.name.includes('.js') || entry.name.includes('chunk')
+    );
+    
+    this.metrics.bundleSize = scriptResources.reduce((total, entry) => {
+      return total + (entry.transferSize || 0);
+    }, 0);
+    
+    this.notifyObservers({ bundleSize: this.metrics.bundleSize });
+  }
+
+  /**
+   * Track memory usage
+   */
+  private trackMemoryUsage(): void {
+    if ('memory' in performance) {
+      const memory = (performance as any).memory;
+      this.metrics.memoryUsage = memory.usedJSHeapSize;
+      this.notifyObservers({ memoryUsage: this.metrics.memoryUsage });
+    }
+  }
+
+  /**
+   * Notify all observers
+   */
+  private notifyObservers(metrics: Partial<PerformanceMetrics>): void {
+    this.observers.forEach(observer => {
+      try {
+        observer.onMetricUpdate(metrics);
+      } catch (error) {
+        observer.onError(error as Error);
+      }
     });
   }
 
-  measureSync<T>(name: string, fn: () => T): T {
-    const start = performance.now();
-    try {
-      return fn();
-    } finally {
-      const duration = performance.now() - start;
-      this.logMetric(name, duration);
+  /**
+   * Generate performance report
+   */
+  generateReport(): string {
+    const metrics = this.getMetrics();
+    const report = {
+      timestamp: new Date().toISOString(),
+      metrics,
+      recommendations: this.generateRecommendations(metrics),
+    };
+    
+    return JSON.stringify(report, null, 2);
+  }
+
+  /**
+   * Generate performance recommendations
+   */
+  private generateRecommendations(metrics: PerformanceMetrics): string[] {
+    const recommendations: string[] = [];
+    
+    if (metrics.bundleSize > 500000) { // 500KB
+      recommendations.push('Consider code splitting to reduce bundle size');
     }
-  }
-
-  mark(name: string) {
-    performance.mark(name);
-  }
-
-  measure(name: string, startMark: string, endMark: string) {
-    try {
-      performance.measure(name, startMark, endMark);
-      const measure = performance.getEntriesByName(name)[0];
-      if (measure) {
-        this.logMetric(name, measure.duration);
-      }
-    } catch (e) {
-      console.warn(`Could not measure ${name}:`, e);
+    
+    if (metrics.largestContentfulPaint > 2500) { // 2.5s
+      recommendations.push('Optimize Largest Contentful Paint for better user experience');
     }
-  }
-
-  disconnect() {
-    this.observers.forEach((observer) => observer.disconnect());
-    this.observers = [];
-    this.isInitialized = false;
+    
+    if (metrics.cumulativeLayoutShift > 0.1) {
+      recommendations.push('Reduce Cumulative Layout Shift by fixing layout shifts');
+    }
+    
+    if (metrics.memoryUsage > 50000000) { // 50MB
+      recommendations.push('Monitor memory usage and optimize memory leaks');
+    }
+    
+    return recommendations;
   }
 }
 
-// Singleton instance
-export const performanceMonitor = new PerformanceMonitor();
+// Create singleton instance
+const performanceMonitor = new PerformanceMonitor();
 
-// Auto-initialize in development
-if (process.env.NODE_ENV === "development") {
-  performanceMonitor.init();
+// Auto-start monitoring in development
+if (process.env.NODE_ENV === 'development') {
+  performanceMonitor.start();
 }
 
 export default performanceMonitor;
+
+// React performance hooks
+export const usePerformanceTracking = (componentName: string) => {
+  const startTime = React.useRef(performance.now());
+  
+  React.useEffect(() => {
+    const endTime = performance.now();
+    const renderTime = endTime - startTime.current;
+    performanceMonitor.trackComponentRender(componentName, renderTime);
+  });
+};
+
+// Performance decorator for class components
+export const withPerformanceTracking = <P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  componentName?: string
+) => {
+  const displayName = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  
+  const WithPerformanceTracking = React.forwardRef<any, P>((props, ref) => {
+    usePerformanceTracking(displayName);
+    return <WrappedComponent {...props} ref={ref} />;
+  });
+  
+  WithPerformanceTracking.displayName = `withPerformanceTracking(${displayName})`;
+  return WithPerformanceTracking;
+};
