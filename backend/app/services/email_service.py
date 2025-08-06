@@ -18,7 +18,7 @@ from backend.app.core.config import get_settings
 class EmailService:
     """Service for sending emails via SMTP."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize EmailService with settings."""
         self.settings = get_settings()
         self.smtp_host = self.settings.smtp_host

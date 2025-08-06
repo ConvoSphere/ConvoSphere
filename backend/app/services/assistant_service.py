@@ -17,7 +17,7 @@ from backend.app.models.assistant import Assistant, AssistantStatus
 class AssistantService:
     """Service for managing AI assistants."""
 
-    def __init__(self, db=None):
+    def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()
 
     def create_assistant(

@@ -24,21 +24,22 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, Optional
 
 
-def print_success(message):
+def print_success(message: str) -> None:
     """Print success message."""
 
 
-def print_error(message):
+def print_error(message: str) -> None:
     """Print error message."""
 
 
-def print_info(message):
+def print_info(message: str) -> None:
     """Print info message."""
 
 
-def db_migrate():
+def db_migrate() -> None:
     """Run Alembic migrations (upgrade head)."""
     try:
         alembic_path = shutil.which("alembic")
@@ -65,7 +66,7 @@ def db_migrate():
         sys.exit(1)
 
 
-def db_status():
+def db_status() -> None:
     """Show Alembic migration status."""
     try:
         alembic_path = shutil.which("alembic")
@@ -92,8 +93,19 @@ def db_status():
         sys.exit(1)
 
 
-def db_downgrade(revision):
+def db_downgrade(revision: str) -> None:
     """Downgrade DB to a specific revision."""
+    # Input validation for revision parameter
+    if not revision or not isinstance(revision, str):
+        print_error("Invalid revision parameter. Must be a non-empty string.")
+        sys.exit(1)
+    
+    # Sanitize revision to prevent command injection
+    import re
+    if not re.match(r'^[a-zA-Z0-9_-]+$', revision):
+        print_error("Invalid revision format. Only alphanumeric characters, hyphens, and underscores are allowed.")
+        sys.exit(1)
+    
     try:
         alembic_path = shutil.which("alembic")
         if not alembic_path:
@@ -119,7 +131,7 @@ def db_downgrade(revision):
         sys.exit(1)
 
 
-def db_test_connection():
+def db_test_connection() -> None:
     """Test database connection."""
     try:
         # Import database engine from cli.py approach
@@ -136,7 +148,7 @@ def db_test_connection():
         sys.exit(1)
 
 
-def db_info():
+def db_info() -> None:
     """Show database information."""
     try:
         from sqlalchemy import create_engine, text
@@ -172,7 +184,7 @@ def db_info():
         sys.exit(1)
 
 
-def db_reset(confirm=False):
+def db_reset(confirm: bool = False) -> None:
     """Completely reset the database - drop all tables and recreate them."""
     if not confirm:
         response = input(
@@ -229,7 +241,7 @@ def db_reset(confirm=False):
         sys.exit(1)
 
 
-def db_clear_data(confirm=False):
+def db_clear_data(confirm: bool = False) -> None:
     """Clear all data from tables but keep the structure."""
     if not confirm:
         response = input(
@@ -277,11 +289,23 @@ def db_clear_data(confirm=False):
         sys.exit(1)
 
 
-def backup_create(output=None):
+def backup_create(output: Optional[str] = None) -> None:
     """Create database backup."""
     if not output:
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         output = f"backup_{timestamp}.sql"
+    
+    # Input validation for output path
+    if output and not isinstance(output, str):
+        print_error("Invalid output parameter. Must be a string.")
+        sys.exit(1)
+    
+    # Sanitize output path to prevent path traversal
+    if output:
+        output_path = Path(output)
+        if ".." in str(output_path) or output_path.is_absolute():
+            print_error("Invalid output path. Cannot use absolute paths or path traversal.")
+            sys.exit(1)
 
     try:
         # Try to get database URL from environment
@@ -336,8 +360,6 @@ def backup_create(output=None):
                 sys.exit(1)
         else:
             # SQLite backup
-            import shutil
-
             db_file = db_url.replace("sqlite:///", "")
             shutil.copy2(db_file, output)
             print_success(f"Database backup created: {output}")
@@ -347,9 +369,20 @@ def backup_create(output=None):
         sys.exit(1)
 
 
-def backup_restore(backup_file, confirm=False):
+def backup_restore(backup_file: str, confirm: bool = False) -> None:
     """Restore database from backup."""
-    if not Path(backup_file).exists():
+    # Input validation for backup file
+    if not backup_file or not isinstance(backup_file, str):
+        print_error("Invalid backup file parameter. Must be a non-empty string.")
+        sys.exit(1)
+    
+    # Sanitize backup file path to prevent path traversal
+    backup_path = Path(backup_file)
+    if ".." in str(backup_path) or backup_path.is_absolute():
+        print_error("Invalid backup file path. Cannot use absolute paths or path traversal.")
+        sys.exit(1)
+    
+    if not backup_path.exists():
         print_error(f"Backup file not found: {backup_file}")
         sys.exit(1)
 
@@ -411,8 +444,6 @@ def backup_restore(backup_file, confirm=False):
                 sys.exit(1)
         else:
             # SQLite restore
-            import shutil
-
             db_file = db_url.replace("sqlite:///", "")
             shutil.copy2(backup_file, db_file)
             print_success("Database restored successfully")
@@ -422,7 +453,7 @@ def backup_restore(backup_file, confirm=False):
         sys.exit(1)
 
 
-def backup_list(backup_dir="."):
+def backup_list(backup_dir: str = ".") -> None:
     """List available backups."""
     try:
         backup_files = []
@@ -450,7 +481,7 @@ def backup_list(backup_dir="."):
         sys.exit(1)
 
 
-def monitoring_health():
+def monitoring_health() -> None:
     """Check system health."""
 
     # Check if backend is running
@@ -487,7 +518,7 @@ def monitoring_health():
         print_error(f"Database check error: {e}")
 
 
-def monitoring_logs(lines=50, level="INFO"):
+def monitoring_logs(lines: int = 50, level: str = "INFO") -> None:
     """Show recent application logs."""
     try:
         from backend.app.core.config import settings
@@ -517,11 +548,11 @@ def monitoring_logs(lines=50, level="INFO"):
         print_error(f"Error reading logs: {e}")
 
 
-def config_show():
+def config_show() -> None:
     """Show current configuration."""
 
 
-def config_validate():
+def config_validate() -> None:
     """Validate configuration."""
 
     errors = []
@@ -547,7 +578,7 @@ def config_validate():
         print_success("Configuration is valid")
 
 
-def dev_quality_check():
+def dev_quality_check() -> None:
     """Run code quality checks."""
 
     # Format check
@@ -581,7 +612,7 @@ def dev_quality_check():
         print_error(f"Security check failed: {result.stderr}")
 
 
-def dev_api_test(url="http://localhost:8000"):
+def dev_api_test(url: str = "http://localhost:8000") -> None:
     """Run basic API tests."""
 
     try:
@@ -607,7 +638,7 @@ def dev_api_test(url="http://localhost:8000"):
         print_error(f"API test failed: {e}")
 
 
-def dev_test_data(users=5):
+def dev_test_data(users: int = 5) -> None:
     """Create test data for development."""
     try:
         from sqlalchemy import create_engine
@@ -645,7 +676,7 @@ def dev_test_data(users=5):
             db.close()
 
 
-def user_create_admin():
+def user_create_admin() -> None:
     """Create an initial admin user with secure password validation."""
     import getpass
     import re
@@ -729,7 +760,7 @@ def user_create_admin():
             db.close()
 
 
-def user_create_secure():
+def user_create_secure() -> None:
     """Create a user with credentials from environment variables (for automation)."""
     try:
         # Import backend dependencies
@@ -791,7 +822,7 @@ def user_create_secure():
             db.close()
 
 
-def user_list():
+def user_list() -> None:
     """List all users."""
     try:
         # Import backend dependencies
@@ -848,7 +879,7 @@ def user_list():
             db.close()
 
 
-def user_show(identifier):
+def user_show(identifier: str) -> None:
     """Show user details."""
     try:
         # Import backend dependencies
@@ -886,14 +917,14 @@ def user_show(identifier):
 
 
 def user_create(
-    email,
-    username,
-    password,
-    first_name=None,
-    last_name=None,
-    role="user",
-    status="active",
-):
+    email: str,
+    username: str,
+    password: str,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    role: str = "user",
+    status: str = "active",
+) -> None:
     """Create a new user."""
     try:
         # Import backend dependencies
@@ -935,7 +966,7 @@ def user_create(
             db.close()
 
 
-def user_update(identifier, **kwargs):
+def user_update(identifier: str, **kwargs: Any) -> None:
     """Update user."""
     try:
         # Import backend dependencies
@@ -1008,7 +1039,7 @@ def user_update(identifier, **kwargs):
             db.close()
 
 
-def user_delete(identifier, confirm=False):
+def user_delete(identifier: str, confirm: bool = False) -> None:
     """Delete user."""
     if not confirm:
         response = input(
@@ -1069,7 +1100,7 @@ def user_delete(identifier, confirm=False):
             db.close()
 
 
-def user_reset_password():
+def user_reset_password() -> None:
     """Reset user password."""
     email = input("User email: ")
     new_password = input("New password: ")
@@ -1114,7 +1145,7 @@ def user_reset_password():
             db.close()
 
 
-def debug_auth_flow():
+def debug_auth_flow() -> None:
     """Run authentication flow debug script."""
     script_path = Path(__file__).parent.parent / "scripts" / "debug_auth_flow.js"
     if not script_path.exists():
@@ -1128,7 +1159,7 @@ def debug_auth_flow():
     print_info(f"Script location: {script_path}")
 
 
-def debug_frontend_auth():
+def debug_frontend_auth() -> None:
     """Run frontend authentication debug script."""
     script_path = Path(__file__).parent.parent / "scripts" / "debug_frontend_auth.html"
     if not script_path.exists():
@@ -1140,7 +1171,7 @@ def debug_frontend_auth():
     print_info("This will test localStorage and API calls")
 
 
-def test_auth_fix():
+def test_auth_fix() -> None:
     """Run authentication fix test script."""
     script_path = Path(__file__).parent.parent / "scripts" / "test_auth_fix.py"
     if not script_path.exists():
@@ -1157,7 +1188,7 @@ def test_auth_fix():
         print_error("Authentication fix test failed")
 
 
-def test_frontend_auth():
+def test_frontend_auth() -> None:
     """Run frontend authentication test script."""
     script_path = Path(__file__).parent.parent / "scripts" / "test_frontend_auth.py"
     if not script_path.exists():
@@ -1174,7 +1205,7 @@ def test_frontend_auth():
         print_error("Frontend authentication test failed")
 
 
-def monitoring_containers():
+def monitoring_containers() -> None:
     """Run container monitoring script."""
     script_path = Path(__file__).parent.parent / "scripts" / "monitor_containers.sh"
     if not script_path.exists():
@@ -1189,7 +1220,7 @@ def monitoring_containers():
         print_info("Monitoring stopped by user")
 
 
-def assistant_list():
+def assistant_list() -> None:
     """List all assistants."""
     try:
         from sqlalchemy import create_engine
@@ -1235,7 +1266,7 @@ def assistant_list():
             db.close()
 
 
-def assistant_show(assistant_id: str):
+def assistant_show(assistant_id: str) -> None:
     """Show detailed information about an assistant."""
     try:
         from sqlalchemy import create_engine
@@ -1278,7 +1309,7 @@ def assistant_show(assistant_id: str):
             db.close()
 
 
-def assistant_create():
+def assistant_create() -> None:
     """Create a new assistant interactively."""
     try:
         from sqlalchemy import create_engine
@@ -1351,7 +1382,7 @@ def assistant_create():
             db.close()
 
 
-def assistant_delete(assistant_id: str, confirm: bool = False):
+def assistant_delete(assistant_id: str, confirm: bool = False) -> None:
     """Delete an assistant."""
     if not confirm:
         response = input(
@@ -1397,7 +1428,7 @@ def assistant_delete(assistant_id: str, confirm: bool = False):
             db.close()
 
 
-def assistant_activate(assistant_id: str):
+def assistant_activate(assistant_id: str) -> None:
     """Activate an assistant."""
     try:
         from sqlalchemy import create_engine
@@ -1437,7 +1468,7 @@ def assistant_activate(assistant_id: str):
             db.close()
 
 
-def assistant_deactivate(assistant_id: str):
+def assistant_deactivate(assistant_id: str) -> None:
     """Deactivate an assistant."""
     try:
         from sqlalchemy import create_engine
@@ -1477,11 +1508,11 @@ def assistant_deactivate(assistant_id: str):
             db.close()
 
 
-def show_help():
+def show_help() -> None:
     """Show help message."""
 
 
-def main():
+def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="ConvoSphere Admin CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")

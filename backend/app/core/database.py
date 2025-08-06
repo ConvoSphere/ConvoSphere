@@ -64,7 +64,7 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def create_default_admin_user():
+def create_default_admin_user() -> Any | None:
     """Create and return a fallback admin user (development only)."""
     try:
         import os
@@ -125,7 +125,7 @@ def create_default_admin_user():
         return None
 
 
-def create_default_assistant():
+def create_default_assistant() -> None:
     """Create a default assistant if explicitly requested."""
     try:
         import os
@@ -234,7 +234,7 @@ def check_db_connection() -> bool:
         return False
 
 
-def get_db_info() -> dict:
+def get_db_info() -> dict[str, Any]:
     """
     Get database information.
 

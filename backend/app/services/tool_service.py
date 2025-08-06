@@ -16,7 +16,7 @@ from backend.app.models.user import User
 class ToolService:
     """Service for managing tools."""
 
-    def __init__(self, db=None):
+    def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()
 
     def get_available_tools(

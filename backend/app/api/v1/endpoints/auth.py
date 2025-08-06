@@ -36,6 +36,7 @@ from backend.app.core.security_hardening import (
     validate_sso_request,
 )
 from backend.app.models.user import User, UserRole
+from backend.app.schemas.auth import PasswordResetRequest, PasswordResetConfirm
 from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
 from backend.app.services.audit_service import audit_service
 from backend.app.services.auth_service import AuthService

@@ -21,7 +21,7 @@ from backend.app.models.user import User
 class TokenService:
     """Service for managing password reset tokens."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize TokenService with settings."""
         self.settings = get_settings()
         self.token_length = 32
