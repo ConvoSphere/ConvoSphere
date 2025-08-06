@@ -313,7 +313,7 @@ export const withPerformanceTracking = <P extends object>(
   
   const WithPerformanceTracking = React.forwardRef<any, P>((props, ref) => {
     usePerformanceTracking(displayName);
-    return <WrappedComponent {...props} ref={ref} />;
+    return React.createElement(WrappedComponent, { ...props, ref });
   });
   
   WithPerformanceTracking.displayName = `withPerformanceTracking(${displayName})`;

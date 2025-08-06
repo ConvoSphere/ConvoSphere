@@ -5,7 +5,6 @@ import {
   Row,
   Col,
   Tabs,
-  Button,
   Modal,
   Form,
   Select,
@@ -498,14 +497,14 @@ const ExportBackup: React.FC = () => {
                     actions={[
                       backup.status === 'completed' && (
                         <Tooltip title={t('backup.download')}>
-                          <Button
-                            type="primary"
+                          <ModernButton
+                            variant="primary"
                             icon={<CloudDownloadOutlined />}
-                            size="small"
+                            size="sm"
                             onClick={() => downloadBackup(backup.id)}
                           >
                             {t('backup.download')}
-                          </Button>
+                          </ModernButton>
                         </Tooltip>
                       ),
                       backup.status === 'completed' && (
@@ -516,12 +515,12 @@ const ExportBackup: React.FC = () => {
                             okText={t('common.yes')}
                             cancelText={t('common.no')}
                           >
-                            <Button
+                            <ModernButton
                               icon={<UploadOutlined />}
-                              size="small"
+                              size="sm"
                             >
                               {t('backup.restore')}
-                            </Button>
+                            </ModernButton>
                           </Popconfirm>
                         </Tooltip>
                       ),
@@ -532,13 +531,13 @@ const ExportBackup: React.FC = () => {
                           okText={t('common.yes')}
                           cancelText={t('common.no')}
                         >
-                          <Button
-                            danger
+                          <ModernButton
+                            variant="error"
                             icon={<DeleteOutlined />}
-                            size="small"
+                            size="sm"
                           >
                             {t('backup.delete')}
-                          </Button>
+                          </ModernButton>
                         </Popconfirm>
                       </Tooltip>,
                     ].filter(Boolean)}

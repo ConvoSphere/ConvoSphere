@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Button, Typography, Space } from "antd";
+import { Modal, Typography, Space } from "antd";
+import ModernButton from "../ModernButton";
 
 const { Text } = Typography;
 
@@ -14,9 +15,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => (
     open={open}
     onCancel={onClose}
     footer={[
-      <Button key="close" onClick={onClose}>
+      <ModernButton key="close" variant="secondary" onClick={onClose}>
         Close
-      </Button>,
+      </ModernButton>,
     ]}
     width={500}
   >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Badge, Dropdown, Avatar, List, Typography, Button, Space, Tag, Tooltip, Divider } from "antd";
+import { Badge, Dropdown, Avatar, List, Typography, Space, Tag, Tooltip, Divider } from "antd";
+import ModernButton from "./ModernButton";
 import { BellOutlined, CheckOutlined, DeleteOutlined, SettingOutlined, InfoCircleOutlined, ExclamationCircleOutlined, CheckCircleOutlined, WarningOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
@@ -159,22 +160,22 @@ const NotificationDropdown: React.FC = () => {
       label: (
         <div style={{ padding: "8px 16px", borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Title level={5} style={{ margin: 0, color: colors?.colorTextBase || "#000000" }}>
+            <Title level={5} style={{ margin: 0, color: colors?.colorTextBase || "#ffffff" }}>
               {t("notifications.title", "Notifications")}
             </Title>
             <Space>
-              <Button
-                type="text"
-                size="small"
+              <ModernButton
+                variant="ghost"
+                size="sm"
                 onClick={markAllAsRead}
                 disabled={unreadCount === 0}
                 style={{ fontSize: "12px" }}
               >
                 {t("notifications.mark_all_read", "Mark all read")}
-              </Button>
-              <Button
-                type="text"
-                size="small"
+              </ModernButton>
+              <ModernButton
+                variant="ghost"
+                size="sm"
                 icon={<SettingOutlined />}
                 onClick={() => {
                   // TODO: Navigate to notification settings
@@ -183,7 +184,7 @@ const NotificationDropdown: React.FC = () => {
                 style={{ fontSize: "12px" }}
               >
                 {t("notifications.settings", "Settings")}
-              </Button>
+              </ModernButton>
             </Space>
           </div>
         </div>
@@ -212,7 +213,7 @@ const NotificationDropdown: React.FC = () => {
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#000000" }}>
+                <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#ffffff" }}>
                   {notification.title}
                 </Text>
                 {notification.isImportant && (
@@ -221,19 +222,19 @@ const NotificationDropdown: React.FC = () => {
                   </Tag>
                 )}
               </div>
-              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#666666", display: "block", marginBottom: 4 }}>
+              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#cccccc", display: "block", marginBottom: 4 }}>
                 {notification.message}
               </Text>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ fontSize: "11px", color: colors?.colorTextSecondary || "#666666" }}>
+                <Text style={{ fontSize: "11px", color: colors?.colorTextSecondary || "#cccccc" }}>
                   {formatTimestamp(notification.timestamp)}
                 </Text>
                 <Space size="small">
                   {!notification.isRead && (
                     <Tooltip title={t("notifications.mark_as_read", "Mark as read")}>
-                      <Button
-                        type="text"
-                        size="small"
+                      <ModernButton
+                        variant="ghost"
+                        size="sm"
                         icon={<CheckOutlined />}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -244,9 +245,9 @@ const NotificationDropdown: React.FC = () => {
                     </Tooltip>
                   )}
                   <Tooltip title={t("notifications.delete", "Delete")}>
-                    <Button
-                      type="text"
-                      size="small"
+                    <ModernButton
+                      variant="ghost"
+                      size="sm"
                       icon={<DeleteOutlined />}
                       onClick={(e) => {
                         e.stopPropagation();

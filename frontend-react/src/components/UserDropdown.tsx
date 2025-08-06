@@ -1,5 +1,6 @@
 import React from "react";
-import { Dropdown, Avatar, Typography, Button, Space, Divider } from "antd";
+import { Dropdown, Avatar, Typography, Space, Divider } from "antd";
+import ModernButton from "./ModernButton";
 import { UserOutlined, SettingOutlined, LogoutOutlined, DashboardOutlined, TeamOutlined, ProfileOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -33,10 +34,10 @@ const UserDropdown: React.FC = () => {
               }}
             />
             <div style={{ flex: 1 }}>
-              <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#000000", display: "block" }}>
+              <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#ffffff", display: "block" }}>
                 {user?.username || t("navigation.user")}
               </Text>
-              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#666666" }}>
+                              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#cccccc" }}>
                 {user?.email || "user@example.com"}
               </Text>
             </div>
@@ -134,7 +135,7 @@ const UserDropdown: React.FC = () => {
             style={{
               fontSize: "14px",
               fontWeight: 500,
-              color: colors?.colorTextBase || "#000000",
+                              color: colors?.colorTextBase || "#ffffff",
               display: "block",
             }}
           >
@@ -143,7 +144,7 @@ const UserDropdown: React.FC = () => {
           <Text
             style={{
               fontSize: "12px",
-              color: colors?.colorTextSecondary || "#666666",
+                              color: colors?.colorTextSecondary || "#cccccc",
             }}
           >
             {user?.role || t("navigation.user")}

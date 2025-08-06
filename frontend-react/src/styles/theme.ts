@@ -75,6 +75,10 @@ export const lightTheme: ThemeConfig = {
     // Transparenz
     colorBgMask: "rgba(0, 0, 0, 0.45)", // Modal Overlay
     colorBgSpotlight: "rgba(0, 0, 0, 0.25)", // Spotlight Overlay
+
+    // Ant Design Title Komponenten Farben
+    colorTextHeading: "#23224A", // Haupttext für Überschriften
+    colorTextHeadingSecondary: "#7A869A", // Sekundärtext für Überschriften
   },
 };
 
@@ -149,6 +153,10 @@ export const darkTheme: ThemeConfig = {
     // Transparenz
     colorBgMask: "rgba(0, 0, 0, 0.65)", // Dunklerer Modal Overlay
     colorBgSpotlight: "rgba(0, 0, 0, 0.45)", // Dunklerer Spotlight Overlay
+
+    // Ant Design Title Komponenten Farben (Dunkel)
+    colorTextHeading: "#F7F9FB", // Haupttext für Überschriften
+    colorTextHeadingSecondary: "#5BC6E8", // Sekundärtext für Überschriften
   },
 };
 

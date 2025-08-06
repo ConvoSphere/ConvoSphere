@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { ConfigProvider, theme as antdTheme, Spin, Button } from "antd";
+import { ConfigProvider, theme as antdTheme, Spin } from "antd";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { DashboardOutlined } from "@ant-design/icons";

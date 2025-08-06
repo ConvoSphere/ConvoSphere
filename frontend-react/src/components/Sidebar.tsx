@@ -33,9 +33,16 @@ const Sidebar: React.FC = () => {
     height: "100%",
     borderRight: 0,
     backgroundColor: colors?.colorBgContainer || "#ffffff",
-    color: colors?.colorTextBase || "#000000",
+    color: colors?.colorTextBase || "#ffffff",
     padding: "8px",
-  };
+    // Verbesserte Menu-Styles für bessere Lesbarkeit
+    "--ant-menu-item-color": colors?.colorTextBase || "#ffffff",
+    "--ant-menu-item-selected-color": colors?.colorPrimary || "#1890ff",
+    "--ant-menu-item-hover-color": colors?.colorPrimary || "#1890ff",
+    "--ant-menu-item-active-color": colors?.colorPrimary || "#1890ff",
+    "--ant-menu-item-selected-bg": colors?.colorBgElevated || "#f0f0f0",
+    "--ant-menu-item-hover-bg": colors?.colorBgElevated || "#f0f0f0",
+  } as React.CSSProperties;
 
   const logoStyle: React.CSSProperties = {
     display: "flex",
@@ -65,7 +72,7 @@ const Sidebar: React.FC = () => {
     },
     {
       key: "/overview",
-      icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
+      icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
       label: t("navigation.overview"),
     },
     {
@@ -85,7 +92,7 @@ const Sidebar: React.FC = () => {
     },
     {
       key: "/tools",
-      icon: <ToolOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
+      icon: <ToolOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
       label: t("tools.title"),
     },
     {
@@ -115,7 +122,7 @@ const Sidebar: React.FC = () => {
     },
     {
       key: "/settings",
-      icon: <SettingOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
+      icon: <SettingOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
       label: t("settings.title"),
     },
     {
@@ -132,7 +139,7 @@ const Sidebar: React.FC = () => {
           },
           {
             key: "/admin/system-status",
-            icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#8c8c8c" }} />,
+            icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
             label: t("admin.system_status"),
           },
         ]
@@ -156,7 +163,7 @@ const Sidebar: React.FC = () => {
             style={{
               fontWeight: 600,
               fontSize: "16px",
-              color: colors?.colorTextBase || "#000000",
+              color: colors?.colorTextBase || "#ffffff",
             }}
           >
             {t("app.title", "ConvoSphere")}
@@ -164,7 +171,7 @@ const Sidebar: React.FC = () => {
           <div
             style={{
               fontSize: "12px",
-              color: colors?.colorTextSecondary || "#666666",
+              color: colors?.colorTextSecondary || "#cccccc",
             }}
           >
             {t("app.subtitle", "AI Assistant Platform")}
@@ -180,7 +187,6 @@ const Sidebar: React.FC = () => {
           style={menuStyle}
           items={items}
           onClick={({ key }) => navigate(key)}
-          theme="light"
         />
       </div>
 
@@ -198,7 +204,7 @@ const Sidebar: React.FC = () => {
             icon={<UserOutlined />}
             size="small"
             style={{
-              backgroundColor: colors?.colorTextSecondary || "#8c8c8c",
+              backgroundColor: colors?.colorTextSecondary || "#cccccc",
               color: colors?.colorTextBase || "#ffffff",
             }}
           />
@@ -207,7 +213,7 @@ const Sidebar: React.FC = () => {
               style={{
                 fontSize: "14px",
                 fontWeight: 500,
-                color: colors?.colorTextBase || "#000000",
+                color: colors?.colorTextBase || "#ffffff",
               }}
             >
               {user?.username || t("navigation.user")}
@@ -215,7 +221,7 @@ const Sidebar: React.FC = () => {
             <div
               style={{
                 fontSize: "12px",
-                color: colors?.colorTextSecondary || "#666666",
+                color: colors?.colorTextSecondary || "#cccccc",
               }}
             >
               {user?.email || "user@example.com"}

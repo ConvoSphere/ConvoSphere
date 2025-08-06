@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, Tag, Button, Space, Progress, Tooltip, Popconfirm, message } from 'antd';
+import { Table, Tag, Space, Progress, Tooltip, Popconfirm, message } from 'antd';
+import ModernButton from '../ModernButton';
 import { 
   DownloadOutlined, 
   DeleteOutlined, 
@@ -160,14 +161,14 @@ const ExportJobList: React.FC<ExportJobListProps> = ({
         <Space>
           {record.status === 'completed' && (
             <Tooltip title={t('export.download')}>
-              <Button
-                type="primary"
+              <ModernButton
+                variant="primary"
                 icon={<DownloadOutlined />}
-                size="small"
+                size="sm"
                 onClick={() => onDownload(record.id)}
               >
                 {t('export.download')}
-              </Button>
+              </ModernButton>
             </Tooltip>
           )}
           
@@ -179,26 +180,26 @@ const ExportJobList: React.FC<ExportJobListProps> = ({
                 okText={t('common.yes')}
                 cancelText={t('common.no')}
               >
-                <Button
-                  danger
+                <ModernButton
+                  variant="error"
                   icon={<DeleteOutlined />}
-                  size="small"
+                  size="sm"
                 >
                   {t('export.cancel')}
-                </Button>
+                </ModernButton>
               </Popconfirm>
             </Tooltip>
           )}
           
           {(record.status === 'pending' || record.status === 'processing') && (
             <Tooltip title={t('export.refresh_status')}>
-              <Button
+              <ModernButton
                 icon={<ReloadOutlined />}
-                size="small"
+                size="sm"
                 onClick={() => onRefresh(record.id)}
               >
                 {t('export.refresh')}
-              </Button>
+              </ModernButton>
             </Tooltip>
           )}
         </Space>

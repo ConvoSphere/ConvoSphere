@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, List, Typography, Space, Button } from "antd";
+import { Card, List, Typography, Space } from "antd";
+import ModernButton from "../ModernButton";
 import {
   BookOutlined,
   ExportOutlined,
@@ -59,20 +60,20 @@ const ChatEnhancements: React.FC<ChatEnhancementsProps> = ({ documents }) => {
         </div>
 
         <Space>
-          <Button
-            size="small"
+          <ModernButton
+            size="sm"
             icon={<ExportOutlined />}
             onClick={handleExportConversation}
           >
             Export
-          </Button>
-          <Button
-            size="small"
+          </ModernButton>
+          <ModernButton
+            size="sm"
             icon={<ShareAltOutlined />}
             onClick={handleShareConversation}
           >
             Share
-          </Button>
+          </ModernButton>
         </Space>
       </Space>
     </Card>

@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Button, Typography, Divider, Space, Tag } from "antd";
+import { Modal, Typography, Divider, Space, Tag } from "antd";
+import ModernButton from "../ModernButton";
 import type { Document } from "../../services/knowledge";
 import {
   formatDate,
@@ -27,17 +28,17 @@ const DocumentDetailsModal: React.FC<DocumentDetailsModalProps> = ({
     open={open}
     onCancel={onClose}
     footer={[
-      <Button key="close" onClick={onClose}>
+      <ModernButton key="close" variant="secondary" onClick={onClose}>
         Close
-      </Button>,
-      <Button
+      </ModernButton>,
+      <ModernButton
         key="use"
-        type="primary"
+        variant="primary"
         onClick={() => document && onUse(document)}
         disabled={!document}
       >
         Use in Chat
-      </Button>,
+      </ModernButton>,
     ]}
     width={600}
   >

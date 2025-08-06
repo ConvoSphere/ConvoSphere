@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Select, Tooltip, Badge, Space, Button, Modal, message } from "antd";
+import { Select, Tooltip, Badge, Space, Modal, message } from "antd";
+import ModernButton from "../ModernButton";
 import {
   MessageOutlined,
   RobotOutlined,
@@ -170,20 +171,20 @@ const HybridModeSelector: React.FC<HybridModeSelectorProps> = ({
         </Select>
 
         <Tooltip title={t("chat.hybridMode.config.tooltip")}>
-          <Button
-            type="text"
+          <ModernButton
+            variant="ghost"
             icon={<SettingOutlined />}
-            size="small"
+            size="sm"
             onClick={() => setConfigModalVisible(true)}
             disabled={disabled}
           />
         </Tooltip>
 
         <Tooltip title={t("chat.hybridMode.info.tooltip")}>
-          <Button
-            type="text"
+          <ModernButton
+            variant="ghost"
             icon={<InfoCircleOutlined />}
-            size="small"
+            size="sm"
             onClick={() => showModeInfo()}
             disabled={disabled}
           />
@@ -343,10 +344,10 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
       </div>
 
       <div className="config-actions">
-        <Button onClick={onClose}>{t("common.cancel")}</Button>
-        <Button type="primary" onClick={handleConfigUpdate} loading={loading}>
+        <ModernButton variant="secondary" onClick={onClose}>{t("common.cancel")}</ModernButton>
+        <ModernButton variant="primary" onClick={handleConfigUpdate} loading={loading}>
           {t("common.save")}
-        </Button>
+        </ModernButton>
       </div>
     </div>
   );

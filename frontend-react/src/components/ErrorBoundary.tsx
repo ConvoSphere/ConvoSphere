@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
-import { Button, Result, Card, Typography, Space } from "antd";
+import { Result, Card, Typography, Space } from "antd";
+import ModernButton from "./ModernButton";
 import { ReloadOutlined, HomeOutlined, BugOutlined } from "@ant-design/icons";
 import { useThemeStore } from "../store/themeStore";
 
@@ -173,37 +174,27 @@ class ErrorBoundaryClass extends Component<Props & { colors: any }, State> {
                   style={{ width: "100%" }}
                 >
                   <Space>
-                    <Button
-                      type="primary"
+                    <ModernButton
+                      variant="primary"
                       icon={<ReloadOutlined />}
                       onClick={this.handleReset}
-                      style={{
-                        backgroundColor: colors.colorPrimary,
-                        borderColor: colors.colorPrimary,
-                      }}
                     >
                       Try Again
-                    </Button>
-                    <Button
+                    </ModernButton>
+                    <ModernButton
+                      variant="secondary"
                       icon={<HomeOutlined />}
                       onClick={this.handleGoHome}
-                      style={{
-                        borderColor: colors.colorBorder,
-                        color: colors.colorTextBase,
-                      }}
                     >
                       Go Home
-                    </Button>
-                    <Button
+                    </ModernButton>
+                    <ModernButton
+                      variant="secondary"
                       icon={<BugOutlined />}
                       onClick={this.handleReportBug}
-                      style={{
-                        borderColor: colors.colorBorder,
-                        color: colors.colorTextBase,
-                      }}
                     >
                       Report Bug
-                    </Button>
+                    </ModernButton>
                   </Space>
 
                   {process.env.NODE_ENV === "development" &&

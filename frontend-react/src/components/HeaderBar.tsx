@@ -48,7 +48,7 @@ const HeaderBar: React.FC = () => {
           style={{
             fontSize: "18px",
             fontWeight: 600,
-            color: colors?.colorTextBase || "#000000",
+            color: colors?.colorTextBase || "#ffffff",
           }}
         >
           {t("app.title", "ConvoSphere")}

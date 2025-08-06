@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
-import { Button, Result, Card, Typography, Space, Alert } from "antd";
+import { Result, Card, Typography, Space, Alert } from "antd";
+import ModernButton from "./ModernButton";
 import { ReloadOutlined, HomeOutlined, BugOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useThemeStore } from "../store/themeStore";
 import { useAuthStore } from "../store/authStore";
@@ -232,27 +233,28 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
                     />
                     
                     <Space>
-                      <Button
-                        type="primary"
-                        danger
+                      <ModernButton
+                        variant="error"
                         icon={<ReloadOutlined />}
                         onClick={this.handleReset}
                         disabled={this.state.retryCount >= 3}
                       >
                         {this.state.retryCount >= 3 ? "Max Retries Reached" : "Try Again"}
-                      </Button>
-                      <Button
+                      </ModernButton>
+                      <ModernButton
+                        variant="secondary"
                         icon={<HomeOutlined />}
                         onClick={this.handleGoHome}
                       >
                         Go Home
-                      </Button>
-                      <Button
+                      </ModernButton>
+                      <ModernButton
+                        variant="secondary"
                         icon={<BugOutlined />}
                         onClick={this.handleReportBug}
                       >
                         Report Critical Bug
-                      </Button>
+                      </ModernButton>
                     </Space>
 
                     {process.env.NODE_ENV === "development" && this.state.error && (
@@ -345,25 +347,27 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
               extra={
                 <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                   <Space>
-                    <Button
-                      type="primary"
+                    <ModernButton
+                      variant="primary"
                       icon={<ReloadOutlined />}
                       onClick={this.handleReset}
                     >
                       Try Again
-                    </Button>
-                    <Button
+                    </ModernButton>
+                    <ModernButton
+                      variant="secondary"
                       icon={<HomeOutlined />}
                       onClick={this.handleGoHome}
                     >
                       Go Home
-                    </Button>
-                    <Button
+                    </ModernButton>
+                    <ModernButton
+                      variant="secondary"
                       icon={<BugOutlined />}
                       onClick={this.handleReportBug}
                     >
                       Report Bug
-                    </Button>
+                    </ModernButton>
                   </Space>
 
                   {process.env.NODE_ENV === "development" && this.state.error && (

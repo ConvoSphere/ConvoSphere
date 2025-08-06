@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Form, Input, Button, Space, Select, ColorPicker } from "antd";
+import { Modal, Form, Input, Space, Select, ColorPicker } from "antd";
+import ModernButton from "../ModernButton";
 
 const { Option } = Select;
 
@@ -52,10 +53,10 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
       </Form.Item>
       <Form.Item>
         <Space>
-          <Button type="primary" htmlType="submit">
+          <ModernButton variant="primary" htmlType="submit">
             Create Tag
-          </Button>
-          <Button onClick={onCancel}>Cancel</Button>
+          </ModernButton>
+          <ModernButton variant="secondary" onClick={onCancel}>Cancel</ModernButton>
         </Space>
       </Form.Item>
     </Form>

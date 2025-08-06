@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button, Space, Typography, Modal, Select, Form, InputNumber, Switch, Input } from "antd";
+import { Space, Typography, Modal, Select, Form, InputNumber, Switch, Input } from "antd";
+import ModernButton from "../ModernButton";
 import {
   PlusOutlined,
   SettingOutlined,
