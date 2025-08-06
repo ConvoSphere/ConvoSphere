@@ -1,6 +1,7 @@
 """User service for managing users with enterprise features."""
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from passlib.context import CryptContext
 from sqlalchemy import and_, or_
@@ -43,8 +44,6 @@ USER_NOT_FOUND_TEMPLATE = "User with ID {} not found"
 
 class UserService:
     """Service for managing users with enterprise features."""
-
-from typing import Any
 
     def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()

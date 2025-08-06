@@ -43,24 +43,17 @@ def init_weaviate() -> weaviate.Client:
             host = host.split(":")[0]
 
         if get_settings().weaviate_api_key:
-            weaviate_client = weaviate.connect_to_custom(
-                http_host=host,
-                http_port=8080,
-                http_secure=False,
-                grpc_host=host,
-                grpc_port=50051,
-                grpc_secure=False,
+            # Use v4 API with API key authentication
+            weaviate_client = weaviate.connect_to_local(
+                host=host,
+                port=8080,
                 auth_credentials=Auth.api_key(get_settings().weaviate_api_key),
             )
         else:
             # For local Weaviate without authentication
-            weaviate_client = weaviate.connect_to_custom(
-                http_host=host,
-                http_port=8080,
-                http_secure=False,
-                grpc_host=host,
-                grpc_port=50051,
-                grpc_secure=False,
+            weaviate_client = weaviate.connect_to_local(
+                host=host,
+                port=8080,
             )
 
         # Test connection

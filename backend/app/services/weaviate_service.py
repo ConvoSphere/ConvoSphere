@@ -30,11 +30,16 @@ class WeaviateService:
     def _init_client(self) -> WeaviateClient | None:
         """Initialize Weaviate client."""
         try:
-            auth_credentials = AuthApiKey(api_key=self.api_key)
-            client = Client(
-                url=self.url,
-                auth_client_secret=auth_credentials,
-            )
+            if self.api_key:
+                # Use API key authentication if provided
+                auth_credentials = AuthApiKey(api_key=self.api_key)
+                client = Client(
+                    url=self.url,
+                    auth_client_secret=auth_credentials,
+                )
+            else:
+                # Connect without authentication for local development
+                client = Client(url=self.url)
 
             logger.info(f"Connected to Weaviate at {self.url}")
             return client

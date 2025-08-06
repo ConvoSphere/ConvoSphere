@@ -6,7 +6,7 @@ including local filesystem, S3, MinIO, GCS, and Azure Blob Storage.
 """
 
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class StorageConfig(BaseModel):
@@ -55,16 +55,18 @@ class StorageConfig(BaseModel):
     encryption_enabled: bool = Field(default=False, description="Enable client-side encryption")
     encryption_key: str | None = Field(default=None, description="Encryption key for client-side encryption")
 
-    @validator("provider")
-    def validate_provider(self, v):
+    @field_validator("provider")
+    @classmethod
+    def validate_provider(cls, v):
         """Validate storage provider."""
         valid_providers = ["local", "s3", "minio", "gcs", "azure"]
         if v.lower() not in valid_providers:
             raise ValueError(f"Invalid storage provider. Must be one of: {valid_providers}")
         return v.lower()
 
-    @validator("bucket_name")
-    def validate_bucket_name(self, v):
+    @field_validator("bucket_name")
+    @classmethod
+    def validate_bucket_name(cls, v):
         """Validate bucket name."""
         if not v or len(v.strip()) == 0:
             raise ValueError("Bucket name cannot be empty")
@@ -84,8 +86,9 @@ class StorageConfig(BaseModel):
 
         return v
 
-    @validator("timeout")
-    def validate_timeout(self, v):
+    @field_validator("timeout")
+    @classmethod
+    def validate_timeout(cls, v):
         """Validate timeout value."""
         if v < 1:
             raise ValueError("Timeout must be at least 1 second")
@@ -93,8 +96,9 @@ class StorageConfig(BaseModel):
             raise ValueError("Timeout cannot exceed 300 seconds")
         return v
 
-    @validator("max_retries")
-    def validate_max_retries(self, v):
+    @field_validator("max_retries")
+    @classmethod
+    def validate_max_retries(cls, v):
         """Validate max retries value."""
         if v < 0:
             raise ValueError("Max retries cannot be negative")

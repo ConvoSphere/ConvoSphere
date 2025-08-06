@@ -11,8 +11,9 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://convosphere:${POSTGRES_PASSWORD:-convosphere_password}@postgres:5432/convosphere}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=${WEAVIATE_URL:-http://weaviate:8080}
+      - WEAVIATE_API_KEY=convosphere-api-key
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
@@ -35,8 +36,6 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:8081}
       - CSRF_PROTECTION_ENABLED=${CSRF_PROTECTION_ENABLED:-true}
       - CSRF_TOKEN_EXPIRE_MINUTES=${CSRF_TOKEN_EXPIRE_MINUTES:-30}
-    env_file:
-      - .env
     volumes:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs
@@ -98,6 +97,7 @@ services:
     volumes:
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
       - redis_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
     restart: unless-stopped
     networks:
       - convosphere-network
@@ -106,6 +106,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   minio:
     image: minio/minio:latest
@@ -127,16 +128,6 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-    command: redis-server /usr/local/etc/redis/redis.conf
-    restart: unless-stopped
-    networks:
-      - convosphere-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   weaviate:
     image: semitechnologies/weaviate:1.23.7
@@ -144,7 +135,12 @@ services:
       - "8080:8080"
     environment:
       - QUERY_DEFAULTS_LIMIT=25
-      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=false
+      - AUTHENTICATION_APIKEY_ENABLED=true
+      - AUTHENTICATION_APIKEY_ALLOWED_KEYS=convosphere-api-key
+      - AUTHENTICATION_APIKEY_USERS=convosphere-user
+      - AUTHORIZATION_ENABLE_RBAC=true
+      - AUTHORIZATION_RBAC_ROOT_USERS=convosphere-user
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
       - DEFAULT_VECTORIZER_MODULE=none
       - ENABLE_MODULES=text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai

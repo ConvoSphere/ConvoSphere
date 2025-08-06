@@ -751,7 +751,6 @@ const SystemStatus: React.FC = () => {
             </ModernCard>
           </Col>
         </Row>
-            </ModernCard>
           </Tabs.TabPane>
 
           {/* System Metrics Tab */}

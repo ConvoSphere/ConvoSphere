@@ -146,9 +146,10 @@ def create_application() -> FastAPI:
     setup_security_middleware(app)
 
     # Add CORS middleware with secure configuration
+    cors_origins = [origin.strip() for origin in get_settings().cors_origins.split(",") if origin.strip()]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=get_settings().cors_origins,
+        allow_origins=cors_origins,
         allow_credentials=get_settings().cors_allow_credentials,
         allow_methods=get_settings().cors_allow_methods,
         allow_headers=get_settings().cors_allow_headers,

@@ -6,6 +6,7 @@ wrapping the UserService for authentication operations.
 """
 
 from datetime import datetime
+from typing import Any
 
 from backend.app.core.config import get_settings
 from backend.app.core.security import get_password_hash, verify_password
@@ -18,8 +19,6 @@ from backend.app.services.user_service import UserService
 
 class AuthService:
     """Service for authentication operations."""
-
-from typing import Any
 
     def __init__(self, db_session: Any) -> None:
         """Initialize AuthService with database session."""

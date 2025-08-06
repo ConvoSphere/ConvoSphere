@@ -31,7 +31,7 @@ import {
   LayoutOutlined,
   BgColorsOutlined,
   PrinterOutlined,
-  PaletteOutlined,
+  SwitcherOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";

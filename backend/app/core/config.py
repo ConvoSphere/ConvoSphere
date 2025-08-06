@@ -40,13 +40,9 @@ class Settings(BaseSettings):
         description="Frontend URL for CORS configuration",
     )
     # CORS Configuration
-    cors_origins: list[str] = Field(
-        default=[
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost:8081",
-        ],
-        description="List of allowed CORS origins - restrict in production",
+    cors_origins: str = Field(
+        default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
+        description="Comma-separated list of allowed CORS origins - restrict in production",
     )
     cors_allow_credentials: bool = Field(
         default=True,
@@ -370,63 +366,63 @@ class Settings(BaseSettings):
             raise ValueError("Temperature must be between 0.0 and 2.0")
         return v
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string."""
-        import os
+    # @field_validator("cors_origins", mode="before")
+    # @classmethod
+    # def parse_cors_origins(cls, v):
+    #     """Parse CORS origins from comma-separated string."""
+    #     import os
 
-        if isinstance(v, str):
-            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
-        elif isinstance(v, list):
-            origins = v
-        else:
-            origins = [
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://localhost:8081",
-            ]
+    #     if isinstance(v, str):
+    #         origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+    #     elif isinstance(v, list):
+    #         origins = v
+    #     else:
+    #         origins = [
+    #             "http://localhost:5173",
+    #             "http://localhost:3000",
+    #             "http://localhost:8081",
+    #         ]
 
-        # Security checks based on environment
-        environment = os.getenv("ENVIRONMENT", "development")
+    #     # Security checks based on environment
+    #     environment = os.getenv("ENVIRONMENT", "development")
 
-        if environment == "production":
-            # In production, enforce strict CORS rules
-            insecure_origins = [
-                origin for origin in origins if origin.startswith("http://")
-            ]
-            if insecure_origins:
-                raise ValueError(
-                    f"Insecure CORS origins not allowed in production: {insecure_origins}"
-                )
+    #     if environment == "production":
+    #         # In production, enforce strict CORS rules
+    #         insecure_origins = [
+    #             origin for origin in origins if origin.startswith("http://")
+    #         ]
+    #         if insecure_origins:
+    #             raise ValueError(
+    #                 f"Insecure CORS origins not allowed in production: {insecure_origins}"
+    #             )
 
-            # Check for wildcard origins
-            if "*" in origins:
-                raise ValueError("Wildcard CORS origins not allowed in production")
+    #         # Check for wildcard origins
+    #         if "*" in origins:
+    #             raise ValueError("Wildcard CORS origins not allowed in production")
 
-            # Validate HTTPS origins
-            for origin in origins:
-                if not origin.startswith("https://"):
-                    raise ValueError(f"Production CORS origins must use HTTPS: {origin}")
+    #         # Validate HTTPS origins
+    #         for origin in origins:
+    #             if not origin.startswith("https://"):
+    #                 raise ValueError(f"Production CORS origins must use HTTPS: {origin}")
 
-        elif environment == "staging":
-            # In staging, allow HTTP for local development but warn
-            insecure_origins = [
-                origin for origin in origins if origin.startswith("http://")
-            ]
-            if insecure_origins:
-                import warnings
-                warnings.warn(
-                    f"Insecure CORS origins in staging environment: {insecure_origins}", stacklevel=2
-                )
+    #     elif environment == "staging":
+    #         # In staging, allow HTTP for local development but warn
+    #         insecure_origins = [
+    #             origin for origin in origins if origin.startswith("http://")
+    #         ]
+    #         if insecure_origins:
+    #             import warnings
+    #             warnings.warn(
+    #                 f"Insecure CORS origins in staging environment: {insecure_origins}", stacklevel=2
+    #             )
 
-        # Development environment allows more flexibility
-        # but still warns about wildcards
-        if "*" in origins and environment != "development":
-            import warnings
-            warnings.warn("Wildcard CORS origins should be avoided in non-development environments", stacklevel=2)
+    #     # Development environment allows more flexibility
+    #     # but still warns about wildcards
+    #     if "*" in origins and environment != "development":
+    #         import warnings
+    #         warnings.warn("Wildcard CORS origins should be avoided in non-development environments", stacklevel=2)
 
-        return origins
+    #     return origins
 
     model_config = ConfigDict(
         case_sensitive=False,

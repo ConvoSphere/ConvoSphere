@@ -3,7 +3,7 @@ import { Row, Col, Card, Progress, Typography, Space, Statistic, Tooltip } from 
 import { 
   DesktopOutlined, 
   HddOutlined, 
-  MemoryOutlined, 
+  DatabaseOutlined, 
   WifiOutlined,
   ClockCircleOutlined,
   ThunderboltOutlined 

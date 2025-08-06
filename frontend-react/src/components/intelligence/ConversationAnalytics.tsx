@@ -5,7 +5,7 @@ import {
   UserOutlined, 
   ClockCircleOutlined, 
   SmileOutlined,
-  TrendingUpOutlined 
+  RiseOutlined 
 } from '@ant-design/icons';
 import { Line, Bar } from '@ant-design/plots';
 import { useTranslation } from 'react-i18next';

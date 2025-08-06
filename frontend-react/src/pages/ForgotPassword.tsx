@@ -14,7 +14,10 @@ import {
 import { ArrowLeftOutlined, MailOutlined } from "@ant-design/icons";
 
 import { forgotPassword } from "../services/auth";
-import { ModernCard, ModernFormItem, ModernInput, ModernButton } from "../components/ModernUI";
+import ModernCard from "../components/ModernCard";
+import { ModernFormItem } from "../components/ModernForm";
+import ModernInput from "../components/ModernInput";
+import ModernButton from "../components/ModernButton";
 
 const { Title, Text } = Typography;
 

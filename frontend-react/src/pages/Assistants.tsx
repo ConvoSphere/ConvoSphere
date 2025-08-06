@@ -85,7 +85,6 @@ const Assistants: React.FC = () => {
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
 
   // API integration for assistants
-  const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const [availableKnowledgeBases, setAvailableKnowledgeBases] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);

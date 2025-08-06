@@ -11,14 +11,21 @@ jest.mock("../../services/auth");
 const mockForgotPassword = authService.forgotPassword as jest.MockedFunction<typeof authService.forgotPassword>;
 
 // Mock the ModernUI components
-jest.mock("../../components/ModernUI", () => ({
+jest.mock("../../components/ModernCard", () => ({
   ModernCard: ({ children, ...props }: any) => <div data-testid="modern-card" {...props}>{children}</div>,
+}));
+jest.mock("../../components/ModernForm", () => ({
   ModernFormItem: ({ children, ...props }: any) => <div data-testid="modern-form-item" {...props}>{children}</div>,
+}));
+jest.mock("../../components/ModernInput", () => ({
   ModernInput: ({ ...props }: any) => <input data-testid="modern-input" {...props} />,
+}));
+jest.mock("../../components/ModernButton", () => ({
   ModernButton: ({ children, onClick, ...props }: any) => (
     <button data-testid="modern-button" onClick={onClick} {...props}>{children}</button>
   ),
 }));
+
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(

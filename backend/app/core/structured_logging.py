@@ -64,17 +64,47 @@ class StructuredLogger:
         current_span = trace.get_current_span()
         span_context = current_span.get_span_context() if current_span else None
 
+        # Handle both Loguru and standard Python logging records
+        if isinstance(record, dict):
+            # Loguru record format (dictionary)
+            if "time" in record and hasattr(record["time"], "timestamp"):
+                timestamp = datetime.fromtimestamp(record["time"].timestamp(), tz=UTC).isoformat()
+            else:
+                timestamp = datetime.now(UTC).isoformat()
+            level = record.get("level", {}).name if isinstance(record.get("level"), object) else str(record.get("level", "INFO"))
+            logger_name = record.get("name", "unknown")
+            message = record.get("message", "")
+            module = record.get("module", "unknown")
+            function = record.get("function", "unknown")
+            line = record.get("line", 0)
+        elif hasattr(record, "time") and hasattr(record.time, "timestamp"):
+            # Loguru record format (object)
+            timestamp = datetime.fromtimestamp(record.time.timestamp(), tz=UTC).isoformat()
+            level = record.level.name
+            logger_name = record.name
+            message = record.message
+            module = record.module
+            function = record.function
+            line = record.line
+        else:
+            # Standard Python logging record format
+            timestamp = datetime.fromtimestamp(record.created, tz=UTC).isoformat()
+            level = record.levelname
+            logger_name = record.name
+            message = record.getMessage()
+            module = record.module
+            function = record.funcName
+            line = record.lineno
+
         # Base log structure
         log_data = {
-            "timestamp": datetime.fromtimestamp(
-                record["time"].timestamp(), tz=UTC
-            ).isoformat(),
-            "level": record["level"].name,
-            "logger": record["name"],
-            "message": record["message"],
-            "module": record["module"],
-            "function": record["function"],
-            "line": record["line"],
+            "timestamp": timestamp,
+            "level": level,
+            "logger": logger_name,
+            "message": message,
+            "module": module,
+            "function": function,
+            "line": line,
         }
 
         # Add trace correlation if available
@@ -87,15 +117,15 @@ class StructuredLogger:
             )
 
         # Add extra fields from record
-        if "extra" in record and record["extra"]:
-            log_data.update(record["extra"])
+        if hasattr(record, "extra") and record.extra:
+            log_data.update(record.extra)
 
         # Add exception info if present
-        if record["exception"]:
+        if hasattr(record, "exception") and record.exception:
             log_data["exception"] = {
-                "type": record["exception"].type.__name__,
-                "value": str(record["exception"].value),
-                "traceback": record["exception"].traceback,
+                "type": record.exception.type.__name__,
+                "value": str(record.exception.value),
+                "traceback": record.exception.traceback,
             }
 
         return json.dumps(log_data, ensure_ascii=False, default=str)
@@ -299,8 +329,9 @@ class InterceptHandler(logging.Handler):
         )
 
 
-# Global structured logger instance
-structured_logger = StructuredLogger()
+# Global structured logger instance (disabled to avoid conflicts)
+# structured_logger = StructuredLogger()
+structured_logger = None
 
 
 def get_logger(name: str = None) -> StructuredLogger:
@@ -323,20 +354,24 @@ def log_event(
     **kwargs,
 ):
     """Log a structured event."""
-    structured_logger.log_event(
-        level=level,
-        message=message,
-        event_type=event_type,
-        user_id=user_id,
-        session_id=session_id,
-        request_id=request_id,
-        endpoint=endpoint,
-        method=method,
-        status_code=status_code,
-        duration=duration,
-        extra=extra,
-        **kwargs,
-    )
+    if structured_logger is not None:
+        structured_logger.log_event(
+            level=level,
+            message=message,
+            event_type=event_type,
+            user_id=user_id,
+            session_id=session_id,
+            request_id=request_id,
+            endpoint=endpoint,
+            method=method,
+            status_code=status_code,
+            duration=duration,
+            extra=extra,
+            **kwargs,
+        )
+    else:
+        # Fallback to basic logging
+        logger.log(level.upper(), message)
 
 
 def log_api_request(

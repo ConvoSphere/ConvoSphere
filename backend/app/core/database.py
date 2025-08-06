@@ -6,6 +6,7 @@ and utility functions for the AI Assistant Platform.
 """
 
 from collections.abc import Generator
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import create_engine, text

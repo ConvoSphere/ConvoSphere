@@ -8,7 +8,7 @@ import {
   FrownOutlined,
   FireOutlined 
 } from '@ant-design/icons';
-import { Bubble, WordCloud } from '@ant-design/plots';
+import { Scatter, WordCloud } from '@ant-design/plots';
 import { useTranslation } from 'react-i18next';
 import type { TopicCluster } from '../../services/conversationIntelligence';
 import ModernCard from '../ModernCard';
@@ -119,9 +119,9 @@ const TopicClustering: React.FC<TopicClusteringProps> = ({
         </Col>
       </Row>
 
-      {/* Topic Bubble Chart */}
+      {/* Topic Scatter Chart */}
       <ModernCard title={t('intelligence.topic_distribution')}>
-        <Bubble
+        <Scatter
           data={bubbleData}
           xField="x"
           yField="y"
