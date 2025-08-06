@@ -160,7 +160,7 @@ const NotificationDropdown: React.FC = () => {
       label: (
         <div style={{ padding: "8px 16px", borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Title level={5} style={{ margin: 0, color: colors?.colorTextBase || "#000000" }}>
+            <Title level={5} style={{ margin: 0, color: colors?.colorTextBase || "#ffffff" }}>
               {t("notifications.title", "Notifications")}
             </Title>
             <Space>
@@ -213,7 +213,7 @@ const NotificationDropdown: React.FC = () => {
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#000000" }}>
+                <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#ffffff" }}>
                   {notification.title}
                 </Text>
                 {notification.isImportant && (
@@ -222,11 +222,11 @@ const NotificationDropdown: React.FC = () => {
                   </Tag>
                 )}
               </div>
-              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#666666", display: "block", marginBottom: 4 }}>
+              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#cccccc", display: "block", marginBottom: 4 }}>
                 {notification.message}
               </Text>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ fontSize: "11px", color: colors?.colorTextSecondary || "#666666" }}>
+                <Text style={{ fontSize: "11px", color: colors?.colorTextSecondary || "#cccccc" }}>
                   {formatTimestamp(notification.timestamp)}
                 </Text>
                 <Space size="small">

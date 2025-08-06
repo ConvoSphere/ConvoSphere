@@ -12,6 +12,7 @@ import {
 import { LockOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import { resetPassword, validateResetToken } from "../services/auth";
+import { useThemeStore } from "../store/themeStore";
 import ModernCard from "../components/ModernCard";
 import { ModernFormItem } from "../components/ModernForm";
 import ModernInput from "../components/ModernInput";
@@ -22,6 +23,8 @@ const { Title, Text } = Typography;
 const ResetPassword: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(true);
@@ -148,11 +151,11 @@ const ResetPassword: React.FC = () => {
               <CheckCircleOutlined />
             </div>
             
-            <Title level={2} style={{ margin: 0, color: "#23224A" }}>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.passwordResetSuccess")}
             </Title>
             
-            <Text style={{ fontSize: "16px", color: "#7A869A" }}>
+            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
               {t("auth.passwordResetSuccessDescription")}
             </Text>
             
@@ -192,7 +195,7 @@ const ResetPassword: React.FC = () => {
           }}
         >
           <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <Title level={2} style={{ margin: 0, color: "#23224A" }}>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.invalidToken")}
             </Title>
             
@@ -249,10 +252,10 @@ const ResetPassword: React.FC = () => {
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <div style={{ textAlign: "center" }}>
-            <Title level={2} style={{ margin: 0, color: "#23224A" }}>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.resetPassword")}
             </Title>
-            <Text style={{ fontSize: "16px", color: "#7A869A" }}>
+            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
               {t("auth.resetPasswordDescription")}
             </Text>
           </div>
@@ -276,7 +279,7 @@ const ResetPassword: React.FC = () => {
               ]}
             >
               <ModernInput.Password
-                prefix={<LockOutlined style={{ color: "#7A869A" }} />}
+                prefix={<LockOutlined style={{ color: colors.colorTextSecondary }} />}
                 placeholder={t("auth.newPasswordPlaceholder")}
                 variant="filled"
                 size="lg"
@@ -300,7 +303,7 @@ const ResetPassword: React.FC = () => {
               ]}
             >
               <ModernInput.Password
-                prefix={<LockOutlined style={{ color: "#7A869A" }} />}
+                prefix={<LockOutlined style={{ color: colors.colorTextSecondary }} />}
                 placeholder={t("auth.confirmPasswordPlaceholder")}
                 variant="filled"
                 size="lg"

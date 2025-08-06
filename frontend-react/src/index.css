@@ -110,6 +110,10 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
+  /* Ant Design Title Komponenten Farben */
+  --ant-color-text-heading: var(--colorTextHeading);
+  --ant-color-text-heading-secondary: var(--colorTextHeadingSecondary);
+
   /* Shadow System */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md:

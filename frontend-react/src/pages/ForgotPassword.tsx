@@ -14,6 +14,7 @@ import {
 import { ArrowLeftOutlined, MailOutlined } from "@ant-design/icons";
 
 import { forgotPassword } from "../services/auth";
+import { useThemeStore } from "../store/themeStore";
 import ModernCard from "../components/ModernCard";
 import { ModernFormItem } from "../components/ModernForm";
 import ModernInput from "../components/ModernInput";
@@ -24,6 +25,8 @@ const { Title, Text } = Typography;
 const ForgotPassword: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getCurrentColors } = useThemeStore();
+  const colors = getCurrentColors();
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -77,11 +80,11 @@ const ForgotPassword: React.FC = () => {
               <MailOutlined />
             </div>
             
-            <Title level={2} style={{ margin: 0, color: "#23224A" }}>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.checkYourEmail")}
             </Title>
             
-            <Text style={{ fontSize: "16px", color: "#7A869A" }}>
+            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
               {t("auth.passwordResetEmailSent")}
             </Text>
             
@@ -138,10 +141,10 @@ const ForgotPassword: React.FC = () => {
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <div style={{ textAlign: "center" }}>
-            <Title level={2} style={{ margin: 0, color: "#23224A" }}>
+            <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.forgotPassword")}
             </Title>
-            <Text style={{ fontSize: "16px", color: "#7A869A" }}>
+            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
               {t("auth.forgotPasswordDescription")}
             </Text>
           </div>
@@ -161,7 +164,7 @@ const ForgotPassword: React.FC = () => {
               ]}
             >
               <ModernInput
-                prefix={<MailOutlined style={{ color: "#7A869A" }} />}
+                prefix={<MailOutlined style={{ color: colors.colorTextSecondary }} />}
                 placeholder={t("auth.emailPlaceholder")}
                 variant="filled"
                 size="lg"
