@@ -144,38 +144,22 @@ nav:
   - Changelog: changelog.md
   - FAQ: faq.md
   - Development:
-    - Test Coverage: development/test_coverage_improvement_plan.md
-    - Test Quick Start: development/test_coverage_quick_start.md
-    - Implementation Summaries:
-      - Phase 1: development/PHASE1_IMPLEMENTATION_SUMMARY.md
-      - Phase 2: development/PHASE2_IMPLEMENTATION_SUMMARY.md
-      - Phase 3: development/PHASE3_IMPLEMENTATION_SUMMARY.md
-      - Phase 4: development/PHASE4_IMPLEMENTATION_SUMMARY.md
-      - Phase 5: development/PHASE5_EXTENDED_EXPORT_SUMMARY.md
-    - Design & Architecture:
-      - Design System: development/DESIGN_SYSTEM.md
-      - Extended Export Features: development/EXTENDED_EXPORT_FEATURES.md
-      - Integration Summary: development/INTEGRATION_SUMMARY.md
-      - Improvements Summary: development/IMPROVEMENTS_SUMMARY.md
-      - Refactoring Summary: development/REFACTORING_SUMMARY.md
-      - User Management Implementation: development/Benutzerverwaltung_Implementierung.md
-    - Agent Implementation: agent-implementation.md
+    - Overview: development/README.md
+    - Implementation Summary: development/IMPLEMENTATION_SUMMARY.md
+    - User Management: development/USER_MANAGEMENT_IMPLEMENTATION.md
+    - Design System: development/DESIGN_SYSTEM.md
+    - Extended Export Features: development/EXTENDED_EXPORT_FEATURES.md
+    - Integration Summary: development/INTEGRATION_SUMMARY.md
+    - Improvements Summary: development/IMPROVEMENTS_SUMMARY.md
+    - Refactoring Summary: development/REFACTORING_SUMMARY.md
+    - Test Coverage:
+      - Improvement Plan: development/test_coverage_improvement_plan.md
+      - Quick Start: development/test_coverage_quick_start.md
   - Analysis:
-    - Database Analysis: analysis/sqlite_vs_postgresql_analysis.md
-    - Translation Analysis: analysis/translation_analysis_report.md
-    - Translation Improvements: analysis/translation_improvements_summary.md
+    - Overview: analysis/README.md
+    - Technical Analysis Summary: analysis/TECHNICAL_ANALYSIS_SUMMARY.md
   - Reports:
     - Overview: reports/README.md
-    - Code Quality:
-      - Type Fixes Summary: reports/code-quality/type_fixes_summary.md
-      - Service Layer Type Fixes: reports/code-quality/service_layer_type_fixes.md
-      - MyPy Analysis Report: reports/code-quality/mypy_analysis_report.md
-      - Code Quality Report: reports/code-quality/code_quality_report.md
-      - Complete Type Analysis: reports/code-quality/complete_type_analysis_final.md
-      - Fixes Summary: reports/code-quality/fixes_summary.md
-      - Final Type Fixes Summary: reports/code-quality/final_type_fixes_summary.md
-    - Development:
-      - Next Steps Completed: reports/development/next_steps_completed.md
-      - Development Priorities: reports/development/priorities.md
-      - GitHub Actions Fixes: reports/development/GITHUB_ACTIONS_FIXES.md
-    - Test Results: reports/test_results_summary.md 
+    - Code Quality Summary: reports/CODE_QUALITY_SUMMARY.md
+    - Test Results: reports/test_results_summary.md
+  - Agent Implementation: agent-implementation.md 
