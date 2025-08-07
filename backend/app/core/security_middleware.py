@@ -10,6 +10,8 @@ import time
 from fastapi import Request, Response
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from backend.app.core.config import get_settings
+from backend.app.core.security import verify_token
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -30,7 +32,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Add security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = (
             "max-age=31536000; includeSubDomains; preload"
         )
@@ -43,9 +44,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Download-Options"] = "noopen"
         response.headers["X-DNS-Prefetch-Control"] = "off"
 
+        # Optional modern isolation headers (safe defaults)
+        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        response.headers.setdefault("Cross-Origin-Embedder-Policy", "require-corp")
+
         # Add performance headers
         response.headers["X-Response-Time"] = f"{process_time:.4f}"
-        response.headers["Server"] = "ConvoSphere/1.0"
 
         # Log security events
         await self._log_security_event(request, response, process_time)
@@ -53,14 +57,20 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
     def _get_csp_header(self) -> str:
-        """Get Content Security Policy header."""
+        """Get Content Security Policy header (hardened, environment-aware)."""
+        settings = get_settings()
+        # Allow connections only to self and configured backend/ws endpoints
+        backend_http = settings.backend_url
+        backend_ws = settings.ws_url
+        # Fonts and styles (Ant Design) may require inline styles; keep style 'unsafe-inline'
         return (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+            "script-src 'self'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' http://localhost http://localhost:8000 https://api.openai.com https://api.anthropic.com; "
+            f"connect-src 'self' {backend_http} {backend_ws}; "
+            "worker-src 'self' blob:; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
@@ -96,25 +106,25 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Different rate limits for different endpoints
         self.endpoint_limits = {
-            "/api/v1/auth/login": 20,  # 20 login attempts per minute (increased)
-            "/api/v1/auth/register": 10,  # 10 registration attempts per minute (increased)
-            "/api/v1/auth/refresh": 60,  # 60 refresh attempts per minute (increased)
-            "/api/v1/auth/sso/providers": 200,  # 200 SSO provider requests per minute (increased)
-            "/api/v1/chat": 120,  # 120 chat messages per minute (increased)
-            "/api/v1/knowledge": 80,  # 80 knowledge operations per minute (increased)
-            "/api/v1/tools": 60,  # 60 tool executions per minute (increased)
-            "/api/v1/assistants": 60,  # 60 assistant operations per minute (increased)
+            "/api/v1/auth/login": 20,
+            "/api/v1/auth/register": 10,
+            "/api/v1/auth/refresh": 60,
+            "/api/v1/auth/sso/providers": 200,
+            "/api/v1/chat": 120,
+            "/api/v1/knowledge": 80,
+            "/api/v1/tools": 60,
+            "/api/v1/assistants": 60,
         }
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        """Apply rate limiting to requests."""
+        """Apply rate limiting to requests (deprecated in favor of Redis-based limiter)."""
         client_ip = self._get_client_ip(request)
-        current_time = int(time.time() / 60)  # Minute-based window
+        current_time = int(time.time() / 60)
 
         # Get user ID if authenticated
-        user_id = self._get_user_id(request)
+        user_id = await self._get_user_id(request)
         identifier = user_id if user_id else client_ip
 
         # Clean old entries
@@ -152,21 +162,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host
 
-    def _get_user_id(self, request: Request) -> str | None:
-        """Get user ID from JWT token if authenticated."""
+    async def _get_user_id(self, request: Request) -> str | None:
+        """Get user ID from JWT token if authenticated using unified verifier."""
         try:
             auth_header = request.headers.get("Authorization")
             if auth_header and auth_header.startswith("Bearer "):
                 token = auth_header.split(" ")[1]
-                # Decode JWT token to get user ID
-                import jwt
-
-                from backend.app.core.config import get_settings
-
-                payload = jwt.decode(
-                    token, get_settings().secret_key, algorithms=["HS256"]
-                )
-                return payload.get("sub")
+                subject = await verify_token(token)
+                return subject
         except Exception:
             pass
         return None
@@ -283,8 +286,10 @@ def setup_security_middleware(app):
     # Add security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
 
-    # Add rate limiting middleware
-    app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
+    # NOTE: The in-memory RateLimitMiddleware is intentionally not added here to
+    # avoid inconsistent behavior in multi-instance deployments. Prefer the
+    # Redis-backed limiter from backend.app.core.rate_limiting applied at the
+    # endpoint level.
 
     # Add security validation middleware
     app.add_middleware(SecurityValidationMiddleware)

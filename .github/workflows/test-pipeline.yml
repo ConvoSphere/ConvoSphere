@@ -113,7 +113,7 @@ jobs:
       id: frontend-tests
       run: |
         cd frontend-react
-        npm test -- --coverage --watchAll=false --silent > test-output.txt 2>&1 || true
+        npm run test:coverage -- --silent > test-output.txt 2>&1 || true
         
         # Check if there are actual test failures (not just warnings)
         if grep -q "FAIL\|Error:" test-output.txt; then
@@ -377,7 +377,7 @@ jobs:
       id: component-tests
       run: |
         cd frontend-react
-        npm test -- --coverage --watchAll=false --testPathPattern="components" --silent > test-output.txt 2>&1 || true
+        npm run test:coverage -- --silent --testPathPattern="components" > test-output.txt 2>&1 || true
         
         # Check if there are actual test failures (not just warnings)
         if grep -q "FAIL\|Error:" test-output.txt; then
@@ -393,7 +393,7 @@ jobs:
       id: hook-tests
       run: |
         cd frontend-react
-        npm test -- --coverage --watchAll=false --testPathPattern="hooks" --silent > test-output.txt 2>&1 || true
+        npm run test:coverage -- --silent --testPathPattern="hooks" > test-output.txt 2>&1 || true
         
         # Check if there are actual test failures (not just warnings)
         if grep -q "FAIL\|Error:" test-output.txt; then
@@ -409,7 +409,7 @@ jobs:
       id: utility-tests
       run: |
         cd frontend-react
-        npm test -- --coverage --watchAll=false --testPathPattern="utils" --silent > test-output.txt 2>&1 || true
+        npm run test:coverage -- --silent --testPathPattern="utils" > test-output.txt 2>&1 || true
         
         # Check if there are actual test failures (not just warnings)
         if grep -q "FAIL\|Error:" test-output.txt; then

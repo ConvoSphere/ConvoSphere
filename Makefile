@@ -71,7 +71,7 @@ dev:
 test:
 	@echo "Running tests..."
 	cd backend && pytest
-	cd frontend-react && pytest
+	cd frontend-react && npm run test
 
 format:
 	@echo "Formatting code..."
