@@ -1,4 +1,4 @@
-# ConvoSphere
+# ConvoSphere Documentation
 
 A modern, full-stack AI assistant platform with **FastAPI** backend and **React** frontend, featuring real-time messaging, knowledge base integration, and enterprise-grade AI capabilities.
 
@@ -16,8 +16,6 @@ docker-compose up --build
 ```
 
 → Open [http://localhost:8081](http://localhost:8081) (Frontend) | [http://localhost:8000](http://localhost:8000) (Backend API)
-
-> **⚠️ Beta Version**: This is currently version 0.1.0-beta. Some features may be incomplete or subject to change.
 
 ## ✨ Key Features
 
@@ -65,16 +63,32 @@ docker-compose up --build
 - GitHub Actions CI/CD
 - MkDocs documentation
 
-## 📖 Documentation
+## 📖 Documentation Structure
 
+### **User Documentation**
 - **[Quick Start](quick-start.md)** - Get started in 5 minutes
 - **[User Guide](user-guide.md)** - Complete user documentation
-- **[Developer Guide](developer-guide.md)** - Setup and development
-- **[API Reference](api.md)** - Complete API documentation
-- **[Security](security.md)** - Security documentation
 - **[FAQ](faq.md)** - Frequently asked questions
 
-## 🏗️ Architecture
+### **Developer Documentation**
+- **[Developer Guide](developer-guide.md)** - Setup and development
+- **[Architecture](architecture.md)** - System architecture overview
+- **[API Reference](api.md)** - Complete API documentation
+- **[Security](security.md)** - Security documentation
+
+### **Configuration & Features**
+- **[Knowledge Base Settings](KNOWLEDGE_BASE_SETTINGS.md)** - Document processing configuration
+- **[RAG Features](RAG_FEATURES.md)** - Retrieval-augmented generation
+- **[Bulk Operations](BULK_OPERATIONS.md)** - Document management
+- **[Storage Integration](STORAGE_INTEGRATION.md)** - Cloud storage setup
+- **[SSO Setup](SSO_SETUP.md)** - Enterprise authentication
+
+### **Development & Reports**
+- **[Development Reports](development/)** - Implementation summaries and progress
+- **[Code Quality Reports](reports/code-quality/)** - Code analysis and improvements
+- **[Test Results](reports/test_results_summary.md)** - Testing coverage and results
+
+## 🏗️ Architecture Overview
 
 ```mermaid
 graph TB
