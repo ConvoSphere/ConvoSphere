@@ -35,6 +35,7 @@ from backend.app.core.security_hardening import (
     sso_security_validator,
     validate_sso_request,
 )
+from backend.app.core.rate_limiting import rate_limit_auth
 from backend.app.models.user import User, UserRole
 from backend.app.schemas.auth import PasswordResetRequest, PasswordResetConfirm
 from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
@@ -86,6 +87,7 @@ class UserResponse(BaseModel):
 
 
 @router.post("/login", response_model=TokenResponse)
+@rate_limit_auth
 async def login(
     user_credentials: UserLogin,
     request: Request,
@@ -208,6 +210,7 @@ async def login(
 
 
 @router.post("/register", response_model=UserResponse)
+@rate_limit_auth
 async def register(
     user_data: UserRegister,
     db: Session = Depends(get_db),
@@ -268,6 +271,7 @@ async def register(
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@rate_limit_auth
 async def refresh_token(
     refresh_token_data: RefreshTokenRequest,
     db: Session = Depends(get_db),
