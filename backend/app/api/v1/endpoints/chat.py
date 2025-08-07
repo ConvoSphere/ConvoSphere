@@ -23,6 +23,7 @@ from backend.app.core.validation import (
 from backend.app.schemas.hybrid_mode import ConversationMode
 from backend.app.services.assistant_engine import assistant_engine
 from backend.app.services.conversation_service import conversation_service
+from backend.app.core.rate_limiting import rate_limit_chat
 
 router = APIRouter()
 
@@ -234,6 +235,7 @@ async def get_conversations(
 @router.post(
     "/conversations/{conversation_id}/messages", response_model=ChatMessageResponse
 )
+@rate_limit_chat
 async def send_message(
     conversation_id: str,
     request: SecureChatMessageRequest,
