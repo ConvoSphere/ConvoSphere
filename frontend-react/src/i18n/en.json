@@ -814,5 +814,133 @@
       "loaded": "Loaded",
       "active_loads": "Active Loads"
     }
+  },
+  "ai_models": {
+    "title": "AI Models",
+    "subtitle": "Manage your AI models and their configurations",
+    "tabs": {
+      "overview": "Overview",
+      "providers": "Providers",
+      "analytics": "Analytics"
+    },
+    "add_model": "Add Model",
+    "edit_model": "Edit Model",
+    "performance_overview": "Performance Overview",
+    "provider_management": "Provider Management",
+    "provider_info": "Provider Information",
+    "provider_description": "Manage your AI providers and their API configurations",
+    "provider_coming_soon": "Provider management will be available soon",
+    "analytics": "Analytics",
+    "analytics_coming_soon": "Detailed model analytics will be available soon",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "performance": "Performance",
+      "cost": "Cost",
+      "usage": "Usage",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "default": "Default"
+    },
+    "performance": {
+      "response_time": "Response Time",
+      "success_rate": "Success Rate"
+    },
+    "usage": {
+      "requests": "Requests",
+      "last_used": "Last Used"
+    },
+    "actions": {
+      "test": "Test",
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "stats": {
+      "total_models": "Total Models",
+      "active_models": "Active Models",
+      "total_requests": "Total Requests",
+      "avg_response_time": "Avg Response Time"
+    },
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Enter model name",
+      "provider": "Provider",
+      "provider_placeholder": "Select provider",
+      "model_id": "Model ID",
+      "model_id_placeholder": "e.g. gpt-4, claude-3-sonnet",
+      "display_name": "Display Name",
+      "display_name_placeholder": "User-friendly name",
+      "description": "Description",
+      "description_placeholder": "Model description",
+      "max_tokens": "Max Tokens",
+      "cost_per_1k_tokens": "Cost per 1k Tokens",
+      "capabilities": "Capabilities",
+      "capabilities_placeholder": "Select capabilities",
+      "active": "Active"
+    },
+    "test": {
+      "prompt": "Test Prompt",
+      "prompt_placeholder": "Enter a test prompt...",
+      "run_test": "Run Test",
+      "results": "Test Results",
+      "response": "Response",
+      "response_time": "Response Time",
+      "tokens_used": "Tokens Used",
+      "cost": "Cost"
+    },
+    "load_failed": "Failed to load models",
+    "added_success": "Model added successfully",
+    "add_failed": "Failed to add model",
+    "updated_success": "Model updated successfully",
+    "update_failed": "Failed to update model",
+    "deleted_success": "Model deleted successfully",
+    "delete_failed": "Failed to delete model",
+    "toggle_success": "Model status changed successfully",
+    "toggle_failed": "Failed to change model status",
+    "save_failed": "Failed to save model",
+    "test_success": "Test executed successfully",
+    "test_failed": "Test failed",
+    "test_model": "Test Model: {{model}}"
+  },
+  "model_selector": {
+    "title": "Select Model",
+    "placeholder": "Select model...",
+    "default": "Default",
+    "response_time": "Response Time",
+    "success_rate": "Success Rate",
+    "cost": "Cost",
+    "max_tokens": "Max Tokens",
+    "compare": "Compare",
+    "compare_models": "Compare Models",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "favorites": "Favorites"
+    },
+    "selected_model_info": "Selected Model",
+    "info": {
+      "provider": "Provider",
+      "max_tokens": "Max Tokens",
+      "cost": "Cost"
+    },
+    "comparison": {
+      "title": "Model Comparison",
+      "model": "Model",
+      "performance": "Performance",
+      "response_time": "Response Time",
+      "success_rate": "Success Rate",
+      "cost": "Cost",
+      "cost_per_1k": "Cost per 1k",
+      "max_tokens": "Max Tokens",
+      "usage": "Usage",
+      "total_requests": "Total Requests",
+      "last_used": "Last Used",
+      "capabilities": "Capabilities"
+    }
   }
 }

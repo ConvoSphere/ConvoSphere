@@ -42,6 +42,7 @@ import {
   LazyConversationIntelligencePage,
   LazyDomainGroupsPage,
   LazyExportBackupPage,
+  LazyAIModelsPage,
 } from "./components/LazyComponents";
 
 // Simple theme configuration to avoid complex theme store issues
@@ -357,6 +358,20 @@ const App: React.FC = () => {
                         <ErrorBoundary>
                           <Suspense fallback={<LoadingSpinner />}>
                             <LazyAssistantsPage />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ai-models"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <LazyAIModelsPage />
                           </Suspense>
                         </ErrorBoundary>
                       </Layout>

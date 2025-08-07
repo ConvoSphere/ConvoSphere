@@ -271,6 +271,134 @@
     "personality": "Persönlichkeit",
     "tools": "Tools"
   },
+  "ai_models": {
+    "title": "KI-Modelle",
+    "subtitle": "Verwalten Sie Ihre KI-Modelle und deren Konfigurationen",
+    "tabs": {
+      "overview": "Übersicht",
+      "providers": "Anbieter",
+      "analytics": "Analysen"
+    },
+    "add_model": "Modell hinzufügen",
+    "edit_model": "Modell bearbeiten",
+    "performance_overview": "Leistungsübersicht",
+    "provider_management": "Anbieter-Verwaltung",
+    "provider_info": "Anbieter-Informationen",
+    "provider_description": "Verwalten Sie Ihre KI-Anbieter und deren API-Konfigurationen",
+    "provider_coming_soon": "Anbieter-Verwaltung wird in Kürze verfügbar sein",
+    "analytics": "Analysen",
+    "analytics_coming_soon": "Detaillierte Modell-Analysen werden in Kürze verfügbar sein",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "performance": "Leistung",
+      "cost": "Kosten",
+      "usage": "Nutzung",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "default": "Standard"
+    },
+    "performance": {
+      "response_time": "Antwortzeit",
+      "success_rate": "Erfolgsrate"
+    },
+    "usage": {
+      "requests": "Anfragen",
+      "last_used": "Zuletzt verwendet"
+    },
+    "actions": {
+      "test": "Testen",
+      "edit": "Bearbeiten",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "delete": "Löschen"
+    },
+    "stats": {
+      "total_models": "Modelle gesamt",
+      "active_models": "Aktive Modelle",
+      "total_requests": "Anfragen gesamt",
+      "avg_response_time": "Ø Antwortzeit"
+    },
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Modell-Name eingeben",
+      "provider": "Anbieter",
+      "provider_placeholder": "Anbieter auswählen",
+      "model_id": "Modell-ID",
+      "model_id_placeholder": "z.B. gpt-4, claude-3-sonnet",
+      "display_name": "Anzeigename",
+      "display_name_placeholder": "Benutzerfreundlicher Name",
+      "description": "Beschreibung",
+      "description_placeholder": "Modell-Beschreibung",
+      "max_tokens": "Max. Tokens",
+      "cost_per_1k_tokens": "Kosten pro 1k Tokens",
+      "capabilities": "Fähigkeiten",
+      "capabilities_placeholder": "Fähigkeiten auswählen",
+      "active": "Aktiv"
+    },
+    "test": {
+      "prompt": "Test-Prompt",
+      "prompt_placeholder": "Geben Sie einen Test-Prompt ein...",
+      "run_test": "Test ausführen",
+      "results": "Testergebnisse",
+      "response": "Antwort",
+      "response_time": "Antwortzeit",
+      "tokens_used": "Verwendete Tokens",
+      "cost": "Kosten"
+    },
+    "load_failed": "Modelle konnten nicht geladen werden",
+    "added_success": "Modell erfolgreich hinzugefügt",
+    "add_failed": "Modell konnte nicht hinzugefügt werden",
+    "updated_success": "Modell erfolgreich aktualisiert",
+    "update_failed": "Modell konnte nicht aktualisiert werden",
+    "deleted_success": "Modell erfolgreich gelöscht",
+    "delete_failed": "Modell konnte nicht gelöscht werden",
+    "toggle_success": "Modell-Status erfolgreich geändert",
+    "toggle_failed": "Modell-Status konnte nicht geändert werden",
+    "save_failed": "Modell konnte nicht gespeichert werden",
+    "test_success": "Test erfolgreich ausgeführt",
+    "test_failed": "Test fehlgeschlagen",
+    "test_model": "Modell testen: {{model}}"
+  },
+  "model_selector": {
+    "title": "Modell auswählen",
+    "placeholder": "Modell auswählen...",
+    "default": "Standard",
+    "response_time": "Antwortzeit",
+    "success_rate": "Erfolgsrate",
+    "cost": "Kosten",
+    "max_tokens": "Max. Tokens",
+    "compare": "Vergleichen",
+    "compare_models": "Modelle vergleichen",
+    "stats": {
+      "total": "Gesamt",
+      "active": "Aktiv",
+      "favorites": "Favoriten"
+    },
+    "selected_model_info": "Ausgewähltes Modell",
+    "info": {
+      "provider": "Anbieter",
+      "max_tokens": "Max. Tokens",
+      "cost": "Kosten"
+    },
+    "comparison": {
+      "title": "Modell-Vergleich",
+      "model": "Modell",
+      "performance": "Leistung",
+      "response_time": "Antwortzeit",
+      "success_rate": "Erfolgsrate",
+      "cost": "Kosten",
+      "cost_per_1k": "Kosten pro 1k",
+      "max_tokens": "Max. Tokens",
+      "usage": "Nutzung",
+      "total_requests": "Anfragen gesamt",
+      "last_used": "Zuletzt verwendet",
+      "capabilities": "Fähigkeiten"
+    }
+  },
   "home": {
     "welcome": "Willkommen, {{username}}!",
     "subtitle": "Starten Sie eine neue Konversation mit Ihrem KI-Assistenten",
