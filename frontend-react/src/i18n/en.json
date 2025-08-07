@@ -942,5 +942,123 @@
       "last_used": "Last Used",
       "capabilities": "Capabilities"
     }
+  },
+  "performance": {
+    "title": "Model Performance Monitoring",
+    "select_model": "Select Model",
+    "refresh": "Refresh",
+    "alert_settings": "Alert Settings",
+    "auto_refresh": {
+      "on": "Auto",
+      "off": "Manual"
+    },
+    "time_ranges": {
+      "1h": "1 Hour",
+      "6h": "6 Hours",
+      "24h": "24 Hours",
+      "7d": "7 Days",
+      "30d": "30 Days"
+    },
+    "stats": {
+      "response_time": "Response Time",
+      "success_rate": "Success Rate",
+      "error_rate": "Error Rate",
+      "cost_per_1k": "Cost per 1k"
+    },
+    "charts": {
+      "response_time": "Response Time Trend",
+      "success_rate": "Success Rate Trend",
+      "requests_per_minute": "Requests per Minute",
+      "cost_trend": "Cost Trend"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "no_alerts": "No Alerts",
+      "no_alerts_description": "All systems are functioning normally",
+      "type": "Type",
+      "title": "Title",
+      "severity": "Severity",
+      "timestamp": "Timestamp",
+      "actions": "Actions",
+      "acknowledge": "Acknowledge",
+      "view": "View",
+      "types": {
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
+    "no_model_selected": "No model selected",
+    "select_model_to_view": "Select a model to view performance data"
+  },
+  "test": {
+    "title": "Model Test Interface",
+    "tabs": {
+      "single": "Single Test",
+      "ab_test": "A/B Test",
+      "suites": "Test Suites"
+    },
+    "form": {
+      "model": "Model",
+      "select_model": "Select Model",
+      "model_a": "Model A",
+      "model_b": "Model B",
+      "select_model_a": "Select Model A",
+      "select_model_b": "Select Model B",
+      "scenario": "Scenario",
+      "select_scenario": "Select Scenario",
+      "custom_prompt": "Custom Prompt",
+      "prompt_placeholder": "Enter a test prompt...",
+      "temperature": "Temperature",
+      "max_tokens": "Max Tokens",
+      "include_metrics": "Include Metrics"
+    },
+    "run_single_test": "Run Single Test",
+    "run_ab_test": "Run A/B Test",
+    "create_suite": "Create Test Suite",
+    "run_suite": "Run Suite",
+    "edit_suite": "Edit Suite",
+    "delete_suite": "Delete Suite",
+    "scenarios": "Scenarios",
+    "models": "Models",
+    "last_run": "Last Run",
+    "status": {
+      "idle": "Idle",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "results": {
+      "title": "Test Results",
+      "single_tests": "Single Tests",
+      "ab_tests": "A/B Tests",
+      "model": "Model",
+      "response_time": "Response Time",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "response": "Response",
+      "timestamp": "Timestamp"
+    },
+    "ab_test": {
+      "models": "Models",
+      "response_time": "Response Time",
+      "cost": "Cost",
+      "quality": "Quality"
+    },
+    "export_results": "Export Results",
+    "clear_results": "Clear Results",
+    "single_test_success": "Single test executed successfully",
+    "single_test_failed": "Single test failed",
+    "ab_test_success": "A/B test executed successfully",
+    "ab_test_failed": "A/B test failed",
+    "suite_completed": "Test suite completed",
+    "suite_failed": "Test suite failed",
+    "suite_saved": "Test suite saved",
+    "suite_save_failed": "Failed to save test suite"
   }
 }

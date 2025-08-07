@@ -1289,5 +1289,123 @@
       "loaded": "Geladen",
       "active_loads": "Aktive Ladevorgänge"
     }
+  },
+  "performance": {
+    "title": "Modell-Performance-Monitoring",
+    "select_model": "Modell auswählen",
+    "refresh": "Aktualisieren",
+    "alert_settings": "Alert-Einstellungen",
+    "auto_refresh": {
+      "on": "Auto",
+      "off": "Manuell"
+    },
+    "time_ranges": {
+      "1h": "1 Stunde",
+      "6h": "6 Stunden",
+      "24h": "24 Stunden",
+      "7d": "7 Tage",
+      "30d": "30 Tage"
+    },
+    "stats": {
+      "response_time": "Antwortzeit",
+      "success_rate": "Erfolgsrate",
+      "error_rate": "Fehlerrate",
+      "cost_per_1k": "Kosten pro 1k"
+    },
+    "charts": {
+      "response_time": "Antwortzeit-Trend",
+      "success_rate": "Erfolgsrate-Trend",
+      "requests_per_minute": "Anfragen pro Minute",
+      "cost_trend": "Kosten-Trend"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "no_alerts": "Keine Alerts",
+      "no_alerts_description": "Alle Systeme funktionieren normal",
+      "type": "Typ",
+      "title": "Titel",
+      "severity": "Schweregrad",
+      "timestamp": "Zeitstempel",
+      "actions": "Aktionen",
+      "acknowledge": "Bestätigen",
+      "view": "Anzeigen",
+      "types": {
+        "error": "Fehler",
+        "warning": "Warnung",
+        "info": "Info"
+      },
+      "severity": {
+        "high": "Hoch",
+        "medium": "Mittel",
+        "low": "Niedrig"
+      }
+    },
+    "no_model_selected": "Kein Modell ausgewählt",
+    "select_model_to_view": "Wählen Sie ein Modell aus, um Performance-Daten anzuzeigen"
+  },
+  "test": {
+    "title": "Modell-Test-Interface",
+    "tabs": {
+      "single": "Einzeltest",
+      "ab_test": "A/B-Test",
+      "suites": "Test-Suites"
+    },
+    "form": {
+      "model": "Modell",
+      "select_model": "Modell auswählen",
+      "model_a": "Modell A",
+      "model_b": "Modell B",
+      "select_model_a": "Modell A auswählen",
+      "select_model_b": "Modell B auswählen",
+      "scenario": "Szenario",
+      "select_scenario": "Szenario auswählen",
+      "custom_prompt": "Benutzerdefinierter Prompt",
+      "prompt_placeholder": "Geben Sie einen Test-Prompt ein...",
+      "temperature": "Temperatur",
+      "max_tokens": "Max. Tokens",
+      "include_metrics": "Metriken einschließen"
+    },
+    "run_single_test": "Einzeltest ausführen",
+    "run_ab_test": "A/B-Test ausführen",
+    "create_suite": "Test-Suite erstellen",
+    "run_suite": "Suite ausführen",
+    "edit_suite": "Suite bearbeiten",
+    "delete_suite": "Suite löschen",
+    "scenarios": "Szenarien",
+    "models": "Modelle",
+    "last_run": "Letzter Lauf",
+    "status": {
+      "idle": "Bereit",
+      "running": "Läuft",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "results": {
+      "title": "Testergebnisse",
+      "single_tests": "Einzeltests",
+      "ab_tests": "A/B-Tests",
+      "model": "Modell",
+      "response_time": "Antwortzeit",
+      "tokens": "Tokens",
+      "cost": "Kosten",
+      "response": "Antwort",
+      "timestamp": "Zeitstempel"
+    },
+    "ab_test": {
+      "models": "Modelle",
+      "response_time": "Antwortzeit",
+      "cost": "Kosten",
+      "quality": "Qualität"
+    },
+    "export_results": "Ergebnisse exportieren",
+    "clear_results": "Ergebnisse löschen",
+    "single_test_success": "Einzeltest erfolgreich ausgeführt",
+    "single_test_failed": "Einzeltest fehlgeschlagen",
+    "ab_test_success": "A/B-Test erfolgreich ausgeführt",
+    "ab_test_failed": "A/B-Test fehlgeschlagen",
+    "suite_completed": "Test-Suite abgeschlossen",
+    "suite_failed": "Test-Suite fehlgeschlagen",
+    "suite_saved": "Test-Suite gespeichert",
+    "suite_save_failed": "Test-Suite konnte nicht gespeichert werden"
   }
 }

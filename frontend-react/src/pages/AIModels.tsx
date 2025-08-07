@@ -41,6 +41,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
 import { colors } from "../styles/colors";
+import ModelPerformanceMonitor from "../components/ModelPerformanceMonitor";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -479,11 +480,7 @@ const AIModels: React.FC = () => {
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.analytics")} key="analytics">
-          <Card title={t("ai_models.analytics")}>
-            <Text type="secondary">
-              {t("ai_models.analytics_coming_soon")}
-            </Text>
-          </Card>
+          <ModelPerformanceMonitor />
         </TabPane>
       </Tabs>
 
