@@ -42,6 +42,9 @@ import { useTranslation } from "react-i18next";
 import { config } from "../config";
 import { colors } from "../styles/colors";
 import ModelPerformanceMonitor from "../components/ModelPerformanceMonitor";
+import ModelConfiguration from "../components/ModelConfiguration";
+import ModelFavorites from "../components/ModelFavorites";
+import ModelUsageAnalytics from "../components/ModelUsageAnalytics";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -481,6 +484,18 @@ const AIModels: React.FC = () => {
 
         <TabPane tab={t("ai_models.tabs.analytics")} key="analytics">
           <ModelPerformanceMonitor />
+        </TabPane>
+
+        <TabPane tab={t("ai_models.tabs.configuration")} key="configuration">
+          <ModelConfiguration />
+        </TabPane>
+
+        <TabPane tab={t("ai_models.tabs.favorites")} key="favorites">
+          <ModelFavorites />
+        </TabPane>
+
+        <TabPane tab={t("ai_models.tabs.usage")} key="usage">
+          <ModelUsageAnalytics />
         </TabPane>
       </Tabs>
 

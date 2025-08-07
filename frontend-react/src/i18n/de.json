@@ -277,7 +277,10 @@
     "tabs": {
       "overview": "Übersicht",
       "providers": "Anbieter",
-      "analytics": "Analysen"
+      "analytics": "Analysen",
+      "configuration": "Konfiguration",
+      "favorites": "Favoriten",
+      "usage": "Nutzung"
     },
     "add_model": "Modell hinzufügen",
     "edit_model": "Modell bearbeiten",
@@ -1407,5 +1410,255 @@
     "suite_failed": "Test-Suite fehlgeschlagen",
     "suite_saved": "Test-Suite gespeichert",
     "suite_save_failed": "Test-Suite konnte nicht gespeichert werden"
+  },
+  "configuration": {
+    "title": "Modell-Konfiguration",
+    "tabs": {
+      "templates": "Prompt-Templates",
+      "fallbacks": "Fallback-Strategien",
+      "routing": "Auto-Routing"
+    },
+    "templates": {
+      "title": "Prompt-Templates",
+      "create": "Template erstellen",
+      "edit": "Template bearbeiten",
+      "info": "Prompt-Templates verwalten",
+      "description": "Erstellen und verwalten Sie wiederverwendbare Prompt-Templates für verschiedene Anwendungsfälle",
+      "name": "Name",
+      "category": "Kategorie",
+      "variables": "Variablen",
+      "actions": "Aktionen",
+      "copy": "Kopieren",
+      "form": {
+        "name": "Template-Name",
+        "name_placeholder": "Template-Name eingeben",
+        "description": "Beschreibung",
+        "description_placeholder": "Template-Beschreibung",
+        "category": "Kategorie",
+        "category_placeholder": "Kategorie auswählen",
+        "template": "Template",
+        "template_placeholder": "Template-Inhalt mit {{variablen}}",
+        "is_default": "Standard-Template"
+      }
+    },
+    "fallbacks": {
+      "title": "Fallback-Strategien",
+      "create": "Strategie erstellen",
+      "edit": "Strategie bearbeiten",
+      "info": "Fallback-Strategien verwalten",
+      "description": "Definieren Sie automatische Fallback-Strategien für Modell-Ausfälle",
+      "name": "Name",
+      "primary": "Primäres Modell",
+      "fallbacks": "Fallback-Modelle",
+      "conditions": "Bedingungen",
+      "actions": "Aktionen",
+      "form": {
+        "name": "Strategie-Name",
+        "name_placeholder": "Strategie-Name eingeben",
+        "description": "Beschreibung",
+        "description_placeholder": "Strategie-Beschreibung",
+        "primary_model": "Primäres Modell",
+        "primary_model_placeholder": "Primäres Modell auswählen",
+        "fallback_models": "Fallback-Modelle",
+        "fallback_models_placeholder": "Fallback-Modelle auswählen",
+        "conditions": "Bedingungen",
+        "response_time_threshold": "Response-Zeit-Schwelle (ms)",
+        "error_rate_threshold": "Fehlerrate-Schwelle (%)",
+        "cost_threshold": "Kosten-Schwelle (€)",
+        "max_retries": "Max. Wiederholungen",
+        "is_active": "Aktiv"
+      }
+    },
+    "routing": {
+      "title": "Auto-Routing",
+      "create": "Regel erstellen",
+      "edit": "Regel bearbeiten",
+      "info": "Auto-Routing-Regeln verwalten",
+      "description": "Definieren Sie Regeln für automatische Modell-Zuweisung basierend auf Task-Komplexität",
+      "name": "Name",
+      "conditions": "Bedingungen",
+      "target": "Ziel-Modell",
+      "priority": "Priorität",
+      "actions": "Aktionen",
+      "form": {
+        "name": "Regel-Name",
+        "name_placeholder": "Regel-Name eingeben",
+        "description": "Beschreibung",
+        "description_placeholder": "Regel-Beschreibung",
+        "conditions": "Bedingungen",
+        "complexity": "Komplexität",
+        "task_type": "Task-Typ",
+        "task_type_placeholder": "Task-Typen auswählen",
+        "token_estimate": "Token-Schätzung",
+        "cost_budget": "Kosten-Budget (€)",
+        "priority": "Priorität",
+        "target_model": "Ziel-Modell",
+        "target_model_placeholder": "Ziel-Modell auswählen",
+        "is_active": "Aktiv"
+      }
+    },
+    "categories": {
+      "general": "Allgemein",
+      "programming": "Programmierung",
+      "creative": "Kreativ",
+      "analysis": "Analyse"
+    },
+    "complexity": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    },
+    "task_types": {
+      "question": "Frage",
+      "translation": "Übersetzung",
+      "analysis": "Analyse",
+      "reasoning": "Schlussfolgerung",
+      "creative": "Kreativ",
+      "code": "Code"
+    },
+    "default": "Standard",
+    "template_updated": "Template erfolgreich aktualisiert",
+    "template_created": "Template erfolgreich erstellt",
+    "fallback_updated": "Fallback-Strategie erfolgreich aktualisiert",
+    "fallback_created": "Fallback-Strategie erfolgreich erstellt",
+    "routing_updated": "Routing-Regel erfolgreich aktualisiert",
+    "routing_created": "Routing-Regel erfolgreich erstellt",
+    "item_deleted": "Element erfolgreich gelöscht",
+    "template_copied": "Template in Zwischenablage kopiert",
+    "load_failed": "Konfiguration konnte nicht geladen werden",
+    "save_failed": "Konfiguration konnte nicht gespeichert werden"
+  },
+  "favorites": {
+    "title": "Modell-Favoriten",
+    "all_categories": "Alle Kategorien",
+    "add_favorite": "Favorit hinzufügen",
+    "edit_favorite": "Favorit bearbeiten",
+    "add_first": "Ersten Favorit hinzufügen",
+    "no_favorites": "Keine Favoriten vorhanden",
+    "categories": {
+      "productivity": "Produktivität",
+      "productivity_desc": "Für produktive Aufgaben",
+      "creative": "Kreativ",
+      "creative_desc": "Für kreative Aufgaben",
+      "efficiency": "Effizienz",
+      "efficiency_desc": "Für effiziente Aufgaben",
+      "analysis": "Analyse",
+      "analysis_desc": "Für analytische Aufgaben"
+    },
+    "sort": {
+      "priority": "Priorität",
+      "name": "Name",
+      "usage": "Nutzung",
+      "last_used": "Zuletzt verwendet"
+    },
+    "view": {
+      "grid": "Grid",
+      "list": "Liste"
+    },
+    "total": "Gesamt",
+    "use_model": "Modell verwenden",
+    "use": "Verwenden",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "remove_confirm": "Favorit wirklich entfernen?",
+    "form": {
+      "model": "Modell",
+      "select_model": "Modell auswählen",
+      "name": "Name",
+      "name_placeholder": "Favorit-Name eingeben",
+      "description": "Beschreibung",
+      "description_placeholder": "Favorit-Beschreibung",
+      "category": "Kategorie",
+      "select_category": "Kategorie auswählen",
+      "priority": "Priorität",
+      "tags": "Tags",
+      "tags_placeholder": "Tags eingeben",
+      "custom_settings": "Benutzerdefinierte Einstellungen",
+      "temperature": "Temperatur",
+      "max_tokens": "Max. Tokens"
+    },
+    "uses": "Verwendungen",
+    "added_success": "Favorit erfolgreich hinzugefügt",
+    "add_failed": "Favorit konnte nicht hinzugefügt werden",
+    "removed_success": "Favorit erfolgreich entfernt",
+    "remove_failed": "Favorit konnte nicht entfernt werden",
+    "updated_success": "Favorit erfolgreich aktualisiert",
+    "created_success": "Favorit erfolgreich erstellt",
+    "save_failed": "Favorit konnte nicht gespeichert werden",
+    "load_failed": "Favoriten konnten nicht geladen werden",
+    "model_selected": "Modell ausgewählt"
+  },
+  "analytics": {
+    "title": "Modell-Nutzungsstatistiken",
+    "select_models": "Modelle auswählen",
+    "refresh": "Aktualisieren",
+    "export": "Exportieren",
+    "settings": "Einstellungen",
+    "view": {
+      "overview": "Übersicht",
+      "detailed": "Detailliert",
+      "costs": "Kosten",
+      "users": "Benutzer"
+    },
+    "stats": {
+      "total_requests": "Anfragen gesamt",
+      "total_tokens": "Tokens gesamt",
+      "total_cost": "Kosten gesamt",
+      "avg_response_time": "Ø Antwortzeit"
+    },
+    "charts": {
+      "requests_trend": "Anfragen-Trend",
+      "cost_trend": "Kosten-Trend",
+      "model_distribution": "Modell-Verteilung",
+      "performance_comparison": "Performance-Vergleich"
+    },
+    "table": {
+      "model": "Modell",
+      "requests": "Anfragen",
+      "tokens": "Tokens",
+      "cost": "Kosten",
+      "response_time": "Antwortzeit",
+      "success_rate": "Erfolgsrate",
+      "trend": "Trend",
+      "percentage": "Prozent",
+      "avg_cost_per_request": "Ø Kosten pro Anfrage",
+      "user": "Benutzer",
+      "favorite_model": "Lieblingsmodell",
+      "usage_pattern": "Nutzungsmuster",
+      "last_activity": "Letzte Aktivität"
+    },
+    "trend": {
+      "increasing": "Steigend",
+      "decreasing": "Fallend",
+      "stable": "Stabil"
+    },
+    "pattern": {
+      "heavy": "Intensiv",
+      "moderate": "Moderat",
+      "light": "Leicht"
+    },
+    "detailed_usage": "Detaillierte Nutzung",
+    "cost_analysis": "Kosten-Analyse",
+    "user_usage": "Benutzer-Nutzung",
+    "export_data": "Daten exportieren",
+    "export_csv": "Als CSV exportieren",
+    "export_json": "Als JSON exportieren",
+    "export_excel": "Als Excel exportieren",
+    "settings": "Einstellungen",
+    "settings": {
+      "auto_refresh": "Auto-Aktualisierung",
+      "refresh_interval": "Aktualisierungsintervall",
+      "seconds": "Sekunden",
+      "minute": "Minute",
+      "minutes": "Minuten"
+    },
+    "load_failed": "Daten konnten nicht geladen werden",
+    "export_success": "Daten erfolgreich exportiert",
+    "export_failed": "Daten konnten nicht exportiert werden"
   }
 }
