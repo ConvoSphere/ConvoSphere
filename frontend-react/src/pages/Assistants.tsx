@@ -40,6 +40,7 @@ import {
   setDefaultAssistant,
 } from "../services/assistants";
 import config from "../config";
+import ModelSelector from "../components/ModelSelector";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -495,13 +496,11 @@ const Assistants: React.FC = () => {
                 label={t("assistants.form.model")}
                 rules={[{ required: true }]}
               >
-                <Select placeholder={t("assistants.form.model_placeholder")}>
-                  {availableModels.map((model) => (
-                    <Option key={model.value} value={model.value}>
-                      {model.label}
-                    </Option>
-                  ))}
-                </Select>
+                <ModelSelector
+                  showPerformance={true}
+                  showCosts={true}
+                  placeholder={t("assistants.form.model_placeholder")}
+                />
               </Form.Item>
             </Col>
           </Row>

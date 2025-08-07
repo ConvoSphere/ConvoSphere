@@ -8,6 +8,12 @@ import {
   Row,
   Col,
   message,
+  Select,
+  Slider,
+  InputNumber,
+  Switch,
+  Input,
+  Divider,
 } from "antd";
 import {
   GlobalOutlined,
@@ -19,6 +25,7 @@ import {
   MonitorOutlined,
   SaveOutlined,
   ReloadOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
 import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
@@ -35,6 +42,14 @@ interface SettingsState {
   autoSave: boolean;
   privacyMode: boolean;
   analytics: boolean;
+  // AI Configuration
+  defaultModel: string;
+  modelTemperature: number;
+  maxTokens: number;
+  autoFallback: boolean;
+  openaiApiKey: string;
+  anthropicApiKey: string;
+  modelPriorities: string[];
 }
 
 interface ThemeColors {
@@ -61,6 +76,14 @@ const Settings: React.FC = () => {
     autoSave: true,
     privacyMode: false,
     analytics: true,
+    // AI Configuration
+    defaultModel: "gpt-4",
+    modelTemperature: 0.7,
+    maxTokens: 1000,
+    autoFallback: true,
+    openaiApiKey: "",
+    anthropicApiKey: "",
+    modelPriorities: ["gpt-4", "claude-3-sonnet", "gpt-3.5-turbo", "claude-3-haiku"],
   });
 
   const handleSettingChange = async (key: keyof SettingsState, value: string | boolean) => {
@@ -229,6 +252,163 @@ const Settings: React.FC = () => {
                           </ModernSelect.Option>
                         </ModernSelect>
                       </ModernSelect>
+                    </Col>
+                  </Row>
+                </ModernCard>
+
+                {/* AI Configuration Settings */}
+                <ModernCard
+                  variant="elevated"
+                  size="lg"
+                  header={
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 12 }}
+                    >
+                      <RobotOutlined
+                        style={{
+                          color: colors.secondary,
+                          fontSize: "20px",
+                        }}
+                      />
+                      <Title level={3} style={{ margin: 0 }}>
+                        {t("settings.ai_configuration", "KI-Konfiguration")}
+                      </Title>
+                    </div>
+                  }
+                >
+                  <Row gutter={[24, 24]}>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.default_model", "Standard-Modell")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Select
+                          value={settings.defaultModel}
+                          onChange={(value) =>
+                            handleSettingChange("defaultModel", value)
+                          }
+                          loading={saving}
+                          disabled={saving}
+                          style={{ width: "100%" }}
+                        >
+                          <Option value="gpt-4">GPT-4 (OpenAI)</Option>
+                          <Option value="gpt-3.5-turbo">GPT-3.5 Turbo (OpenAI)</Option>
+                          <Option value="claude-3-sonnet">Claude 3 Sonnet (Anthropic)</Option>
+                          <Option value="claude-3-haiku">Claude 3 Haiku (Anthropic)</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.model_temperature", "Modell-Temperatur")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Slider
+                          min={0}
+                          max={2}
+                          step={0.1}
+                          value={settings.modelTemperature}
+                          onChange={(value) =>
+                            handleSettingChange("modelTemperature", value)
+                          }
+                          marks={{
+                            0: t("settings.temperature.focused", "Fokussiert"),
+                            1: t("settings.temperature.balanced", "Ausgewogen"),
+                            2: t("settings.temperature.creative", "Kreativ"),
+                          }}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.max_tokens", "Max. Tokens")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <InputNumber
+                          min={1}
+                          max={4000}
+                          value={settings.maxTokens}
+                          onChange={(value) =>
+                            handleSettingChange("maxTokens", value)
+                          }
+                          style={{ width: "100%" }}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.auto_fallback", "Automatischer Fallback")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Switch
+                          checked={settings.autoFallback}
+                          onChange={(checked) =>
+                            handleSettingChange("autoFallback", checked)
+                          }
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  
+                  <Divider />
+                  
+                  <Title level={4}>{t("settings.provider_configuration", "Anbieter-Konfiguration")}</Title>
+                  
+                  <Row gutter={[24, 24]}>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.openai_api_key", "OpenAI API Key")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Input.Password
+                          value={settings.openaiApiKey}
+                          onChange={(e) =>
+                            handleSettingChange("openaiApiKey", e.target.value)
+                          }
+                          placeholder={t("settings.api_key_placeholder", "API Key eingeben")}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Form.Item
+                        label={t("settings.anthropic_api_key", "Anthropic API Key")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Input.Password
+                          value={settings.anthropicApiKey}
+                          onChange={(e) =>
+                            handleSettingChange("anthropicApiKey", e.target.value)
+                          }
+                          placeholder={t("settings.api_key_placeholder", "API Key eingeben")}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  
+                  <Divider />
+                  
+                  <Title level={4}>{t("settings.model_priorities", "Modell-Prioritäten")}</Title>
+                  
+                  <Row gutter={[24, 24]}>
+                    <Col xs={24}>
+                      <Form.Item
+                        label={t("settings.priority_order", "Prioritätsreihenfolge")}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Select
+                          mode="multiple"
+                          value={settings.modelPriorities}
+                          onChange={(value) =>
+                            handleSettingChange("modelPriorities", value)
+                          }
+                          style={{ width: "100%" }}
+                        >
+                          <Option value="gpt-4">GPT-4 (Höchste Priorität)</Option>
+                          <Option value="claude-3-sonnet">Claude 3 Sonnet</Option>
+                          <Option value="gpt-3.5-turbo">GPT-3.5 Turbo</Option>
+                          <Option value="claude-3-haiku">Claude 3 Haiku (Niedrigste Priorität)</Option>
+                        </Select>
+                      </Form.Item>
                     </Col>
                   </Row>
                 </ModernCard>

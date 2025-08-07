@@ -104,6 +104,11 @@ export const LazyAssistantsPage = createLazyComponent(
   'Loading assistants...'
 );
 
+export const LazyAIModelsPage = createLazyComponent(
+  () => import('../pages/AIModels'),
+  'Loading AI models...'
+);
+
 export const LazyKnowledgeBasePage = createLazyComponent(
   () => import('../pages/KnowledgeBase'),
   'Loading knowledge base...'

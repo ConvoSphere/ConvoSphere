@@ -814,5 +814,504 @@
       "loaded": "Loaded",
       "active_loads": "Active Loads"
     }
+  },
+  "ai_models": {
+    "title": "AI Models",
+    "subtitle": "Manage your AI models and their configurations",
+    "tabs": {
+      "overview": "Overview",
+      "providers": "Providers",
+      "analytics": "Analytics",
+      "configuration": "Configuration",
+      "favorites": "Favorites",
+      "usage": "Usage"
+    },
+    "add_model": "Add Model",
+    "edit_model": "Edit Model",
+    "performance_overview": "Performance Overview",
+    "provider_management": "Provider Management",
+    "provider_info": "Provider Information",
+    "provider_description": "Manage your AI providers and their API configurations",
+    "provider_coming_soon": "Provider management will be available soon",
+    "analytics": "Analytics",
+    "analytics_coming_soon": "Detailed model analytics will be available soon",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "performance": "Performance",
+      "cost": "Cost",
+      "usage": "Usage",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "default": "Default"
+    },
+    "performance": {
+      "response_time": "Response Time",
+      "success_rate": "Success Rate"
+    },
+    "usage": {
+      "requests": "Requests",
+      "last_used": "Last Used"
+    },
+    "actions": {
+      "test": "Test",
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "stats": {
+      "total_models": "Total Models",
+      "active_models": "Active Models",
+      "total_requests": "Total Requests",
+      "avg_response_time": "Avg Response Time"
+    },
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Enter model name",
+      "provider": "Provider",
+      "provider_placeholder": "Select provider",
+      "model_id": "Model ID",
+      "model_id_placeholder": "e.g. gpt-4, claude-3-sonnet",
+      "display_name": "Display Name",
+      "display_name_placeholder": "User-friendly name",
+      "description": "Description",
+      "description_placeholder": "Model description",
+      "max_tokens": "Max Tokens",
+      "cost_per_1k_tokens": "Cost per 1k Tokens",
+      "capabilities": "Capabilities",
+      "capabilities_placeholder": "Select capabilities",
+      "active": "Active"
+    },
+    "test": {
+      "prompt": "Test Prompt",
+      "prompt_placeholder": "Enter a test prompt...",
+      "run_test": "Run Test",
+      "results": "Test Results",
+      "response": "Response",
+      "response_time": "Response Time",
+      "tokens_used": "Tokens Used",
+      "cost": "Cost"
+    },
+    "load_failed": "Failed to load models",
+    "added_success": "Model added successfully",
+    "add_failed": "Failed to add model",
+    "updated_success": "Model updated successfully",
+    "update_failed": "Failed to update model",
+    "deleted_success": "Model deleted successfully",
+    "delete_failed": "Failed to delete model",
+    "toggle_success": "Model status changed successfully",
+    "toggle_failed": "Failed to change model status",
+    "save_failed": "Failed to save model",
+    "test_success": "Test executed successfully",
+    "test_failed": "Test failed",
+    "test_model": "Test Model: {{model}}"
+  },
+  "model_selector": {
+    "title": "Select Model",
+    "placeholder": "Select model...",
+    "default": "Default",
+    "response_time": "Response Time",
+    "success_rate": "Success Rate",
+    "cost": "Cost",
+    "max_tokens": "Max Tokens",
+    "compare": "Compare",
+    "compare_models": "Compare Models",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "favorites": "Favorites"
+    },
+    "selected_model_info": "Selected Model",
+    "info": {
+      "provider": "Provider",
+      "max_tokens": "Max Tokens",
+      "cost": "Cost"
+    },
+    "comparison": {
+      "title": "Model Comparison",
+      "model": "Model",
+      "performance": "Performance",
+      "response_time": "Response Time",
+      "success_rate": "Success Rate",
+      "cost": "Cost",
+      "cost_per_1k": "Cost per 1k",
+      "max_tokens": "Max Tokens",
+      "usage": "Usage",
+      "total_requests": "Total Requests",
+      "last_used": "Last Used",
+      "capabilities": "Capabilities"
+    }
+  },
+  "performance": {
+    "title": "Model Performance Monitoring",
+    "select_model": "Select Model",
+    "refresh": "Refresh",
+    "alert_settings": "Alert Settings",
+    "auto_refresh": {
+      "on": "Auto",
+      "off": "Manual"
+    },
+    "time_ranges": {
+      "1h": "1 Hour",
+      "6h": "6 Hours",
+      "24h": "24 Hours",
+      "7d": "7 Days",
+      "30d": "30 Days"
+    },
+    "stats": {
+      "response_time": "Response Time",
+      "success_rate": "Success Rate",
+      "error_rate": "Error Rate",
+      "cost_per_1k": "Cost per 1k"
+    },
+    "charts": {
+      "response_time": "Response Time Trend",
+      "success_rate": "Success Rate Trend",
+      "requests_per_minute": "Requests per Minute",
+      "cost_trend": "Cost Trend"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "no_alerts": "No Alerts",
+      "no_alerts_description": "All systems are functioning normally",
+      "type": "Type",
+      "title": "Title",
+      "severity": "Severity",
+      "timestamp": "Timestamp",
+      "actions": "Actions",
+      "acknowledge": "Acknowledge",
+      "view": "View",
+      "types": {
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
+    "no_model_selected": "No model selected",
+    "select_model_to_view": "Select a model to view performance data"
+  },
+  "test": {
+    "title": "Model Test Interface",
+    "tabs": {
+      "single": "Single Test",
+      "ab_test": "A/B Test",
+      "suites": "Test Suites"
+    },
+    "form": {
+      "model": "Model",
+      "select_model": "Select Model",
+      "model_a": "Model A",
+      "model_b": "Model B",
+      "select_model_a": "Select Model A",
+      "select_model_b": "Select Model B",
+      "scenario": "Scenario",
+      "select_scenario": "Select Scenario",
+      "custom_prompt": "Custom Prompt",
+      "prompt_placeholder": "Enter a test prompt...",
+      "temperature": "Temperature",
+      "max_tokens": "Max Tokens",
+      "include_metrics": "Include Metrics"
+    },
+    "run_single_test": "Run Single Test",
+    "run_ab_test": "Run A/B Test",
+    "create_suite": "Create Test Suite",
+    "run_suite": "Run Suite",
+    "edit_suite": "Edit Suite",
+    "delete_suite": "Delete Suite",
+    "scenarios": "Scenarios",
+    "models": "Models",
+    "last_run": "Last Run",
+    "status": {
+      "idle": "Idle",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "results": {
+      "title": "Test Results",
+      "single_tests": "Single Tests",
+      "ab_tests": "A/B Tests",
+      "model": "Model",
+      "response_time": "Response Time",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "response": "Response",
+      "timestamp": "Timestamp"
+    },
+    "ab_test": {
+      "models": "Models",
+      "response_time": "Response Time",
+      "cost": "Cost",
+      "quality": "Quality"
+    },
+    "export_results": "Export Results",
+    "clear_results": "Clear Results",
+    "single_test_success": "Single test executed successfully",
+    "single_test_failed": "Single test failed",
+    "ab_test_success": "A/B test executed successfully",
+    "ab_test_failed": "A/B test failed",
+    "suite_completed": "Test suite completed",
+    "suite_failed": "Test suite failed",
+    "suite_saved": "Test suite saved",
+    "suite_save_failed": "Failed to save test suite"
+  },
+  "configuration": {
+    "title": "Model Configuration",
+    "tabs": {
+      "templates": "Prompt Templates",
+      "fallbacks": "Fallback Strategies",
+      "routing": "Auto Routing"
+    },
+    "templates": {
+      "title": "Prompt Templates",
+      "create": "Create Template",
+      "edit": "Edit Template",
+      "info": "Manage Prompt Templates",
+      "description": "Create and manage reusable prompt templates for different use cases",
+      "name": "Name",
+      "category": "Category",
+      "variables": "Variables",
+      "actions": "Actions",
+      "copy": "Copy",
+      "form": {
+        "name": "Template Name",
+        "name_placeholder": "Enter template name",
+        "description": "Description",
+        "description_placeholder": "Template description",
+        "category": "Category",
+        "category_placeholder": "Select category",
+        "template": "Template",
+        "template_placeholder": "Template content with {{variables}}",
+        "is_default": "Default Template"
+      }
+    },
+    "fallbacks": {
+      "title": "Fallback Strategies",
+      "create": "Create Strategy",
+      "edit": "Edit Strategy",
+      "info": "Manage Fallback Strategies",
+      "description": "Define automatic fallback strategies for model failures",
+      "name": "Name",
+      "primary": "Primary Model",
+      "fallbacks": "Fallback Models",
+      "conditions": "Conditions",
+      "actions": "Actions",
+      "form": {
+        "name": "Strategy Name",
+        "name_placeholder": "Enter strategy name",
+        "description": "Description",
+        "description_placeholder": "Strategy description",
+        "primary_model": "Primary Model",
+        "primary_model_placeholder": "Select primary model",
+        "fallback_models": "Fallback Models",
+        "fallback_models_placeholder": "Select fallback models",
+        "conditions": "Conditions",
+        "response_time_threshold": "Response Time Threshold (ms)",
+        "error_rate_threshold": "Error Rate Threshold (%)",
+        "cost_threshold": "Cost Threshold ($)",
+        "max_retries": "Max Retries",
+        "is_active": "Active"
+      }
+    },
+    "routing": {
+      "title": "Auto Routing",
+      "create": "Create Rule",
+      "edit": "Edit Rule",
+      "info": "Manage Auto Routing Rules",
+      "description": "Define rules for automatic model assignment based on task complexity",
+      "name": "Name",
+      "conditions": "Conditions",
+      "target": "Target Model",
+      "priority": "Priority",
+      "actions": "Actions",
+      "form": {
+        "name": "Rule Name",
+        "name_placeholder": "Enter rule name",
+        "description": "Description",
+        "description_placeholder": "Rule description",
+        "conditions": "Conditions",
+        "complexity": "Complexity",
+        "task_type": "Task Type",
+        "task_type_placeholder": "Select task types",
+        "token_estimate": "Token Estimate",
+        "cost_budget": "Cost Budget ($)",
+        "priority": "Priority",
+        "target_model": "Target Model",
+        "target_model_placeholder": "Select target model",
+        "is_active": "Active"
+      }
+    },
+    "categories": {
+      "general": "General",
+      "programming": "Programming",
+      "creative": "Creative",
+      "analysis": "Analysis"
+    },
+    "complexity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "task_types": {
+      "question": "Question",
+      "translation": "Translation",
+      "analysis": "Analysis",
+      "reasoning": "Reasoning",
+      "creative": "Creative",
+      "code": "Code"
+    },
+    "default": "Default",
+    "template_updated": "Template updated successfully",
+    "template_created": "Template created successfully",
+    "fallback_updated": "Fallback strategy updated successfully",
+    "fallback_created": "Fallback strategy created successfully",
+    "routing_updated": "Routing rule updated successfully",
+    "routing_created": "Routing rule created successfully",
+    "item_deleted": "Item deleted successfully",
+    "template_copied": "Template copied to clipboard",
+    "load_failed": "Failed to load configuration",
+    "save_failed": "Failed to save configuration"
+  },
+  "favorites": {
+    "title": "Model Favorites",
+    "all_categories": "All Categories",
+    "add_favorite": "Add Favorite",
+    "edit_favorite": "Edit Favorite",
+    "add_first": "Add First Favorite",
+    "no_favorites": "No favorites available",
+    "categories": {
+      "productivity": "Productivity",
+      "productivity_desc": "For productive tasks",
+      "creative": "Creative",
+      "creative_desc": "For creative tasks",
+      "efficiency": "Efficiency",
+      "efficiency_desc": "For efficient tasks",
+      "analysis": "Analysis",
+      "analysis_desc": "For analytical tasks"
+    },
+    "sort": {
+      "priority": "Priority",
+      "name": "Name",
+      "usage": "Usage",
+      "last_used": "Last Used"
+    },
+    "view": {
+      "grid": "Grid",
+      "list": "List"
+    },
+    "total": "Total",
+    "use_model": "Use Model",
+    "use": "Use",
+    "edit": "Edit",
+    "remove": "Remove",
+    "remove_confirm": "Really remove favorite?",
+    "form": {
+      "model": "Model",
+      "select_model": "Select Model",
+      "name": "Name",
+      "name_placeholder": "Enter favorite name",
+      "description": "Description",
+      "description_placeholder": "Favorite description",
+      "category": "Category",
+      "select_category": "Select category",
+      "priority": "Priority",
+      "tags": "Tags",
+      "tags_placeholder": "Enter tags",
+      "custom_settings": "Custom Settings",
+      "temperature": "Temperature",
+      "max_tokens": "Max Tokens"
+    },
+    "uses": "Uses",
+    "added_success": "Favorite added successfully",
+    "add_failed": "Failed to add favorite",
+    "removed_success": "Favorite removed successfully",
+    "remove_failed": "Failed to remove favorite",
+    "updated_success": "Favorite updated successfully",
+    "created_success": "Favorite created successfully",
+    "save_failed": "Failed to save favorite",
+    "load_failed": "Failed to load favorites",
+    "model_selected": "Model selected"
+  },
+  "analytics": {
+    "title": "Model Usage Analytics",
+    "select_models": "Select Models",
+    "refresh": "Refresh",
+    "export": "Export",
+    "settings": "Settings",
+    "view": {
+      "overview": "Overview",
+      "detailed": "Detailed",
+      "costs": "Costs",
+      "users": "Users"
+    },
+    "stats": {
+      "total_requests": "Total Requests",
+      "total_tokens": "Total Tokens",
+      "total_cost": "Total Cost",
+      "avg_response_time": "Avg Response Time"
+    },
+    "charts": {
+      "requests_trend": "Requests Trend",
+      "cost_trend": "Cost Trend",
+      "model_distribution": "Model Distribution",
+      "performance_comparison": "Performance Comparison"
+    },
+    "table": {
+      "model": "Model",
+      "requests": "Requests",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "response_time": "Response Time",
+      "success_rate": "Success Rate",
+      "trend": "Trend",
+      "percentage": "Percentage",
+      "avg_cost_per_request": "Avg Cost per Request",
+      "user": "User",
+      "favorite_model": "Favorite Model",
+      "usage_pattern": "Usage Pattern",
+      "last_activity": "Last Activity"
+    },
+    "trend": {
+      "increasing": "Increasing",
+      "decreasing": "Decreasing",
+      "stable": "Stable"
+    },
+    "pattern": {
+      "heavy": "Heavy",
+      "moderate": "Moderate",
+      "light": "Light"
+    },
+    "detailed_usage": "Detailed Usage",
+    "cost_analysis": "Cost Analysis",
+    "user_usage": "User Usage",
+    "export_data": "Export Data",
+    "export_csv": "Export as CSV",
+    "export_json": "Export as JSON",
+    "export_excel": "Export as Excel",
+    "settings": "Settings",
+    "settings": {
+      "auto_refresh": "Auto Refresh",
+      "refresh_interval": "Refresh Interval",
+      "seconds": "Seconds",
+      "minute": "Minute",
+      "minutes": "Minutes"
+    },
+    "load_failed": "Failed to load data",
+    "export_success": "Data exported successfully",
+    "export_failed": "Failed to export data"
   }
 }
