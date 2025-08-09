@@ -1,6 +1,7 @@
 """Tool Middleware for AI Service."""
 
 import re
+import time
 from typing import Any, Dict, List, Optional
 
 from ..utils.tool_manager import ToolManager
@@ -117,27 +118,39 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
             if not tool_calls:
                 return []
 
-            # Execute each tool call
+            # Execute each tool call with timing
             results = []
             for tool_call in tool_calls:
                 try:
+                    # Start timing
+                    start_time = time.time()
+                    
                     result = await self.tool_manager.execute_tool(
                         tool_name=tool_call.tool_name,
                         parameters=tool_call.parameters,
                         user_id=user_id,
                     )
+                    
+                    # Calculate execution time
+                    execution_time = time.time() - start_time
+                    
                     results.append({
                         "tool": tool_call.tool_name,
                         "parameters": tool_call.parameters,
                         "result": result,
                         "success": True,
+                        "execution_time": execution_time,
                     })
                 except Exception as e:
+                    # Calculate execution time even for failed executions
+                    execution_time = time.time() - start_time if 'start_time' in locals() else 0.0
+                    
                     results.append({
                         "tool": tool_call.tool_name,
                         "parameters": tool_call.parameters,
                         "result": str(e),
                         "success": False,
+                        "execution_time": execution_time,
                     })
 
             return results
@@ -197,15 +210,19 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
                 "tools_executed": 0,
                 "successful_executions": 0,
                 "failed_executions": 0,
-                "execution_time": 0.0,
+                "total_execution_time": 0.0,
+                "avg_execution_time": 0.0,
             }
 
         successful = sum(1 for result in tool_results if result.get("success", False))
         failed = len(tool_results) - successful
+        total_execution_time = sum(result.get("execution_time", 0.0) for result in tool_results)
+        avg_execution_time = total_execution_time / len(tool_results) if tool_results else 0.0
 
         return {
             "tools_executed": len(tool_results),
             "successful_executions": successful,
             "failed_executions": failed,
-            "execution_time": 0.0,  # TODO: Add timing
+            "total_execution_time": total_execution_time,
+            "avg_execution_time": avg_execution_time,
         }

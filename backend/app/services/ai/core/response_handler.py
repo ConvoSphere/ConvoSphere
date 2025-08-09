@@ -1,23 +1,29 @@
-"""Response Handler for AI Service."""
+"""
+Response Handler for AI Service.
 
-import uuid
+This module handles the processing of AI service responses and
+provides centralized error handling and logging.
+"""
+
+import logging
+import time
 from typing import Any, Dict, List, Optional
 
-from ..types.ai_types import (
-    ChatResponse,
-    ChatStreamResponse,
-    EmbeddingResponse,
-)
+from ..types.ai_types import ChatResponse, ChatStreamResponse, EmbeddingResponse
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class ResponseHandler:
-    """Handles AI service responses and error processing."""
+    """Handles AI service response processing and error handling."""
 
     def __init__(self):
-        self._request_id = None
+        """Initialize the response handler."""
+        self._request_id: Optional[str] = None
 
     def set_request_id(self, request_id: str) -> None:
-        """Set the current request ID."""
+        """Set the request ID for tracking."""
         self._request_id = request_id
 
     def create_chat_response(
@@ -27,13 +33,12 @@ class ResponseHandler:
         usage: Optional[Dict[str, int]] = None,
         finish_reason: Optional[str] = None,
     ) -> ChatResponse:
-        """Create a chat completion response."""
+        """Create a chat response."""
         return ChatResponse(
             content=content,
             model=model,
-            usage=usage,
+            usage=usage or {},
             finish_reason=finish_reason,
-            request_id=self._request_id or str(uuid.uuid4()),
         )
 
     def create_stream_response(
@@ -42,12 +47,11 @@ class ResponseHandler:
         model: str,
         finish_reason: Optional[str] = None,
     ) -> ChatStreamResponse:
-        """Create a streaming chat completion response."""
+        """Create a streaming response."""
         return ChatStreamResponse(
             content=content,
             model=model,
             finish_reason=finish_reason,
-            request_id=self._request_id or str(uuid.uuid4()),
         )
 
     def create_embedding_response(
@@ -60,112 +64,80 @@ class ResponseHandler:
         return EmbeddingResponse(
             embeddings=embeddings,
             model=model,
-            usage=usage,
+            usage=usage or {},
         )
 
     def handle_provider_error(self, error: Exception, provider: str) -> Exception:
         """Handle provider-specific errors."""
-        error_message = str(error)
+        error_message = f"Provider '{provider}' error: {str(error)}"
+        logger.error(f"Request {self._request_id}: {error_message}")
         
-        # Common provider error patterns
-        if "rate limit" in error_message.lower():
-            return Exception(f"Rate limit exceeded for {provider}. Please try again later.")
+        # Log additional context for monitoring
+        self._log_error_metrics("provider_error", provider, str(error))
         
-        if "quota" in error_message.lower():
-            return Exception(f"Quota exceeded for {provider}. Please check your account limits.")
-        
-        if "invalid api key" in error_message.lower():
-            return Exception(f"Invalid API key for {provider}. Please check your configuration.")
-        
-        if "model not found" in error_message.lower():
-            return Exception(f"Model not found for {provider}. Please check the model name.")
-        
-        if "context length" in error_message.lower():
-            return Exception(f"Context length exceeded for {provider}. Please reduce the input size.")
-        
-        # Generic error handling
-        return Exception(f"Error with {provider}: {error_message}")
+        return Exception(error_message)
 
     def handle_validation_error(self, error: Exception) -> Exception:
         """Handle validation errors."""
-        error_message = str(error)
+        error_message = f"Validation error: {str(error)}"
+        logger.error(f"Request {self._request_id}: {error_message}")
         
-        if "messages cannot be empty" in error_message:
-            return Exception("Chat messages cannot be empty.")
+        # Log additional context for monitoring
+        self._log_error_metrics("validation_error", "validation", str(error))
         
-        if "invalid role" in error_message:
-            return Exception("Invalid message role. Must be 'system', 'user', or 'assistant'.")
-        
-        if "temperature must be between" in error_message:
-            return Exception("Temperature must be between 0 and 2.")
-        
-        if "max tokens must be positive" in error_message:
-            return Exception("Max tokens must be a positive number.")
-        
-        if "unsupported provider" in error_message:
-            return Exception("Unsupported AI provider. Please use 'openai' or 'anthropic'.")
-        
-        return Exception(f"Validation error: {error_message}")
+        return error
 
     def handle_streaming_error(self, error: Exception) -> Exception:
         """Handle streaming-specific errors."""
-        error_message = str(error)
+        error_message = f"Streaming error: {str(error)}"
+        logger.error(f"Request {self._request_id}: {error_message}")
         
-        if "connection" in error_message.lower():
-            return Exception("Streaming connection failed. Please try again.")
+        # Log additional context for monitoring
+        self._log_error_metrics("streaming_error", "streaming", str(error))
         
-        if "timeout" in error_message.lower():
-            return Exception("Streaming request timed out. Please try again.")
-        
-        return Exception(f"Streaming error: {error_message}")
+        return Exception(error_message)
 
     def validate_response_content(self, content: str) -> bool:
         """Validate response content."""
-        if not content:
+        if not content or not content.strip():
             return False
         
-        if not isinstance(content, str):
-            return False
-        
-        # Check for reasonable content length
-        if len(content) > 100000:  # 100KB limit
+        # Check for reasonable content length (100KB limit)
+        if len(content) > 100000:
             return False
         
         return True
 
     def validate_embeddings(self, embeddings: List[List[float]]) -> bool:
-        """Validate embedding response."""
+        """Validate embeddings."""
         if not embeddings:
             return False
         
-        if not isinstance(embeddings, list):
-            return False
-        
+        # Check that all items are lists of floats
         for embedding in embeddings:
             if not isinstance(embedding, list):
                 return False
-            
-            if not all(isinstance(dim, (int, float)) for dim in embedding):
+            if not all(isinstance(x, (int, float)) for x in embedding):
                 return False
         
         return True
 
-    def extract_usage_info(self, response: Any) -> Optional[Dict[str, int]]:
-        """Extract usage information from provider response."""
+    def extract_usage_info(self, response: Any) -> Dict[str, int]:
+        """Extract usage information from response."""
         if hasattr(response, 'usage'):
-            return response.usage
+            return response.usage or {}
         
         if hasattr(response, 'model_dump') and callable(response.model_dump):
             data = response.model_dump()
-            return data.get('usage')
+            return data.get('usage', {})
         
         if isinstance(response, dict):
-            return response.get('usage')
+            return response.get('usage', {})
         
-        return None
+        return {}
 
     def extract_finish_reason(self, response: Any) -> Optional[str]:
-        """Extract finish reason from provider response."""
+        """Extract finish reason from response."""
         if hasattr(response, 'finish_reason'):
             return response.finish_reason
         
@@ -179,21 +151,87 @@ class ResponseHandler:
         return None
 
     def log_response_metrics(
-        self,
-        response: ChatResponse,
-        processing_time: float,
-        provider: str,
+        self, response: ChatResponse, processing_time: float, provider: str
     ) -> None:
         """Log response metrics for monitoring."""
-        # This would integrate with your logging system
         metrics = {
-            "request_id": response.request_id,
+            "request_id": self._request_id,
             "provider": provider,
             "model": response.model,
-            "content_length": len(response.content),
             "processing_time": processing_time,
+            "content_length": len(response.content),
             "usage": response.usage,
+            "finish_reason": response.finish_reason,
+            "timestamp": time.time(),
         }
         
-        # TODO: Integrate with your logging/monitoring system
-        print(f"Response metrics: {metrics}")  # Placeholder
+        logger.info(f"Response metrics: {metrics}")
+        self._log_metrics("response", metrics)
+
+    def log_streaming_metrics(self, processing_time: float, provider: str) -> None:
+        """Log streaming metrics for monitoring."""
+        metrics = {
+            "request_id": self._request_id,
+            "provider": provider,
+            "processing_time": processing_time,
+            "timestamp": time.time(),
+        }
+        
+        logger.info(f"Streaming metrics: {metrics}")
+        self._log_metrics("streaming", metrics)
+
+    def log_embedding_metrics(
+        self, response: EmbeddingResponse, processing_time: float, provider: str
+    ) -> None:
+        """Log embedding metrics for monitoring."""
+        metrics = {
+            "request_id": self._request_id,
+            "provider": provider,
+            "model": response.model,
+            "processing_time": processing_time,
+            "embeddings_count": len(response.embeddings),
+            "embedding_dimensions": len(response.embeddings[0]) if response.embeddings else 0,
+            "usage": response.usage,
+            "timestamp": time.time(),
+        }
+        
+        logger.info(f"Embedding metrics: {metrics}")
+        self._log_metrics("embedding", metrics)
+
+    def _log_metrics(self, metric_type: str, metrics: Dict[str, Any]) -> None:
+        """Log metrics to monitoring system."""
+        try:
+            # Integration with monitoring system (e.g., Prometheus, DataDog, etc.)
+            # This is a placeholder for actual monitoring integration
+            
+            # Example: Send to monitoring system
+            # monitoring_client.record_metric(metric_type, metrics)
+            
+            # For now, just log to structured logging
+            logger.info(f"Monitoring metric - {metric_type}: {metrics}")
+            
+        except Exception as e:
+            logger.warning(f"Failed to log metrics: {str(e)}")
+
+    def _log_error_metrics(self, error_type: str, context: str, error_message: str) -> None:
+        """Log error metrics for monitoring."""
+        try:
+            error_metrics = {
+                "request_id": self._request_id,
+                "error_type": error_type,
+                "context": context,
+                "error_message": error_message,
+                "timestamp": time.time(),
+            }
+            
+            # Integration with error monitoring system (e.g., Sentry, Rollbar, etc.)
+            # This is a placeholder for actual error monitoring integration
+            
+            # Example: Send to error monitoring system
+            # error_monitoring_client.capture_exception(error_metrics)
+            
+            # For now, just log to structured logging
+            logger.error(f"Error monitoring - {error_type}: {error_metrics}")
+            
+        except Exception as e:
+            logger.warning(f"Failed to log error metrics: {str(e)}")
