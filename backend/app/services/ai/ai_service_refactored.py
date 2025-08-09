@@ -28,19 +28,6 @@ class AIService:
         self.rag_middleware = RAGMiddleware()
         self.tool_middleware = ToolMiddleware()
         self.cost_middleware = CostMiddleware()
-        
-        # Initialize providers (to be integrated)
-        self._providers: Dict[str, Any] = {}
-        self._initialize_providers()
-
-    def _initialize_providers(self) -> None:
-        """Initialize AI providers."""
-        try:
-            # TODO: Integrate with existing provider factory
-            # This will use the existing provider factory from the original service
-            pass
-        except Exception as e:
-            print(f"Failed to initialize providers: {str(e)}")
 
     async def chat_completion(
         self,
@@ -174,6 +161,10 @@ class AIService:
         """Get model usage statistics."""
         return self.cost_middleware.get_model_usage_stats(user_id, days)
 
+    def get_provider_status(self) -> Dict[str, Dict[str, Any]]:
+        """Get status of all providers."""
+        return self.chat_processor.get_provider_status()
+
     async def _apply_middleware(
         self,
         messages: List[Dict[str, str]],
@@ -198,7 +189,3 @@ class AIService:
             )
 
         return processed_messages
-
-    def _get_default_model(self, provider: str) -> str:
-        """Get default model for provider."""
-        return self.request_builder._get_default_model(provider)

@@ -3,6 +3,7 @@
 import time
 from typing import Any, Dict, List, Optional
 
+from .provider_manager import ProviderManager
 from ..types.ai_types import (
     ChatRequest,
     ChatResponse,
@@ -18,6 +19,7 @@ class ChatProcessor:
     def __init__(self, request_builder, response_handler):
         self.request_builder = request_builder
         self.response_handler = response_handler
+        self.provider_manager = ProviderManager()
 
     async def process_chat_completion(
         self,
@@ -36,6 +38,20 @@ class ChatProcessor:
         start_time = time.time()
         
         try:
+            # Validate provider and model
+            if not self.provider_manager.is_provider_available(provider):
+                raise ValueError(f"Provider '{provider}' is not available")
+
+            # Get default model if not specified
+            if not model:
+                model = self.provider_manager.get_default_model(provider)
+                if not model:
+                    raise ValueError(f"No default model available for provider '{provider}'")
+
+            # Validate model
+            if not self.provider_manager.validate_provider_and_model(provider, model):
+                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+
             # Build request
             request = self.request_builder.build_chat_request(
                 messages=messages,
@@ -54,17 +70,31 @@ class ChatProcessor:
             request_id = self.request_builder.generate_request_id()
             self.response_handler.set_request_id(request_id)
 
-            # Process with middleware (to be implemented)
-            processed_messages = await self._apply_middleware(request)
-            
             # Get provider and generate response
-            ai_provider = self._get_provider(provider)
-            provider_response = await ai_provider.chat_completion(processed_messages)
+            ai_provider = self.provider_manager.get_provider(provider)
+            if not ai_provider:
+                raise Exception(f"Failed to get provider instance for '{provider}'")
+
+            # Convert messages to provider format
+            provider_messages = self._convert_messages_to_provider_format(messages)
+            
+            # Create provider request
+            from ..providers.base import ChatCompletionRequest
+            provider_request = ChatCompletionRequest(
+                messages=provider_messages,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=False,
+            )
+
+            # Get response from provider
+            provider_response = await ai_provider.chat_completion(provider_request)
 
             # Extract response data
-            content = self._extract_content(provider_response)
-            usage = self.response_handler.extract_usage_info(provider_response)
-            finish_reason = self.response_handler.extract_finish_reason(provider_response)
+            content = provider_response.content
+            usage = provider_response.usage or {}
+            finish_reason = provider_response.finish_reason
 
             # Validate response
             if not self.response_handler.validate_response_content(content):
@@ -73,7 +103,7 @@ class ChatProcessor:
             # Create response
             response = self.response_handler.create_chat_response(
                 content=content,
-                model=request.model,
+                model=model,
                 usage=usage,
                 finish_reason=finish_reason,
             )
@@ -108,6 +138,20 @@ class ChatProcessor:
         start_time = time.time()
         
         try:
+            # Validate provider and model
+            if not self.provider_manager.is_provider_available(provider):
+                raise ValueError(f"Provider '{provider}' is not available")
+
+            # Get default model if not specified
+            if not model:
+                model = self.provider_manager.get_default_model(provider)
+                if not model:
+                    raise ValueError(f"No default model available for provider '{provider}'")
+
+            # Validate model
+            if not self.provider_manager.validate_provider_and_model(provider, model):
+                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+
             # Build request
             request = self.request_builder.build_chat_request(
                 messages=messages,
@@ -126,33 +170,45 @@ class ChatProcessor:
             request_id = self.request_builder.generate_request_id()
             self.response_handler.set_request_id(request_id)
 
-            # Process with middleware (to be implemented)
-            processed_messages = await self._apply_middleware(request)
+            # Get provider and generate response
+            ai_provider = self.provider_manager.get_provider(provider)
+            if not ai_provider:
+                raise Exception(f"Failed to get provider instance for '{provider}'")
+
+            # Convert messages to provider format
+            provider_messages = self._convert_messages_to_provider_format(messages)
             
-            # Get provider and generate streaming response
-            ai_provider = self._get_provider(provider)
-            
-            full_content = ""
-            async for chunk in ai_provider.chat_completion_stream(processed_messages):
-                # Extract chunk content
-                chunk_content = self._extract_content(chunk)
-                full_content += chunk_content
-                
-                # Create stream response
-                stream_response = self.response_handler.create_stream_response(
-                    content=chunk_content,
-                    model=request.model,
+            # Create provider request
+            from ..providers.base import ChatCompletionRequest
+            provider_request = ChatCompletionRequest(
+                messages=provider_messages,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+            )
+
+            # Stream response from provider
+            async for chunk in ai_provider.chat_completion_stream(provider_request):
+                # Create streaming response
+                response = self.response_handler.create_stream_response(
+                    content=chunk.content,
+                    model=model,
+                    finish_reason=chunk.finish_reason,
                 )
                 
-                yield stream_response
+                yield response
 
-            # Log metrics for streaming
+            # Log metrics
             processing_time = time.time() - start_time
-            # TODO: Implement streaming metrics logging
+            self.response_handler.log_streaming_metrics(processing_time, provider)
 
         except Exception as e:
-            # Handle streaming-specific errors
-            raise self.response_handler.handle_streaming_error(e)
+            # Handle different types of errors
+            if "validation" in str(e).lower():
+                raise self.response_handler.handle_validation_error(e)
+            else:
+                raise self.response_handler.handle_provider_error(e, provider)
 
     async def process_embeddings(
         self,
@@ -160,8 +216,18 @@ class ChatProcessor:
         provider: str = "openai",
         model: str = "text-embedding-ada-002",
     ) -> EmbeddingResponse:
-        """Process an embedding request."""
+        """Process an embeddings request."""
+        start_time = time.time()
+        
         try:
+            # Validate provider and model
+            if not self.provider_manager.is_provider_available(provider):
+                raise ValueError(f"Provider '{provider}' is not available")
+
+            # Validate model
+            if not self.provider_manager.validate_provider_and_model(provider, model):
+                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+
             # Build request
             request = self.request_builder.build_embedding_request(
                 texts=texts,
@@ -169,77 +235,68 @@ class ChatProcessor:
                 model=model,
             )
 
-            # Get provider and generate embeddings
-            ai_provider = self._get_provider(provider)
-            embeddings = await ai_provider.get_embeddings(texts, model)
+            # Set request ID for tracking
+            request_id = self.request_builder.generate_request_id()
+            self.response_handler.set_request_id(request_id)
 
-            # Validate embeddings
-            if not self.response_handler.validate_embeddings(embeddings):
-                raise Exception("Invalid embeddings received")
+            # Get provider and generate embeddings
+            ai_provider = self.provider_manager.get_provider(provider)
+            if not ai_provider:
+                raise Exception(f"Failed to get provider instance for '{provider}'")
+
+            # Get embeddings from provider
+            embeddings = await ai_provider.get_embeddings(texts, model)
 
             # Create response
             response = self.response_handler.create_embedding_response(
                 embeddings=embeddings,
                 model=model,
+                usage={"input_tokens": len(texts) * 10},  # Rough estimate
             )
+
+            # Log metrics
+            processing_time = time.time() - start_time
+            self.response_handler.log_embedding_metrics(response, processing_time, provider)
 
             return response
 
         except Exception as e:
-            raise self.response_handler.handle_provider_error(e, provider)
+            # Handle different types of errors
+            if "validation" in str(e).lower():
+                raise self.response_handler.handle_validation_error(e)
+            else:
+                raise self.response_handler.handle_provider_error(e, provider)
 
-    async def _apply_middleware(self, request: ChatRequest) -> List[Dict[str, str]]:
-        """Apply middleware processing to messages."""
-        # TODO: Implement middleware processing
-        # This will integrate with RAG, Tools, and Cost middleware
-        return request.messages
-
-    def _get_provider(self, provider_name: str):
-        """Get AI provider instance."""
-        # TODO: Implement provider factory integration
-        # This will use the existing provider factory
-        raise NotImplementedError("Provider integration to be implemented")
-
-    def _extract_content(self, response: Any) -> str:
-        """Extract content from provider response."""
-        if hasattr(response, 'content'):
-            return response.content
+    def _convert_messages_to_provider_format(self, messages: List[Dict[str, str]]) -> List:
+        """Convert messages to provider format."""
+        from ..providers.base import ChatMessage
         
-        if hasattr(response, 'model_dump') and callable(response.model_dump):
-            data = response.model_dump()
-            return data.get('content', '')
+        provider_messages = []
+        for msg in messages:
+            provider_messages.append(ChatMessage(
+                role=msg["role"],
+                content=msg["content"],
+                name=msg.get("name"),
+            ))
         
-        if isinstance(response, dict):
-            return response.get('content', '')
-        
-        return str(response)
+        return provider_messages
 
     def get_available_providers(self) -> List[str]:
         """Get list of available providers."""
-        # TODO: Implement provider discovery
-        return ["openai", "anthropic"]
+        return self.provider_manager.get_available_providers()
 
     def get_provider(self, provider_name: str):
         """Get a specific provider."""
-        if provider_name not in self.get_available_providers():
-            raise ValueError(f"Provider '{provider_name}' not available")
-        
-        return self._get_provider(provider_name)
+        return self.provider_manager.get_provider(provider_name)
 
     def get_available_models(self, provider: str) -> List[str]:
         """Get available models for a provider."""
-        try:
-            ai_provider = self.get_provider(provider)
-            return ai_provider.get_available_models()
-        except Exception as e:
-            print(f"Failed to get models for {provider}: {str(e)}")
-            return []
+        return self.provider_manager.get_available_models(provider)
 
     def get_model_info(self, provider: str, model: str) -> Dict[str, Any]:
         """Get information about a specific model."""
-        try:
-            ai_provider = self.get_provider(provider)
-            return ai_provider.get_model_info(model)
-        except Exception as e:
-            print(f"Failed to get model info: {str(e)}")
-            return {}
+        return self.provider_manager.get_model_info(provider, model)
+
+    def get_provider_status(self) -> Dict[str, Dict[str, Any]]:
+        """Get status of all providers."""
+        return self.provider_manager.get_provider_status()

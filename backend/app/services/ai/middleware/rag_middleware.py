@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
+from ..utils.rag_service import RAGService
 from ..types.ai_types import ChatRequest, RAGContext
 
 
@@ -9,7 +10,8 @@ class RAGMiddleware:
     """RAG (Retrieval-Augmented Generation) middleware."""
 
     def __init__(self, rag_service=None):
-        self.rag_service = rag_service
+        """Initialize RAG middleware with optional RAG service."""
+        self.rag_service = rag_service or RAGService()
 
     async def process(
         self,
@@ -27,7 +29,7 @@ class RAGMiddleware:
             return messages
 
         try:
-            # Get RAG context
+            # Get RAG context using existing RAG service
             rag_context = await self._get_rag_context(
                 last_user_message, user_id, max_context_chunks
             )
@@ -54,10 +56,7 @@ class RAGMiddleware:
     async def _get_rag_context(
         self, query: str, user_id: str, max_context_chunks: int
     ) -> Optional[RAGContext]:
-        """Get RAG context for the query."""
-        if not self.rag_service:
-            return None
-
+        """Get RAG context for the query using existing RAG service."""
         try:
             # Use existing RAG service to get relevant chunks
             rag_messages = await self.rag_service.create_rag_prompt(
@@ -65,7 +64,7 @@ class RAGMiddleware:
             )
 
             # Extract context from RAG messages
-            context = self._extract_context_from_rag_messages(rag_messages)
+            context = self._extract_context_from_rag_messages(rag_messages, query)
             return context
 
         except Exception as e:
@@ -73,7 +72,7 @@ class RAGMiddleware:
             return None
 
     def _extract_context_from_rag_messages(
-        self, rag_messages: List[Dict[str, str]]
+        self, rag_messages: List[Dict[str, str]], query: str
     ) -> Optional[RAGContext]:
         """Extract RAG context from processed messages."""
         if not rag_messages:
@@ -89,7 +88,7 @@ class RAGMiddleware:
                     sources = self._extract_sources(content)
                     
                     return RAGContext(
-                        query="",  # Will be filled by caller
+                        query=query,
                         chunks=chunks,
                         relevance_scores=[1.0] * len(chunks),  # Default scores
                         sources=sources,
@@ -98,41 +97,44 @@ class RAGMiddleware:
         return None
 
     def _parse_rag_chunks(self, content: str) -> List[Dict[str, Any]]:
-        """Parse RAG chunks from system message content."""
+        """Parse RAG chunks from content."""
         chunks = []
         
-        # Simple parsing - look for document chunks
-        lines = content.split("\n")
-        current_chunk = {}
+        # Simple parsing - look for content between markers
+        lines = content.split('\n')
+        current_chunk = None
         
         for line in lines:
             line = line.strip()
-            if line.startswith("Document:") or line.startswith("Chunk:"):
+            if not line:
+                continue
+                
+            # Look for chunk markers
+            if line.startswith('---') or line.startswith('###') or line.startswith('**'):
                 if current_chunk:
                     chunks.append(current_chunk)
-                current_chunk = {"content": line}
-            elif line and current_chunk:
-                current_chunk["content"] = current_chunk.get("content", "") + "\n" + line
+                current_chunk = {"content": "", "metadata": {}}
+            elif current_chunk is not None:
+                current_chunk["content"] += line + "\n"
         
+        # Add last chunk
         if current_chunk:
             chunks.append(current_chunk)
         
         return chunks
 
     def _extract_sources(self, content: str) -> List[str]:
-        """Extract source information from RAG content."""
+        """Extract sources from RAG content."""
         sources = []
         
-        # Look for source patterns
-        lines = content.split("\n")
+        # Look for source markers
+        lines = content.split('\n')
         for line in lines:
-            if "source:" in line.lower() or "file:" in line.lower():
-                # Extract filename or source
-                parts = line.split(":")
-                if len(parts) > 1:
-                    source = parts[1].strip()
-                    if source:
-                        sources.append(source)
+            line = line.strip()
+            if line.startswith('Source:') or line.startswith('Reference:'):
+                source = line.split(':', 1)[1].strip()
+                if source:
+                    sources.append(source)
         
         return sources
 
@@ -140,52 +142,47 @@ class RAGMiddleware:
         self, messages: List[Dict[str, str]], rag_context: RAGContext
     ) -> List[Dict[str, str]]:
         """Enhance messages with RAG context."""
-        if not rag_context.chunks:
-            return messages
-
+        enhanced_messages = messages.copy()
+        
         # Create context summary
         context_summary = self._create_context_summary(rag_context)
+        
+        # Add system message with RAG context
+        rag_system_message = {
+            "role": "system",
+            "content": f"""You have access to the following relevant information to help answer the user's question:
 
-        # Add context to system message or create new one
-        enhanced_messages = []
-        context_added = False
+{context_summary}
 
-        for message in messages:
-            if message.get("role") == "system" and not context_added:
-                # Enhance existing system message
-                enhanced_content = message.get("content", "") + "\n\n" + context_summary
-                enhanced_messages.append({
-                    "role": "system",
-                    "content": enhanced_content
-                })
-                context_added = True
-            else:
-                enhanced_messages.append(message)
+Please use this information to provide accurate and helpful responses. If the information is relevant to the user's question, incorporate it into your answer. If the information is not relevant, you can ignore it and provide a general response.
 
-        # If no system message found, add one at the beginning
-        if not context_added:
-            enhanced_messages.insert(0, {
-                "role": "system",
-                "content": context_summary
-            })
-
+Sources: {', '.join(rag_context.sources) if rag_context.sources else 'No specific sources available'}"""
+        }
+        
+        # Insert RAG system message after the first system message (if any)
+        insert_index = 0
+        for i, message in enumerate(enhanced_messages):
+            if message.get("role") == "system":
+                insert_index = i + 1
+                break
+        
+        enhanced_messages.insert(insert_index, rag_system_message)
+        
         return enhanced_messages
 
     def _create_context_summary(self, rag_context: RAGContext) -> str:
-        """Create a summary of RAG context for the AI."""
-        summary = "You have access to the following relevant information:\n\n"
+        """Create a summary of the RAG context."""
+        if not rag_context.chunks:
+            return "No relevant information available."
         
-        for i, chunk in enumerate(rag_context.chunks):
-            content = chunk.get("content", "")
+        summary = "Relevant Information:\n\n"
+        
+        for i, chunk in enumerate(rag_context.chunks, 1):
+            content = chunk.get("content", "").strip()
             if content:
-                summary += f"Context {i+1}:\n{content}\n\n"
+                summary += f"{i}. {content}\n\n"
         
-        if rag_context.sources:
-            summary += f"Sources: {', '.join(rag_context.sources)}\n\n"
-        
-        summary += "Please use this information to provide accurate and helpful responses."
-        
-        return summary
+        return summary.strip()
 
     def should_apply_rag(self, messages: List[Dict[str, str]], use_knowledge_base: bool) -> bool:
         """Determine if RAG should be applied."""
@@ -207,8 +204,9 @@ class RAGMiddleware:
         if not rag_context:
             return {
                 "chunks_retrieved": 0,
-                "sources_used": 0,
+                "sources_count": 0,
                 "context_length": 0,
+                "relevance_scores": [],
             }
         
         total_context_length = sum(
@@ -217,7 +215,7 @@ class RAGMiddleware:
         
         return {
             "chunks_retrieved": len(rag_context.chunks),
-            "sources_used": len(rag_context.sources),
+            "sources_count": len(rag_context.sources),
             "context_length": total_context_length,
-            "avg_relevance_score": sum(rag_context.relevance_scores) / len(rag_context.relevance_scores) if rag_context.relevance_scores else 0,
+            "relevance_scores": rag_context.relevance_scores,
         }
