@@ -25,6 +25,110 @@ def load_sso_config_from_env() -> Dict[str, Any]:
         "auto_sync_groups": os.getenv("SSO_AUTO_SYNC_GROUPS", "true").lower() == "true",
     }
 
+    # Google OAuth2 Configuration
+    if os.getenv("SSO_GOOGLE_ENABLED", "false").lower() == "true":
+        config["providers"]["google"] = {
+            "enabled": True,
+            "name": "Google",
+            "type": "oauth",
+            "priority": int(os.getenv("SSO_GOOGLE_PRIORITY", "1")),
+            "client_id": os.getenv("SSO_GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("SSO_GOOGLE_CLIENT_SECRET"),
+            "redirect_uri": os.getenv("SSO_GOOGLE_REDIRECT_URI"),
+            "authorization_url": "https://accounts.google.com/o/oauth2/auth",
+            "token_url": "https://oauth2.googleapis.com/token",
+            "userinfo_url": "https://www.googleapis.com/oauth2/v2/userinfo",
+            "scope": "openid email profile",
+            "default_role": os.getenv("SSO_GOOGLE_DEFAULT_ROLE", "user"),
+            "role_mapping": _parse_role_mapping(os.getenv("SSO_GOOGLE_ROLE_MAPPING", "")),
+            "attribute_mapping": {
+                "username": "sub",
+                "email": "email",
+                "first_name": "given_name",
+                "last_name": "family_name",
+                "groups": "groups",
+            },
+        }
+
+    # Microsoft OAuth2 Configuration
+    if os.getenv("SSO_MICROSOFT_ENABLED", "false").lower() == "true":
+        tenant_id = os.getenv("SSO_MICROSOFT_TENANT_ID", "common")
+        config["providers"]["microsoft"] = {
+            "enabled": True,
+            "name": "Microsoft",
+            "type": "oauth",
+            "priority": int(os.getenv("SSO_MICROSOFT_PRIORITY", "2")),
+            "client_id": os.getenv("SSO_MICROSOFT_CLIENT_ID"),
+            "client_secret": os.getenv("SSO_MICROSOFT_CLIENT_SECRET"),
+            "redirect_uri": os.getenv("SSO_MICROSOFT_REDIRECT_URI"),
+            "tenant_id": tenant_id,
+            "authorization_url": f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize",
+            "token_url": f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+            "userinfo_url": "https://graph.microsoft.com/v1.0/me",
+            "scope": "openid email profile User.Read",
+            "default_role": os.getenv("SSO_MICROSOFT_DEFAULT_ROLE", "user"),
+            "role_mapping": _parse_role_mapping(os.getenv("SSO_MICROSOFT_ROLE_MAPPING", "")),
+            "attribute_mapping": {
+                "username": "sub",
+                "email": "email",
+                "first_name": "given_name",
+                "last_name": "family_name",
+                "groups": "groups",
+            },
+        }
+
+    # GitHub OAuth2 Configuration
+    if os.getenv("SSO_GITHUB_ENABLED", "false").lower() == "true":
+        config["providers"]["github"] = {
+            "enabled": True,
+            "name": "GitHub",
+            "type": "oauth",
+            "priority": int(os.getenv("SSO_GITHUB_PRIORITY", "3")),
+            "client_id": os.getenv("SSO_GITHUB_CLIENT_ID"),
+            "client_secret": os.getenv("SSO_GITHUB_CLIENT_SECRET"),
+            "redirect_uri": os.getenv("SSO_GITHUB_REDIRECT_URI"),
+            "authorization_url": "https://github.com/login/oauth/authorize",
+            "token_url": "https://github.com/login/oauth/access_token",
+            "userinfo_url": "https://api.github.com/user",
+            "scope": "read:user user:email",
+            "default_role": os.getenv("SSO_GITHUB_DEFAULT_ROLE", "user"),
+            "role_mapping": _parse_role_mapping(os.getenv("SSO_GITHUB_ROLE_MAPPING", "")),
+            "attribute_mapping": {
+                "username": "login",
+                "email": "email",
+                "first_name": "name",
+                "last_name": "",
+                "groups": "organizations",
+            },
+        }
+
+    # OIDC Configuration
+    if os.getenv("SSO_OIDC_ENABLED", "false").lower() == "true":
+        issuer_url = os.getenv("SSO_OIDC_ISSUER_URL")
+        config["providers"]["oidc"] = {
+            "enabled": True,
+            "name": "OIDC",
+            "type": "oauth",  # OIDC uses OAuth2 flow
+            "priority": int(os.getenv("SSO_OIDC_PRIORITY", "5")),
+            "client_id": os.getenv("SSO_OIDC_CLIENT_ID"),
+            "client_secret": os.getenv("SSO_OIDC_CLIENT_SECRET"),
+            "redirect_uri": os.getenv("SSO_OIDC_REDIRECT_URI"),
+            "issuer_url": issuer_url,
+            "authorization_url": f"{issuer_url}/authorize" if issuer_url else "",
+            "token_url": f"{issuer_url}/token" if issuer_url else "",
+            "userinfo_url": f"{issuer_url}/userinfo" if issuer_url else "",
+            "scope": "openid email profile",
+            "default_role": os.getenv("SSO_OIDC_DEFAULT_ROLE", "user"),
+            "role_mapping": _parse_role_mapping(os.getenv("SSO_OIDC_ROLE_MAPPING", "")),
+            "attribute_mapping": {
+                "username": "sub",
+                "email": "email",
+                "first_name": "given_name",
+                "last_name": "family_name",
+                "groups": "groups",
+            },
+        }
+
     # LDAP Configuration
     if os.getenv("LDAP_ENABLED", "false").lower() == "true":
         config["providers"]["ldap"] = {
@@ -199,3 +303,111 @@ def get_provider_config(config: Dict[str, Any], provider_name: str) -> Dict[str,
         raise ValueError(f"Provider '{provider_name}' not configured")
     
     return config["providers"][provider_name]
+
+
+def load_sso_config_from_settings() -> Dict[str, Any]:
+    """
+    Load SSO configuration from app settings (backward compatibility).
+    
+    This function provides backward compatibility with the original
+    configuration approach using get_settings().
+    
+    Returns:
+        SSO configuration dictionary
+    """
+    try:
+        from backend.app.core.config import get_settings
+        
+        settings = get_settings()
+        config = {"providers": {}}
+
+        # Google OAuth2
+        if hasattr(settings, 'sso_google_enabled') and settings.sso_google_enabled and hasattr(settings, 'sso_google_client_id') and settings.sso_google_client_id:
+            config["providers"]["google"] = {
+                "name": "Google",
+                "type": "oauth",
+                "enabled": True,
+                "priority": 1,
+                "client_id": settings.sso_google_client_id,
+                "client_secret": settings.sso_google_client_secret,
+                "redirect_uri": settings.sso_google_redirect_uri,
+                "authorization_url": "https://accounts.google.com/o/oauth2/auth",
+                "token_url": "https://oauth2.googleapis.com/token",
+                "userinfo_url": "https://www.googleapis.com/oauth2/v2/userinfo",
+                "scope": "openid email profile",
+            }
+
+        # Microsoft OAuth2
+        if hasattr(settings, 'sso_microsoft_enabled') and settings.sso_microsoft_enabled and hasattr(settings, 'sso_microsoft_client_id') and settings.sso_microsoft_client_id:
+            config["providers"]["microsoft"] = {
+                "name": "Microsoft",
+                "type": "oauth",
+                "enabled": True,
+                "priority": 2,
+                "client_id": settings.sso_microsoft_client_id,
+                "client_secret": settings.sso_microsoft_client_secret,
+                "redirect_uri": settings.sso_microsoft_redirect_uri,
+                "tenant_id": settings.sso_microsoft_tenant_id,
+                "authorization_url": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id or 'common'}/oauth2/v2.0/authorize",
+                "token_url": f"https://login.microsoftonline.com/{settings.sso_microsoft_tenant_id or 'common'}/oauth2/v2.0/token",
+                "userinfo_url": "https://graph.microsoft.com/v1.0/me",
+                "scope": "openid email profile User.Read",
+            }
+
+        # GitHub OAuth2
+        if hasattr(settings, 'sso_github_enabled') and settings.sso_github_enabled and hasattr(settings, 'sso_github_client_id') and settings.sso_github_client_id:
+            config["providers"]["github"] = {
+                "name": "GitHub",
+                "type": "oauth",
+                "enabled": True,
+                "priority": 3,
+                "client_id": settings.sso_github_client_id,
+                "client_secret": settings.sso_github_client_secret,
+                "redirect_uri": settings.sso_github_redirect_uri,
+                "authorization_url": "https://github.com/login/oauth/authorize",
+                "token_url": "https://github.com/login/oauth/access_token",
+                "userinfo_url": "https://api.github.com/user",
+                "scope": "read:user user:email",
+            }
+
+        # SAML
+        if hasattr(settings, 'sso_saml_enabled') and settings.sso_saml_enabled and hasattr(settings, 'sso_saml_metadata_url') and settings.sso_saml_metadata_url:
+            config["providers"]["saml"] = {
+                "name": "SAML",
+                "type": "saml",
+                "enabled": True,
+                "priority": 4,
+                "idp_metadata_url": settings.sso_saml_metadata_url,
+                "idp_entity_id": settings.sso_saml_entity_id,
+                "sp_entity_id": settings.sso_saml_entity_id,
+                "acs_url": settings.sso_saml_acs_url,
+                "cert_file": settings.sso_saml_cert_file,
+                "key_file": settings.sso_saml_key_file,
+            }
+
+        # OIDC
+        if hasattr(settings, 'sso_oidc_enabled') and settings.sso_oidc_enabled and hasattr(settings, 'sso_oidc_issuer_url') and settings.sso_oidc_issuer_url:
+            config["providers"]["oidc"] = {
+                "name": "OIDC",
+                "type": "oauth",  # OIDC uses OAuth2 flow
+                "enabled": True,
+                "priority": 5,
+                "client_id": settings.sso_oidc_client_id,
+                "client_secret": settings.sso_oidc_client_secret,
+                "redirect_uri": settings.sso_oidc_redirect_uri,
+                "issuer_url": settings.sso_oidc_issuer_url,
+                "authorization_url": f"{settings.sso_oidc_issuer_url}/authorize",
+                "token_url": f"{settings.sso_oidc_issuer_url}/token",
+                "userinfo_url": f"{settings.sso_oidc_issuer_url}/userinfo",
+                "scope": "openid email profile",
+            }
+
+        logger.info(f"Loaded SSO configuration from settings with {len(config['providers'])} providers")
+        return config
+        
+    except ImportError:
+        logger.warning("Could not import get_settings, falling back to environment variables")
+        return load_sso_config_from_env()
+    except Exception as e:
+        logger.error(f"Error loading SSO configuration from settings: {e}")
+        return load_sso_config_from_env()

@@ -14,6 +14,10 @@ from backend.app.core.sso.providers.base import BaseSSOProvider
 from backend.app.core.sso.providers.ldap_provider import LDAPProvider
 from backend.app.core.sso.providers.saml_provider import SAMLProvider
 from backend.app.core.sso.providers.oauth_provider import OAuthProvider
+from backend.app.core.sso.providers.google_oauth_provider import GoogleOAuthProvider
+from backend.app.core.sso.providers.microsoft_oauth_provider import MicrosoftOAuthProvider
+from backend.app.core.sso.providers.github_oauth_provider import GitHubOAuthProvider
+from backend.app.core.sso.providers.oidc_provider import OIDCProvider
 from backend.app.models.user import User
 from backend.app.utils.exceptions import (
     AuthenticationError,
@@ -54,6 +58,30 @@ class SSOManager:
                 oauth_config = providers_config["oauth"]
                 if oauth_config.get("enabled", False):
                     self.providers["oauth"] = OAuthProvider(oauth_config)
+
+            # Initialize Google OAuth2 provider
+            if "google" in providers_config:
+                google_config = providers_config["google"]
+                if google_config.get("enabled", False):
+                    self.providers["google"] = GoogleOAuthProvider(google_config)
+
+            # Initialize Microsoft OAuth2 provider
+            if "microsoft" in providers_config:
+                microsoft_config = providers_config["microsoft"]
+                if microsoft_config.get("enabled", False):
+                    self.providers["microsoft"] = MicrosoftOAuthProvider(microsoft_config)
+
+            # Initialize GitHub OAuth2 provider
+            if "github" in providers_config:
+                github_config = providers_config["github"]
+                if github_config.get("enabled", False):
+                    self.providers["github"] = GitHubOAuthProvider(github_config)
+
+            # Initialize OIDC provider
+            if "oidc" in providers_config:
+                oidc_config = providers_config["oidc"]
+                if oidc_config.get("enabled", False):
+                    self.providers["oidc"] = OIDCProvider(oidc_config)
 
             logger.info(f"Initialized {len(self.providers)} SSO providers: {list(self.providers.keys())}")
 
