@@ -54,8 +54,12 @@ class ConnectionPool:
         self._lock = asyncio.Lock()
         self._cleanup_task: asyncio.Task | None = None
 
-        # Start cleanup task
-        self._start_cleanup_task()
+        # Start cleanup task only if there's a running event loop
+        try:
+            self._start_cleanup_task()
+        except RuntimeError:
+            # No running event loop, skip cleanup task for now
+            pass
 
     def _start_cleanup_task(self):
         """Start background cleanup task."""

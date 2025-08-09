@@ -21,11 +21,11 @@ class EmailService:
     def __init__(self) -> None:
         """Initialize EmailService with settings."""
         self.settings = get_settings()
-        self.smtp_host = self.settings.smtp_host
-        self.smtp_port = self.settings.smtp_port
-        self.smtp_user = self.settings.smtp_user
-        self.smtp_password = self.settings.smtp_password
-        self.from_email = self.settings.email_from_address or self.smtp_user
+        self.smtp_host = self.settings.email.smtp_host
+        self.smtp_port = self.settings.email.smtp_port
+        self.smtp_user = self.settings.email.smtp_user
+        self.smtp_password = self.settings.email.smtp_password
+        self.from_email = self.settings.email.email_from_address or self.smtp_user
 
     def _create_message(
         self,
