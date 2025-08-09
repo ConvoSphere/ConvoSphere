@@ -4,6 +4,9 @@ import sys
 
 from cli.utils.output import print_error, print_info, print_success
 
+# Constants
+HEALTH_THRESHOLD_PERCENT = 80
+
 
 class MonitoringCommands:
     """Monitoring commands."""
@@ -42,7 +45,7 @@ class MonitoringCommands:
                 print_error(f"Database: ERROR - {str(e)}")
 
             # Overall health
-            if cpu_percent < 80 and memory.percent < 80 and disk.percent < 80:
+            if cpu_percent < HEALTH_THRESHOLD_PERCENT and memory.percent < HEALTH_THRESHOLD_PERCENT and disk.percent < HEALTH_THRESHOLD_PERCENT:
                 print_success("System Health: GOOD")
             else:
                 print_error("System Health: WARNING - High resource usage")

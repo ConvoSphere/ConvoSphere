@@ -13,6 +13,7 @@ from cli.utils.validation import (
     validate_username,
 )
 
+# App imports
 
 class UserCommands:
     """User management commands."""
@@ -20,10 +21,6 @@ class UserCommands:
     def create_admin(self) -> None:
         """Create admin user interactively."""
         try:
-            from app.core.database import get_db
-            from app.core.security import get_password_hash
-            from app.models.user import User, UserRole, UserStatus
-
             print_info("Creating admin user...")
 
             # Get user input
@@ -85,20 +82,13 @@ class UserCommands:
 
             print_success(f"Admin user '{username}' created successfully")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to create admin user: {str(e)}")
             sys.exit(1)
 
     def create_secure(self) -> None:
         """Create secure user with strong password."""
         try:
-            import secrets
-            import string
-
-            from app.core.database import get_db
-            from app.core.security import get_password_hash
-            from app.models.user import User, UserRole, UserStatus
-
             print_info("Creating secure user...")
 
             # Generate secure password
@@ -134,16 +124,13 @@ class UserCommands:
             print_info(f"Password: {password}")
             print_warning("Please save these credentials securely!")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to create secure user: {str(e)}")
             sys.exit(1)
 
     def list(self) -> None:
         """List all users."""
         try:
-            from app.core.database import get_db
-            from app.models.user import User
-
             db = next(get_db())
             users = db.query(User).all()
 
@@ -166,16 +153,13 @@ class UserCommands:
 
             db.close()
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to list users: {str(e)}")
             sys.exit(1)
 
     def show(self, identifier: str) -> None:
         """Show user details."""
         try:
-            from app.core.database import get_db
-            from app.models.user import User
-
             db = next(get_db())
 
             # Try to find user by ID, email, or username
@@ -208,7 +192,7 @@ class UserCommands:
 
             db.close()
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to show user: {str(e)}")
             sys.exit(1)
 
@@ -224,10 +208,6 @@ class UserCommands:
     ) -> None:
         """Create user with specified parameters."""
         try:
-            from app.core.database import get_db
-            from app.core.security import get_password_hash
-            from app.models.user import User, UserRole, UserStatus
-
             # Validate inputs
             if not validate_email(email):
                 print_error("Invalid email format")
@@ -285,16 +265,13 @@ class UserCommands:
 
             print_success(f"User '{username}' created successfully")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to create user: {str(e)}")
             sys.exit(1)
 
     def update(self, identifier: str, **kwargs) -> None:
         """Update user."""
         try:
-            from app.core.database import get_db
-            from app.models.user import User, UserRole, UserStatus
-
             db = next(get_db())
 
             # Find user
@@ -353,16 +330,13 @@ class UserCommands:
 
             print_success(f"User '{user.username}' updated successfully")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to update user: {str(e)}")
             sys.exit(1)
 
     def delete(self, identifier: str, confirm: bool = False) -> None:
         """Delete user."""
         try:
-            from app.core.database import get_db
-            from app.models.user import User
-
             if not confirm:
                 if not confirm_action(
                     f"Are you sure you want to delete user '{identifier}'?"
@@ -395,20 +369,13 @@ class UserCommands:
 
             print_success(f"User '{username}' deleted successfully")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to delete user: {str(e)}")
             sys.exit(1)
 
     def reset_password(self) -> None:
         """Reset user password interactively."""
         try:
-            import secrets
-            import string
-
-            from app.core.database import get_db
-            from app.core.security import get_password_hash
-            from app.models.user import User
-
             print_info("Reset user password...")
 
             identifier = input("Enter user ID, email, or username: ").strip()
@@ -444,6 +411,6 @@ class UserCommands:
             print_info(f"New password: {new_password}")
             print_warning("Please save this password securely!")
 
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to reset password: {str(e)}")
             sys.exit(1)

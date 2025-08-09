@@ -2,6 +2,9 @@
 
 import re
 
+# Constants
+MIN_PASSWORD_LENGTH = 8
+
 
 def validate_email(email: str) -> bool:
     """Validate email format."""
@@ -26,7 +29,7 @@ def validate_revision(revision: str) -> bool:
 
 def validate_password(password: str) -> bool:
     """Validate password strength."""
-    if len(password) < 8:
+    if len(password) < MIN_PASSWORD_LENGTH:
         return False
     # At least one uppercase, one lowercase, one digit
     has_upper = any(c.isupper() for c in password)

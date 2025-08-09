@@ -6,6 +6,9 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
+# Constants
+BYTES_PER_KB = 1024
+
 
 def get_alembic_path() -> Optional[str]:
     """Get Alembic executable path."""
@@ -58,8 +61,8 @@ def format_file_size(size_bytes: int) -> str:
 
     size_names = ["B", "KB", "MB", "GB", "TB"]
     i = 0
-    while size_bytes >= 1024 and i < len(size_names) - 1:
-        size_bytes /= 1024.0
+    while size_bytes >= BYTES_PER_KB and i < len(size_names) - 1:
+        size_bytes /= BYTES_PER_KB
         i += 1
 
     return f"{size_bytes:.1f}{size_names[i]}"
