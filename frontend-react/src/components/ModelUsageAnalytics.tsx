@@ -49,8 +49,8 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  TrendingUpOutlined,
-  TrendingDownOutlined,
+  RiseOutlined,
+  FallOutlined,
   EyeOutlined,
   DownloadOutlined,
   FilterOutlined,
@@ -64,7 +64,7 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { colors } from "../styles/colors";
+// // import { colors } from "../styles/colors";
 import { useAIModelsStore, type AIModel } from "../store/aiModelsStore";
 import { aiModelsService } from "../services/aiModels";
 
@@ -225,11 +225,11 @@ const ModelUsageAnalytics: React.FC = () => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "increasing":
-        return <TrendingUpOutlined style={{ color: colors.colorSuccess }} />;
-      case "decreasing":
-        return <TrendingDownOutlined style={{ color: colors.colorError }} />;
+        return <RiseOutlined style={{ color: '#52c41a' }} />;
+              case "decreasing":
+          return <FallOutlined style={{ color: '#ff4d4f' }} />;
       default:
-        return <TrendingUpOutlined style={{ color: colors.colorTextSecondary }} />;
+        return <RiseOutlined style={{ color: '#8c8c8c' }} />;
     }
   };
 

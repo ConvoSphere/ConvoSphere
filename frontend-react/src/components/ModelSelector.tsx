@@ -28,7 +28,7 @@ import {
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
-import { colors } from "../styles/colors";
+// // import { colors } from "../styles/colors";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
