@@ -21,7 +21,6 @@ class ChatCompletionRequest:
     temperature: float = 0.7
     max_tokens: Optional[int] = None
     stream: bool = False
-    **kwargs
 
 
 @dataclass
