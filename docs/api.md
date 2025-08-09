@@ -420,6 +420,211 @@ Get knowledge base statistics.
 }
 ```
 
+### AI Service
+
+#### POST /ai/chat/completion
+Generate chat completion using the modular AI service.
+
+**Request Body:**
+```json
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "Hello, how are you?"
+        }
+    ],
+    "user_id": "user123",
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 1000,
+    "use_knowledge_base": true,
+    "use_tools": true,
+    "max_context_chunks": 5
+}
+```
+
+**Response:**
+```json
+{
+    "content": "Hello! I'm doing well, thank you for asking. How can I help you today?",
+    "model": "gpt-4",
+    "usage": {
+        "input_tokens": 10,
+        "output_tokens": 15
+    },
+    "finish_reason": "stop",
+    "request_id": "req-123456"
+}
+```
+
+#### POST /ai/chat/completion/stream
+Generate streaming chat completion.
+
+**Request Body:** Same as `/ai/chat/completion`
+
+**Response:** Server-Sent Events stream with chunks:
+```
+data: {"content": "Hello", "model": "gpt-4", "finish_reason": null, "request_id": "req-123456"}
+
+data: {"content": " world", "model": "gpt-4", "finish_reason": null, "request_id": "req-123456"}
+
+data: {"content": "!", "model": "gpt-4", "finish_reason": "stop", "request_id": "req-123456"}
+```
+
+#### POST /ai/embeddings
+Generate embeddings for text.
+
+**Request Body:**
+```json
+{
+    "texts": ["Hello world", "Test embedding"],
+    "provider": "openai",
+    "model": "text-embedding-ada-002"
+}
+```
+
+**Response:**
+```json
+{
+    "embeddings": [
+        [0.1, 0.2, 0.3, ...],
+        [0.4, 0.5, 0.6, ...]
+    ],
+    "model": "text-embedding-ada-002",
+    "usage": {
+        "input_tokens": 10
+    },
+    "request_id": "req-123456"
+}
+```
+
+#### POST /ai/tools/execute
+Execute tools based on AI response.
+
+**Request Body:**
+```json
+{
+    "ai_response": "I'll help you calculate that. <tool_call><tool_name>calculator</tool_name><parameters>{\"expression\": \"2 + 2\"}</parameters></tool_call>",
+    "user_id": "user123"
+}
+```
+
+**Response:**
+```json
+[
+    {
+        "tool": "calculator",
+        "result": "4",
+        "execution_time": 0.05
+    }
+]
+```
+
+#### GET /ai/providers
+Get available AI providers.
+
+**Response:**
+```json
+{
+    "providers": ["openai", "anthropic", "google", "azure"]
+}
+```
+
+#### GET /ai/models/{provider}
+Get available models for a provider.
+
+**Response:**
+```json
+{
+    "models": [
+        {
+            "name": "gpt-4",
+            "type": "chat",
+            "max_tokens": 8192,
+            "cost_per_1k_input": 0.03,
+            "cost_per_1k_output": 0.06
+        },
+        {
+            "name": "gpt-3.5-turbo",
+            "type": "chat",
+            "max_tokens": 4096,
+            "cost_per_1k_input": 0.0015,
+            "cost_per_1k_output": 0.002
+        }
+    ]
+}
+```
+
+#### GET /ai/costs/summary/{user_id}
+Get cost summary for a user.
+
+**Query Parameters:**
+- `days` (int): Number of days to include (default: 30)
+
+**Response:**
+```json
+{
+    "total_cost": 0.15,
+    "total_tokens": 500,
+    "daily_cost": 0.05,
+    "monthly_cost": 0.15,
+    "cost_by_model": {
+        "gpt-4": 0.10,
+        "gpt-3.5-turbo": 0.05
+    }
+}
+```
+
+#### GET /ai/costs/daily/{user_id}
+Get daily cost breakdown.
+
+**Query Parameters:**
+- `days` (int): Number of days to include (default: 7)
+
+**Response:**
+```json
+[
+    {
+        "date": "2024-01-01",
+        "cost": 0.02,
+        "tokens": 100,
+        "requests": 5
+    },
+    {
+        "date": "2024-01-02",
+        "cost": 0.03,
+        "tokens": 150,
+        "requests": 8
+    }
+]
+```
+
+#### GET /ai/usage/stats/{user_id}
+Get model usage statistics.
+
+**Query Parameters:**
+- `days` (int): Number of days to include (default: 30)
+
+**Response:**
+```json
+{
+    "gpt-4": {
+        "total_requests": 50,
+        "total_tokens": 2500,
+        "total_cost": 0.075,
+        "avg_tokens_per_request": 50
+    },
+    "gpt-3.5-turbo": {
+        "total_requests": 100,
+        "total_tokens": 3000,
+        "total_cost": 0.045,
+        "avg_tokens_per_request": 30
+    }
+}
+```
+
 ### RAG (Retrieval-Augmented Generation)
 
 #### POST /rag/query

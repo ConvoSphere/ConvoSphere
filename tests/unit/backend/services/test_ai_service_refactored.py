@@ -1,34 +1,27 @@
 """
-Unit tests for AI Service (Current Modular Implementation).
+Unit tests for Refactored AI Service.
 
-This module tests the current AI service functionality using the new modular architecture.
-The old legacy tests have been moved to tests/legacy/ for reference.
-
-Tested functionality:
-- Chat completion and streaming
-- Embedding generation
-- Cost tracking
-- RAG functionality
-- Tool execution
-- Model management
+This module tests the new refactored AI service that uses the modular architecture:
+- AIService with core and middleware components
 - Backward compatibility
+- Error handling
+- Provider integration
 """
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, UTC
 
-from backend.app.services.ai_service import AIService, get_ai_service
+from backend.app.services.ai.ai_service_refactored import AIService
 from backend.app.services.ai.types.ai_types import (
     ChatResponse,
     ChatStreamResponse,
     EmbeddingResponse,
-    CostInfo,
 )
 
 
-class TestAIServiceCurrent:
-    """Test class for current modular AI service implementation."""
+class TestAIServiceRefactored:
+    """Test class for refactored AIService."""
 
     @pytest.fixture
     def mock_db(self):
@@ -51,7 +44,7 @@ class TestAIServiceCurrent:
     @pytest.mark.unit
     @pytest.mark.service
     def test_ai_service_initialization(self, ai_service):
-        """Test AIService initialization with modular components."""
+        """Test AIService initialization."""
         assert ai_service.db is not None
         assert ai_service.request_builder is not None
         assert ai_service.response_handler is not None
@@ -59,13 +52,14 @@ class TestAIServiceCurrent:
         assert ai_service.rag_middleware is not None
         assert ai_service.tool_middleware is not None
         assert ai_service.cost_middleware is not None
+        assert isinstance(ai_service._providers, dict)
 
     @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.service
     @pytest.mark.asyncio
     async def test_chat_completion_basic(self, ai_service, sample_messages):
-        """Test basic chat completion functionality."""
+        """Test basic chat completion."""
         # Mock the chat processor
         mock_response = ChatResponse(
             content="Hello! I'm doing well, thank you for asking.",
@@ -86,6 +80,68 @@ class TestAIServiceCurrent:
             assert isinstance(response, ChatResponse)
             assert response.content == "Hello! I'm doing well, thank you for asking."
             assert response.model == "gpt-3.5-turbo"
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    @pytest.mark.asyncio
+    async def test_chat_completion_with_rag(self, ai_service, sample_messages):
+        """Test chat completion with RAG enabled."""
+        # Mock the middleware
+        with patch.object(ai_service.rag_middleware, 'should_apply_rag', return_value=True):
+            with patch.object(ai_service.rag_middleware, 'process', 
+                             new_callable=AsyncMock, return_value=sample_messages):
+                with patch.object(ai_service.chat_processor, 'process_chat_completion', 
+                                 new_callable=AsyncMock) as mock_process:
+                    mock_response = ChatResponse(
+                        content="Response with RAG context",
+                        model="gpt-4",
+                        usage={"input_tokens": 20, "output_tokens": 10},
+                        finish_reason="stop",
+                    )
+                    mock_process.return_value = mock_response
+                    
+                    response = await ai_service.chat_completion(
+                        messages=sample_messages,
+                        user_id="user123",
+                        provider="openai",
+                        model="gpt-4",
+                        use_knowledge_base=True,
+                    )
+                    
+                    assert isinstance(response, ChatResponse)
+                    assert response.content == "Response with RAG context"
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    @pytest.mark.asyncio
+    async def test_chat_completion_with_tools(self, ai_service, sample_messages):
+        """Test chat completion with tools enabled."""
+        # Mock the middleware
+        with patch.object(ai_service.tool_middleware, 'should_apply_tools', return_value=True):
+            with patch.object(ai_service.tool_middleware, 'process', 
+                             new_callable=AsyncMock, return_value=sample_messages):
+                with patch.object(ai_service.chat_processor, 'process_chat_completion', 
+                                 new_callable=AsyncMock) as mock_process:
+                    mock_response = ChatResponse(
+                        content="Response with tools",
+                        model="gpt-4",
+                        usage={"input_tokens": 15, "output_tokens": 8},
+                        finish_reason="stop",
+                    )
+                    mock_process.return_value = mock_response
+                    
+                    response = await ai_service.chat_completion(
+                        messages=sample_messages,
+                        user_id="user123",
+                        provider="openai",
+                        model="gpt-4",
+                        use_tools=True,
+                    )
+                    
+                    assert isinstance(response, ChatResponse)
+                    assert response.content == "Response with tools"
 
     @pytest.mark.fast
     @pytest.mark.unit
@@ -115,13 +171,16 @@ class TestAIServiceCurrent:
             
             assert len(responses) == 3
             assert all(isinstance(r, ChatStreamResponse) for r in responses)
+            assert responses[0].content == "Hello"
+            assert responses[1].content == " world"
+            assert responses[2].content == "!"
 
     @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.service
     @pytest.mark.asyncio
     async def test_get_embeddings(self, ai_service):
-        """Test embedding generation."""
+        """Test getting embeddings."""
         texts = ["Hello world", "Test embedding"]
         mock_response = EmbeddingResponse(
             embeddings=[[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
@@ -146,7 +205,7 @@ class TestAIServiceCurrent:
     @pytest.mark.service
     @pytest.mark.asyncio
     async def test_execute_tools(self, ai_service):
-        """Test tool execution."""
+        """Test executing tools."""
         ai_response = """
         I'll help you calculate that.
         
@@ -180,6 +239,19 @@ class TestAIServiceCurrent:
             assert providers == ["openai", "anthropic"]
             assert "openai" in providers
             assert "anthropic" in providers
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_provider(self, ai_service):
+        """Test getting a specific provider."""
+        mock_provider = MagicMock()
+        
+        with patch.object(ai_service.chat_processor, 'get_provider', 
+                         return_value=mock_provider):
+            provider = ai_service.get_provider("openai")
+            
+            assert provider == mock_provider
 
     @pytest.mark.fast
     @pytest.mark.unit
@@ -286,69 +358,7 @@ class TestAIServiceCurrent:
     @pytest.mark.unit
     @pytest.mark.service
     @pytest.mark.asyncio
-    async def test_chat_completion_with_rag(self, ai_service, sample_messages):
-        """Test chat completion with RAG enabled."""
-        # Mock the middleware
-        with patch.object(ai_service.rag_middleware, 'should_apply_rag', return_value=True):
-            with patch.object(ai_service.rag_middleware, 'process', 
-                             new_callable=AsyncMock, return_value=sample_messages):
-                with patch.object(ai_service.chat_processor, 'process_chat_completion', 
-                                 new_callable=AsyncMock) as mock_process:
-                    mock_response = ChatResponse(
-                        content="Response with RAG context",
-                        model="gpt-4",
-                        usage={"input_tokens": 20, "output_tokens": 10},
-                        finish_reason="stop",
-                    )
-                    mock_process.return_value = mock_response
-                    
-                    response = await ai_service.chat_completion(
-                        messages=sample_messages,
-                        user_id="user123",
-                        provider="openai",
-                        model="gpt-4",
-                        use_knowledge_base=True,
-                    )
-                    
-                    assert isinstance(response, ChatResponse)
-                    assert response.content == "Response with RAG context"
-
-    @pytest.mark.fast
-    @pytest.mark.unit
-    @pytest.mark.service
-    @pytest.mark.asyncio
-    async def test_chat_completion_with_tools(self, ai_service, sample_messages):
-        """Test chat completion with tools enabled."""
-        # Mock the middleware
-        with patch.object(ai_service.tool_middleware, 'should_apply_tools', return_value=True):
-            with patch.object(ai_service.tool_middleware, 'process', 
-                             new_callable=AsyncMock, return_value=sample_messages):
-                with patch.object(ai_service.chat_processor, 'process_chat_completion', 
-                                 new_callable=AsyncMock) as mock_process:
-                    mock_response = ChatResponse(
-                        content="Response with tools",
-                        model="gpt-4",
-                        usage={"input_tokens": 15, "output_tokens": 8},
-                        finish_reason="stop",
-                    )
-                    mock_process.return_value = mock_response
-                    
-                    response = await ai_service.chat_completion(
-                        messages=sample_messages,
-                        user_id="user123",
-                        provider="openai",
-                        model="gpt-4",
-                        use_tools=True,
-                    )
-                    
-                    assert isinstance(response, ChatResponse)
-                    assert response.content == "Response with tools"
-
-    @pytest.mark.fast
-    @pytest.mark.unit
-    @pytest.mark.service
-    @pytest.mark.asyncio
-    async def test_error_handling_chat_completion(self, ai_service, sample_messages):
+    async def test_chat_completion_error_handling(self, ai_service, sample_messages):
         """Test error handling in chat completion."""
         with patch.object(ai_service.chat_processor, 'process_chat_completion', 
                          new_callable=AsyncMock, side_effect=Exception("Provider error")):
@@ -363,7 +373,23 @@ class TestAIServiceCurrent:
     @pytest.mark.unit
     @pytest.mark.service
     @pytest.mark.asyncio
-    async def test_error_handling_embeddings(self, ai_service):
+    async def test_chat_completion_stream_error_handling(self, ai_service, sample_messages):
+        """Test error handling in streaming chat completion."""
+        with patch.object(ai_service.chat_processor, 'process_chat_completion_stream', 
+                         new_callable=AsyncMock, side_effect=Exception("Streaming error")):
+            with pytest.raises(Exception, match="Streaming chat completion failed"):
+                async for _ in ai_service.chat_completion_stream(
+                    messages=sample_messages,
+                    user_id="user123",
+                    provider="openai",
+                ):
+                    pass
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    @pytest.mark.asyncio
+    async def test_get_embeddings_error_handling(self, ai_service):
         """Test error handling in embeddings generation."""
         texts = ["Hello world"]
         
@@ -374,6 +400,42 @@ class TestAIServiceCurrent:
                     texts=texts,
                     provider="openai",
                 )
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    @pytest.mark.asyncio
+    async def test_apply_middleware_complete_pipeline(self, ai_service, sample_messages):
+        """Test complete middleware pipeline."""
+        # Mock middleware responses
+        with patch.object(ai_service.rag_middleware, 'should_apply_rag', return_value=True):
+            with patch.object(ai_service.rag_middleware, 'process', 
+                             new_callable=AsyncMock, return_value=sample_messages + [{"role": "system", "content": "RAG context"}]):
+                with patch.object(ai_service.tool_middleware, 'should_apply_tools', return_value=True):
+                    with patch.object(ai_service.tool_middleware, 'process', 
+                                     new_callable=AsyncMock, return_value=sample_messages + [{"role": "system", "content": "Tools available"}]):
+                        processed_messages = await ai_service._apply_middleware(
+                            messages=sample_messages,
+                            user_id="user123",
+                            use_knowledge_base=True,
+                            use_tools=True,
+                            max_context_chunks=5,
+                        )
+                        
+                        assert len(processed_messages) > len(sample_messages)
+                        assert any("RAG context" in msg.get("content", "") for msg in processed_messages)
+                        assert any("Tools available" in msg.get("content", "") for msg in processed_messages)
+
+    @pytest.mark.fast
+    @pytest.mark.unit
+    @pytest.mark.service
+    def test_get_default_model(self, ai_service):
+        """Test getting default model for provider."""
+        with patch.object(ai_service.request_builder, '_get_default_model', 
+                         return_value="gpt-3.5-turbo"):
+            default_model = ai_service._get_default_model("openai")
+            
+            assert default_model == "gpt-3.5-turbo"
 
     @pytest.mark.fast
     @pytest.mark.unit
@@ -393,57 +455,25 @@ class TestAIServiceCurrent:
         assert hasattr(ai_service, 'get_daily_costs')
         assert hasattr(ai_service, 'get_model_usage_stats')
 
-
-class TestAIServiceSingleton:
-    """Test class for AI service singleton functionality."""
-
-    @pytest.fixture
-    def mock_db(self):
-        """Create a mock database session."""
-        return MagicMock()
-
     @pytest.mark.fast
     @pytest.mark.unit
     @pytest.mark.service
-    def test_get_ai_service_creation(self, mock_db):
-        """Test AI service singleton creation."""
-        # Clear any existing singleton
-        import backend.app.services.ai_service as ai_service_module
-        ai_service_module.ai_service = None
+    def test_modular_architecture_components(self, ai_service):
+        """Test that all modular components are properly initialized."""
+        # Core components
+        assert hasattr(ai_service, 'request_builder')
+        assert hasattr(ai_service, 'response_handler')
+        assert hasattr(ai_service, 'chat_processor')
         
-        # Create new service
-        service = get_ai_service(mock_db)
+        # Middleware components
+        assert hasattr(ai_service, 'rag_middleware')
+        assert hasattr(ai_service, 'tool_middleware')
+        assert hasattr(ai_service, 'cost_middleware')
         
-        assert service is not None
-        assert isinstance(service, AIService)
-        assert service.db == mock_db
-
-    @pytest.mark.fast
-    @pytest.mark.unit
-    @pytest.mark.service
-    def test_get_ai_service_singleton(self, mock_db):
-        """Test AI service singleton behavior."""
-        # Clear any existing singleton
-        import backend.app.services.ai_service as ai_service_module
-        ai_service_module.ai_service = None
-        
-        # Create first service
-        service1 = get_ai_service(mock_db)
-        
-        # Create second service (should return same instance)
-        service2 = get_ai_service(mock_db)
-        
-        assert service1 is service2
-        assert service1.db == service2.db
-
-    @pytest.mark.fast
-    @pytest.mark.unit
-    @pytest.mark.service
-    def test_get_ai_service_no_db(self):
-        """Test AI service creation without database."""
-        # Clear any existing singleton
-        import backend.app.services.ai_service as ai_service_module
-        ai_service_module.ai_service = None
-        
-        with pytest.raises(ValueError, match="Database session is required"):
-            get_ai_service(None)
+        # All components should be instances of their respective classes
+        assert ai_service.request_builder is not None
+        assert ai_service.response_handler is not None
+        assert ai_service.chat_processor is not None
+        assert ai_service.rag_middleware is not None
+        assert ai_service.tool_middleware is not None
+        assert ai_service.cost_middleware is not None
