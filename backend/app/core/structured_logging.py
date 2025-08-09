@@ -68,10 +68,16 @@ class StructuredLogger:
         if isinstance(record, dict):
             # Loguru record format (dictionary)
             if "time" in record and hasattr(record["time"], "timestamp"):
-                timestamp = datetime.fromtimestamp(record["time"].timestamp(), tz=UTC).isoformat()
+                timestamp = datetime.fromtimestamp(
+                    record["time"].timestamp(), tz=UTC
+                ).isoformat()
             else:
                 timestamp = datetime.now(UTC).isoformat()
-            level = record.get("level", {}).name if isinstance(record.get("level"), object) else str(record.get("level", "INFO"))
+            level = (
+                record.get("level", {}).name
+                if isinstance(record.get("level"), object)
+                else str(record.get("level", "INFO"))
+            )
             logger_name = record.get("name", "unknown")
             message = record.get("message", "")
             module = record.get("module", "unknown")
@@ -79,7 +85,9 @@ class StructuredLogger:
             line = record.get("line", 0)
         elif hasattr(record, "time") and hasattr(record.time, "timestamp"):
             # Loguru record format (object)
-            timestamp = datetime.fromtimestamp(record.time.timestamp(), tz=UTC).isoformat()
+            timestamp = datetime.fromtimestamp(
+                record.time.timestamp(), tz=UTC
+            ).isoformat()
             level = record.level.name
             logger_name = record.name
             message = record.message

@@ -66,7 +66,7 @@ class StorageFactory:
                     f"Unsupported storage provider: {provider_name}. "
                     f"Available providers: {available}",
                     provider=provider_name,
-                    operation="create"
+                    operation="create",
                 )
 
             # Create provider instance
@@ -81,7 +81,7 @@ class StorageFactory:
             raise StorageError(
                 f"Failed to create storage provider: {str(e)}",
                 provider=config.provider,
-                operation="create"
+                operation="create",
             )
 
     @classmethod
@@ -124,6 +124,7 @@ def _register_cloud_providers():
     # S3 Provider
     try:
         from .s3 import S3StorageProvider
+
         StorageFactory.register_provider("s3", S3StorageProvider)
         logger.info("Registered S3 storage provider")
     except ImportError:
@@ -132,6 +133,7 @@ def _register_cloud_providers():
     # GCS Provider
     try:
         from .gcs import GCSStorageProvider
+
         StorageFactory.register_provider("gcs", GCSStorageProvider)
         logger.info("Registered GCS storage provider")
     except ImportError:
@@ -140,6 +142,7 @@ def _register_cloud_providers():
     # Azure Provider
     try:
         from .azure import AzureBlobStorageProvider
+
         StorageFactory.register_provider("azure", AzureBlobStorageProvider)
         logger.info("Registered Azure Blob storage provider")
     except ImportError:

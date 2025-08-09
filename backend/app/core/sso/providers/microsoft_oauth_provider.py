@@ -5,18 +5,16 @@ This module provides Microsoft OAuth2 authentication and user management.
 """
 
 import logging
-from datetime import UTC, datetime
 from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
 from backend.app.core.sso.providers.oauth_provider import OAuthProvider
 from backend.app.models.domain_groups import DomainGroup
-from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
+from backend.app.models.user import User, UserRole
 from backend.app.utils.exceptions import (
     AuthenticationError,
     GroupSyncError,
-    SSOConfigurationError,
     UserNotFoundError,
 )
 
@@ -46,7 +44,7 @@ class MicrosoftOAuthProvider(OAuthProvider):
             "default_role": config.get("default_role", UserRole.USER),
             "role_mapping": config.get("role_mapping", {}),
         }
-        
+
         super().__init__(microsoft_config)
         self.name = "Microsoft"
         self.provider_type = "microsoft"
@@ -61,17 +59,19 @@ class MicrosoftOAuthProvider(OAuthProvider):
         try:
             # Use parent OAuth authentication
             user, additional_data = await super().authenticate(credentials, db)
-            
+
             # Add Microsoft-specific data
             additional_data["provider"] = "microsoft"
             additional_data["microsoft_id"] = additional_data.get("oauth_user_id")
             additional_data["tenant_id"] = self.tenant_id
-            
+
             return user, additional_data
-            
+
         except Exception as e:
             logger.exception(f"Microsoft OAuth authentication failed: {str(e)}")
-            raise AuthenticationError(f"Microsoft OAuth authentication failed: {str(e)}")
+            raise AuthenticationError(
+                f"Microsoft OAuth authentication failed: {str(e)}"
+            )
 
     async def get_user_info(self, user_id: str, db: Session) -> Dict[str, Any]:
         """Get user information from Microsoft Graph API."""
@@ -90,12 +90,14 @@ class MicrosoftOAuthProvider(OAuthProvider):
                     "full_name": user.full_name,
                     "provider": "microsoft",
                     "tenant_id": self.tenant_id,
-                    "last_sync": user.last_login.isoformat() if user.last_login else None,
+                    "last_sync": user.last_login.isoformat()
+                    if user.last_login
+                    else None,
                 }
             except Exception as e:
                 logger.exception(f"Failed to get Microsoft user info: {str(e)}")
                 return {"error": str(e)}
-                
+
         except Exception as e:
             logger.exception(f"Failed to get Microsoft user info: {str(e)}")
             return {"error": str(e)}
@@ -105,9 +107,11 @@ class MicrosoftOAuthProvider(OAuthProvider):
         try:
             # This would require Microsoft Graph API integration
             # For now, return empty list
-            logger.info(f"Group sync not implemented for Microsoft OAuth2 user {user.id}")
+            logger.info(
+                f"Group sync not implemented for Microsoft OAuth2 user {user.id}"
+            )
             return []
-            
+
         except Exception as e:
             logger.exception(f"Failed to sync Microsoft groups: {str(e)}")
             raise GroupSyncError(f"Microsoft group sync failed: {str(e)}")

@@ -5,18 +5,16 @@ This module provides GitHub OAuth2 authentication and user management.
 """
 
 import logging
-from datetime import UTC, datetime
 from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
 from backend.app.core.sso.providers.oauth_provider import OAuthProvider
 from backend.app.models.domain_groups import DomainGroup
-from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
+from backend.app.models.user import User, UserRole
 from backend.app.utils.exceptions import (
     AuthenticationError,
     GroupSyncError,
-    SSOConfigurationError,
     UserNotFoundError,
 )
 
@@ -45,7 +43,7 @@ class GitHubOAuthProvider(OAuthProvider):
             "default_role": config.get("default_role", UserRole.USER),
             "role_mapping": config.get("role_mapping", {}),
         }
-        
+
         super().__init__(github_config)
         self.name = "GitHub"
         self.provider_type = "github"
@@ -59,14 +57,14 @@ class GitHubOAuthProvider(OAuthProvider):
         try:
             # Use parent OAuth authentication
             user, additional_data = await super().authenticate(credentials, db)
-            
+
             # Add GitHub-specific data
             additional_data["provider"] = "github"
             additional_data["github_id"] = additional_data.get("oauth_user_id")
             additional_data["github_username"] = additional_data.get("oauth_username")
-            
+
             return user, additional_data
-            
+
         except Exception as e:
             logger.exception(f"GitHub OAuth authentication failed: {str(e)}")
             raise AuthenticationError(f"GitHub OAuth authentication failed: {str(e)}")
@@ -87,12 +85,14 @@ class GitHubOAuthProvider(OAuthProvider):
                     "email": user.email,
                     "full_name": user.full_name,
                     "provider": "github",
-                    "last_sync": user.last_login.isoformat() if user.last_login else None,
+                    "last_sync": user.last_login.isoformat()
+                    if user.last_login
+                    else None,
                 }
             except Exception as e:
                 logger.exception(f"Failed to get GitHub user info: {str(e)}")
                 return {"error": str(e)}
-                
+
         except Exception as e:
             logger.exception(f"Failed to get GitHub user info: {str(e)}")
             return {"error": str(e)}
@@ -102,9 +102,11 @@ class GitHubOAuthProvider(OAuthProvider):
         try:
             # This would require GitHub API integration for organizations
             # For now, return empty list
-            logger.info(f"Organization sync not implemented for GitHub OAuth2 user {user.id}")
+            logger.info(
+                f"Organization sync not implemented for GitHub OAuth2 user {user.id}"
+            )
             return []
-            
+
         except Exception as e:
             logger.exception(f"Failed to sync GitHub organizations: {str(e)}")
             raise GroupSyncError(f"GitHub organization sync failed: {str(e)}")

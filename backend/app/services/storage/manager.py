@@ -32,8 +32,8 @@ class StorageManager:
             {
                 "max_connections": config.max_concurrent_uploads,
                 "connection_timeout": config.timeout,
-                "retry_attempts": config.max_retries
-            }
+                "retry_attempts": config.max_retries,
+            },
         )
         self._batch_manager = storage_batch_manager
         self._rate_limiter = storage_batch_manager.get_rate_limiter(config.provider)
@@ -45,7 +45,9 @@ class StorageManager:
             self._provider = StorageFactory.create_provider(self.config)
         return self._provider
 
-    async def upload_document(self, file_id: str, content: bytes, metadata: dict[str, Any] = None) -> str:
+    async def upload_document(
+        self, file_id: str, content: bytes, metadata: dict[str, Any] = None
+    ) -> str:
         """
         Upload document to storage with rate limiting and connection pooling.
 
@@ -65,11 +67,13 @@ class StorageManager:
             if metadata is None:
                 metadata = {}
 
-            metadata.update({
-                "uploaded_at": datetime.utcnow().isoformat(),
-                "file_id": file_id,
-                "content_length": len(content)
-            })
+            metadata.update(
+                {
+                    "uploaded_at": datetime.utcnow().isoformat(),
+                    "file_id": file_id,
+                    "content_length": len(content),
+                }
+            )
 
             # Use rate limiting and connection pooling
             async def upload_operation(conn, *args, **kwargs):
@@ -81,7 +85,7 @@ class StorageManager:
                 operation=upload_operation,
                 file_path=file_path,
                 content=content,
-                metadata=metadata
+                metadata=metadata,
             )
 
             logger.info(f"Uploaded document {file_id} to {storage_path}")
@@ -110,7 +114,7 @@ class StorageManager:
                 conn_id=f"{self.config.provider}_download",
                 factory=lambda: self.provider,
                 operation=download_operation,
-                storage_path=storage_path
+                storage_path=storage_path,
             )
 
             logger.debug(f"Downloaded document from {storage_path}")
@@ -235,11 +239,15 @@ class StorageManager:
         """
         try:
             info = self.provider.get_storage_info()
-            info.update({
-                "provider_name": self.provider.get_provider_name(),
-                "config_provider": self.config.provider,
-                "health_check_time": self._health_check_time.isoformat() if self._health_check_time else None
-            })
+            info.update(
+                {
+                    "provider_name": self.provider.get_provider_name(),
+                    "config_provider": self.config.provider,
+                    "health_check_time": self._health_check_time.isoformat()
+                    if self._health_check_time
+                    else None,
+                }
+            )
             return info
 
         except Exception as e:
@@ -247,11 +255,15 @@ class StorageManager:
             return {
                 "error": str(e),
                 "provider_name": self.provider.get_provider_name(),
-                "config_provider": self.config.provider
+                "config_provider": self.config.provider,
             }
 
-    async def migrate_storage(self, from_config: StorageConfig, to_config: StorageConfig,
-                            document_paths: list[str]) -> dict[str, Any]:
+    async def migrate_storage(
+        self,
+        from_config: StorageConfig,
+        to_config: StorageConfig,
+        document_paths: list[str],
+    ) -> dict[str, Any]:
         """
         Migrate documents between storage providers.
 
@@ -271,7 +283,7 @@ class StorageManager:
                 "total": len(document_paths),
                 "successful": 0,
                 "failed": 0,
-                "errors": []
+                "errors": [],
             }
 
             for storage_path in document_paths:
@@ -286,13 +298,17 @@ class StorageManager:
                     file_path = self._extract_file_path(storage_path)
 
                     # Upload to target
-                    new_storage_path = await to_manager.provider.upload_file(file_path, content, metadata)
+                    new_storage_path = await to_manager.provider.upload_file(
+                        file_path, content, metadata
+                    )
 
                     # Delete from source (optional)
                     # await from_manager.delete_document(storage_path)
 
                     results["successful"] += 1
-                    logger.info(f"Migrated document {storage_path} to {new_storage_path}")
+                    logger.info(
+                        f"Migrated document {storage_path} to {new_storage_path}"
+                    )
 
                 except Exception as e:
                     results["failed"] += 1
@@ -300,7 +316,9 @@ class StorageManager:
                     results["errors"].append(error_msg)
                     logger.error(error_msg)
 
-            logger.info(f"Migration completed: {results['successful']}/{results['total']} successful")
+            logger.info(
+                f"Migration completed: {results['successful']}/{results['total']} successful"
+            )
             return results
 
         except Exception as e:
@@ -319,7 +337,9 @@ class StorageManager:
 
         return storage_path
 
-    async def cleanup_orphaned_files(self, valid_storage_paths: list[str]) -> dict[str, Any]:
+    async def cleanup_orphaned_files(
+        self, valid_storage_paths: list[str]
+    ) -> dict[str, Any]:
         """
         Clean up orphaned files in storage.
 
@@ -331,11 +351,7 @@ class StorageManager:
         """
         try:
             # This is a basic implementation - providers may need specific logic
-            results = {
-                "total_checked": 0,
-                "deleted": 0,
-                "errors": []
-            }
+            results = {"total_checked": 0, "deleted": 0, "errors": []}
 
             # For now, just return basic info
             # Full implementation would require listing all files and comparing
@@ -349,7 +365,7 @@ class StorageManager:
                 "error": str(e),
                 "total_checked": 0,
                 "deleted": 0,
-                "errors": [str(e)]
+                "errors": [str(e)],
             }
 
     def get_provider_name(self) -> str:
@@ -361,8 +377,7 @@ class StorageManager:
         return self.config
 
     async def upload_documents_batch(
-        self,
-        documents: list[dict[str, Any]]
+        self, documents: list[dict[str, Any]]
     ) -> list[dict[str, Any]]:
         """
         Upload multiple documents in batch.
@@ -389,14 +404,15 @@ class StorageManager:
                     file_path=f"documents/{file_id}",
                     content=content,
                     metadata=metadata,
-                    callback=lambda result: results.append({
-                        "file_id": file_id,
-                        "result": result
-                    })
+                    callback=lambda result: results.append(
+                        {"file_id": file_id, "result": result}
+                    ),
                 )
 
             # Wait for batch completion
-            await self._batch_manager.get_processor(self.config.provider).wait_for_completion()
+            await self._batch_manager.get_processor(
+                self.config.provider
+            ).wait_for_completion()
 
             return results
 
@@ -411,7 +427,9 @@ class StorageManager:
             pool_metrics = self._connection_pool.get_metrics()
 
             # Get batch manager status
-            batch_status = await self._batch_manager.get_processor(self.config.provider).get_batch_status()
+            batch_status = await self._batch_manager.get_processor(
+                self.config.provider
+            ).get_batch_status()
 
             # Get rate limiter status
             rate_limiter_status = self._rate_limiter.get_status()
@@ -421,12 +439,11 @@ class StorageManager:
                 "connection_pool": pool_metrics,
                 "batch_processor": batch_status,
                 "rate_limiter": rate_limiter_status,
-                "health_check_time": self._health_check_time.isoformat() if self._health_check_time else None
+                "health_check_time": self._health_check_time.isoformat()
+                if self._health_check_time
+                else None,
             }
 
         except Exception as e:
             logger.error(f"Failed to get performance metrics: {e}")
-            return {
-                "provider": self.config.provider,
-                "error": str(e)
-            }
+            return {"provider": self.config.provider, "error": str(e)}

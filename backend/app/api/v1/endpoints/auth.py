@@ -20,23 +20,16 @@ __all__ = ["router"]
 
 # Legacy imports for backward compatibility
 # These are now handled by the new modular implementation
-from backend.app.api.v1.endpoints.auth.models import (
-    UserLogin,
-    UserRegister,
-    RefreshTokenRequest,
-    TokenResponse,
-    UserResponse,
-    PasswordResetRequest,
-    PasswordResetConfirm,
-)
 
 # Re-export models for backward compatibility
-__all__.extend([
-    "UserLogin",
-    "UserRegister", 
-    "RefreshTokenRequest",
-    "TokenResponse",
-    "UserResponse",
-    "PasswordResetRequest",
-    "PasswordResetConfirm",
-])
+__all__.extend(
+    [
+        "UserLogin",
+        "UserRegister",
+        "RefreshTokenRequest",
+        "TokenResponse",
+        "UserResponse",
+        "PasswordResetRequest",
+        "PasswordResetConfirm",
+    ]
+)

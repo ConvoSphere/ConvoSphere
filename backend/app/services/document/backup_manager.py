@@ -561,6 +561,7 @@ class DocumentBackupManager:
         try:
             # Delete existing chunks
             from backend.app.models.knowledge import DocumentChunk
+
             self.db.query(DocumentChunk).filter(
                 DocumentChunk.document_id == document_backup.document_id
             ).delete()

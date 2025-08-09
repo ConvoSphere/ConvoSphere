@@ -121,14 +121,11 @@ class BaseToolExecutor(ABC):
     ) -> list[ToolExecution]:
         """Get executions for a user."""
         user_executions = [
-            execution for execution in self.executions.values()
+            execution
+            for execution in self.executions.values()
             if execution.user_id == user_id
         ]
-        return sorted(
-            user_executions,
-            key=lambda x: x.start_time,
-            reverse=True
-        )[:limit]
+        return sorted(user_executions, key=lambda x: x.start_time, reverse=True)[:limit]
 
     def cancel_execution(self, execution_id: str) -> bool:
         """Cancel an execution."""
@@ -144,15 +141,18 @@ class BaseToolExecutor(ABC):
         """Get execution statistics."""
         total_executions = len(self.executions)
         completed = sum(
-            1 for execution in self.executions.values()
+            1
+            for execution in self.executions.values()
             if execution.status == ToolExecutionStatus.COMPLETED
         )
         failed = sum(
-            1 for execution in self.executions.values()
+            1
+            for execution in self.executions.values()
             if execution.status == ToolExecutionStatus.FAILED
         )
         running = sum(
-            1 for execution in self.executions.values()
+            1
+            for execution in self.executions.values()
             if execution.status == ToolExecutionStatus.RUNNING
         )
 
@@ -161,7 +161,9 @@ class BaseToolExecutor(ABC):
             "completed": completed,
             "failed": failed,
             "running": running,
-            "success_rate": (completed / total_executions * 100) if total_executions > 0 else 0,
+            "success_rate": (completed / total_executions * 100)
+            if total_executions > 0
+            else 0,
         }
 
     def _validate_parameters(
@@ -252,7 +254,8 @@ class BaseToolExecutor(ABC):
         """Clean up old executions."""
         cutoff_time = datetime.now(UTC) - timedelta(hours=max_age_hours)
         old_executions = [
-            execution_id for execution_id, execution in self.executions.items()
+            execution_id
+            for execution_id, execution in self.executions.items()
             if execution.start_time < cutoff_time
         ]
 

@@ -13,7 +13,7 @@ from typing import Any
 
 from loguru import logger
 
-from .metrics import MetricsCollector, MetricType
+from .metrics import MetricsCollector
 
 
 class AlertSeverity(Enum):
@@ -103,9 +103,7 @@ class AlertManager:
 
                 # Get current metric value
                 current_value = self._get_current_metric_value(
-                    metrics_collector,
-                    rule["metric_name"],
-                    rule["tags"]
+                    metrics_collector, rule["metric_name"], rule["tags"]
                 )
 
                 if current_value is None:
@@ -113,22 +111,22 @@ class AlertManager:
 
                 # Check condition
                 if self._check_condition(
-                    current_value,
-                    rule["threshold"],
-                    rule["condition"]
+                    current_value, rule["threshold"], rule["condition"]
                 ):
                     # Create alert
                     alert = Alert(
                         name=rule_name,
                         message=f"Metric {rule['metric_name']} triggered alert: "
-                               f"{current_value} {rule['condition']} {rule['threshold']}",
+                        f"{current_value} {rule['condition']} {rule['threshold']}",
                         severity=rule["severity"],
                         timestamp=datetime.now(),
                         metric_name=rule["metric_name"],
                         threshold=rule["threshold"],
                         current_value=current_value,
                         tags=rule["tags"],
-                        channel=rule["channels"][0] if rule["channels"] else AlertChannel.LOG,
+                        channel=rule["channels"][0]
+                        if rule["channels"]
+                        else AlertChannel.LOG,
                         metadata={"rule": rule},
                     )
 
@@ -149,9 +147,7 @@ class AlertManager:
             return []
 
     def add_alert_handler(
-        self,
-        channel: AlertChannel,
-        handler: Callable[[Alert], None]
+        self, channel: AlertChannel, handler: Callable[[Alert], None]
     ) -> None:
         """Add an alert handler for a specific channel."""
         try:
@@ -183,9 +179,7 @@ class AlertManager:
             logger.error(f"Failed to trigger alert handlers: {e}")
 
     def get_alerts(
-        self,
-        severity: AlertSeverity | None = None,
-        since: datetime | None = None
+        self, severity: AlertSeverity | None = None, since: datetime | None = None
     ) -> list[Alert]:
         """Get alert history with optional filtering."""
         try:
@@ -219,13 +213,15 @@ class AlertManager:
             # Count by severity
             for alert in self.alert_history:
                 severity = alert.severity.value
-                summary["severity_counts"][severity] = summary["severity_counts"].get(severity, 0) + 1
+                summary["severity_counts"][severity] = (
+                    summary["severity_counts"].get(severity, 0) + 1
+                )
 
             # Count recent alerts (last hour)
             one_hour_ago = datetime.now() - timedelta(hours=1)
-            summary["recent_alerts"] = len([
-                a for a in self.alert_history if a.timestamp >= one_hour_ago
-            ])
+            summary["recent_alerts"] = len(
+                [a for a in self.alert_history if a.timestamp >= one_hour_ago]
+            )
 
             return summary
 
@@ -241,21 +237,21 @@ class AlertManager:
 
     def _suppress_alert(self, rule_name: str, suppression_window: int) -> None:
         """Suppress an alert for the specified window."""
-        self.suppressed_alerts[rule_name] = datetime.now() + timedelta(seconds=suppression_window)
+        self.suppressed_alerts[rule_name] = datetime.now() + timedelta(
+            seconds=suppression_window
+        )
 
     def _get_current_metric_value(
         self,
         metrics_collector: MetricsCollector,
         metric_name: str,
-        tags: dict[str, str]
+        tags: dict[str, str],
     ) -> float | None:
         """Get the current value of a metric."""
         try:
             # Get the most recent metric matching the name and tags
             metrics = metrics_collector.get_metrics(
-                name=metric_name,
-                tags=tags,
-                limit=1
+                name=metric_name, tags=tags, limit=1
             )
 
             if metrics:
@@ -267,27 +263,21 @@ class AlertManager:
             logger.error(f"Failed to get current metric value for {metric_name}: {e}")
             return None
 
-    def _check_condition(
-        self,
-        value: float,
-        threshold: float,
-        condition: str
-    ) -> bool:
+    def _check_condition(self, value: float, threshold: float, condition: str) -> bool:
         """Check if a value meets the alert condition."""
         try:
             if condition == "gt":
                 return value > threshold
-            elif condition == "lt":
+            if condition == "lt":
                 return value < threshold
-            elif condition == "eq":
+            if condition == "eq":
                 return value == threshold
-            elif condition == "gte":
+            if condition == "gte":
                 return value >= threshold
-            elif condition == "lte":
+            if condition == "lte":
                 return value <= threshold
-            else:
-                logger.warning(f"Unknown condition: {condition}")
-                return False
+            logger.warning(f"Unknown condition: {condition}")
+            return False
 
         except Exception as e:
             logger.error(f"Failed to check condition: {e}")

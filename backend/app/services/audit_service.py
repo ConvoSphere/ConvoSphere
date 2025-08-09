@@ -61,10 +61,13 @@ class AuditService:
 
                 # Flush batch if full or timeout reached
                 current_time = datetime.now(UTC)
-                if (len(batch) >= self._batch_size or (
-                    batch
-                    and (current_time - last_flush).seconds >= self._flush_interval
-                )) and batch:
+                if (
+                    len(batch) >= self._batch_size
+                    or (
+                        batch
+                        and (current_time - last_flush).seconds >= self._flush_interval
+                    )
+                ) and batch:
                     await self._flush_batch(batch)
                     batch = []
                     last_flush = current_time

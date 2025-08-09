@@ -33,12 +33,14 @@ class WebSearchTool(BaseTool):
             # Generate multiple results based on max_results parameter
             results = []
             for i in range(min(max_results, 3)):  # Limit to 3 for placeholder
-                results.append({
-                    "title": f"Search result {i+1} for: {query}",
-                    "url": f"https://example{i+1}.com",
-                    "snippet": f"This is a placeholder result {i+1} for the query: {query}",
-                })
-            
+                results.append(
+                    {
+                        "title": f"Search result {i + 1} for: {query}",
+                        "url": f"https://example{i + 1}.com",
+                        "snippet": f"This is a placeholder result {i + 1} for the query: {query}",
+                    }
+                )
+
             return {
                 "success": True,
                 "results": results,

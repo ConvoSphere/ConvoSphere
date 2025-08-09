@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def load_sso_config_from_env() -> Dict[str, Any]:
     """
     Load SSO configuration from environment variables.
-    
+
     Returns:
         SSO configuration dictionary
     """
@@ -40,7 +40,9 @@ def load_sso_config_from_env() -> Dict[str, Any]:
             "userinfo_url": "https://www.googleapis.com/oauth2/v2/userinfo",
             "scope": "openid email profile",
             "default_role": os.getenv("SSO_GOOGLE_DEFAULT_ROLE", "user"),
-            "role_mapping": _parse_role_mapping(os.getenv("SSO_GOOGLE_ROLE_MAPPING", "")),
+            "role_mapping": _parse_role_mapping(
+                os.getenv("SSO_GOOGLE_ROLE_MAPPING", "")
+            ),
             "attribute_mapping": {
                 "username": "sub",
                 "email": "email",
@@ -67,7 +69,9 @@ def load_sso_config_from_env() -> Dict[str, Any]:
             "userinfo_url": "https://graph.microsoft.com/v1.0/me",
             "scope": "openid email profile User.Read",
             "default_role": os.getenv("SSO_MICROSOFT_DEFAULT_ROLE", "user"),
-            "role_mapping": _parse_role_mapping(os.getenv("SSO_MICROSOFT_ROLE_MAPPING", "")),
+            "role_mapping": _parse_role_mapping(
+                os.getenv("SSO_MICROSOFT_ROLE_MAPPING", "")
+            ),
             "attribute_mapping": {
                 "username": "sub",
                 "email": "email",
@@ -92,7 +96,9 @@ def load_sso_config_from_env() -> Dict[str, Any]:
             "userinfo_url": "https://api.github.com/user",
             "scope": "read:user user:email",
             "default_role": os.getenv("SSO_GITHUB_DEFAULT_ROLE", "user"),
-            "role_mapping": _parse_role_mapping(os.getenv("SSO_GITHUB_ROLE_MAPPING", "")),
+            "role_mapping": _parse_role_mapping(
+                os.getenv("SSO_GITHUB_ROLE_MAPPING", "")
+            ),
             "attribute_mapping": {
                 "username": "login",
                 "email": "email",
@@ -141,13 +147,20 @@ def load_sso_config_from_env() -> Dict[str, Any]:
             "bind_password": os.getenv("LDAP_BIND_PASSWORD"),
             "user_search_base": os.getenv("LDAP_USER_SEARCH_BASE"),
             "group_search_base": os.getenv("LDAP_GROUP_SEARCH_BASE"),
-            "user_search_filter": os.getenv("LDAP_USER_SEARCH_FILTER", "(sAMAccountName={username})"),
-            "group_search_filter": os.getenv("LDAP_GROUP_SEARCH_FILTER", "(member={user_dn})"),
-            "attributes": os.getenv("LDAP_ATTRIBUTES", "cn,mail,displayName,memberOf").split(","),
+            "user_search_filter": os.getenv(
+                "LDAP_USER_SEARCH_FILTER", "(sAMAccountName={username})"
+            ),
+            "group_search_filter": os.getenv(
+                "LDAP_GROUP_SEARCH_FILTER", "(member={user_dn})"
+            ),
+            "attributes": os.getenv(
+                "LDAP_ATTRIBUTES", "cn,mail,displayName,memberOf"
+            ).split(","),
             "use_ssl": os.getenv("LDAP_USE_SSL", "true").lower() == "true",
             "timeout": int(os.getenv("LDAP_TIMEOUT", "10")),
             "default_role": os.getenv("LDAP_DEFAULT_ROLE", "user"),
-            "auto_create_groups": os.getenv("LDAP_AUTO_CREATE_GROUPS", "false").lower() == "true",
+            "auto_create_groups": os.getenv("LDAP_AUTO_CREATE_GROUPS", "false").lower()
+            == "true",
             "role_mapping": _parse_role_mapping(os.getenv("LDAP_ROLE_MAPPING", "")),
             "group_mapping": _parse_group_mapping(os.getenv("LDAP_GROUP_MAPPING", "")),
         }
@@ -168,11 +181,17 @@ def load_sso_config_from_env() -> Dict[str, Any]:
             "default_role": os.getenv("SAML_DEFAULT_ROLE", "user"),
             "role_mapping": _parse_role_mapping(os.getenv("SAML_ROLE_MAPPING", "")),
             "attribute_mapping": {
-                "username": os.getenv("SAML_ATTR_USERNAME", "urn:oid:0.9.2342.19200300.100.1.1"),
-                "email": os.getenv("SAML_ATTR_EMAIL", "urn:oid:0.9.2342.19200300.100.1.3"),
+                "username": os.getenv(
+                    "SAML_ATTR_USERNAME", "urn:oid:0.9.2342.19200300.100.1.1"
+                ),
+                "email": os.getenv(
+                    "SAML_ATTR_EMAIL", "urn:oid:0.9.2342.19200300.100.1.3"
+                ),
                 "first_name": os.getenv("SAML_ATTR_FIRST_NAME", "urn:oid:2.5.4.42"),
                 "last_name": os.getenv("SAML_ATTR_LAST_NAME", "urn:oid:2.5.4.4"),
-                "groups": os.getenv("SAML_ATTR_GROUPS", "urn:oid:1.3.6.1.4.1.5923.1.5.1.1"),
+                "groups": os.getenv(
+                    "SAML_ATTR_GROUPS", "urn:oid:1.3.6.1.4.1.5923.1.5.1.1"
+                ),
             },
         }
 
@@ -208,57 +227,57 @@ def load_sso_config_from_env() -> Dict[str, Any]:
 def _parse_role_mapping(mapping_str: str) -> Dict[str, str]:
     """
     Parse role mapping from string format.
-    
+
     Args:
         mapping_str: Role mapping string in format "group1:role1,group2:role2"
-        
+
     Returns:
         Role mapping dictionary
     """
     if not mapping_str:
         return {}
-    
+
     mapping = {}
     for item in mapping_str.split(","):
         if ":" in item:
             group, role = item.strip().split(":", 1)
             mapping[group.strip()] = role.strip()
-    
+
     return mapping
 
 
 def _parse_group_mapping(mapping_str: str) -> Dict[str, str]:
     """
     Parse group mapping from string format.
-    
+
     Args:
         mapping_str: Group mapping string in format "ldap_group1:app_group1,ldap_group2:app_group2"
-        
+
     Returns:
         Group mapping dictionary
     """
     if not mapping_str:
         return {}
-    
+
     mapping = {}
     for item in mapping_str.split(","):
         if ":" in item:
             ldap_group, app_group = item.strip().split(":", 1)
             mapping[ldap_group.strip()] = app_group.strip()
-    
+
     return mapping
 
 
 def validate_sso_config(config: Dict[str, Any]) -> bool:
     """
     Validate SSO configuration.
-    
+
     Args:
         config: SSO configuration dictionary
-        
+
     Returns:
         True if configuration is valid
-        
+
     Raises:
         ValueError: If configuration is invalid
     """
@@ -274,13 +293,22 @@ def validate_sso_config(config: Dict[str, Any]) -> bool:
         elif provider_name == "saml":
             required_fields = ["idp_metadata_url", "sp_entity_id", "acs_url"]
         elif provider_name == "oauth":
-            required_fields = ["client_id", "client_secret", "authorization_url", "token_url"]
+            required_fields = [
+                "client_id",
+                "client_secret",
+                "authorization_url",
+                "token_url",
+            ]
         else:
             raise ValueError(f"Unknown SSO provider: {provider_name}")
 
-        missing_fields = [field for field in required_fields if not provider_config.get(field)]
+        missing_fields = [
+            field for field in required_fields if not provider_config.get(field)
+        ]
         if missing_fields:
-            raise ValueError(f"Missing required fields for {provider_name}: {missing_fields}")
+            raise ValueError(
+                f"Missing required fields for {provider_name}: {missing_fields}"
+            )
 
     return True
 
@@ -288,41 +316,46 @@ def validate_sso_config(config: Dict[str, Any]) -> bool:
 def get_provider_config(config: Dict[str, Any], provider_name: str) -> Dict[str, Any]:
     """
     Get configuration for specific provider.
-    
+
     Args:
         config: SSO configuration dictionary
         provider_name: Name of the provider
-        
+
     Returns:
         Provider configuration dictionary
-        
+
     Raises:
         ValueError: If provider is not configured
     """
     if provider_name not in config.get("providers", {}):
         raise ValueError(f"Provider '{provider_name}' not configured")
-    
+
     return config["providers"][provider_name]
 
 
 def load_sso_config_from_settings() -> Dict[str, Any]:
     """
     Load SSO configuration from app settings (backward compatibility).
-    
+
     This function provides backward compatibility with the original
     configuration approach using get_settings().
-    
+
     Returns:
         SSO configuration dictionary
     """
     try:
         from backend.app.core.config import get_settings
-        
+
         settings = get_settings()
         config = {"providers": {}}
 
         # Google OAuth2
-        if hasattr(settings, 'sso_google_enabled') and settings.sso_google_enabled and hasattr(settings, 'sso_google_client_id') and settings.sso_google_client_id:
+        if (
+            hasattr(settings, "sso_google_enabled")
+            and settings.sso_google_enabled
+            and hasattr(settings, "sso_google_client_id")
+            and settings.sso_google_client_id
+        ):
             config["providers"]["google"] = {
                 "name": "Google",
                 "type": "oauth",
@@ -338,7 +371,12 @@ def load_sso_config_from_settings() -> Dict[str, Any]:
             }
 
         # Microsoft OAuth2
-        if hasattr(settings, 'sso_microsoft_enabled') and settings.sso_microsoft_enabled and hasattr(settings, 'sso_microsoft_client_id') and settings.sso_microsoft_client_id:
+        if (
+            hasattr(settings, "sso_microsoft_enabled")
+            and settings.sso_microsoft_enabled
+            and hasattr(settings, "sso_microsoft_client_id")
+            and settings.sso_microsoft_client_id
+        ):
             config["providers"]["microsoft"] = {
                 "name": "Microsoft",
                 "type": "oauth",
@@ -355,7 +393,12 @@ def load_sso_config_from_settings() -> Dict[str, Any]:
             }
 
         # GitHub OAuth2
-        if hasattr(settings, 'sso_github_enabled') and settings.sso_github_enabled and hasattr(settings, 'sso_github_client_id') and settings.sso_github_client_id:
+        if (
+            hasattr(settings, "sso_github_enabled")
+            and settings.sso_github_enabled
+            and hasattr(settings, "sso_github_client_id")
+            and settings.sso_github_client_id
+        ):
             config["providers"]["github"] = {
                 "name": "GitHub",
                 "type": "oauth",
@@ -371,7 +414,12 @@ def load_sso_config_from_settings() -> Dict[str, Any]:
             }
 
         # SAML
-        if hasattr(settings, 'sso_saml_enabled') and settings.sso_saml_enabled and hasattr(settings, 'sso_saml_metadata_url') and settings.sso_saml_metadata_url:
+        if (
+            hasattr(settings, "sso_saml_enabled")
+            and settings.sso_saml_enabled
+            and hasattr(settings, "sso_saml_metadata_url")
+            and settings.sso_saml_metadata_url
+        ):
             config["providers"]["saml"] = {
                 "name": "SAML",
                 "type": "saml",
@@ -386,7 +434,12 @@ def load_sso_config_from_settings() -> Dict[str, Any]:
             }
 
         # OIDC
-        if hasattr(settings, 'sso_oidc_enabled') and settings.sso_oidc_enabled and hasattr(settings, 'sso_oidc_issuer_url') and settings.sso_oidc_issuer_url:
+        if (
+            hasattr(settings, "sso_oidc_enabled")
+            and settings.sso_oidc_enabled
+            and hasattr(settings, "sso_oidc_issuer_url")
+            and settings.sso_oidc_issuer_url
+        ):
             config["providers"]["oidc"] = {
                 "name": "OIDC",
                 "type": "oauth",  # OIDC uses OAuth2 flow
@@ -402,11 +455,15 @@ def load_sso_config_from_settings() -> Dict[str, Any]:
                 "scope": "openid email profile",
             }
 
-        logger.info(f"Loaded SSO configuration from settings with {len(config['providers'])} providers")
+        logger.info(
+            f"Loaded SSO configuration from settings with {len(config['providers'])} providers"
+        )
         return config
-        
+
     except ImportError:
-        logger.warning("Could not import get_settings, falling back to environment variables")
+        logger.warning(
+            "Could not import get_settings, falling back to environment variables"
+        )
         return load_sso_config_from_env()
     except Exception as e:
         logger.error(f"Error loading SSO configuration from settings: {e}")

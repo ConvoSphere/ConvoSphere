@@ -26,7 +26,9 @@ class StorageProvider(ABC):
         self.config = config
 
     @abstractmethod
-    async def upload_file(self, file_path: str, content: bytes, metadata: dict[str, Any] = None) -> str:
+    async def upload_file(
+        self, file_path: str, content: bytes, metadata: dict[str, Any] = None
+    ) -> str:
         """
         Upload file and return storage path/URL.
 

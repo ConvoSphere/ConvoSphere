@@ -5,8 +5,7 @@ This module provides test data and configuration for all test modules.
 """
 
 import uuid
-from datetime import datetime, timedelta
-from datetime import UTC
+from datetime import UTC, datetime, timedelta
 
 # Test User Credentials
 TEST_USER_CREDENTIALS = {

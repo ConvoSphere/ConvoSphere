@@ -10,6 +10,7 @@ import time
 from fastapi import Request, Response
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
 from backend.app.core.config import get_settings
 from backend.app.core.security import verify_token
 

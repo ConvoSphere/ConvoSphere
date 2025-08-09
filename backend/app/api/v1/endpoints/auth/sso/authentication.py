@@ -41,15 +41,17 @@ async def sso_login(provider: str, request: Request):
         if provider == "saml":
             # Handle SAML login
             from backend.app.services.saml_service import saml_service
+
             login_url = await saml_service.get_login_url(request)
             from fastapi.responses import RedirectResponse
 
             return RedirectResponse(url=login_url)
-        
+
         # Use OAuth service to get authorization URL
         from backend.app.services.oauth_service import oauth_service
+
         return await oauth_service.get_authorization_url(provider, request)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -83,10 +85,12 @@ async def sso_callback(provider: str, request: Request, db: Session = Depends(ge
         if provider == "saml":
             # Handle SAML callback
             from backend.app.services.saml_service import saml_service
+
             result = await saml_service.handle_callback(request, db)
         else:
             # Handle OAuth callback
             from backend.app.services.oauth_service import oauth_service
+
             result = await oauth_service.handle_callback(provider, request, db)
 
         # Log successful SSO callback

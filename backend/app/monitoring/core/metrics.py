@@ -7,7 +7,6 @@ collecting and managing performance metrics.
 
 import json
 import statistics
-import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -79,37 +78,25 @@ class MetricsCollector:
             logger.error(f"Failed to record metric {name}: {e}")
 
     def increment_counter(
-        self,
-        name: str,
-        value: int = 1,
-        tags: dict[str, str] | None = None
+        self, name: str, value: int = 1, tags: dict[str, str] | None = None
     ) -> None:
         """Increment a counter metric."""
         self.record_metric(name, float(value), MetricType.COUNTER, tags)
 
     def set_gauge(
-        self,
-        name: str,
-        value: float,
-        tags: dict[str, str] | None = None
+        self, name: str, value: float, tags: dict[str, str] | None = None
     ) -> None:
         """Set a gauge metric."""
         self.record_metric(name, value, MetricType.GAUGE, tags)
 
     def record_histogram(
-        self,
-        name: str,
-        value: float,
-        tags: dict[str, str] | None = None
+        self, name: str, value: float, tags: dict[str, str] | None = None
     ) -> None:
         """Record a histogram metric."""
         self.record_metric(name, value, MetricType.HISTOGRAM, tags)
 
     def record_timer(
-        self,
-        name: str,
-        duration: float,
-        tags: dict[str, str] | None = None
+        self, name: str, duration: float, tags: dict[str, str] | None = None
     ) -> None:
         """Record a timer metric."""
         self.record_metric(name, duration, MetricType.TIMER, tags)
@@ -132,7 +119,9 @@ class MetricsCollector:
 
             # Filter by metric type
             if metric_type:
-                filtered_metrics = [m for m in filtered_metrics if m.metric_type == metric_type]
+                filtered_metrics = [
+                    m for m in filtered_metrics if m.metric_type == metric_type
+                ]
 
             # Filter by timestamp
             if since:
@@ -141,7 +130,8 @@ class MetricsCollector:
             # Filter by tags
             if tags:
                 filtered_metrics = [
-                    m for m in filtered_metrics
+                    m
+                    for m in filtered_metrics
                     if all(m.tags.get(k) == v for k, v in tags.items())
                 ]
 
@@ -163,7 +153,7 @@ class MetricsCollector:
                 return {}
 
             values = [m.value for m in metrics]
-            
+
             return {
                 "count": len(values),
                 "min": min(values),
@@ -195,9 +185,9 @@ class MetricsCollector:
 
             # Count recent activity (last hour)
             one_hour_ago = datetime.now() - timedelta(hours=1)
-            summary["recent_activity"] = len([
-                m for m in self.metrics if m.timestamp >= one_hour_ago
-            ])
+            summary["recent_activity"] = len(
+                [m for m in self.metrics if m.timestamp >= one_hour_ago]
+            )
 
             return dict(summary)
 
@@ -209,7 +199,7 @@ class MetricsCollector:
         """Remove metrics older than retention period."""
         try:
             cutoff_time = datetime.now() - timedelta(hours=self.retention_hours)
-            
+
             # Remove old metrics from deque
             while self.metrics and self.metrics[0].timestamp < cutoff_time:
                 self.metrics.popleft()
@@ -217,7 +207,8 @@ class MetricsCollector:
             # Clean up aggregated metrics
             for metric_name in list(self.aggregated_metrics.keys()):
                 self.aggregated_metrics[metric_name] = [
-                    v for v in self.aggregated_metrics[metric_name]
+                    v
+                    for v in self.aggregated_metrics[metric_name]
                     if v >= cutoff_time.timestamp()
                 ]
 
@@ -233,8 +224,7 @@ class MetricsCollector:
             # Keep only recent values for aggregation
             cutoff_time = datetime.now() - timedelta(hours=self.retention_hours)
             self.aggregated_metrics[key] = [
-                v for v in self.aggregated_metrics[key]
-                if v >= cutoff_time.timestamp()
+                v for v in self.aggregated_metrics[key] if v >= cutoff_time.timestamp()
             ]
 
         except Exception as e:
@@ -245,10 +235,9 @@ class MetricsCollector:
         try:
             if format.lower() == "json":
                 return self._export_json_format()
-            elif format.lower() == "prometheus":
+            if format.lower() == "prometheus":
                 return self._export_prometheus_format()
-            else:
-                raise ValueError(f"Unsupported export format: {format}")
+            raise ValueError(f"Unsupported export format: {format}")
 
         except Exception as e:
             logger.error(f"Failed to export metrics: {e}")
@@ -259,15 +248,17 @@ class MetricsCollector:
         try:
             metrics_data = []
             for metric in self.metrics:
-                metrics_data.append({
-                    "name": metric.name,
-                    "value": metric.value,
-                    "type": metric.metric_type.value,
-                    "timestamp": metric.timestamp.isoformat(),
-                    "tags": metric.tags,
-                    "description": metric.description,
-                    "metadata": metric.metadata,
-                })
+                metrics_data.append(
+                    {
+                        "name": metric.name,
+                        "value": metric.value,
+                        "type": metric.metric_type.value,
+                        "timestamp": metric.timestamp.isoformat(),
+                        "tags": metric.tags,
+                        "description": metric.description,
+                        "metadata": metric.metadata,
+                    }
+                )
 
             return json.dumps(metrics_data, indent=2, default=str)
 
@@ -279,29 +270,39 @@ class MetricsCollector:
         """Export metrics in Prometheus format."""
         try:
             prometheus_lines = []
-            
+
             for metric in self.metrics:
                 # Convert metric name to Prometheus format
                 prometheus_name = metric.name.replace(".", "_").replace("-", "_")
-                
+
                 # Build tags string
                 tags_str = ""
                 if metric.tags:
                     tag_pairs = [f'{k}="{v}"' for k, v in metric.tags.items()]
                     tags_str = "{" + ",".join(tag_pairs) + "}"
-                
+
                 # Format value based on metric type
                 if metric.metric_type == MetricType.COUNTER:
-                    prometheus_lines.append(f"{prometheus_name}_total{tags_str} {metric.value}")
+                    prometheus_lines.append(
+                        f"{prometheus_name}_total{tags_str} {metric.value}"
+                    )
                 elif metric.metric_type == MetricType.GAUGE:
-                    prometheus_lines.append(f"{prometheus_name}{tags_str} {metric.value}")
+                    prometheus_lines.append(
+                        f"{prometheus_name}{tags_str} {metric.value}"
+                    )
                 elif metric.metric_type == MetricType.HISTOGRAM:
-                    prometheus_lines.append(f"{prometheus_name}_bucket{tags_str} {metric.value}")
+                    prometheus_lines.append(
+                        f"{prometheus_name}_bucket{tags_str} {metric.value}"
+                    )
                 elif metric.metric_type == MetricType.TIMER:
-                    prometheus_lines.append(f"{prometheus_name}_seconds{tags_str} {metric.value}")
-                
+                    prometheus_lines.append(
+                        f"{prometheus_name}_seconds{tags_str} {metric.value}"
+                    )
+
                 # Add timestamp
-                prometheus_lines.append(f"# {prometheus_name} {metric.timestamp.timestamp()}")
+                prometheus_lines.append(
+                    f"# {prometheus_name} {metric.timestamp.timestamp()}"
+                )
 
             return "\n".join(prometheus_lines)
 

@@ -6,13 +6,11 @@ This module provides integration with Weaviate for:
 - Retrieval-Augmented Generation (RAG) for external knowledge
 """
 
-import os
 import logging
+import os
 from typing import Any
 
-import weaviate
 from loguru import logger
-from weaviate.classes.init import Auth
 from weaviate import Client, WeaviateClient
 from weaviate.auth import AuthApiKey
 

@@ -5,8 +5,10 @@ This module contains the main FastAPI application setup and configuration.
 """
 
 import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
@@ -19,14 +21,20 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from backend.app.api.v1.api import api_router
 from backend.app.core.config import get_settings
-from backend.app.core.database import check_db_connection, init_db, engine
+from backend.app.core.database import check_db_connection, engine, get_db, init_db
 from backend.app.core.error_responses import CommonErrors, handle_validation_errors
 from backend.app.core.i18n import I18nMiddleware, i18n_manager, t
 from backend.app.core.opentelemetry_config import (
     initialize_opentelemetry,
     shutdown_opentelemetry,
 )
-from backend.app.core.redis_client import close_redis, init_redis, redis_client, check_redis_connection, get_redis_info
+from backend.app.core.redis_client import (
+    check_redis_connection,
+    close_redis,
+    get_redis_info,
+    init_redis,
+    redis_client,
+)
 from backend.app.core.security_middleware import setup_security_middleware
 from backend.app.core.sso_manager import init_sso_manager
 from backend.app.core.weaviate_client import (
@@ -35,12 +43,10 @@ from backend.app.core.weaviate_client import (
     create_schema_if_not_exists,
     init_weaviate,
 )
+from backend.app.monitoring import PerformanceMiddleware, get_performance_monitor
 from backend.app.services.audit_service import audit_service
 from backend.app.services.enhanced_background_job_service import job_manager
-from backend.app.monitoring import get_performance_monitor
 
-
-from typing import Any, AsyncGenerator
 
 @asynccontextmanager
 async def lifespan(_: Any) -> AsyncGenerator[None, None]:
@@ -91,6 +97,9 @@ async def lifespan(_: Any) -> AsyncGenerator[None, None]:
         init_sso_manager()
         logger.info("SSO manager initialized")
 
+        # Get database session for performance monitor
+        db = next(get_db())
+
         # Initialize performance monitor
         performance_monitor = get_performance_monitor(db)
         await performance_monitor.start_monitoring()
@@ -113,11 +122,12 @@ async def lifespan(_: Any) -> AsyncGenerator[None, None]:
     try:
         await audit_service.stop()
         job_manager.stop()
-        
+
         # Stop performance monitor
+        db = next(get_db())
         performance_monitor = get_performance_monitor(db)
         await performance_monitor.stop_monitoring()
-        
+
         await close_redis()
         close_weaviate()
         shutdown_opentelemetry()
@@ -126,7 +136,9 @@ async def lifespan(_: Any) -> AsyncGenerator[None, None]:
         logger.error(f"Error during shutdown: {e}")
 
 
-def configure_opentelemetry(app: FastAPI, db_engine: Any = None, redis_client: Any = None) -> None:
+def configure_opentelemetry(
+    app: FastAPI, db_engine: Any = None, redis_client: Any = None
+) -> None:
     """Configure OpenTelemetry for the application."""
     initialize_opentelemetry(app, db_engine, redis_client)
 
@@ -150,14 +162,18 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json" if get_settings().debug else None,
         lifespan=lifespan,
     )
-    
+
     configure_opentelemetry(app, db_engine=engine, redis_client=redis_client)
 
     # Setup security middleware first
     setup_security_middleware(app)
 
     # Add CORS middleware with secure configuration
-    cors_origins = [origin.strip() for origin in get_settings().cors.cors_origins.split(",") if origin.strip()]
+    cors_origins = [
+        origin.strip()
+        for origin in get_settings().cors.cors_origins.split(",")
+        if origin.strip()
+    ]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
@@ -184,14 +200,18 @@ def create_application() -> FastAPI:
 
     # Add performance monitoring middleware
     if get_settings().monitoring.performance_monitoring_enabled:
-        from backend.app.monitoring import PerformanceMiddleware, get_performance_monitor
         db = next(get_db())
         performance_monitor = get_performance_monitor(db)
-        app.add_middleware(PerformanceMiddleware, metrics_collector=performance_monitor.metrics_collector)
+        app.add_middleware(
+            PerformanceMiddleware,
+            metrics_collector=performance_monitor.metrics_collector,
+        )
 
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(_: Any, exc: StarletteHTTPException) -> JSONResponse:
+    async def http_exception_handler(
+        _: Any, exc: StarletteHTTPException
+    ) -> JSONResponse:
         """Handle HTTP exceptions."""
         logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
         # Translate error message
@@ -200,7 +220,7 @@ def create_application() -> FastAPI:
             None,
             fallback=exc.detail,
         )
-        
+
         # Create standardized error response
         error_response = CommonErrors.internal_server_error(
             message=translated_detail,
@@ -212,10 +232,12 @@ def create_application() -> FastAPI:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(_: Any, exc: RequestValidationError) -> JSONResponse:
+    async def validation_exception_handler(
+        _: Any, exc: RequestValidationError
+    ) -> JSONResponse:
         """Handle validation exceptions."""
         logger.warning(f"Validation error: {exc.errors()}")
-        
+
         # Convert validation errors to standardized format
         details = handle_validation_errors(exc.errors())
         error_response = CommonErrors.validation_error(
@@ -251,7 +273,7 @@ def create_application() -> FastAPI:
         except (ConnectionError, TimeoutError) as e:
             redis_status = "error"
             redis_info = {"error": str(e)}
-        except Exception as e:
+        except (ConnectionError, TimeoutError, OSError) as e:
             logger.error("Unexpected error in health check: %s", str(e))
             redis_status = "error"
             redis_info = {"error": "Internal error"}

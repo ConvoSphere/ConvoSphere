@@ -10,11 +10,9 @@ from typing import Any
 
 from loguru import logger
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.monitoring import (
-    Metric,
     MetricType,
     get_performance_monitor,
 )
@@ -128,7 +126,7 @@ class PerformanceIntegration:
     ) -> dict[str, Any] | None:
         """Get cached conversation data."""
         self._ensure_initialized()
-        
+
         if not self.services_status["cache"]:
             return None
 
@@ -146,14 +144,14 @@ class PerformanceIntegration:
     ) -> bool:
         """Cache conversation data."""
         self._ensure_initialized()
-        
+
         if not self.services_status["cache"]:
             return False
 
         try:
             ttl = ttl or self.config.cache_ttl
             await cache_service.set(f"conversation:{conversation_id}", data, ttl)
-            
+
             # Record cache operation metric
             if self.services_status["monitoring"]:
                 self.performance_monitor.metrics_collector.record_metric(
@@ -164,9 +162,9 @@ class PerformanceIntegration:
                         "operation": "set",
                         "namespace": "conversation",
                         "key": conversation_id,
-                    }
+                    },
                 )
-            
+
             return True
         except Exception as e:
             logger.warning(f"Failed to cache conversation: {e}")
@@ -180,7 +178,7 @@ class PerformanceIntegration:
     ) -> dict[str, Any] | None:
         """Get cached AI response."""
         self._ensure_initialized()
-        
+
         if not self.services_status["cache"]:
             return None
 
@@ -201,7 +199,7 @@ class PerformanceIntegration:
     ) -> bool:
         """Cache AI response."""
         self._ensure_initialized()
-        
+
         if not self.services_status["cache"]:
             return False
 
@@ -209,7 +207,7 @@ class PerformanceIntegration:
             ttl = ttl or self.config.cache_ttl
             cache_key = f"ai_response:{user_id}:{hash(message + (context or ''))}"
             await cache_service.set(cache_key, response, ttl)
-            
+
             # Record cache operation metric
             if self.services_status["monitoring"]:
                 self.performance_monitor.metrics_collector.record_metric(
@@ -220,9 +218,9 @@ class PerformanceIntegration:
                         "operation": "set",
                         "namespace": "ai_response",
                         "user_id": user_id,
-                    }
+                    },
                 )
-            
+
             return True
         except Exception as e:
             logger.warning(f"Failed to cache AI response: {e}")
@@ -240,7 +238,7 @@ class PerformanceIntegration:
     ) -> None:
         """Record API request metrics."""
         self._ensure_initialized()
-        
+
         if not self.services_status["monitoring"]:
             return
 
@@ -254,7 +252,7 @@ class PerformanceIntegration:
                     "endpoint": endpoint,
                     "method": method,
                     "status_code": str(status_code),
-                }
+                },
             )
 
             # Record response time
@@ -265,7 +263,7 @@ class PerformanceIntegration:
                 tags={
                     "endpoint": endpoint,
                     "method": method,
-                }
+                },
             )
 
             # Record request/response sizes
@@ -274,7 +272,7 @@ class PerformanceIntegration:
                     name="api_request_size_bytes",
                     value=float(request_size),
                     metric_type=MetricType.HISTOGRAM,
-                    tags={"endpoint": endpoint}
+                    tags={"endpoint": endpoint},
                 )
 
             if response_size > 0:
@@ -282,7 +280,7 @@ class PerformanceIntegration:
                     name="api_response_size_bytes",
                     value=float(response_size),
                     metric_type=MetricType.HISTOGRAM,
-                    tags={"endpoint": endpoint}
+                    tags={"endpoint": endpoint},
                 )
 
         except Exception as e:
@@ -300,7 +298,7 @@ class PerformanceIntegration:
     ) -> None:
         """Record database query metrics."""
         self._ensure_initialized()
-        
+
         if not self.services_status["monitoring"]:
             return
 
@@ -314,7 +312,7 @@ class PerformanceIntegration:
                     "query_type": query_type,
                     "table": table_name,
                     "error": str(error is not None),
-                }
+                },
             )
 
             # Record execution time
@@ -325,7 +323,7 @@ class PerformanceIntegration:
                 tags={
                     "query_type": query_type,
                     "table": table_name,
-                }
+                },
             )
 
             # Record rows affected
@@ -334,7 +332,7 @@ class PerformanceIntegration:
                     name="database_rows_affected",
                     value=float(rows_affected),
                     metric_type=MetricType.HISTOGRAM,
-                    tags={"query_type": query_type}
+                    tags={"query_type": query_type},
                 )
 
         except Exception as e:
@@ -350,7 +348,7 @@ class PerformanceIntegration:
     ) -> None:
         """Record custom performance metric."""
         self._ensure_initialized()
-        
+
         if not self.services_status["monitoring"]:
             return
 
@@ -362,9 +360,9 @@ class PerformanceIntegration:
                 "histogram": MetricType.HISTOGRAM,
                 "timer": MetricType.TIMER,
             }
-            
+
             metric_type_enum = type_mapping.get(metric_type.lower(), MetricType.GAUGE)
-            
+
             # Add unit to tags if provided
             metric_tags = tags or {}
             if unit:
@@ -386,17 +384,19 @@ class PerformanceIntegration:
     ) -> dict[str, Any]:
         """Get performance summary."""
         self._ensure_initialized()
-        
+
         if not self.services_status["monitoring"]:
             return {"error": "Monitoring not available"}
 
         try:
             # Get performance snapshot
             snapshot = self.performance_monitor.get_performance_snapshot()
-            
+
             # Get metrics summary
-            metrics_summary = self.performance_monitor.metrics_collector.get_metric_summary()
-            
+            metrics_summary = (
+                self.performance_monitor.metrics_collector.get_metric_summary()
+            )
+
             # Get alert summary
             alert_summary = self.performance_monitor.alert_manager.get_alert_summary()
 

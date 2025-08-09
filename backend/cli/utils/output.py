@@ -25,6 +25,6 @@ def print_warning(message: str) -> None:
 
 def print_header(message: str) -> None:
     """Print header message."""
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"  {message}")
-    print(f"{'='*50}\n")
+    print(f"{'=' * 50}\n")

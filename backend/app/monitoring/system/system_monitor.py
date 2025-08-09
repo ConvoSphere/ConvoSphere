@@ -5,9 +5,9 @@ This module provides system-level monitoring including CPU, memory,
 disk, and network metrics collection.
 """
 
-import psutil
 from typing import Any
 
+import psutil
 from loguru import logger
 
 
@@ -30,16 +30,16 @@ class SystemMonitor:
             # Memory metrics
             memory = psutil.virtual_memory()
             memory_percent = memory.percent
-            memory_available = memory.available / (1024 ** 3)  # GB
-            memory_used = memory.used / (1024 ** 3)  # GB
-            memory_total = memory.total / (1024 ** 3)  # GB
+            memory_available = memory.available / (1024**3)  # GB
+            memory_used = memory.used / (1024**3)  # GB
+            memory_total = memory.total / (1024**3)  # GB
 
             # Disk metrics
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_percent = disk.percent
-            disk_free = disk.free / (1024 ** 3)  # GB
-            disk_used = disk.used / (1024 ** 3)  # GB
-            disk_total = disk.total / (1024 ** 3)  # GB
+            disk_free = disk.free / (1024**3)  # GB
+            disk_used = disk.used / (1024**3)  # GB
+            disk_total = disk.total / (1024**3)  # GB
 
             # Network metrics
             network_io = psutil.net_io_counters()
@@ -51,10 +51,14 @@ class SystemMonitor:
             # Calculate network rates if we have previous data
             network_send_rate = 0.0
             network_recv_rate = 0.0
-            if hasattr(self, '_last_network_io') and self._last_network_io:
+            if hasattr(self, "_last_network_io") and self._last_network_io:
                 time_diff = 1.0  # Assuming 1 second interval
-                network_send_rate = (network_bytes_sent - self._last_network_io.bytes_sent) / time_diff
-                network_recv_rate = (network_bytes_recv - self._last_network_io.bytes_recv) / time_diff
+                network_send_rate = (
+                    network_bytes_sent - self._last_network_io.bytes_sent
+                ) / time_diff
+                network_recv_rate = (
+                    network_bytes_recv - self._last_network_io.bytes_recv
+                ) / time_diff
 
             self._last_network_io = network_io
 
@@ -78,19 +82,16 @@ class SystemMonitor:
                 "load_avg_1min": load_avg_1min,
                 "load_avg_5min": load_avg_5min,
                 "load_avg_15min": load_avg_15min,
-
                 # Memory metrics
                 "memory_percent": memory_percent,
                 "memory_available_gb": memory_available,
                 "memory_used_gb": memory_used,
                 "memory_total_gb": memory_total,
-
                 # Disk metrics
                 "disk_percent": disk_percent,
                 "disk_free_gb": disk_free,
                 "disk_used_gb": disk_used,
                 "disk_total_gb": disk_total,
-
                 # Network metrics
                 "network_bytes_sent": float(network_bytes_sent),
                 "network_bytes_recv": float(network_bytes_recv),
@@ -149,10 +150,10 @@ class SystemMonitor:
             # Memory info
             memory = psutil.virtual_memory()
             memory_info = {
-                "total_gb": memory.total / (1024 ** 3),
-                "available_gb": memory.available / (1024 ** 3),
-                "used_gb": memory.used / (1024 ** 3),
-                "free_gb": memory.free / (1024 ** 3),
+                "total_gb": memory.total / (1024**3),
+                "available_gb": memory.available / (1024**3),
+                "used_gb": memory.used / (1024**3),
+                "free_gb": memory.free / (1024**3),
                 "percent": memory.percent,
             }
 
@@ -166,9 +167,9 @@ class SystemMonitor:
                         disk_info[partition.mountpoint] = {
                             "device": partition.device,
                             "fstype": partition.fstype,
-                            "total_gb": usage.total / (1024 ** 3),
-                            "used_gb": usage.used / (1024 ** 3),
-                            "free_gb": usage.free / (1024 ** 3),
+                            "total_gb": usage.total / (1024**3),
+                            "used_gb": usage.used / (1024**3),
+                            "free_gb": usage.free / (1024**3),
                             "percent": usage.percent,
                         }
                     except PermissionError:
@@ -184,12 +185,14 @@ class SystemMonitor:
                 for interface, addrs in network_addrs.items():
                     network_info[interface] = []
                     for addr in addrs:
-                        network_info[interface].append({
-                            "family": str(addr.family),
-                            "address": addr.address,
-                            "netmask": addr.netmask,
-                            "broadcast": addr.broadcast,
-                        })
+                        network_info[interface].append(
+                            {
+                                "family": str(addr.family),
+                                "address": addr.address,
+                                "netmask": addr.netmask,
+                                "broadcast": addr.broadcast,
+                            }
+                        )
             except Exception:
                 pass
 
@@ -221,15 +224,15 @@ class SystemMonitor:
 
             # Memory metrics
             memory_info = process.memory_info()
-            memory_rss = memory_info.rss / (1024 ** 2)  # MB
-            memory_vms = memory_info.vms / (1024 ** 2)  # MB
+            memory_rss = memory_info.rss / (1024**2)  # MB
+            memory_vms = memory_info.vms / (1024**2)  # MB
             memory_percent = process.memory_percent()
 
             # IO metrics
             try:
                 io_counters = process.io_counters()
-                io_read_bytes = io_counters.read_bytes / (1024 ** 2)  # MB
-                io_write_bytes = io_counters.write_bytes / (1024 ** 2)  # MB
+                io_read_bytes = io_counters.read_bytes / (1024**2)  # MB
+                io_write_bytes = io_counters.write_bytes / (1024**2)  # MB
                 io_read_count = io_counters.read_count
                 io_write_count = io_counters.write_count
             except psutil.AccessDenied:

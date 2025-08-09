@@ -3,8 +3,8 @@
 from typing import Any
 
 from sqlalchemy import and_, desc
-from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 from backend.app.core.database import get_db
 from backend.app.core.exceptions import (
@@ -52,8 +52,8 @@ class ConversationService:
                 raise ValidationError("title", "Title is required")
 
             # Create conversation
-            from datetime import UTC, datetime
             import uuid
+            from datetime import UTC, datetime
 
             now = datetime.now(UTC)
             conversation = Conversation(
@@ -235,7 +235,10 @@ class ConversationService:
         """
         try:
             # Validate message data
-            if not message_data.conversation_id or not message_data.conversation_id.strip():
+            if (
+                not message_data.conversation_id
+                or not message_data.conversation_id.strip()
+            ):
                 raise ValidationError("conversation_id", "Conversation ID is required")
 
             if not message_data.content or not message_data.content.strip():
@@ -255,8 +258,8 @@ class ConversationService:
                 raise NotFoundError("Conversation", message_data.conversation_id)
 
             # Create message
-            from datetime import UTC, datetime
             import uuid
+            from datetime import UTC, datetime
 
             now = datetime.now(UTC)
             message = Message(

@@ -90,7 +90,9 @@ class ToolExecutor(BaseToolExecutor):
             raise ValueError(f"Tool is disabled: {tool_id}")
 
         # Create execution
-        execution = self._create_execution(tool_id, user_id, conversation_id, parameters)
+        execution = self._create_execution(
+            tool_id, user_id, conversation_id, parameters
+        )
 
         try:
             # Validate parameters
@@ -102,16 +104,26 @@ class ToolExecutor(BaseToolExecutor):
 
             # Execute based on tool type
             if tool_def.type == ToolType.MCP:
-                result = await self._execute_mcp_tool(tool_def, validated_params, user_id)
+                result = await self._execute_mcp_tool(
+                    tool_def, validated_params, user_id
+                )
             elif tool_def.type == ToolType.FUNCTION:
-                result = await self._execute_function_tool(tool_def, validated_params, user_id)
+                result = await self._execute_function_tool(
+                    tool_def, validated_params, user_id
+                )
             elif tool_def.type == ToolType.API:
-                result = await self._execute_api_tool(tool_def, validated_params, user_id)
+                result = await self._execute_api_tool(
+                    tool_def, validated_params, user_id
+                )
             else:
-                result = await self._execute_custom_tool(tool_def, validated_params, user_id)
+                result = await self._execute_custom_tool(
+                    tool_def, validated_params, user_id
+                )
 
             # Update execution with success
-            self._update_execution(execution, ToolExecutionStatus.COMPLETED, result=result)
+            self._update_execution(
+                execution, ToolExecutionStatus.COMPLETED, result=result
+            )
 
         except Exception as e:
             logger.error(f"Tool execution failed: {e}")
@@ -216,7 +228,6 @@ class ToolExecutor(BaseToolExecutor):
             "enabled": tool_def.enabled,
             "metadata": tool_def.metadata,
         }
-
 
     def register_handler(self, tool_id: str, handler: Callable) -> None:
         """Register a handler for a function tool."""

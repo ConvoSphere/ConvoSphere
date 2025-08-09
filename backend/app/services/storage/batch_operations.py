@@ -21,6 +21,7 @@ from .base import StorageError
 @dataclass
 class BatchOperation:
     """Represents a batch operation."""
+
     operation_type: str
     file_path: str
     content: bytes | None = None
@@ -40,7 +41,7 @@ class RateLimiter:
         self,
         max_requests_per_second: int = 10,
         max_requests_per_minute: int = 600,
-        burst_size: int = 20
+        burst_size: int = 20,
     ):
         self.max_requests_per_second = max_requests_per_second
         self.max_requests_per_minute = max_requests_per_minute
@@ -56,7 +57,9 @@ class RateLimiter:
             now = datetime.utcnow()
 
             # Remove old requests from tracking
-            while self._request_times and (now - self._request_times[0]) > timedelta(minutes=1):
+            while self._request_times and (now - self._request_times[0]) > timedelta(
+                minutes=1
+            ):
                 self._request_times.popleft()
 
             # Check rate limits
@@ -64,8 +67,9 @@ class RateLimiter:
                 return False
 
             # Check burst limit
-            recent_requests = sum(1 for t in self._request_times
-                                if (now - t) <= timedelta(seconds=1))
+            recent_requests = sum(
+                1 for t in self._request_times if (now - t) <= timedelta(seconds=1)
+            )
             if recent_requests >= self.burst_size:
                 return False
 
@@ -91,8 +95,9 @@ class RateLimiter:
     def get_status(self) -> dict[str, Any]:
         """Get rate limiter status."""
         now = datetime.utcnow()
-        recent_requests = sum(1 for t in self._request_times
-                            if (now - t) <= timedelta(seconds=1))
+        recent_requests = sum(
+            1 for t in self._request_times if (now - t) <= timedelta(seconds=1)
+        )
 
         return {
             "max_requests_per_second": self.max_requests_per_second,
@@ -100,7 +105,9 @@ class RateLimiter:
             "burst_size": self.burst_size,
             "current_requests_per_minute": len(self._request_times),
             "current_requests_per_second": recent_requests,
-            "last_request_time": self._last_request_time.isoformat() if self._last_request_time else None
+            "last_request_time": self._last_request_time.isoformat()
+            if self._last_request_time
+            else None,
         }
 
 
@@ -111,7 +118,7 @@ class BatchProcessor:
         self,
         batch_size: int = 10,
         batch_timeout: float = 5.0,
-        max_concurrent_batches: int = 5
+        max_concurrent_batches: int = 5,
     ):
         self.batch_size = batch_size
         self.batch_timeout = batch_timeout
@@ -212,19 +219,25 @@ class BatchProcessor:
             if batch_id in self._active_batches:
                 del self._active_batches[batch_id]
 
-    async def _execute_upload_batch(self, operations: list[BatchOperation]) -> dict[str, Any]:
+    async def _execute_upload_batch(
+        self, operations: list[BatchOperation]
+    ) -> dict[str, Any]:
         """Execute batch upload operations."""
         # This would be implemented by the specific storage provider
         # For now, return placeholder
         return {op.file_path: {"status": "uploaded"} for op in operations}
 
-    async def _execute_download_batch(self, operations: list[BatchOperation]) -> dict[str, Any]:
+    async def _execute_download_batch(
+        self, operations: list[BatchOperation]
+    ) -> dict[str, Any]:
         """Execute batch download operations."""
         # This would be implemented by the specific storage provider
         # For now, return placeholder
         return {op.file_path: {"status": "downloaded"} for op in operations}
 
-    async def _execute_delete_batch(self, operations: list[BatchOperation]) -> dict[str, Any]:
+    async def _execute_delete_batch(
+        self, operations: list[BatchOperation]
+    ) -> dict[str, Any]:
         """Execute batch delete operations."""
         # This would be implemented by the specific storage provider
         # For now, return placeholder
@@ -236,7 +249,7 @@ class BatchProcessor:
         file_path: str,
         content: bytes | None = None,
         metadata: dict[str, Any] | None = None,
-        callback: Callable | None = None
+        callback: Callable | None = None,
     ) -> str:
         """Add operation to batch queue."""
         operation = BatchOperation(
@@ -244,7 +257,7 @@ class BatchProcessor:
             file_path=file_path,
             content=content,
             metadata=metadata,
-            callback=callback
+            callback=callback,
         )
 
         async with self._lock:
@@ -260,7 +273,7 @@ class BatchProcessor:
                 "active_batches": len(self._active_batches),
                 "batch_size": self.batch_size,
                 "batch_timeout": self.batch_timeout,
-                "max_concurrent_batches": self.max_concurrent_batches
+                "max_concurrent_batches": self.max_concurrent_batches,
             }
 
     async def wait_for_completion(self, timeout: float = 30.0) -> bool:
@@ -289,39 +302,39 @@ class StorageBatchManager:
             "max_concurrent_batches": 5,
             "max_requests_per_second": 10,
             "max_requests_per_minute": 600,
-            "burst_size": 20
+            "burst_size": 20,
         }
 
-    def get_processor(self, provider_name: str, config: dict[str, Any] = None) -> BatchProcessor:
+    def get_processor(
+        self, provider_name: str, config: dict[str, Any] = None
+    ) -> BatchProcessor:
         """Get or create batch processor for provider."""
         if provider_name not in self._processors:
             processor_config = {**self._default_config, **(config or {})}
             self._processors[provider_name] = BatchProcessor(
                 batch_size=processor_config["batch_size"],
                 batch_timeout=processor_config["batch_timeout"],
-                max_concurrent_batches=processor_config["max_concurrent_batches"]
+                max_concurrent_batches=processor_config["max_concurrent_batches"],
             )
 
         return self._processors[provider_name]
 
-    def get_rate_limiter(self, provider_name: str, config: dict[str, Any] = None) -> RateLimiter:
+    def get_rate_limiter(
+        self, provider_name: str, config: dict[str, Any] = None
+    ) -> RateLimiter:
         """Get or create rate limiter for provider."""
         if provider_name not in self._rate_limiters:
             limiter_config = {**self._default_config, **(config or {})}
             self._rate_limiters[provider_name] = RateLimiter(
                 max_requests_per_second=limiter_config["max_requests_per_second"],
                 max_requests_per_minute=limiter_config["max_requests_per_minute"],
-                burst_size=limiter_config["burst_size"]
+                burst_size=limiter_config["burst_size"],
             )
 
         return self._rate_limiters[provider_name]
 
     async def execute_with_rate_limit(
-        self,
-        provider_name: str,
-        operation: Callable,
-        *args,
-        **kwargs
+        self, provider_name: str, operation: Callable, *args, **kwargs
     ) -> Any:
         """Execute operation with rate limiting."""
         rate_limiter = self.get_rate_limiter(provider_name)
@@ -340,7 +353,7 @@ class StorageBatchManager:
         file_path: str,
         content: bytes | None = None,
         metadata: dict[str, Any] | None = None,
-        callback: Callable | None = None
+        callback: Callable | None = None,
     ) -> str:
         """Add operation to batch queue."""
         processor = self.get_processor(provider_name)
@@ -355,7 +368,7 @@ class StorageBatchManager:
         for provider, processor in self._processors.items():
             status[provider] = {
                 "processor": processor.get_batch_status(),
-                "rate_limiter": self._rate_limiters[provider].get_status()
+                "rate_limiter": self._rate_limiters[provider].get_status(),
             }
 
         return status

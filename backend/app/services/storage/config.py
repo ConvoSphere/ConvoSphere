@@ -5,7 +5,6 @@ This module defines the configuration structure for different storage providers
 including local filesystem, S3, MinIO, GCS, and Azure Blob Storage.
 """
 
-
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -13,8 +12,12 @@ class StorageConfig(BaseModel):
     """Storage configuration for different providers."""
 
     # General settings
-    provider: str = Field(default="local", description="Storage provider (local, s3, minio, gcs, azure)")
-    bucket_name: str = Field(default="knowledge-base", description="Storage bucket/container name")
+    provider: str = Field(
+        default="local", description="Storage provider (local, s3, minio, gcs, azure)"
+    )
+    bucket_name: str = Field(
+        default="knowledge-base", description="Storage bucket/container name"
+    )
 
     # Connection settings
     use_ssl: bool = Field(default=True, description="Use SSL for connections")
@@ -24,36 +27,68 @@ class StorageConfig(BaseModel):
     # S3 Configuration
     s3_endpoint_url: str | None = Field(default=None, description="S3 endpoint URL")
     s3_access_key_id: str | None = Field(default=None, description="S3 access key ID")
-    s3_secret_access_key: str | None = Field(default=None, description="S3 secret access key")
+    s3_secret_access_key: str | None = Field(
+        default=None, description="S3 secret access key"
+    )
     s3_region: str | None = Field(default=None, description="S3 region")
 
     # MinIO Configuration (S3-compatible)
-    minio_endpoint: str | None = Field(default="localhost:9000", description="MinIO endpoint")
-    minio_access_key: str | None = Field(default="minioadmin", description="MinIO access key")
-    minio_secret_key: str | None = Field(default="minioadmin", description="MinIO secret key")
-    minio_secure: bool = Field(default=False, description="Use secure connection for MinIO")
+    minio_endpoint: str | None = Field(
+        default="localhost:9000", description="MinIO endpoint"
+    )
+    minio_access_key: str | None = Field(
+        default="minioadmin", description="MinIO access key"
+    )
+    minio_secret_key: str | None = Field(
+        default="minioadmin", description="MinIO secret key"
+    )
+    minio_secure: bool = Field(
+        default=False, description="Use secure connection for MinIO"
+    )
 
     # GCS Configuration
-    gcs_project_id: str | None = Field(default=None, description="Google Cloud project ID")
-    gcs_credentials_file: str | None = Field(default=None, description="GCS credentials file path")
-    gcs_credentials_json: str | None = Field(default=None, description="GCS credentials as JSON string")
+    gcs_project_id: str | None = Field(
+        default=None, description="Google Cloud project ID"
+    )
+    gcs_credentials_file: str | None = Field(
+        default=None, description="GCS credentials file path"
+    )
+    gcs_credentials_json: str | None = Field(
+        default=None, description="GCS credentials as JSON string"
+    )
 
     # Azure Configuration
-    azure_account_name: str | None = Field(default=None, description="Azure storage account name")
-    azure_account_key: str | None = Field(default=None, description="Azure storage account key")
-    azure_connection_string: str | None = Field(default=None, description="Azure connection string")
+    azure_account_name: str | None = Field(
+        default=None, description="Azure storage account name"
+    )
+    azure_account_key: str | None = Field(
+        default=None, description="Azure storage account key"
+    )
+    azure_connection_string: str | None = Field(
+        default=None, description="Azure connection string"
+    )
     azure_sas_token: str | None = Field(default=None, description="Azure SAS token")
 
     # Local storage settings
-    local_base_path: str | None = Field(default="./uploads", description="Local storage base path")
+    local_base_path: str | None = Field(
+        default="./uploads", description="Local storage base path"
+    )
 
     # Performance settings
-    chunk_size: int = Field(default=8192, description="Upload/download chunk size in bytes")
-    max_concurrent_uploads: int = Field(default=10, description="Maximum concurrent uploads")
+    chunk_size: int = Field(
+        default=8192, description="Upload/download chunk size in bytes"
+    )
+    max_concurrent_uploads: int = Field(
+        default=10, description="Maximum concurrent uploads"
+    )
 
     # Security settings
-    encryption_enabled: bool = Field(default=False, description="Enable client-side encryption")
-    encryption_key: str | None = Field(default=None, description="Encryption key for client-side encryption")
+    encryption_enabled: bool = Field(
+        default=False, description="Enable client-side encryption"
+    )
+    encryption_key: str | None = Field(
+        default=None, description="Encryption key for client-side encryption"
+    )
 
     @field_validator("provider")
     @classmethod
@@ -61,7 +96,9 @@ class StorageConfig(BaseModel):
         """Validate storage provider."""
         valid_providers = ["local", "s3", "minio", "gcs", "azure"]
         if v.lower() not in valid_providers:
-            raise ValueError(f"Invalid storage provider. Must be one of: {valid_providers}")
+            raise ValueError(
+                f"Invalid storage provider. Must be one of: {valid_providers}"
+            )
         return v.lower()
 
     @field_validator("bucket_name")
@@ -109,10 +146,7 @@ class StorageConfig(BaseModel):
     def get_provider_config(self) -> dict:
         """Get provider-specific configuration."""
         if self.provider == "local":
-            return {
-                "base_path": self.local_base_path,
-                "bucket_name": self.bucket_name
-            }
+            return {"base_path": self.local_base_path, "bucket_name": self.bucket_name}
         if self.provider == "s3":
             return {
                 "endpoint_url": self.s3_endpoint_url,
@@ -122,7 +156,7 @@ class StorageConfig(BaseModel):
                 "bucket_name": self.bucket_name,
                 "use_ssl": self.use_ssl,
                 "max_retries": self.max_retries,
-                "timeout": self.timeout
+                "timeout": self.timeout,
             }
         if self.provider == "minio":
             return {
@@ -133,7 +167,7 @@ class StorageConfig(BaseModel):
                 "bucket_name": self.bucket_name,
                 "region": self.s3_region,
                 "max_retries": self.max_retries,
-                "timeout": self.timeout
+                "timeout": self.timeout,
             }
         if self.provider == "gcs":
             return {
@@ -141,7 +175,7 @@ class StorageConfig(BaseModel):
                 "credentials_file": self.gcs_credentials_file,
                 "credentials_json": self.gcs_credentials_json,
                 "bucket_name": self.bucket_name,
-                "timeout": self.timeout
+                "timeout": self.timeout,
             }
         if self.provider == "azure":
             return {
@@ -150,7 +184,7 @@ class StorageConfig(BaseModel):
                 "connection_string": self.azure_connection_string,
                 "sas_token": self.azure_sas_token,
                 "container_name": self.bucket_name,
-                "timeout": self.timeout
+                "timeout": self.timeout,
             }
         raise ValueError(f"Unsupported provider: {self.provider}")
 
@@ -161,7 +195,9 @@ class StorageConfig(BaseModel):
         if self.provider == "s3":
             required_fields = ["access_key_id", "secret_access_key"]
             if not all(config.get(field) for field in required_fields):
-                raise ValueError("S3 provider requires access_key_id and secret_access_key")
+                raise ValueError(
+                    "S3 provider requires access_key_id and secret_access_key"
+                )
 
         elif self.provider == "minio":
             required_fields = ["access_key", "secret_key"]
@@ -170,10 +206,17 @@ class StorageConfig(BaseModel):
 
         elif self.provider == "gcs":
             if not (config.get("credentials_file") or config.get("credentials_json")):
-                raise ValueError("GCS provider requires either credentials_file or credentials_json")
+                raise ValueError(
+                    "GCS provider requires either credentials_file or credentials_json"
+                )
 
         elif self.provider == "azure":
-            if not (config.get("connection_string") or (config.get("account_name") and config.get("account_key"))):
-                raise ValueError("Azure provider requires either connection_string or account_name + account_key")
+            if not (
+                config.get("connection_string")
+                or (config.get("account_name") and config.get("account_key"))
+            ):
+                raise ValueError(
+                    "Azure provider requires either connection_string or account_name + account_key"
+                )
 
         return True

@@ -6,12 +6,10 @@ This module provides the core authentication API endpoints.
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from loguru import logger
-from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
@@ -31,9 +29,9 @@ router = APIRouter()
 
 
 from backend.app.api.v1.endpoints.auth.models import (
-    UserLogin,
     RefreshTokenRequest,
     TokenResponse,
+    UserLogin,
     UserResponse,
 )
 

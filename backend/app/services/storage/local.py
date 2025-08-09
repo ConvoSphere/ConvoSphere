@@ -31,7 +31,9 @@ class LocalStorageProvider(StorageProvider):
 
         logger.info(f"Initialized local storage provider at {self.bucket_path}")
 
-    async def upload_file(self, file_path: str, content: bytes, metadata: dict[str, Any] = None) -> str:
+    async def upload_file(
+        self, file_path: str, content: bytes, metadata: dict[str, Any] = None
+    ) -> str:
         """Upload file to local filesystem."""
         try:
             # Create full path
@@ -52,6 +54,7 @@ class LocalStorageProvider(StorageProvider):
                 metadata_path = full_path.with_suffix(full_path.suffix + ".meta")
                 with open(metadata_path, "w") as f:
                     import json
+
                     json.dump(metadata, f)
 
             storage_path = f"local://{self.config.bucket_name}/{file_path}"
@@ -63,7 +66,7 @@ class LocalStorageProvider(StorageProvider):
             raise StorageError(
                 f"Failed to upload file {file_path}: {str(e)}",
                 provider="local",
-                operation="upload"
+                operation="upload",
             )
 
     async def download_file(self, storage_path: str) -> bytes:
@@ -77,7 +80,7 @@ class LocalStorageProvider(StorageProvider):
                 raise StorageError(
                     f"File not found: {file_path}",
                     provider="local",
-                    operation="download"
+                    operation="download",
                 )
 
             with open(full_path, "rb") as f:
@@ -92,7 +95,7 @@ class LocalStorageProvider(StorageProvider):
             raise StorageError(
                 f"Failed to download file {storage_path}: {str(e)}",
                 provider="local",
-                operation="download"
+                operation="download",
             )
 
     async def delete_file(self, storage_path: str) -> bool:
@@ -137,9 +140,7 @@ class LocalStorageProvider(StorageProvider):
 
         if not full_path.exists():
             raise StorageError(
-                f"File not found: {file_path}",
-                provider="local",
-                operation="get_url"
+                f"File not found: {file_path}", provider="local", operation="get_url"
             )
 
         return f"file://{full_path.absolute()}"
@@ -154,7 +155,7 @@ class LocalStorageProvider(StorageProvider):
                 raise StorageError(
                     f"File not found: {file_path}",
                     provider="local",
-                    operation="get_metadata"
+                    operation="get_metadata",
                 )
 
             stat_info = full_path.stat()
@@ -165,7 +166,7 @@ class LocalStorageProvider(StorageProvider):
                 "created": datetime.fromtimestamp(stat_info.st_ctime).isoformat(),
                 "permissions": oct(stat_info.st_mode)[-3:],
                 "provider": "local",
-                "storage_path": storage_path
+                "storage_path": storage_path,
             }
 
             # Try to load additional metadata if it exists
@@ -173,6 +174,7 @@ class LocalStorageProvider(StorageProvider):
             if metadata_path.exists():
                 try:
                     import json
+
                     with open(metadata_path) as f:
                         additional_metadata = json.load(f)
                     metadata.update(additional_metadata)
@@ -187,7 +189,7 @@ class LocalStorageProvider(StorageProvider):
             raise StorageError(
                 f"Failed to get metadata for {storage_path}: {str(e)}",
                 provider="local",
-                operation="get_metadata"
+                operation="get_metadata",
             )
 
     async def _perform_health_check(self) -> bool:
@@ -239,7 +241,7 @@ class LocalStorageProvider(StorageProvider):
                 "bucket_path": str(self.bucket_path),
                 "total_files": file_count,
                 "total_size_bytes": total_size,
-                "available_space": shutil.disk_usage(self.base_path).free
+                "available_space": shutil.disk_usage(self.base_path).free,
             }
         except Exception as e:
             logger.error(f"Failed to get storage info: {e}")
@@ -247,5 +249,5 @@ class LocalStorageProvider(StorageProvider):
                 "provider": "local",
                 "base_path": str(self.base_path),
                 "bucket_path": str(self.bucket_path),
-                "error": str(e)
+                "error": str(e),
             }

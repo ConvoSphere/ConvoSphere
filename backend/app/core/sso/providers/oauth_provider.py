@@ -189,12 +189,11 @@ class OAuthProvider(BaseSSOProvider):
             # Validate token with OAuth provider
             headers = {"Authorization": f"Bearer {token}"}
             response = requests.get(self.userinfo_url, headers=headers, timeout=30)
-            
+
             if response.status_code == 200:
                 return {"valid": True, "user_info": response.json()}
-            else:
-                return {"valid": False, "error": "Invalid token"}
-                
+            return {"valid": False, "error": "Invalid token"}
+
         except Exception as e:
             logger.exception(f"Token validation failed: {str(e)}")
             return {"valid": False, "error": str(e)}
