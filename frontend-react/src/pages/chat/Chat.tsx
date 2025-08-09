@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import ChatContainer from './chat/components/ChatContainer';
+import ChatContainer from './components/ChatContainer';
 
 const Chat: React.FC = () => {
   const { threadId, assistantId } = useParams<{
