@@ -11,8 +11,9 @@ import os
 from typing import Any
 
 from loguru import logger
-from weaviate import Client, WeaviateClient
+from weaviate import WeaviateClient
 from weaviate.auth import AuthApiKey
+from weaviate.config import ConnectionParams
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,17 @@ class WeaviateService:
             if self.api_key:
                 # Use API key authentication if provided
                 auth_credentials = AuthApiKey(api_key=self.api_key)
-                client = Client(
-                    url=self.url,
-                    auth_client_secret=auth_credentials,
+                client = WeaviateClient(
+                    connection_params=ConnectionParams.from_url(
+                        url=self.url,
+                        auth_credentials=auth_credentials,
+                    )
                 )
             else:
                 # Connect without authentication for local development
-                client = Client(url=self.url)
+                client = WeaviateClient(
+                    connection_params=ConnectionParams.from_url(url=self.url)
+                )
 
             logger.info(f"Connected to Weaviate at {self.url}")
             return client

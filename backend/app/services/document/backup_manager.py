@@ -75,7 +75,7 @@ class DocumentBackupManager:
     def __init__(self, db: Session):
         self.db = db
         self.settings = get_settings()
-        self.backup_dir = Path(self.settings.backup_dir or "backups")
+        self.backup_dir = Path(self.settings.storage.backup_dir or "backups")
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Backup configuration

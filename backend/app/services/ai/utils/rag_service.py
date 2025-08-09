@@ -2,9 +2,9 @@
 
 from typing import Any, Dict, List, Optional
 
-from app.services.ai.providers.base import ChatMessage
-from app.services.embedding_service import EmbeddingService
-from app.services.knowledge_service import KnowledgeService
+from backend.app.services.ai.providers.base import ChatMessage
+from backend.app.services.embedding_service import EmbeddingService
+from backend.app.services.knowledge_service import KnowledgeService
 from sqlalchemy.orm import Session
 
 

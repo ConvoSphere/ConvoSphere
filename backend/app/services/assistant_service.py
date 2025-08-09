@@ -10,8 +10,8 @@ from typing import Any
 from loguru import logger
 from sqlalchemy import and_, or_
 
-# from backend.app.core.database import get_db
-# from backend.app.models.assistant import Assistant, AssistantStatus
+from backend.app.core.database import get_db
+from backend.app.models.assistant import Assistant, AssistantStatus
 
 
 class AssistantService:
