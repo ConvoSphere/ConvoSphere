@@ -342,6 +342,18 @@ class MonitoringSettings(BaseSettings):
         default=60,
         json_schema_extra={"env": "PERFORMANCE_MONITORING_INTERVAL"},
     )
+    monitoring_max_metrics: int = Field(
+        default=10000,
+        json_schema_extra={"env": "MONITORING_MAX_METRICS"},
+    )
+    monitoring_retention_hours: int = Field(
+        default=24,
+        json_schema_extra={"env": "MONITORING_RETENTION_HOURS"},
+    )
+    monitoring_collection_interval: int = Field(
+        default=60,
+        json_schema_extra={"env": "MONITORING_COLLECTION_INTERVAL"},
+    )
     performance_alert_thresholds: dict = Field(default_factory=dict)
 
 

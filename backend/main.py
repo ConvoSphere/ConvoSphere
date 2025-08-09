@@ -37,7 +37,7 @@ from backend.app.core.weaviate_client import (
 )
 from backend.app.services.audit_service import audit_service
 from backend.app.services.enhanced_background_job_service import job_manager
-from backend.app.services.performance_monitor import performance_monitor
+from backend.app.monitoring import get_performance_monitor
 
 
 from typing import Any, AsyncGenerator
@@ -91,6 +91,11 @@ async def lifespan(_: Any) -> AsyncGenerator[None, None]:
         init_sso_manager()
         logger.info("SSO manager initialized")
 
+        # Initialize performance monitor
+        performance_monitor = get_performance_monitor(db)
+        await performance_monitor.start_monitoring()
+        logger.info("Performance monitor started")
+
         logger.info("All services initialized successfully")
 
     except Exception as exc:  # noqa: BLE001
@@ -108,6 +113,11 @@ async def lifespan(_: Any) -> AsyncGenerator[None, None]:
     try:
         await audit_service.stop()
         job_manager.stop()
+        
+        # Stop performance monitor
+        performance_monitor = get_performance_monitor(db)
+        await performance_monitor.stop_monitoring()
+        
         await close_redis()
         close_weaviate()
         shutdown_opentelemetry()
@@ -172,9 +182,12 @@ def create_application() -> FastAPI:
     # Add session middleware for OAuth
     app.add_middleware(SessionMiddleware, secret_key=get_settings().security.secret_key)
 
-    # Start performance monitoring if enabled
-    if performance_monitor.monitoring_enabled:
-        performance_monitor.start_monitoring()
+    # Add performance monitoring middleware
+    if get_settings().monitoring.performance_monitoring_enabled:
+        from backend.app.monitoring import PerformanceMiddleware, get_performance_monitor
+        db = next(get_db())
+        performance_monitor = get_performance_monitor(db)
+        app.add_middleware(PerformanceMiddleware, metrics_collector=performance_monitor.metrics_collector)
 
     # Add exception handlers
     @app.exception_handler(StarletteHTTPException)
