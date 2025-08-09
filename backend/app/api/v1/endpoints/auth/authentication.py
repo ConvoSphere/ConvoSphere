@@ -30,34 +30,12 @@ from backend.app.services.audit_service import audit_service
 router = APIRouter()
 
 
-# Pydantic models for request/response
-class UserLogin(BaseModel):
-    email: EmailStr | None = None
-    username: str | None = None
-    password: str
-
-
-class RefreshTokenRequest(BaseModel):
-    refresh_token: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
-    expires_in: int
-
-
-class UserResponse(BaseModel):
-    id: str
-    email: str
-    username: str
-    first_name: str | None
-    last_name: str | None
-    display_name: str | None
-    role: str
-    is_active: bool
-    is_verified: bool
+from backend.app.api.v1.endpoints.auth.models import (
+    UserLogin,
+    RefreshTokenRequest,
+    TokenResponse,
+    UserResponse,
+)
 
 
 @router.post("/login", response_model=TokenResponse)

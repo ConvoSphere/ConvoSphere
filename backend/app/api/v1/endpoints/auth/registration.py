@@ -17,25 +17,10 @@ from backend.app.models.user import User, UserRole
 router = APIRouter()
 
 
-# Pydantic models for request/response
-class UserRegister(BaseModel):
-    email: EmailStr
-    username: str
-    password: str
-    first_name: str | None = None
-    last_name: str | None = None
-
-
-class UserResponse(BaseModel):
-    id: str
-    email: str
-    username: str
-    first_name: str | None
-    last_name: str | None
-    display_name: str | None
-    role: str
-    is_active: bool
-    is_verified: bool
+from backend.app.api.v1.endpoints.auth.models import (
+    UserRegister,
+    UserResponse,
+)
 
 
 @router.post("/register", response_model=UserResponse)
