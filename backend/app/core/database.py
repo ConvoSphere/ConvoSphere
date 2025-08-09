@@ -77,7 +77,9 @@ def create_default_admin_user() -> Any | None:
 
         # Only create default admin if explicitly requested
         if os.getenv("CREATE_DEFAULT_ADMIN", "false").lower() != "true":
-            logger.info("CREATE_DEFAULT_ADMIN not set to true, skipping default admin creation")
+            logger.info(
+                "CREATE_DEFAULT_ADMIN not set to true, skipping default admin creation"
+            )
             return None
 
         db = next(get_db())
@@ -136,7 +138,9 @@ def create_default_assistant() -> None:
 
         # Only create default assistant if explicitly requested
         if os.getenv("CREATE_DEFAULT_ASSISTANT", "false").lower() != "true":
-            logger.info("CREATE_DEFAULT_ASSISTANT not set to true, skipping default assistant creation")
+            logger.info(
+                "CREATE_DEFAULT_ASSISTANT not set to true, skipping default assistant creation"
+            )
             return
 
         # Get database session
@@ -161,11 +165,11 @@ def create_default_assistant() -> None:
         assistant_name = os.getenv("DEFAULT_ASSISTANT_NAME", "Default Assistant")
         assistant_description = os.getenv(
             "DEFAULT_ASSISTANT_DESCRIPTION",
-            "A general-purpose AI assistant for everyday tasks"
+            "A general-purpose AI assistant for everyday tasks",
         )
         assistant_system_prompt = os.getenv(
             "DEFAULT_ASSISTANT_SYSTEM_PROMPT",
-            "You are a helpful AI assistant that can help with various tasks including answering questions, writing content, and solving problems."
+            "You are a helpful AI assistant that can help with various tasks including answering questions, writing content, and solving problems.",
         )
         assistant_model = os.getenv("DEFAULT_ASSISTANT_MODEL", "gpt-4")
 

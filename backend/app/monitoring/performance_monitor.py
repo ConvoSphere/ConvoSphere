@@ -16,16 +16,15 @@ from sqlalchemy.orm import Session
 from backend.app.core.caching import get_cache_manager
 from backend.app.core.config import get_settings
 
-from .core import MetricsCollector, AlertManager, AlertSeverity, AlertChannel
-from .system import SystemMonitor
+from .core import AlertChannel, AlertManager, AlertSeverity, MetricsCollector
 from .database import DatabaseMonitor
+from .system import SystemMonitor
 from .types import (
-    PerformanceSnapshot,
-    SystemMetrics,
     DatabaseMetrics,
-    RequestMetrics,
     PerformanceReport,
-    MonitoringConfig,
+    PerformanceSnapshot,
+    RequestMetrics,
+    SystemMetrics,
 )
 
 
@@ -36,23 +35,23 @@ class PerformanceMonitor:
         """Initialize performance monitor with all components."""
         self.db = db
         self.settings = get_settings()
-        
+
         # Initialize monitoring components
         self.metrics_collector = MetricsCollector(
             max_metrics=self.settings.monitoring_max_metrics,
-            retention_hours=self.settings.monitoring_retention_hours
+            retention_hours=self.settings.monitoring_retention_hours,
         )
         self.alert_manager = AlertManager()
         self.system_monitor = SystemMonitor()
         self.database_monitor = DatabaseMonitor(db)
-        
+
         # Monitoring state
         self.monitoring_task: asyncio.Task | None = None
         self.is_monitoring = False
-        
+
         # Cache manager
         self.cache_manager = get_cache_manager()
-        
+
         # Setup default alerts and handlers
         self._setup_default_alerts()
         self._setup_alert_handlers()
@@ -69,7 +68,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "system"},
                 channels=[AlertChannel.LOG],
-                suppression_window=300  # 5 minutes
+                suppression_window=300,  # 5 minutes
             )
 
             self.alert_manager.add_alert_rule(
@@ -80,7 +79,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "system"},
                 channels=[AlertChannel.LOG],
-                suppression_window=300
+                suppression_window=300,
             )
 
             self.alert_manager.add_alert_rule(
@@ -91,7 +90,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "system"},
                 channels=[AlertChannel.LOG],
-                suppression_window=600  # 10 minutes
+                suppression_window=600,  # 10 minutes
             )
 
             # Database alerts
@@ -103,7 +102,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "database"},
                 channels=[AlertChannel.LOG],
-                suppression_window=300
+                suppression_window=300,
             )
 
             # Request alerts
@@ -115,7 +114,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "requests"},
                 channels=[AlertChannel.LOG],
-                suppression_window=300
+                suppression_window=300,
             )
 
             self.alert_manager.add_alert_rule(
@@ -126,7 +125,7 @@ class PerformanceMonitor:
                 condition="gt",
                 tags={"component": "requests"},
                 channels=[AlertChannel.LOG],
-                suppression_window=300
+                suppression_window=300,
             )
 
             logger.info("Default alert rules configured")
@@ -137,6 +136,7 @@ class PerformanceMonitor:
     def _setup_alert_handlers(self):
         """Setup alert handlers for different channels."""
         try:
+
             def log_alert(alert: Alert):
                 """Log alert to logger."""
                 log_level = {
@@ -224,9 +224,12 @@ class PerformanceMonitor:
                         for name, value in metrics.items():
                             if isinstance(value, (int, float)):
                                 self.metrics_collector.set_gauge(
-                                    f"db_{category}_{name}", 
-                                    float(value), 
-                                    tags={"component": "database", "category": category}
+                                    f"db_{category}_{name}",
+                                    float(value),
+                                    tags={
+                                        "component": "database",
+                                        "category": category,
+                                    },
                                 )
 
             # Collect cache metrics if available
@@ -236,9 +239,9 @@ class PerformanceMonitor:
                     for name, value in cache_stats.items():
                         if isinstance(value, (int, float)):
                             self.metrics_collector.set_gauge(
-                                f"cache_{name}", 
-                                float(value), 
-                                tags={"component": "cache"}
+                                f"cache_{name}",
+                                float(value),
+                                tags={"component": "cache"},
                             )
                 except Exception as e:
                     logger.debug(f"Failed to collect cache metrics: {e}")
@@ -256,13 +259,13 @@ class PerformanceMonitor:
         try:
             # Get system metrics
             system_metrics = self.system_monitor.get_system_metrics()
-            
+
             # Get database metrics
             db_metrics = self.database_monitor.get_database_metrics()
-            
+
             # Get request statistics
             request_stats = self._get_request_statistics()
-            
+
             # Calculate cache hit rate
             cache_hit_rate = 0.0
             if hasattr(self.cache_manager, "get_stats"):
@@ -283,12 +286,16 @@ class PerformanceMonitor:
                     "packets_sent": system_metrics.get("network_packets_sent", 0.0),
                     "packets_recv": system_metrics.get("network_packets_recv", 0.0),
                 },
-                active_connections=db_metrics.get("connection", {}).get("checked_out", 0),
+                active_connections=db_metrics.get("connection", {}).get(
+                    "checked_out", 0
+                ),
                 request_count=request_stats.get("total_requests", 0),
                 error_count=request_stats.get("total_errors", 0),
                 avg_response_time=request_stats.get("avg_response_time_seconds", 0.0),
                 cache_hit_rate=cache_hit_rate,
-                database_connections=db_metrics.get("connection", {}).get("pool_size", 0),
+                database_connections=db_metrics.get("connection", {}).get(
+                    "pool_size", 0
+                ),
                 slow_queries=db_metrics.get("queries", {}).get("slow_queries", 0),
                 custom_metrics={},
             )
@@ -310,7 +317,9 @@ class PerformanceMonitor:
                 slow_queries=0,
             )
 
-    def get_performance_report(self, since: datetime | None = None) -> PerformanceReport:
+    def get_performance_report(
+        self, since: datetime | None = None
+    ) -> PerformanceReport:
         """Get comprehensive performance report."""
         try:
             if since is None:
@@ -325,7 +334,9 @@ class PerformanceMonitor:
             alerts = self.alert_manager.get_alerts(since=since)
 
             # Generate recommendations
-            recommendations = self._generate_recommendations(system_metrics, db_metrics, request_stats)
+            recommendations = self._generate_recommendations(
+                system_metrics, db_metrics, request_stats
+            )
 
             # Create summary
             summary = {
@@ -339,10 +350,10 @@ class PerformanceMonitor:
             health_scores = [
                 summary["system_health"],
                 summary["database_health"],
-                summary["application_health"]
+                summary["application_health"],
             ]
             avg_health = sum(health_scores) / len(health_scores)
-            
+
             if avg_health >= 0.8:
                 summary["overall_health"] = "healthy"
             elif avg_health >= 0.6:
@@ -386,7 +397,7 @@ class PerformanceMonitor:
         self,
         system_metrics: dict[str, float],
         db_metrics: dict[str, Any],
-        request_stats: dict[str, Any]
+        request_stats: dict[str, Any],
     ) -> list[str]:
         """Generate performance recommendations."""
         recommendations = []
@@ -394,32 +405,48 @@ class PerformanceMonitor:
         try:
             # System recommendations
             if system_metrics.get("cpu_percent", 0) > 80:
-                recommendations.append("High CPU usage detected. Consider scaling up or optimizing CPU-intensive operations.")
+                recommendations.append(
+                    "High CPU usage detected. Consider scaling up or optimizing CPU-intensive operations."
+                )
 
             if system_metrics.get("memory_percent", 0) > 85:
-                recommendations.append("High memory usage detected. Consider increasing memory or optimizing memory usage.")
+                recommendations.append(
+                    "High memory usage detected. Consider increasing memory or optimizing memory usage."
+                )
 
             if system_metrics.get("disk_percent", 0) > 90:
-                recommendations.append("High disk usage detected. Consider cleaning up disk space or expanding storage.")
+                recommendations.append(
+                    "High disk usage detected. Consider cleaning up disk space or expanding storage."
+                )
 
             # Database recommendations
             if db_metrics:
-                slow_query_pct = db_metrics.get("queries", {}).get("slow_query_percentage", 0)
+                slow_query_pct = db_metrics.get("queries", {}).get(
+                    "slow_query_percentage", 0
+                )
                 if slow_query_pct > 10:
-                    recommendations.append(f"High slow query rate ({slow_query_pct:.1f}%). Consider optimizing database queries.")
+                    recommendations.append(
+                        f"High slow query rate ({slow_query_pct:.1f}%). Consider optimizing database queries."
+                    )
 
                 avg_query_time = db_metrics.get("queries", {}).get("avg_query_time", 0)
                 if avg_query_time > 1.0:
-                    recommendations.append(f"High average query time ({avg_query_time:.2f}s). Consider database optimization.")
+                    recommendations.append(
+                        f"High average query time ({avg_query_time:.2f}s). Consider database optimization."
+                    )
 
             # Request recommendations
             error_rate = request_stats.get("error_rate_percent", 0)
             if error_rate > 5:
-                recommendations.append(f"High error rate ({error_rate:.1f}%). Investigate application errors.")
+                recommendations.append(
+                    f"High error rate ({error_rate:.1f}%). Investigate application errors."
+                )
 
             avg_response_time = request_stats.get("avg_response_time_seconds", 0)
             if avg_response_time > 2.0:
-                recommendations.append(f"Slow response times ({avg_response_time:.2f}s). Consider performance optimization.")
+                recommendations.append(
+                    f"Slow response times ({avg_response_time:.2f}s). Consider performance optimization."
+                )
 
         except Exception as e:
             logger.error(f"Failed to generate recommendations: {e}")
@@ -432,7 +459,7 @@ class PerformanceMonitor:
             cpu_score = 1.0 - (system_metrics.get("cpu_percent", 0) / 100.0)
             memory_score = 1.0 - (system_metrics.get("memory_percent", 0) / 100.0)
             disk_score = 1.0 - (system_metrics.get("disk_percent", 0) / 100.0)
-            
+
             return (cpu_score + memory_score + disk_score) / 3.0
 
         except Exception:
@@ -444,9 +471,14 @@ class PerformanceMonitor:
             if not db_metrics:
                 return 0.5
 
-            slow_query_score = 1.0 - (db_metrics.get("queries", {}).get("slow_query_percentage", 0) / 100.0)
-            avg_query_score = max(0.0, 1.0 - (db_metrics.get("queries", {}).get("avg_query_time", 0) / 5.0))
-            
+            slow_query_score = 1.0 - (
+                db_metrics.get("queries", {}).get("slow_query_percentage", 0) / 100.0
+            )
+            avg_query_score = max(
+                0.0,
+                1.0 - (db_metrics.get("queries", {}).get("avg_query_time", 0) / 5.0),
+            )
+
             return (slow_query_score + avg_query_score) / 2.0
 
         except Exception:
@@ -456,8 +488,10 @@ class PerformanceMonitor:
         """Calculate application health score (0-1)."""
         try:
             error_score = 1.0 - (request_stats.get("error_rate_percent", 0) / 100.0)
-            response_score = max(0.0, 1.0 - (request_stats.get("avg_response_time_seconds", 0) / 5.0))
-            
+            response_score = max(
+                0.0, 1.0 - (request_stats.get("avg_response_time_seconds", 0) / 5.0)
+            )
+
             return (error_score + response_score) / 2.0
 
         except Exception:
@@ -479,6 +513,7 @@ def get_performance_monitor(db: Session) -> PerformanceMonitor:
 
 def monitor_performance(func):
     """Decorator to monitor function performance."""
+
     async def wrapper(*args, **kwargs):
         start_time = datetime.now()
         try:

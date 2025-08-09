@@ -6,7 +6,6 @@ This module provides user registration API endpoints.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
-from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
@@ -47,7 +46,7 @@ async def register(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Registration is disabled. Please contact the administrator.",
         )
-    
+
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:

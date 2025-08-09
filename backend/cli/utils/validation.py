@@ -1,19 +1,18 @@
 """Validation utilities for CLI commands."""
 
 import re
-from typing import Optional
 
 
 def validate_email(email: str) -> bool:
     """Validate email format."""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return bool(re.match(pattern, email))
 
 
 def validate_username(username: str) -> bool:
     """Validate username format."""
     # Username should be 3-30 characters, alphanumeric and underscores only
-    pattern = r'^[a-zA-Z0-9_]{3,30}$'
+    pattern = r"^[a-zA-Z0-9_]{3,30}$"
     return bool(re.match(pattern, username))
 
 
@@ -22,7 +21,7 @@ def validate_revision(revision: str) -> bool:
     if not revision or not isinstance(revision, str):
         return False
     # Basic validation - revision should be alphanumeric
-    return bool(re.match(r'^[a-zA-Z0-9]+$', revision))
+    return bool(re.match(r"^[a-zA-Z0-9]+$", revision))
 
 
 def validate_password(password: str) -> bool:

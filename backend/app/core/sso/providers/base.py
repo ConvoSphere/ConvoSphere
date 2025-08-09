@@ -33,59 +33,55 @@ class BaseSSOProvider(ABC):
     ) -> tuple[User, Dict[str, Any]]:
         """
         Authenticate user and return user object with additional data.
-        
+
         Args:
             credentials: Authentication credentials
             db: Database session
-            
+
         Returns:
             Tuple of (User, additional_data)
-            
+
         Raises:
             AuthenticationError: If authentication fails
         """
-        pass
 
     @abstractmethod
     async def get_user_info(self, user_id: str, db: Session) -> Dict[str, Any]:
         """
         Get user information from SSO provider.
-        
+
         Args:
             user_id: User identifier
             db: Database session
-            
+
         Returns:
             User information dictionary
         """
-        pass
 
     @abstractmethod
     async def sync_user_groups(self, user: User, db: Session) -> list[str]:
         """
         Synchronize user groups from SSO provider.
-        
+
         Args:
             user: User object
             db: Database session
-            
+
         Returns:
             List of group names
         """
-        pass
 
     @abstractmethod
     async def validate_token(self, token: str) -> Dict[str, Any]:
         """
         Validate SSO token.
-        
+
         Args:
             token: Token to validate
-            
+
         Returns:
             Token validation result
         """
-        pass
 
     def is_enabled(self) -> bool:
         """Check if provider is enabled."""

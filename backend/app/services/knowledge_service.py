@@ -232,7 +232,7 @@ class KnowledgeService:
             azure_account_name=settings.azure_account_name,
             azure_account_key=settings.azure_account_key,
             azure_connection_string=settings.azure_connection_string,
-            local_base_path=settings.upload_dir
+            local_base_path=settings.upload_dir,
         )
         self.storage_manager = StorageManager(storage_config)
 
@@ -305,7 +305,9 @@ class KnowledgeService:
                 for tag_name in tags:
                     document.add_tag(tag_name, self.db)
 
-            logger.info(f"Created document {document.id} for user {user_id} in {storage_path}")
+            logger.info(
+                f"Created document {document.id} for user {user_id} in {storage_path}"
+            )
             return document
 
         except Exception as e:
@@ -385,7 +387,9 @@ class KnowledgeService:
                 raise ValueError(f"Document {document_id} not found")
 
             # Download file content from cloud storage
-            file_content = await self.storage_manager.download_document(document.file_path)
+            file_content = await self.storage_manager.download_document(
+                document.file_path
+            )
 
             # Process document using document processor
             result = document_processor.process_document(

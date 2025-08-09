@@ -15,5 +15,5 @@ __all__ = [
     "StorageError",
     "StorageFactory",
     "StorageManager",
-    "StorageConfig"
+    "StorageConfig",
 ]

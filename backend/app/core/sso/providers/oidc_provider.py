@@ -5,14 +5,13 @@ This module provides OpenID Connect authentication and user management.
 """
 
 import logging
-from datetime import UTC, datetime
 from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
 from backend.app.core.sso.providers.oauth_provider import OAuthProvider
 from backend.app.models.domain_groups import DomainGroup
-from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
+from backend.app.models.user import User, UserRole
 from backend.app.utils.exceptions import (
     AuthenticationError,
     GroupSyncError,
@@ -31,7 +30,7 @@ class OIDCProvider(OAuthProvider):
         issuer_url = config.get("issuer_url")
         if not issuer_url:
             raise SSOConfigurationError("OIDC issuer URL is required")
-            
+
         oidc_config = {
             "client_id": config.get("client_id"),
             "client_secret": config.get("client_secret"),
@@ -49,7 +48,7 @@ class OIDCProvider(OAuthProvider):
             "default_role": config.get("default_role", UserRole.USER),
             "role_mapping": config.get("role_mapping", {}),
         }
-        
+
         super().__init__(oidc_config)
         self.name = "OIDC"
         self.provider_type = "oidc"
@@ -64,14 +63,14 @@ class OIDCProvider(OAuthProvider):
         try:
             # Use parent OAuth authentication
             user, additional_data = await super().authenticate(credentials, db)
-            
+
             # Add OIDC-specific data
             additional_data["provider"] = "oidc"
             additional_data["oidc_sub"] = additional_data.get("oauth_user_id")
             additional_data["issuer_url"] = self.issuer_url
-            
+
             return user, additional_data
-            
+
         except Exception as e:
             logger.exception(f"OIDC authentication failed: {str(e)}")
             raise AuthenticationError(f"OIDC authentication failed: {str(e)}")
@@ -93,12 +92,14 @@ class OIDCProvider(OAuthProvider):
                     "full_name": user.full_name,
                     "provider": "oidc",
                     "issuer_url": self.issuer_url,
-                    "last_sync": user.last_login.isoformat() if user.last_login else None,
+                    "last_sync": user.last_login.isoformat()
+                    if user.last_login
+                    else None,
                 }
             except Exception as e:
                 logger.exception(f"Failed to get OIDC user info: {str(e)}")
                 return {"error": str(e)}
-                
+
         except Exception as e:
             logger.exception(f"Failed to get OIDC user info: {str(e)}")
             return {"error": str(e)}
@@ -110,7 +111,7 @@ class OIDCProvider(OAuthProvider):
             # For now, return empty list
             logger.info(f"Group sync not implemented for OIDC user {user.id}")
             return []
-            
+
         except Exception as e:
             logger.exception(f"Failed to sync OIDC groups: {str(e)}")
             raise GroupSyncError(f"OIDC group sync failed: {str(e)}")

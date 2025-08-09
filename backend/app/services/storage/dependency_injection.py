@@ -22,6 +22,7 @@ from .manager import StorageManager
 @dataclass
 class ServiceDefinition:
     """Service definition for dependency injection."""
+
     service_type: type
     factory: Callable
     singleton: bool = True
@@ -43,10 +44,7 @@ class StorageContainer:
         """Register default storage services."""
         # Storage Factory
         self.register_service(
-            "storage_factory",
-            StorageFactory,
-            lambda: StorageFactory(),
-            singleton=True
+            "storage_factory", StorageFactory, lambda: StorageFactory(), singleton=True
         )
 
         # Connection Pool
@@ -54,7 +52,7 @@ class StorageContainer:
             "connection_pool",
             StorageConnectionPool,
             lambda: StorageConnectionPool(),
-            singleton=True
+            singleton=True,
         )
 
         # Batch Manager
@@ -62,21 +60,15 @@ class StorageContainer:
             "batch_manager",
             StorageBatchManager,
             lambda: StorageBatchManager(),
-            singleton=True
+            singleton=True,
         )
 
     def register_service(
-        self,
-        name: str,
-        service_type: type,
-        factory: Callable,
-        singleton: bool = True
+        self, name: str, service_type: type, factory: Callable, singleton: bool = True
     ):
         """Register a service in the container."""
         self._services[name] = ServiceDefinition(
-            service_type=service_type,
-            factory=factory,
-            singleton=singleton
+            service_type=service_type, factory=factory, singleton=singleton
         )
         logger.debug(f"Registered service: {name}")
 
@@ -162,7 +154,9 @@ class StorageServiceLocator:
         """Set default storage configuration."""
         self._default_config = config
 
-    def get_storage_manager(self, config: StorageConfig | None = None) -> StorageManager:
+    def get_storage_manager(
+        self, config: StorageConfig | None = None
+    ) -> StorageManager:
         """Get storage manager instance."""
         if config is None:
             if self._default_config is None:
@@ -171,7 +165,9 @@ class StorageServiceLocator:
 
         return self._container.create_storage_manager(config)
 
-    def get_storage_provider(self, config: StorageConfig | None = None) -> StorageProvider:
+    def get_storage_provider(
+        self, config: StorageConfig | None = None
+    ) -> StorageProvider:
         """Get storage provider instance."""
         if config is None:
             if self._default_config is None:

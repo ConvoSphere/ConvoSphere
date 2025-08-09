@@ -171,7 +171,9 @@ class MonitoringConfig:
     slow_query_threshold_seconds: float = 1.0
     slow_request_threshold_seconds: float = 5.0
     export_formats: list[str] = field(default_factory=lambda: ["json", "prometheus"])
-    alert_channels: list[AlertChannel] = field(default_factory=lambda: [AlertChannel.LOG])
+    alert_channels: list[AlertChannel] = field(
+        default_factory=lambda: [AlertChannel.LOG]
+    )
 
 
 @dataclass

@@ -356,31 +356,41 @@ class ExampleMCPServer:
 
             try:
                 # Safe mathematical expression evaluation
-                import re
                 import operator
-                from typing import Dict, Callable
+                import re
+                from typing import Callable, Dict
 
                 # Define safe operations
                 safe_operators: Dict[str, Callable] = {
-                    '+': operator.add,
-                    '-': operator.sub,
-                    '*': operator.mul,
-                    '/': operator.truediv,
-                    '**': operator.pow,
-                    '//': operator.floordiv,
-                    '%': operator.mod,
+                    "+": operator.add,
+                    "-": operator.sub,
+                    "*": operator.mul,
+                    "/": operator.truediv,
+                    "**": operator.pow,
+                    "//": operator.floordiv,
+                    "%": operator.mod,
                 }
 
                 # Validate expression contains only safe characters
-                if not re.match(r'^[\d\s\+\-\*\/\*\*\/\/\%\(\)\.]+$', expression):
+                if not re.match(r"^[\d\s\+\-\*\/\*\*\/\/\%\(\)\.]+$", expression):
                     return "Calculation error: Invalid characters in expression"
 
                 # Additional safety check - no function calls or imports
                 dangerous_patterns = [
-                    'import', 'exec', 'eval', '__', 'open', 'file', 'system',
-                    'subprocess', 'os.', 'sys.', 'globals', 'locals'
+                    "import",
+                    "exec",
+                    "eval",
+                    "__",
+                    "open",
+                    "file",
+                    "system",
+                    "subprocess",
+                    "os.",
+                    "sys.",
+                    "globals",
+                    "locals",
                 ]
-                
+
                 for pattern in dangerous_patterns:
                     if pattern in expression.lower():
                         return "Calculation error: Invalid expression"
@@ -393,7 +403,7 @@ class ExampleMCPServer:
                     return f"Result: {result}"
                 except (NameError, SyntaxError, ZeroDivisionError) as e:
                     return f"Calculation error: {str(e)}"
-                    
+
             except Exception as e:
                 return f"Calculation error: {str(e)}"
 
@@ -445,7 +455,9 @@ class ExampleMCPServer:
 
         return web.json_response(response)
 
-    async def health_check(self, _request: web.Request) -> web.Response:  # Unused parameter, marked with underscore
+    async def health_check(
+        self, _request: web.Request
+    ) -> web.Response:  # Unused parameter, marked with underscore
         """Health check endpoint."""
         return web.json_response(
             {

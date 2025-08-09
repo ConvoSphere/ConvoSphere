@@ -1,11 +1,10 @@
 """Security utilities for the AI Assistant Platform."""
 
 import html
-import re
 import logging
+import re
 import secrets
 import string
-from typing import Any
 
 from fastapi import HTTPException, Request, status
 

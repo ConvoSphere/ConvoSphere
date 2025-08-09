@@ -5,18 +5,15 @@ This module provides Google OAuth2 authentication and user management.
 """
 
 import logging
-from datetime import UTC, datetime
 from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
 from backend.app.core.sso.providers.oauth_provider import OAuthProvider
 from backend.app.models.domain_groups import DomainGroup
-from backend.app.models.user import AuthProvider, User, UserRole, UserStatus
+from backend.app.models.user import User, UserRole
 from backend.app.utils.exceptions import (
     AuthenticationError,
-    GroupSyncError,
-    SSOConfigurationError,
     UserNotFoundError,
 )
 
@@ -45,7 +42,7 @@ class GoogleOAuthProvider(OAuthProvider):
             "default_role": config.get("default_role", UserRole.USER),
             "role_mapping": config.get("role_mapping", {}),
         }
-        
+
         super().__init__(google_config)
         self.name = "Google"
         self.provider_type = "google"
@@ -59,13 +56,13 @@ class GoogleOAuthProvider(OAuthProvider):
         try:
             # Use parent OAuth authentication
             user, additional_data = await super().authenticate(credentials, db)
-            
+
             # Add Google-specific data
             additional_data["provider"] = "google"
             additional_data["google_id"] = additional_data.get("oauth_user_id")
-            
+
             return user, additional_data
-            
+
         except Exception as e:
             logger.exception(f"Google OAuth authentication failed: {str(e)}")
             raise AuthenticationError(f"Google OAuth authentication failed: {str(e)}")
@@ -86,12 +83,14 @@ class GoogleOAuthProvider(OAuthProvider):
                     "email": user.email,
                     "full_name": user.full_name,
                     "provider": "google",
-                    "last_sync": user.last_login.isoformat() if user.last_login else None,
+                    "last_sync": user.last_login.isoformat()
+                    if user.last_login
+                    else None,
                 }
             except Exception as e:
                 logger.exception(f"Failed to get Google user info: {str(e)}")
                 return {"error": str(e)}
-                
+
         except Exception as e:
             logger.exception(f"Failed to get Google user info: {str(e)}")
             return {"error": str(e)}

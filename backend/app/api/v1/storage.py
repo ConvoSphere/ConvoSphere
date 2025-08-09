@@ -39,7 +39,7 @@ def get_storage_manager() -> StorageManager:
         azure_account_name=settings.azure_account_name,
         azure_account_key=settings.azure_account_key,
         azure_connection_string=settings.azure_connection_string,
-        local_base_path=settings.upload_dir
+        local_base_path=settings.upload_dir,
     )
     return StorageManager(storage_config)
 
@@ -47,7 +47,7 @@ def get_storage_manager() -> StorageManager:
 @router.get("/health")
 async def get_storage_health(
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Get storage health status.
@@ -60,20 +60,22 @@ async def get_storage_health(
         return {
             "healthy": is_healthy,
             "provider": storage_manager.get_provider_name(),
-            "message": "Storage is healthy" if is_healthy else "Storage health check failed"
+            "message": "Storage is healthy"
+            if is_healthy
+            else "Storage health check failed",
         }
     except Exception as e:
         logger.error(f"Storage health check failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Storage health check failed: {str(e)}"
+            detail=f"Storage health check failed: {str(e)}",
         )
 
 
 @router.get("/info")
 async def get_storage_info(
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Get storage information and statistics.
@@ -85,24 +87,18 @@ async def get_storage_info(
         info = await storage_manager.get_storage_info()
         metrics = await storage_manager.get_performance_metrics()
 
-        return {
-            "success": True,
-            "data": {
-                **info,
-                "performance_metrics": metrics
-            }
-        }
+        return {"success": True, "data": {**info, "performance_metrics": metrics}}
     except Exception as e:
         logger.error(f"Failed to get storage info: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get storage info: {str(e)}"
+            detail=f"Failed to get storage info: {str(e)}",
         )
 
 
 @router.get("/providers")
 async def get_available_providers(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
     Get list of available storage providers.
@@ -115,20 +111,19 @@ async def get_available_providers(
         return {
             "success": True,
             "providers": providers,
-            "current_provider": get_settings().storage_provider
+            "current_provider": get_settings().storage_provider,
         }
     except Exception as e:
         logger.error(f"Failed to get available providers: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get available providers: {str(e)}"
+            detail=f"Failed to get available providers: {str(e)}",
         )
 
 
 @router.post("/test")
 async def test_storage_config(
-    config: dict[str, Any],
-    current_user: User = Depends(get_current_user)
+    config: dict[str, Any], current_user: User = Depends(get_current_user)
 ) -> dict[str, Any]:
     """
     Test storage configuration.
@@ -146,20 +141,18 @@ async def test_storage_config(
         return {
             "success": True,
             "valid": is_valid,
-            "message": "Configuration is valid" if is_valid else "Configuration test failed"
+            "message": "Configuration is valid"
+            if is_valid
+            else "Configuration test failed",
         }
     except Exception as e:
         logger.error(f"Storage configuration test failed: {e}")
-        return {
-            "success": False,
-            "valid": False,
-            "error": str(e)
-        }
+        return {"success": False, "valid": False, "error": str(e)}
 
 
 @router.get("/config")
 async def get_storage_config(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
     Get current storage configuration.
@@ -179,15 +172,12 @@ async def get_storage_config(
             "azure_account_name": settings.azure_account_name,
         }
 
-        return {
-            "success": True,
-            "config": config
-        }
+        return {"success": True, "config": config}
     except Exception as e:
         logger.error(f"Failed to get storage config: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get storage config: {str(e)}"
+            detail=f"Failed to get storage config: {str(e)}",
         )
 
 
@@ -196,7 +186,7 @@ async def migrate_storage(
     source_config: dict[str, Any],
     target_config: dict[str, Any],
     document_paths: list[str],
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
     Migrate documents between storage providers.
@@ -221,15 +211,12 @@ async def migrate_storage(
             source_storage_config, target_storage_config, document_paths
         )
 
-        return {
-            "success": True,
-            "migration_results": results
-        }
+        return {"success": True, "migration_results": results}
     except Exception as e:
         logger.error(f"Storage migration failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Storage migration failed: {str(e)}"
+            detail=f"Storage migration failed: {str(e)}",
         )
 
 
@@ -237,7 +224,7 @@ async def migrate_storage(
 async def cleanup_orphaned_files(
     valid_storage_paths: list[str],
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Clean up orphaned files in storage.
@@ -251,15 +238,12 @@ async def cleanup_orphaned_files(
     try:
         results = await storage_manager.cleanup_orphaned_files(valid_storage_paths)
 
-        return {
-            "success": True,
-            "cleanup_results": results
-        }
+        return {"success": True, "cleanup_results": results}
     except Exception as e:
         logger.error(f"Storage cleanup failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Storage cleanup failed: {str(e)}"
+            detail=f"Storage cleanup failed: {str(e)}",
         )
 
 
@@ -267,7 +251,7 @@ async def cleanup_orphaned_files(
 async def batch_upload_documents(
     documents: List[dict[str, Any]],
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Upload multiple documents in batch.
@@ -285,20 +269,22 @@ async def batch_upload_documents(
             "success": True,
             "results": results,
             "total_documents": len(documents),
-            "successful_uploads": len([r for r in results if r.get("result", {}).get("status") == "uploaded"])
+            "successful_uploads": len(
+                [r for r in results if r.get("result", {}).get("status") == "uploaded"]
+            ),
         }
     except Exception as e:
         logger.error(f"Batch upload failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Batch upload failed: {str(e)}"
+            detail=f"Batch upload failed: {str(e)}",
         )
 
 
 @router.get("/performance")
 async def get_performance_metrics(
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Get detailed performance metrics.
@@ -309,15 +295,12 @@ async def get_performance_metrics(
     try:
         metrics = await storage_manager.get_performance_metrics()
 
-        return {
-            "success": True,
-            "metrics": metrics
-        }
+        return {"success": True, "metrics": metrics}
     except Exception as e:
         logger.error(f"Failed to get performance metrics: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get performance metrics: {str(e)}"
+            detail=f"Failed to get performance metrics: {str(e)}",
         )
 
 
@@ -326,7 +309,7 @@ async def get_document_url(
     document_id: str,
     expires_in: int = 3600,
     current_user: User = Depends(get_current_user),
-    storage_manager: StorageManager = Depends(get_storage_manager)
+    storage_manager: StorageManager = Depends(get_storage_manager),
 ) -> dict[str, Any]:
     """
     Get presigned URL for document access.
@@ -345,11 +328,11 @@ async def get_document_url(
             "success": True,
             "message": "Document URL generation not implemented yet",
             "document_id": document_id,
-            "expires_in": expires_in
+            "expires_in": expires_in,
         }
     except Exception as e:
         logger.error(f"Failed to generate document URL: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate document URL: {str(e)}"
+            detail=f"Failed to generate document URL: {str(e)}",
         )

@@ -4,7 +4,7 @@ SSO Provider endpoints.
 This module provides SSO provider information and metadata endpoints.
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from loguru import logger
 
 from backend.app.core.config import get_settings
@@ -83,10 +83,10 @@ async def get_saml_metadata():
     """Get SAML metadata for the service provider."""
     try:
         from backend.app.services.saml_service import saml_service
-        
+
         metadata = saml_service.get_metadata()
         return metadata
-        
+
     except Exception as e:
         logger.error(f"Failed to get SAML metadata: {e}")
         return {"error": "SAML metadata not available"}

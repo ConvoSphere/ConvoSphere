@@ -4,8 +4,9 @@ API tools for the AI Assistant Platform.
 This module provides tools for making HTTP requests.
 """
 
-import requests
 from typing import Any
+
+import requests
 
 from .base import BaseTool
 

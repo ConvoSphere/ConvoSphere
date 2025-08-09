@@ -56,11 +56,11 @@ def parse_datetime(
     try:
         # Parse the datetime string
         dt = datetime.strptime(date_string, format_str)
-        
+
         # If the datetime is naive (no timezone info), assume UTC
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=UTC)
-        
+
         return dt
     except ValueError:
         return None

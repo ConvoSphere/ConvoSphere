@@ -15,6 +15,7 @@ from loguru import logger
 try:
     from minio import Minio
     from minio.error import S3Error
+
     MINIO_AVAILABLE = True
 except ImportError:
     MINIO_AVAILABLE = False
@@ -34,7 +35,7 @@ class MinIOStorageProvider(StorageProvider):
             raise StorageError(
                 "MinIO client not available. Install with: pip install minio",
                 provider="minio",
-                operation="init"
+                operation="init",
             )
 
         # Parse endpoint
@@ -48,13 +49,15 @@ class MinIOStorageProvider(StorageProvider):
             access_key=config.minio_access_key or "minioadmin",
             secret_key=config.minio_secret_key or "minioadmin",
             secure=config.minio_secure,
-            region=config.s3_region
+            region=config.s3_region,
         )
 
         self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()
 
-        logger.info(f"Initialized MinIO storage provider for bucket: {self.bucket_name}")
+        logger.info(
+            f"Initialized MinIO storage provider for bucket: {self.bucket_name}"
+        )
 
     def _ensure_bucket_exists(self):
         """Ensure bucket exists, create if it doesn't."""
@@ -66,10 +69,12 @@ class MinIOStorageProvider(StorageProvider):
             raise StorageError(
                 f"Failed to ensure bucket exists: {str(e)}",
                 provider="minio",
-                operation="init"
+                operation="init",
             )
 
-    async def upload_file(self, file_path: str, content: bytes, metadata: dict[str, Any] = None) -> str:
+    async def upload_file(
+        self, file_path: str, content: bytes, metadata: dict[str, Any] = None
+    ) -> str:
         """Upload file to MinIO."""
         try:
             # Convert metadata to MinIO format
@@ -90,7 +95,7 @@ class MinIOStorageProvider(StorageProvider):
                 object_name=file_path,
                 data=content_stream,
                 length=len(content),
-                metadata=minio_metadata
+                metadata=minio_metadata,
             )
 
             storage_path = f"minio://{self.bucket_name}/{file_path}"
@@ -100,15 +105,13 @@ class MinIOStorageProvider(StorageProvider):
 
         except S3Error as e:
             raise StorageError(
-                f"MinIO upload failed: {str(e)}",
-                provider="minio",
-                operation="upload"
+                f"MinIO upload failed: {str(e)}", provider="minio", operation="upload"
             )
         except Exception as e:
             raise StorageError(
                 f"Unexpected error during MinIO upload: {str(e)}",
                 provider="minio",
-                operation="upload"
+                operation="upload",
             )
 
     async def download_file(self, storage_path: str) -> bytes:
@@ -132,18 +135,18 @@ class MinIOStorageProvider(StorageProvider):
                 raise StorageError(
                     f"File not found: {object_name}",
                     provider="minio",
-                    operation="download"
+                    operation="download",
                 )
             raise StorageError(
                 f"MinIO download failed: {str(e)}",
                 provider="minio",
-                operation="download"
+                operation="download",
             )
         except Exception as e:
             raise StorageError(
                 f"Unexpected error during MinIO download: {str(e)}",
                 provider="minio",
-                operation="download"
+                operation="download",
             )
 
     async def delete_file(self, storage_path: str) -> bool:
@@ -193,15 +196,14 @@ class MinIOStorageProvider(StorageProvider):
             return self.client.presigned_get_object(
                 bucket_name=self.bucket_name,
                 object_name=object_name,
-                expires=timedelta(seconds=expires_in)
+                expires=timedelta(seconds=expires_in),
             )
-
 
         except S3Error as e:
             raise StorageError(
                 f"Failed to generate presigned URL: {str(e)}",
                 provider="minio",
-                operation="get_url"
+                operation="get_url",
             )
 
     async def get_file_metadata(self, storage_path: str) -> dict[str, Any]:
@@ -220,7 +222,7 @@ class MinIOStorageProvider(StorageProvider):
                 "provider": "minio",
                 "storage_path": storage_path,
                 "bucket": self.bucket_name,
-                "object_name": object_name
+                "object_name": object_name,
             }
 
             # Add custom metadata
@@ -229,7 +231,9 @@ class MinIOStorageProvider(StorageProvider):
                     if key.startswith("x-amz-meta-"):
                         # Parse JSON metadata
                         try:
-                            metadata[key[11:]] = json.loads(value)  # Remove 'x-amz-meta-' prefix
+                            metadata[key[11:]] = json.loads(
+                                value
+                            )  # Remove 'x-amz-meta-' prefix
                         except json.JSONDecodeError:
                             metadata[key[11:]] = value
                     else:
@@ -242,12 +246,12 @@ class MinIOStorageProvider(StorageProvider):
                 raise StorageError(
                     f"File not found: {object_name}",
                     provider="minio",
-                    operation="get_metadata"
+                    operation="get_metadata",
                 )
             raise StorageError(
                 f"Failed to get MinIO metadata: {str(e)}",
                 provider="minio",
-                operation="get_metadata"
+                operation="get_metadata",
             )
 
     async def _perform_health_check(self) -> bool:
@@ -290,23 +294,23 @@ class MinIOStorageProvider(StorageProvider):
                 "endpoint": self.client._endpoint_url,
                 "total_files": file_count,
                 "total_size_bytes": total_size,
-                "bucket_exists": self.client.bucket_exists(self.bucket_name)
+                "bucket_exists": self.client.bucket_exists(self.bucket_name),
             }
         except Exception as e:
             logger.error(f"Failed to get MinIO storage info: {e}")
             return {
                 "provider": "minio",
                 "bucket_name": self.bucket_name,
-                "error": str(e)
+                "error": str(e),
             }
 
-    async def list_files(self, prefix: str = "", max_keys: int = 1000) -> list[dict[str, Any]]:
+    async def list_files(
+        self, prefix: str = "", max_keys: int = 1000
+    ) -> list[dict[str, Any]]:
         """List files in MinIO bucket."""
         try:
             objects = self.client.list_objects(
-                bucket_name=self.bucket_name,
-                prefix=prefix,
-                recursive=True
+                bucket_name=self.bucket_name, prefix=prefix, recursive=True
             )
 
             files = []
@@ -314,12 +318,14 @@ class MinIOStorageProvider(StorageProvider):
                 if len(files) >= max_keys:
                     break
 
-                files.append({
-                    "name": obj.object_name,
-                    "size": obj.size,
-                    "modified": obj.last_modified.isoformat(),
-                    "etag": obj.etag
-                })
+                files.append(
+                    {
+                        "name": obj.object_name,
+                        "size": obj.size,
+                        "modified": obj.last_modified.isoformat(),
+                        "etag": obj.etag,
+                    }
+                )
 
             return files
 

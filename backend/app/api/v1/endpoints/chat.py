@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
+from backend.app.core.rate_limiting import rate_limit_chat
 from backend.app.core.security import get_current_user_id
 from backend.app.core.validation import (
     SecureChatMessageRequest,
@@ -23,7 +24,6 @@ from backend.app.core.validation import (
 from backend.app.schemas.hybrid_mode import ConversationMode
 from backend.app.services.assistant_engine import assistant_engine
 from backend.app.services.conversation_service import conversation_service
-from backend.app.core.rate_limiting import rate_limit_chat
 
 router = APIRouter()
 

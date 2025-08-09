@@ -22,6 +22,7 @@ from .base import StorageError
 @dataclass
 class ConnectionMetrics:
     """Connection performance metrics."""
+
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
@@ -40,7 +41,7 @@ class ConnectionPool:
         max_idle_time: int = 300,  # 5 minutes
         connection_timeout: int = 30,
         retry_attempts: int = 3,
-        retry_delay: float = 1.0
+        retry_delay: float = 1.0,
     ):
         self.max_connections = max_connections
         self.max_idle_time = max_idle_time
@@ -78,8 +79,11 @@ class ConnectionPool:
 
             for conn_id in self._connections:
                 metrics = self._metrics[conn_id]
-                if (metrics.last_used and
-                    (current_time - metrics.last_used).total_seconds() > self.max_idle_time):
+                if (
+                    metrics.last_used
+                    and (current_time - metrics.last_used).total_seconds()
+                    > self.max_idle_time
+                ):
                     idle_connections.append(conn_id)
 
             for conn_id in idle_connections:
@@ -117,7 +121,7 @@ class ConnectionPool:
                 # Remove oldest connection
                 oldest_conn_id = min(
                     self._connections.keys(),
-                    key=lambda x: self._metrics[x].last_used or datetime.min
+                    key=lambda x: self._metrics[x].last_used or datetime.min,
                 )
                 await self._close_connection(oldest_conn_id)
 
@@ -145,12 +149,7 @@ class ConnectionPool:
             return False
 
     async def execute_with_retry(
-        self,
-        conn_id: str,
-        factory: Callable,
-        operation: Callable,
-        *args,
-        **kwargs
+        self, conn_id: str, factory: Callable, operation: Callable, *args, **kwargs
     ) -> Any:
         """Execute operation with connection pooling and retry logic."""
         start_time = time.time()
@@ -170,7 +169,9 @@ class ConnectionPool:
                 metrics.total_requests += 1
                 metrics.successful_requests += 1
                 metrics.total_response_time += response_time
-                metrics.average_response_time = metrics.total_response_time / metrics.total_requests
+                metrics.average_response_time = (
+                    metrics.total_response_time / metrics.total_requests
+                )
                 metrics.last_used = datetime.utcnow()
 
                 return result
@@ -186,8 +187,12 @@ class ConnectionPool:
                     await self._close_connection(conn_id)
 
                 if attempt < self.retry_attempts - 1:
-                    await asyncio.sleep(self.retry_delay * (2 ** attempt))  # Exponential backoff
-                    logger.warning(f"Retry {attempt + 1}/{self.retry_attempts} for {conn_id}: {e}")
+                    await asyncio.sleep(
+                        self.retry_delay * (2**attempt)
+                    )  # Exponential backoff
+                    logger.warning(
+                        f"Retry {attempt + 1}/{self.retry_attempts} for {conn_id}: {e}"
+                    )
 
         # All retries failed
         logger.error(f"All retries failed for {conn_id}: {last_exception}")
@@ -214,7 +219,7 @@ class ConnectionPool:
             "total_connections": len(self._connections),
             "max_connections": self.max_connections,
             "available_connections": self.max_connections - len(self._connections),
-            "metrics": self.get_metrics()
+            "metrics": self.get_metrics(),
         }
 
 
@@ -228,10 +233,12 @@ class StorageConnectionPool:
             "max_idle_time": 300,
             "connection_timeout": 30,
             "retry_attempts": 3,
-            "retry_delay": 1.0
+            "retry_delay": 1.0,
         }
 
-    def get_pool(self, provider_name: str, config: dict[str, Any] = None) -> ConnectionPool:
+    def get_pool(
+        self, provider_name: str, config: dict[str, Any] = None
+    ) -> ConnectionPool:
         """Get or create connection pool for provider."""
         if provider_name not in self._pools:
             pool_config = {**self._default_config, **(config or {})}
@@ -248,8 +255,7 @@ class StorageConnectionPool:
     def get_all_metrics(self) -> dict[str, dict[str, Any]]:
         """Get metrics from all pools."""
         return {
-            provider: pool.get_pool_status()
-            for provider, pool in self._pools.items()
+            provider: pool.get_pool_status() for provider, pool in self._pools.items()
         }
 
 

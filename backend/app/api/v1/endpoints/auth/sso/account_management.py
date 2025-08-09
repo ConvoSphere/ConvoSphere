@@ -5,13 +5,13 @@ This module provides SSO account linking, unlinking, and provisioning functional
 """
 
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.core.dependencies import require_admin_role
-from backend.app.core.security_hardening import get_client_ip
 from backend.app.models.user import User
 
 router = APIRouter()
@@ -26,8 +26,10 @@ async def sso_link(
 ):
     """Link SSO account to existing user."""
     try:
-        from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
-        
+        from backend.app.services.advanced_user_provisioning import (
+            advanced_user_provisioning,
+        )
+
         # Get user from database
         user = db.query(User).filter(User.id == current_user_id).first()
         if not user:
@@ -44,7 +46,9 @@ async def sso_link(
             db=db,
         )
 
-        logger.info(f"SSO account linked for user {current_user_id} with provider {provider}")
+        logger.info(
+            f"SSO account linked for user {current_user_id} with provider {provider}"
+        )
         return result
 
     except Exception as e:
@@ -64,8 +68,10 @@ async def sso_unlink(
 ):
     """Unlink SSO account from user."""
     try:
-        from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
-        
+        from backend.app.services.advanced_user_provisioning import (
+            advanced_user_provisioning,
+        )
+
         # Get user from database
         user = db.query(User).filter(User.id == current_user_id).first()
         if not user:
@@ -82,7 +88,9 @@ async def sso_unlink(
             db=db,
         )
 
-        logger.info(f"SSO account unlinked for user {current_user_id} with provider {provider}")
+        logger.info(
+            f"SSO account unlinked for user {current_user_id} with provider {provider}"
+        )
         return result
 
     except Exception as e:
@@ -101,8 +109,10 @@ async def get_user_provisioning_status(
 ):
     """Get user provisioning status for SSO providers."""
     try:
-        from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
-        
+        from backend.app.services.advanced_user_provisioning import (
+            advanced_user_provisioning,
+        )
+
         # Get user from database
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -138,8 +148,10 @@ async def bulk_sync_users(
 ):
     """Bulk sync users from SSO provider."""
     try:
-        from backend.app.services.advanced_user_provisioning import advanced_user_provisioning
-        
+        from backend.app.services.advanced_user_provisioning import (
+            advanced_user_provisioning,
+        )
+
         # Validate user list
         if not user_list:
             raise HTTPException(
@@ -155,7 +167,9 @@ async def bulk_sync_users(
             db=db,
         )
 
-        logger.info(f"Bulk sync completed for provider {provider} with {len(user_list)} users")
+        logger.info(
+            f"Bulk sync completed for provider {provider} with {len(user_list)} users"
+        )
         return result
 
     except Exception as e:

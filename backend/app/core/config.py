@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings
 
 class DatabaseSettings(BaseSettings):
     """Database configuration settings."""
-    
+
     database_url: str = Field(default="sqlite:///./test.db", description="Database URL")
     database_pool_size: int = Field(default=20, description="Database pool size")
     database_max_overflow: int = Field(default=30, description="Database max overflow")
@@ -19,14 +19,14 @@ class DatabaseSettings(BaseSettings):
 
 class RedisSettings(BaseSettings):
     """Redis configuration settings."""
-    
+
     redis_url: str = Field(default="redis://localhost:6379", description="Redis URL")
     redis_db: int = Field(default=0, description="Redis database")
 
 
 class SecuritySettings(BaseSettings):
     """Security configuration settings."""
-    
+
     secret_key: str = Field(
         default="dev-secret-key-for-development-only-change-in-production",
         description="Secret key - must be set in production",
@@ -40,7 +40,7 @@ class SecuritySettings(BaseSettings):
         default=7,
         description="JWT refresh token expire days",
     )
-    
+
     @field_validator("secret_key")
     @classmethod
     def validate_secret_key(cls, v):
@@ -73,11 +73,11 @@ class SecuritySettings(BaseSettings):
 
 class AISettings(BaseSettings):
     """AI service configuration settings."""
-    
+
     openai_api_key: str | None = Field(default=None, description="OpenAI API key")
     anthropic_api_key: str | None = Field(default=None, description="Anthropic API key")
     google_api_key: str | None = Field(default=None, description="Google API key")
-    
+
     # LiteLLM Configuration
     litellm_model: str = Field(default="gpt-4", description="LiteLLM model")
     litellm_max_tokens: int = Field(default=4096, description="LiteLLM max tokens")
@@ -86,7 +86,7 @@ class AISettings(BaseSettings):
         default=None,
         description="LiteLLM proxy host",
     )
-    
+
     @field_validator("litellm_temperature")
     @classmethod
     def validate_temperature(cls, v):
@@ -98,7 +98,7 @@ class AISettings(BaseSettings):
 
 class WeaviateSettings(BaseSettings):
     """Weaviate configuration settings."""
-    
+
     weaviate_url: str = Field(
         default="http://localhost:8080",
         description="Weaviate URL",
@@ -108,7 +108,7 @@ class WeaviateSettings(BaseSettings):
 
 class KnowledgeBaseSettings(BaseSettings):
     """Knowledge base configuration settings."""
-    
+
     default_embedding_model: str = Field(
         default="text-embedding-ada-002",
         description="Default embedding model",
@@ -117,7 +117,7 @@ class KnowledgeBaseSettings(BaseSettings):
     default_chunk_overlap: int = Field(default=50, description="Default chunk overlap")
     max_chunk_size: int = Field(default=2000, description="Max chunk size")
     min_chunk_size: int = Field(default=100, description="Min chunk size")
-    
+
     # Document Processing
     chunk_size: int = Field(default=500, description="Chunk size")
     chunk_overlap: int = Field(default=50, description="Chunk overlap")
@@ -141,39 +141,57 @@ class KnowledgeBaseSettings(BaseSettings):
 
 class StorageSettings(BaseSettings):
     """Storage configuration settings."""
-    
+
     upload_dir: str = Field(default="./uploads", description="Upload directory")
     backup_dir: str = Field(default="./backups", description="Backup directory")
-    
+
     # Storage Configuration
-    storage_provider: str = Field(default="local", description="Storage provider (local, minio, s3, gcs, azure)")
-    storage_bucket_name: str = Field(default="knowledge-base", description="Storage bucket/container name")
-    
+    storage_provider: str = Field(
+        default="local", description="Storage provider (local, minio, s3, gcs, azure)"
+    )
+    storage_bucket_name: str = Field(
+        default="knowledge-base", description="Storage bucket/container name"
+    )
+
     # MinIO Configuration (default cloud storage)
     minio_endpoint: str = Field(default="localhost:9000", description="MinIO endpoint")
     minio_access_key: str = Field(default="minioadmin", description="MinIO access key")
     minio_secret_key: str = Field(default="minioadmin", description="MinIO secret key")
-    minio_secure: bool = Field(default=False, description="Use secure connection for MinIO")
-    
+    minio_secure: bool = Field(
+        default=False, description="Use secure connection for MinIO"
+    )
+
     # S3 Configuration
     s3_endpoint_url: str | None = Field(default=None, description="S3 endpoint URL")
     s3_access_key_id: str | None = Field(default=None, description="S3 access key ID")
-    s3_secret_access_key: str | None = Field(default=None, description="S3 secret access key")
+    s3_secret_access_key: str | None = Field(
+        default=None, description="S3 secret access key"
+    )
     s3_region: str | None = Field(default=None, description="S3 region")
-    
+
     # GCS Configuration
-    gcs_project_id: str | None = Field(default=None, description="Google Cloud project ID")
-    gcs_credentials_file: str | None = Field(default=None, description="GCS credentials file path")
-    
+    gcs_project_id: str | None = Field(
+        default=None, description="Google Cloud project ID"
+    )
+    gcs_credentials_file: str | None = Field(
+        default=None, description="GCS credentials file path"
+    )
+
     # Azure Configuration
-    azure_account_name: str | None = Field(default=None, description="Azure storage account name")
-    azure_account_key: str | None = Field(default=None, description="Azure storage account key")
-    azure_connection_string: str | None = Field(default=None, description="Azure connection string")
+    azure_account_name: str | None = Field(
+        default=None, description="Azure storage account name"
+    )
+    azure_account_key: str | None = Field(
+        default=None, description="Azure storage account key"
+    )
+    azure_connection_string: str | None = Field(
+        default=None, description="Azure connection string"
+    )
 
 
 class CORSSettings(BaseSettings):
     """CORS configuration settings."""
-    
+
     cors_origins: str = Field(
         default="http://localhost:5173,http://localhost:3000,http://localhost:8081",
         description="Comma-separated list of allowed CORS origins - restrict in production",
@@ -198,7 +216,7 @@ class CORSSettings(BaseSettings):
 
 class SSOSettings(BaseSettings):
     """SSO configuration settings."""
-    
+
     # Google OAuth2
     sso_google_enabled: bool = Field(default=False, description="Enable Google SSO")
     sso_google_client_id: str | None = Field(
@@ -290,7 +308,7 @@ class SSOSettings(BaseSettings):
 
 class EmailSettings(BaseSettings):
     """Email configuration settings."""
-    
+
     smtp_host: str | None = Field(default=None, description="SMTP host")
     smtp_port: int = Field(default=587, description="SMTP port")
     smtp_user: str | None = Field(default=None, description="SMTP user")
@@ -302,7 +320,7 @@ class EmailSettings(BaseSettings):
 
 class SecurityFeatureSettings(BaseSettings):
     """Security feature configuration settings."""
-    
+
     # Password Reset Configuration
     password_reset_token_expire_minutes: int = Field(
         default=60, description="Password reset token expiration time in minutes"
@@ -333,7 +351,7 @@ class SecurityFeatureSettings(BaseSettings):
 
 class MonitoringSettings(BaseSettings):
     """Monitoring and performance configuration settings."""
-    
+
     performance_monitoring_enabled: bool = Field(
         default=True,
         json_schema_extra={"env": "PERFORMANCE_MONITORING_ENABLED"},
@@ -428,7 +446,9 @@ class Settings(BaseSettings):
     cors: CORSSettings = Field(default_factory=CORSSettings)
     sso: SSOSettings = Field(default_factory=SSOSettings)
     email: EmailSettings = Field(default_factory=EmailSettings)
-    security_features: SecurityFeatureSettings = Field(default_factory=SecurityFeatureSettings)
+    security_features: SecurityFeatureSettings = Field(
+        default_factory=SecurityFeatureSettings
+    )
     monitoring: MonitoringSettings = Field(default_factory=MonitoringSettings)
 
     model_config = ConfigDict(

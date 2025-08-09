@@ -164,9 +164,7 @@ class AgentHandoffService:
 
         if agent_id:
             history = [
-                h
-                for h in history
-                if agent_id in (h.from_agent_id, h.to_agent_id)
+                h for h in history if agent_id in (h.from_agent_id, h.to_agent_id)
             ]
 
         # Sort by timestamp (most recent first)

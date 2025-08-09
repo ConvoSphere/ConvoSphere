@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 class ErrorDetail(BaseModel):
     """Detailed error information."""
-    
+
     field: Optional[str] = None
     message: str
     code: Optional[str] = None
@@ -23,7 +23,7 @@ class ErrorDetail(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Standardized error response format."""
-    
+
     success: bool = False
     error: str
     message: str
@@ -33,26 +33,22 @@ class ErrorResponse(BaseModel):
     method: Optional[str] = None
     status_code: int
     request_id: Optional[str] = None
-    
+
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
 
 
 class SuccessResponse(BaseModel):
     """Standardized success response format."""
-    
+
     success: bool = True
     data: Any
     message: Optional[str] = None
     timestamp: datetime
     status_code: int = 200
-    
+
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
 
 
 def create_error_response(
@@ -66,7 +62,7 @@ def create_error_response(
 ) -> ErrorResponse:
     """
     Create a standardized error response.
-    
+
     Args:
         error: Error type/code
         message: Human-readable error message
@@ -75,7 +71,7 @@ def create_error_response(
         path: Request path
         method: HTTP method
         request_id: Unique request identifier
-        
+
     Returns:
         ErrorResponse: Standardized error response
     """
@@ -98,12 +94,12 @@ def create_success_response(
 ) -> SuccessResponse:
     """
     Create a standardized success response.
-    
+
     Args:
         data: Response data
         message: Optional success message
         status_code: HTTP status code
-        
+
     Returns:
         SuccessResponse: Standardized success response
     """
@@ -118,7 +114,7 @@ def create_success_response(
 # Predefined error responses
 class CommonErrors:
     """Common error responses for frequently occurring errors."""
-    
+
     @staticmethod
     def validation_error(
         message: str = "Validation error",
@@ -137,7 +133,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def authentication_error(
         message: str = "Authentication required",
@@ -154,7 +150,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def authorization_error(
         message: str = "Insufficient permissions",
@@ -171,7 +167,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def not_found_error(
         message: str = "Resource not found",
@@ -188,7 +184,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def conflict_error(
         message: str = "Resource conflict",
@@ -205,7 +201,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def rate_limit_error(
         message: str = "Rate limit exceeded",
@@ -222,7 +218,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def internal_server_error(
         message: str = "Internal server error",
@@ -239,7 +235,7 @@ class CommonErrors:
             method=method,
             request_id=request_id,
         )
-    
+
     @staticmethod
     def service_unavailable_error(
         message: str = "Service temporarily unavailable",
@@ -258,13 +254,15 @@ class CommonErrors:
         )
 
 
-def handle_validation_errors(validation_errors: List[Dict[str, Any]]) -> List[ErrorDetail]:
+def handle_validation_errors(
+    validation_errors: List[Dict[str, Any]],
+) -> List[ErrorDetail]:
     """
     Convert Pydantic validation errors to standardized error details.
-    
+
     Args:
         validation_errors: List of validation errors from Pydantic
-        
+
     Returns:
         List[ErrorDetail]: Standardized error details
     """
@@ -288,13 +286,13 @@ def raise_http_exception(
 ) -> None:
     """
     Raise a standardized HTTP exception.
-    
+
     Args:
         status_code: HTTP status code
         error: Error type/code
         message: Human-readable error message
         details: List of detailed error information
-        
+
     Raises:
         HTTPException: FastAPI HTTP exception
     """
