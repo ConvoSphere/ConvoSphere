@@ -10,6 +10,8 @@ import {
   ExclamationCircleOutlined,
   SafetyOutlined,
   ReloadOutlined,
+  ClockCircleOutlined,
+  CloudServerOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
