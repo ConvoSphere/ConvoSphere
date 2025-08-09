@@ -15,7 +15,11 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from backend.app.services.ai_service import AIResponse, AIService, CostInfo, CostTracker
+# Legacy tests for old AI service - these will be deprecated
+# New tests are in test_ai_core.py, test_ai_middleware.py, test_ai_types.py, and test_ai_service_refactored.py
+from backend.app.services.ai_service import AIService
+from backend.app.services.ai.types.ai_types import CostInfo
+from backend.app.services.ai.utils.cost_tracker import CostTracker
 
 
 class TestCostTracker:
