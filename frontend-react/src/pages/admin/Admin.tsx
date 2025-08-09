@@ -7,10 +7,10 @@ import {
   SafetyOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import UserManagement from './admin/components/UserManagement';
-import SystemConfig from './admin/components/SystemConfig';
-import SystemStats from './admin/components/SystemStats';
-import AuditLogs from './admin/components/AuditLogs';
+import UserManagement from './components/UserManagement';
+import SystemConfig from './components/SystemConfig';
+import SystemStats from './components/SystemStats';
+import AuditLogs from './components/AuditLogs';
 
 const { TabPane } = Tabs;
 

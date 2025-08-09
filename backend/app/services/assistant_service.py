@@ -10,8 +10,8 @@ from typing import Any
 from loguru import logger
 from sqlalchemy import and_, or_
 
-from backend.app.core.database import get_db
-from backend.app.models.assistant import Assistant, AssistantStatus
+# from backend.app.core.database import get_db
+# from backend.app.models.assistant import Assistant, AssistantStatus
 
 
 class AssistantService:
@@ -24,7 +24,7 @@ class AssistantService:
         self,
         assistant_data: Any,  # Accepts AssistantCreate
         user_id: str,
-    ) -> Assistant:
+    ):  # -> Assistant:
         """
         Create a new assistant.
         """
@@ -54,7 +54,7 @@ class AssistantService:
         self.db.commit()
         self.db.refresh(assistant)
         logger.info(f"Assistant created: {assistant.name} by user {user_id}")
-        return assistant
+        return assistant  # type: ignore
 
     def get_assistant(
         self, assistant_id: str, user_id: str | None = None

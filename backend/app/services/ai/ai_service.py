@@ -4,7 +4,7 @@ import asyncio
 import uuid
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from sqlalchemy.orm import Session
-# from app.core.config import settings
+from app.core.config import settings
 from app.services.ai.providers.factory import AIProviderFactory
 from app.services.ai.providers.base import (
     ChatMessage,
@@ -12,9 +12,9 @@ from app.services.ai.providers.base import (
     ChatCompletionResponse,
     ChatCompletionChunk,
 )
-# from app.services.ai.utils.cost_tracker import CostTracker
-# from app.services.ai.utils.rag_service import RAGService
-# from app.services.ai.utils.tool_manager import ToolManager
+from app.services.ai.utils.cost_tracker import CostTracker
+from app.services.ai.utils.rag_service import RAGService
+from app.services.ai.utils.tool_manager import ToolManager
 
 
 class AIService:
@@ -22,9 +22,9 @@ class AIService:
     
     def __init__(self, db: Session):
         self.db = db
-        # self.cost_tracker = CostTracker(db)
-        # self.rag_service = RAGService(db)
-        # self.tool_manager = ToolManager(db)
+        self.cost_tracker = CostTracker(db)
+        self.rag_service = RAGService(db)
+        self.tool_manager = ToolManager(db)
         self._providers: Dict[str, Any] = {}
         self._initialize_providers()
     
@@ -32,21 +32,20 @@ class AIService:
         """Initialize AI providers."""
         try:
             # Initialize OpenAI provider
-            # if settings.openai_api_key:
-            #     self._providers["openai"] = AIProviderFactory.create_provider(
-            #         "openai",
-            #         api_key=settings.openai_api_key,
-            #         base_url=settings.openai_base_url
-            #     )
+            if settings.openai_api_key:
+                self._providers["openai"] = AIProviderFactory.create_provider(
+                    "openai",
+                    api_key=settings.openai_api_key,
+                    base_url=settings.openai_base_url
+                )
             
             # Initialize Anthropic provider
-            # if settings.anthropic_api_key:
-            #     self._providers["anthropic"] = AIProviderFactory.create_provider(
-            #         "anthropic",
-            #         api_key=settings.anthropic_api_key,
-            #         base_url=settings.anthropic_base_url
-            #     )
-            pass
+            if settings.anthropic_api_key:
+                self._providers["anthropic"] = AIProviderFactory.create_provider(
+                    "anthropic",
+                    api_key=settings.anthropic_api_key,
+                    base_url=settings.anthropic_base_url
+                )
                 
         except Exception as e:
             print(f"Failed to initialize providers: {str(e)}")

@@ -31,7 +31,7 @@ import {
   PauseCircleOutlined,
   SettingOutlined,
   EyeOutlined,
-  TestOutlined,
+  ExperimentOutlined,
   BarChartOutlined,
   DollarOutlined,
   ClockCircleOutlined,
@@ -40,7 +40,7 @@ import {
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
-import { colors } from "../styles/colors";
+// // import { colors } from "../styles/colors";
 import ModelPerformanceMonitor from "../components/ModelPerformanceMonitor";
 import ModelConfiguration from "../components/ModelConfiguration";
 import ModelFavorites from "../components/ModelFavorites";
@@ -343,7 +343,7 @@ const AIModels: React.FC = () => {
           <Tooltip title={t("ai_models.actions.test")}>
             <Button
               type="text"
-              icon={<TestOutlined />}
+                              icon={<ExperimentOutlined />}
               onClick={() => handleTestModel(record)}
             />
           </Tooltip>
