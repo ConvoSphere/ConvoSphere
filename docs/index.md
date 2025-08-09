@@ -83,10 +83,12 @@ docker-compose up --build
 - **[Storage Integration](STORAGE_INTEGRATION.md)** - Cloud storage setup
 - **[SSO Setup](SSO_SETUP.md)** - Enterprise authentication
 
-### **Development & Reports**
-- **[Development Reports](development/)** - Implementation summaries and progress
-- **[Code Quality Reports](reports/code-quality/)** - Code analysis and improvements
-- **[Test Results](reports/test_results_summary.md)** - Testing coverage and results
+### **Development Resources**
+- **[Development Guide](development/README.md)** - Development setup and guidelines
+- **[Design System](development/DESIGN_SYSTEM.md)** - UI/UX design guidelines
+- **[Export Features](development/EXTENDED_EXPORT_FEATURES.md)** - Advanced export functionality
+- **[Service Architecture](ai-service-architecture.md)** - AI service architecture
+- **[Agent Implementation](agent-implementation.md)** - AI agent implementation
 
 ## 🏗️ Architecture Overview
 
@@ -101,59 +103,52 @@ graph TB
     subgraph "Backend (FastAPI)"
         API[REST API]
         WS_Server[WebSocket Server]
-        Auth[JWT Authentication]
+        Auth[JWT Auth]
         AI[AI Services]
-        KB[Knowledge Base]
+        Search[Search Engine]
+    end
+    
+    subgraph "External Services"
+        AI_Providers[AI Providers<br/>OpenAI, Anthropic, etc.]
+        Storage[File Storage]
+        VectorDB[Vector Database]
     end
     
     subgraph "Data Layer"
         PG[(PostgreSQL)]
-        Redis[(Redis)]
+        Redis[(Redis Cache)]
         Weaviate[(Weaviate)]
     end
     
     UI --> API
     UI --> WS_Server
+    WS --> WS_Server
     API --> Auth
     API --> AI
-    API --> KB
-    Auth --> PG
-    AI --> Redis
-    KB --> Weaviate
+    API --> Search
+    AI --> AI_Providers
+    Search --> VectorDB
 ```
 
-## 🚀 Deployment
+## 🔧 Development
 
-### **Docker (Recommended)**
-```bash
-# Development
-docker-compose up --build
+### **Getting Started**
+1. **Environment Setup**: Follow the [Developer Guide](developer-guide.md)
+2. **API Documentation**: Explore the [API Reference](api.md)
+3. **Architecture**: Understand the [System Architecture](architecture.md)
 
-# Production
-docker-compose -f docker-compose.prod.yml up -d
-```
+### **Key Components**
+- **AI Services**: [AI Service Architecture](ai-service-architecture.md)
+- **User Management**: [SSO Setup](SSO_SETUP.md)
+- **Knowledge Base**: [Knowledge Base Settings](KNOWLEDGE_BASE_SETTINGS.md)
+- **Search & RAG**: [RAG Features](RAG_FEATURES.md)
 
-### **Manual Setup**
-```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+## 📚 Additional Resources
 
-# Frontend
-cd frontend-react
-npm install
-npm run dev
-```
-
-## 🤝 Contributing
-
-We welcome contributions! See [GitHub Issues](https://github.com/ConvoSphere/ConvoSphere/issues) for details.
-
-## 📄 License
-
-MIT License - see [LICENSE](https://github.com/ConvoSphere/ConvoSphere/blob/main/LICENSE) for details.
+- **[Changelog](changelog.md)** - Recent updates and changes
+- **[Security](security.md)** - Security documentation and best practices
+- **[Development](development/)** - Development resources and guidelines
 
 ---
 
-**Ready to get started?** [Quick Start →](quick-start.md) 
+**Need help?** Check our [FAQ](faq.md) or [User Guide](user-guide.md) for detailed information. 
