@@ -1,126 +1,102 @@
-# Development Documentation
+# Development Guide
 
-This section contains comprehensive development documentation for the ConvoSphere project, including implementation summaries, technical guides, and development resources.
+This section contains essential development resources for the ConvoSphere project.
 
-## 📚 Available Documentation
+## 📚 Development Resources
 
-### Implementation Summary
-- **File**: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
-- **Purpose**: Comprehensive overview of all implementation phases and features
-- **Content**: Complete implementation history, technical architecture, and development progress
+### **Design & UI**
+- **[Design System](DESIGN_SYSTEM.md)** - UI/UX design guidelines and component library
+- **[Export Features](EXTENDED_EXPORT_FEATURES.md)** - Advanced export functionality and customization
 
-### User Management Implementation
-- **File**: [USER_MANAGEMENT_IMPLEMENTATION.md](USER_MANAGEMENT_IMPLEMENTATION.md)
-- **Purpose**: Detailed guide for user management system implementation
-- **Content**: Admin CLI integration, backend services, and security features
+### **Architecture & Implementation**
+- **[Service Refactoring](service_refactoring_summary.md)** - Service layer refactoring documentation
 
-### Design System
-- **File**: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
-- **Purpose**: UI/UX design system and component guidelines
-- **Content**: Design principles, component library, and styling guidelines
+## 🔧 Development Setup
 
-### Extended Export Features
-- **File**: [EXTENDED_EXPORT_FEATURES.md](EXTENDED_EXPORT_FEATURES.md)
-- **Purpose**: Documentation for advanced export functionality
-- **Content**: Export formats, customization options, and implementation details
+### **Prerequisites**
+- Python 3.11+
+- Node.js 18+
+- Docker & Docker Compose
+- PostgreSQL
+- Redis
 
-### Integration Summary
-- **File**: [INTEGRATION_SUMMARY.md](INTEGRATION_SUMMARY.md)
-- **Purpose**: Overview of system integrations and third-party services
-- **Content**: API integrations, service connections, and deployment strategies
+### **Quick Setup**
+```bash
+# Clone and setup
+git clone https://github.com/ConvoSphere/ConvoSphere.git
+cd ConvoSphere
 
-### Improvements Summary
-- **File**: [IMPROVEMENTS_SUMMARY.md](IMPROVEMENTS_SUMMARY.md)
-- **Purpose**: Summary of recent improvements and enhancements
-- **Content**: Performance improvements, feature additions, and bug fixes
+# Start with Docker
+docker-compose up --build
+```
 
-### Refactoring Summary
-- **File**: [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)
-- **Purpose**: Documentation of code refactoring efforts
-- **Content**: Refactoring strategies, code improvements, and architectural changes
+### **Manual Setup**
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
 
-### Test Coverage
-- **Improvement Plan**: [test_coverage_improvement_plan.md](test_coverage_improvement_plan.md)
-- **Quick Start**: [test_coverage_quick_start.md](test_coverage_quick_start.md)
-- **Purpose**: Testing strategies and coverage improvement guidelines
-- **Content**: Test planning, coverage metrics, and testing best practices
+# Frontend
+cd frontend-react
+npm install
+npm run dev
+```
 
-## 🔧 Development Categories
+## 🧪 Testing
 
-### Implementation
-- Complete implementation history and progress
-- Technical architecture and design decisions
-- Feature development and deployment
+### **Backend Testing**
+```bash
+cd backend
+pytest
+```
 
-### System Design
-- Architecture patterns and principles
-- Component design and integration
-- Performance and scalability considerations
+### **Frontend Testing**
+```bash
+cd frontend-react
+npm test
+```
 
-### Quality Assurance
-- Testing strategies and methodologies
-- Code quality standards and practices
-- Performance monitoring and optimization
+### **End-to-End Testing**
+```bash
+npm run test:e2e
+```
 
-### Integration
-- Third-party service integration
-- API design and implementation
-- Deployment and infrastructure
+## 📋 Development Standards
 
-## 📈 Development Standards
+### **Code Quality**
+- Type safety with MyPy
+- Code formatting with Ruff
+- Security scanning with Bandit
+- Comprehensive test coverage
 
-### Code Quality
-- Type safety and static analysis
-- Code formatting and style guidelines
-- Documentation standards and practices
-
-### Testing
-- Unit testing and integration testing
-- Test coverage requirements
-- Automated testing and CI/CD
-
-### Documentation
-- Code documentation and comments
-- API documentation and examples
+### **Documentation**
+- API documentation with FastAPI
+- Code comments and docstrings
+- Architecture documentation
 - User and developer guides
 
-### Security
-- Security best practices
-- Authentication and authorization
-- Data protection and privacy
+### **Git Workflow**
+- Feature branches
+- Pull request reviews
+- Automated testing
+- Documentation updates
 
-## 🚀 Development Workflow
+## 🚀 Deployment
 
-### Getting Started
-1. **Environment Setup**: Configure development environment
-2. **Code Review**: Follow code review guidelines
-3. **Testing**: Implement comprehensive testing
-4. **Documentation**: Maintain current documentation
+### **Development**
+```bash
+docker-compose up --build
+```
 
-### Best Practices
-1. **Type Safety**: Use proper type annotations
-2. **Testing**: Write tests for all new features
-3. **Documentation**: Document all public APIs
-4. **Security**: Follow security best practices
+### **Production**
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-### Quality Assurance
-1. **Code Review**: Mandatory peer review process
-2. **Testing**: Comprehensive test coverage
-3. **Performance**: Monitor and optimize performance
-4. **Security**: Regular security assessments
+## 📖 Additional Resources
 
-## 🤝 Contributing
-
-### Development Guidelines
-1. **Follow Standards**: Adhere to coding standards and guidelines
-2. **Write Tests**: Ensure comprehensive test coverage
-3. **Document Changes**: Update documentation for all changes
-4. **Review Code**: Participate in code review process
-
-### Quality Assurance
-1. **Run Tests**: Execute full test suite before submitting
-2. **Check Quality**: Validate code quality and style
-3. **Update Docs**: Keep documentation current
-4. **Security Review**: Ensure security compliance
-
-For detailed technical information, see the [Developer Guide](../developer-guide.md) and [Architecture Documentation](../architecture.md).
+- **[Main Documentation](../index.md)** - Complete project documentation
+- **[API Reference](../api.md)** - API documentation
+- **[Architecture](../architecture.md)** - System architecture
+- **[Security](../security.md)** - Security guidelines
