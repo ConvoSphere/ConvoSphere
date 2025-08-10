@@ -1,88 +1,70 @@
-import { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { getTools } from '../../../services/tools';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getTools, createTool, updateTool as apiUpdateTool, deleteTool as apiDeleteTool } from '../../../services/tools';
 import type { Tool } from '../types/tools.types';
 
 export const useTools = () => {
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const loadTools = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const toolsData = await getTools();
-      setTools(toolsData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      message.error(`Failed to load tools: ${errorMessage}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const toolsQuery = useQuery({
+    queryKey: ['tools'],
+    queryFn: () => getTools(),
+    staleTime: 10 * 60 * 1000,
+  });
 
-  const toggleToolActive = async (tool: Tool) => {
-    try {
-      const updatedTool = { ...tool, isActive: !tool.isActive };
-      setTools((prev) => prev.map((t) => (t.id === tool.id ? updatedTool : t)));
-      message.success(
-        tool.isActive
-          ? 'Tool deactivated'
-          : 'Tool activated'
-      );
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      message.error(`Failed to toggle tool: ${errorMessage}`);
-    }
-  };
-
-  const addTool = async (tool: Tool) => {
-    try {
-      // In a real implementation, this would call an API
-      const newTool = { ...tool, id: Date.now() };
-      setTools((prev) => [...prev, newTool]);
+  const addToolMutation = useMutation({
+    mutationFn: (tool: Tool) => createTool(tool as any),
+    onSuccess: () => {
       message.success('Tool added successfully');
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+    },
+    onError: (err: any) => {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       message.error(`Failed to add tool: ${errorMessage}`);
-    }
-  };
+    },
+  });
 
-  const updateTool = async (toolId: number, updates: Partial<Tool>) => {
-    try {
-      setTools((prev) => prev.map((t) => (t.id === toolId ? { ...t, ...updates } : t)));
+  const updateToolMutation = useMutation({
+    mutationFn: ({ toolId, updates }: { toolId: number; updates: Partial<Tool> }) => apiUpdateTool(String(toolId), updates as any),
+    onSuccess: () => {
       message.success('Tool updated successfully');
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+    },
+    onError: (err: any) => {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       message.error(`Failed to update tool: ${errorMessage}`);
-    }
-  };
+    },
+  });
 
-  const deleteTool = async (toolId: number) => {
-    try {
-      setTools((prev) => prev.filter((t) => t.id !== toolId));
+  const deleteToolMutation = useMutation({
+    mutationFn: (toolId: number) => apiDeleteTool(String(toolId)),
+    onSuccess: () => {
       message.success('Tool deleted successfully');
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+    },
+    onError: (err: any) => {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       message.error(`Failed to delete tool: ${errorMessage}`);
-    }
+    },
+  });
+
+  const toggleToolActive = async (tool: Tool) => {
+    // Optimistic update pattern
+    const previous = queryClient.getQueryData<Tool[]>(['tools']);
+    const updated = previous?.map(t => t.id === tool.id ? { ...t, isActive: !tool.isActive } as any : t) || [];
+    queryClient.setQueryData(['tools'], updated);
+    message.success(tool.isActive ? 'Tool deactivated' : 'Tool activated');
+    // TODO: call backend if such endpoint exists; otherwise keep as UI only
   };
 
-  useEffect(() => {
-    loadTools();
-  }, []);
-
   return {
-    tools,
-    loading,
-    error,
-    loadTools,
+    tools: toolsQuery.data || [],
+    loading: toolsQuery.isLoading,
+    error: toolsQuery.error ? (toolsQuery.error as any).message : null,
+    loadTools: () => queryClient.invalidateQueries({ queryKey: ['tools'] }),
     toggleToolActive,
-    addTool,
-    updateTool,
-    deleteTool,
+    addTool: (tool: Tool) => addToolMutation.mutateAsync(tool),
+    updateTool: (toolId: number, updates: Partial<Tool>) => updateToolMutation.mutateAsync({ toolId, updates }),
+    deleteTool: (toolId: number) => deleteToolMutation.mutateAsync(toolId),
   };
 };
