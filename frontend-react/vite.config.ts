@@ -2,27 +2,30 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+const ANALYZE = process.env.ANALYZE === '1' || process.env.ANALYZE === 'true'
+const ENABLE_SOURCEMAP = ANALYZE || process.env.SOURCEMAP === '1' || process.env.SOURCEMAP === 'true'
+
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
-    // Bundle analyzer for development
-    visualizer({
-      filename: 'dist/stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-    }),
+    ...(ANALYZE ? [
+      // Bundle analyzer only when explicitly enabled
+      visualizer({
+        filename: 'dist/stats.html',
+        open: false,
+        gzipSize: true,
+        brotliSize: true,
+      }),
+    ] : []),
   ],
   build: {
-    // Enable source maps for debugging
-    sourcemap: true,
-    // Optimize chunk splitting
+    // Enable source maps only when needed
+    sourcemap: ENABLE_SOURCEMAP,
+    // Optimize chunk splitting (review periodically)
     rollupOptions: {
       output: {
-        // Manual chunk splitting for better caching
         manualChunks: {
-          // Vendor chunks
           'react-vendor': ['react', 'react-dom'],
           'antd-vendor': ['antd', '@ant-design/icons'],
           'router-vendor': ['react-router-dom'],
@@ -32,7 +35,6 @@ export default defineConfig({
           'pdf-vendor': ['jspdf', 'html2pdf.js', 'html2canvas'],
           'excel-vendor': ['xlsx', 'pptxgenjs'],
         },
-        // Optimize chunk naming
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId
             ? chunkInfo.facadeModuleId.split('/').pop()?.replace('.tsx', '').replace('.ts', '')
@@ -49,31 +51,29 @@ export default defineConfig({
           if (/\.(png|jpe?g|gif|svg|webp|ico)$/.test(assetInfo.name || '')) {
             return `images/[name]-[hash].${ext}`
           }
+          if (/\.(woff2?|ttf|otf|eot)$/.test(assetInfo.name || '')) {
+            return `fonts/[name]-[hash].${ext}`
+          }
           return `assets/[name]-[hash].${ext}`
         },
       },
     },
-    // Optimize chunk size warnings
     chunkSizeWarningLimit: 1000,
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    // Use esbuild for faster minification with console/debugger drop in production
+    minify: 'esbuild',
+    terserOptions: undefined,
+    target: 'es2018',
   },
-  // Optimize development server
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
   server: {
     port: 8080,
     host: true,
-    // Enable HMR optimization
     hmr: {
-      overlay: false,
+      overlay: true,
     },
   },
-  // Optimize dependencies
   optimizeDeps: {
     include: [
       'react',
@@ -88,18 +88,17 @@ export default defineConfig({
     ],
     exclude: ['@vite/client', '@vite/env'],
   },
-  // CSS optimization
   css: {
     devSourcemap: true,
+    postcss: {},
     preprocessorOptions: {
       less: {
         javascriptEnabled: true,
       },
     },
   },
-  // Define global constants
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
-})
+}))

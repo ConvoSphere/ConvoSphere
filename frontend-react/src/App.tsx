@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { ConfigProvider, theme as antdTheme, Spin } from "antd";
+import { ConfigProvider, theme as antdTheme, Spin, Button } from "antd";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { DashboardOutlined } from "@ant-design/icons";
@@ -120,7 +120,7 @@ const ErrorFallback: React.FC<{
             {t("common.refresh_page")}
           </Button>
         </div>
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.DEV && (
           <details style={{ marginTop: "16px", textAlign: "left" }}>
             <summary style={{ cursor: "pointer", color: simpleTheme.token.colorTextSecondary }}>
               {t("common.error_details")}
@@ -160,11 +160,16 @@ const App: React.FC = () => {
           await i18n.changeLanguage(detectedLanguage);
           saveLanguagePreference(detectedLanguage);
         }
+      
+        // Ensure document language attribute stays in sync
+        document.documentElement.lang = i18n.language;
 
         // Initialize authentication
         await initializeAuth();
       } catch (error) {
-        console.error("Failed to initialize application:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to initialize application:", error);
+        }
       } finally {
         setIsInitialized(true);
       }
@@ -178,6 +183,7 @@ const App: React.FC = () => {
     if (user?.language && user.language !== i18n.language) {
       i18n.changeLanguage(user.language);
       saveLanguagePreference(user.language);
+      document.documentElement.lang = user.language;
     }
   }, [user?.language]);
 
@@ -224,7 +230,9 @@ const App: React.FC = () => {
         />
       }
       onError={(error, errorInfo) => {
-        console.error("App Error:", error, errorInfo);
+        if (import.meta.env.DEV) {
+          console.error("App Error:", error, errorInfo);
+        }
         // Send to error reporting service
         performanceMonitor.logError("App Error", {
           error: error.message,
@@ -243,10 +251,12 @@ const App: React.FC = () => {
               token: simpleTheme.token,
             }}
           >
-          <Router>
+          <Router basename={import.meta.env.BASE_URL}>
             <ErrorBoundary
               onError={(error, errorInfo) => {
-                console.error("Router Error:", error, errorInfo);
+                if (import.meta.env.DEV) {
+                  console.error("Router Error:", error, errorInfo);
+                }
                 performanceMonitor.logError("Router Error", {
                   error: error.message,
                   errorInfo,

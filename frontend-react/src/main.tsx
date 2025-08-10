@@ -6,6 +6,18 @@ import "./App.css";
 import "./styles/animations.css";
 import "./i18n/index.ts";
 
+// Self-hosted fonts
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+
+import i18n from "./i18n";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
 // Simple initialization without complex optimizations
 const initializeApp = () => {
   try {
@@ -13,13 +25,22 @@ const initializeApp = () => {
     
     root.render(
       <React.StrictMode>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </React.StrictMode>,
     );
 
-    console.log("✅ React app rendered successfully");
+    // Set document language dynamically
+    document.documentElement.lang = i18n.language;
+
+    if (import.meta.env.DEV) {
+      console.log("✅ React app rendered successfully");
+    }
   } catch (error) {
-    console.error("❌ Failed to render React app:", error);
+    if (import.meta.env.DEV) {
+      console.error("❌ Failed to render React app:", error);
+    }
 
     // Show fallback error UI
     const root = document.getElementById("root");
@@ -54,12 +75,16 @@ const initializeApp = () => {
 
 // Handle unhandled promise rejections
 window.addEventListener("unhandledrejection", (event) => {
-  console.error("❌ Unhandled promise rejection:", event.reason);
+  if (import.meta.env.DEV) {
+    console.error("❌ Unhandled promise rejection:", event.reason);
+  }
 });
 
 // Handle global errors
 window.addEventListener("error", (event) => {
-  console.error("❌ Global error:", event.error);
+  if (import.meta.env.DEV) {
+    console.error("❌ Global error:", event.error);
+  }
 });
 
 // Start the application
