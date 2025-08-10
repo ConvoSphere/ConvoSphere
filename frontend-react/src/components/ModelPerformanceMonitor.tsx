@@ -452,7 +452,6 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                   title={t("performance.stats.cost_per_1k")}
                   value={currentModel.costPer1kTokens}
                   precision={4}
-                  prefix="$"
                   valueStyle={{ 
                     color: getPerformanceColor(
                       currentModel.costPer1kTokens, 

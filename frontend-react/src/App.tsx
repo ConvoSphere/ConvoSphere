@@ -14,6 +14,7 @@ import performanceMonitor from "./utils/performance";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { useAuthStore } from "./store/authStore";
 import { detectLanguage, saveLanguagePreference } from "./utils/languageDetection";
+import ProtectedLayoutRoute from "./components/ProtectedLayoutRoute";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -304,48 +305,9 @@ const App: React.FC = () => {
                     </ErrorBoundary>
                   }
                 />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyHomePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyDashboardPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/overview"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyOverviewPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/" element={<ProtectedLayoutRoute><LazyHomePage /></ProtectedLayoutRoute>} />
+                <Route path="/dashboard" element={<ProtectedLayoutRoute><LazyDashboardPage /></ProtectedLayoutRoute>} />
+                <Route path="/overview" element={<ProtectedLayoutRoute><LazyOverviewPage /></ProtectedLayoutRoute>} />
                 <Route
                   path="/chat"
                   element={
