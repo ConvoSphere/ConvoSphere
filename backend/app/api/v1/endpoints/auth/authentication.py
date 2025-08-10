@@ -342,7 +342,7 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
     from backend.app.services.token_service import token_service
 
     try:
-        user = token_service.validate_password_reset_token(data.token, db)
+        user = token_service.validate_password_reset_token(data.token, db, return_user=True)
     except OperationalError:
         user = None
 
@@ -367,7 +367,7 @@ async def validate_reset_token(payload: dict, db: Session = Depends(get_db)):
 
     token = payload.get("token", "")
     try:
-        user = token_service.validate_password_reset_token(token, db)
+        user = token_service.validate_password_reset_token(token, db, return_user=True)
     except OperationalError:
         user = None
 

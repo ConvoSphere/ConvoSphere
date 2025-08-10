@@ -43,25 +43,26 @@ class TokenService:
         logger.debug(f"Generated password reset token: {token[:8]}...")
         return token
 
-    def validate_password_reset_token(self, token: str, db: Session) -> bool:
+    def validate_password_reset_token(self, token: str, db: Session, return_user: bool = False):
         """
         Validate a password reset token.
 
         Args:
             token: Token to validate
             db: Database session
+            return_user: If True, return the User on success instead of bool
 
         Returns:
-            bool: True if token is valid, False otherwise
+            bool | User | None: True if valid (default), or User if return_user=True; False/None otherwise
         """
         if not token:
-            return False
+            return None if return_user else False
 
         # Find user with this token
         user = self.get_user_by_reset_token(token, db)
         if not user:
             logger.warning(f"Invalid password reset token: {token[:8]}...")
-            return False
+            return None if return_user else False
 
         # Check if token has expired
         if (
@@ -69,9 +70,9 @@ class TokenService:
             and user.password_reset_expires_at < utc_now()
         ):
             logger.warning(f"Expired password reset token: {token[:8]}...")
-            return False
+            return None if return_user else False
 
-        return True
+        return user if return_user else True
 
     def get_user_by_reset_token(self, token: str, db: Session) -> Optional[User]:
         """
