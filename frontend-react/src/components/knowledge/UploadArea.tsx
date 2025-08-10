@@ -32,6 +32,7 @@ import {
   showValidationWarnings,
   type FileValidationConfig 
 } from "../../utils/fileValidation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const { Dragger } = Upload;
 const { Text, Title } = Typography;
@@ -66,6 +67,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
   const { uploadQueue, addToUploadQueue, removeFromUploadQueue, uploadFiles } =
     useKnowledgeStore();
   const [dragOver, setDragOver] = useState(false);
+  const queryClient = useQueryClient();
   
   // Create file validator with custom config
   const fileValidator = createFileValidator({
@@ -113,32 +115,27 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     }
   };
 
-  // Remove old validateFile function - now using FileValidator class
-
   const handleFileSelect = useCallback(
     (files: File[]) => {
-      // Use the new file validator
       const { validFiles, invalidFiles, warnings } = fileValidator.validateFiles(files);
 
-      // Show validation errors
       if (invalidFiles.length > 0) {
         showValidationErrors(invalidFiles);
       }
 
-      // Show validation warnings
       if (warnings.length > 0) {
         showValidationWarnings(warnings);
       }
 
-      // Process valid files
       if (validFiles.length > 0) {
         addToUploadQueue(validFiles);
-        uploadFiles(validFiles).then(() => {
+        uploadFiles(validFiles).then(async () => {
           onUploadComplete?.();
+          await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
         });
       }
     },
-    [fileValidator, addToUploadQueue, uploadFiles, onUploadComplete],
+    [fileValidator, addToUploadQueue, uploadFiles, onUploadComplete, queryClient],
   );
 
   const uploadProps = {
