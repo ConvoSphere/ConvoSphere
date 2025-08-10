@@ -38,9 +38,14 @@ import { useThemeStore } from "../store/themeStore";
 import {
   getDefaultAssistantId,
   setDefaultAssistant,
+  getAssistants,
+  getAssistantModels,
 } from "../services/assistants";
+import { getTools } from "../services/tools";
+import { Document, listDocuments } from "../services/knowledge";
 import config from "../config";
 import ModelSelector from "../components/ModelSelector";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -63,12 +68,11 @@ interface Assistant {
   tags: string[];
 }
 
-
-
 const Assistants: React.FC = () => {
   const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
+  const queryClient = useQueryClient();
 
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [visible, setVisible] = useState(false);
@@ -76,7 +80,6 @@ const Assistants: React.FC = () => {
     null,
   );
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("all");
@@ -85,61 +88,75 @@ const Assistants: React.FC = () => {
   );
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
 
-  // API integration for assistants
-  const [availableModels, setAvailableModels] = useState<any[]>([]);
-  const [availableKnowledgeBases, setAvailableKnowledgeBases] = useState<any[]>([]);
-  const [availableTools, setAvailableTools] = useState<any[]>([]);
+  // Queries
+  const assistantsQuery = useQuery({
+    queryKey: ["assistants"],
+    queryFn: getAssistants,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const modelsQuery = useQuery({
+    queryKey: ["assistant-models"],
+    queryFn: getAssistantModels,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const knowledgeQuery = useQuery({
+    queryKey: ["knowledge-bases"],
+    queryFn: async () => {
+      // Using knowledge service for list
+      const response = await fetch(`${config.apiEndpoints.knowledge}/`);
+      if (!response.ok) throw new Error("Failed to load knowledge bases");
+      const data = await response.json();
+      return data.documents || [];
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const toolsQuery = useQuery({
+    queryKey: ["tools"],
+    queryFn: () => getTools(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const defaultIdQuery = useQuery({
+    queryKey: ["assistants", "defaultId"],
+    queryFn: async () => {
+      try {
+        const data = await getDefaultAssistantId();
+        return data.assistant_id as string;
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
+    if (assistantsQuery.data) setAssistants(assistantsQuery.data);
+    if (defaultIdQuery.data) setDefaultAssistantId(defaultIdQuery.data);
+  }, [assistantsQuery.data, defaultIdQuery.data]);
 
-        // Load assistants from API
-        const assistantsResponse = await fetch(`${config.apiEndpoints.assistants}/`);
-        if (assistantsResponse.ok) {
-          const assistantsData = await assistantsResponse.json();
-          setAssistants(assistantsData);
-        }
+  const setDefaultMutation = useMutation({
+    mutationFn: (assistantId: string) => setDefaultAssistant(assistantId),
+    onMutate: async (assistantId) => {
+      setSettingDefault(assistantId);
+    },
+    onSuccess: async () => {
+      message.success(t("assistants.default_set"));
+      await queryClient.invalidateQueries({ queryKey: ["assistants", "defaultId"] });
+    },
+    onError: () => {
+      message.error(t("assistants.default_set_failed"));
+    },
+    onSettled: () => setSettingDefault(null),
+  });
 
-        // Load available models
-        const modelsResponse = await fetch(`${config.apiEndpoints.assistants}/models`);
-        if (modelsResponse.ok) {
-          const modelsData = await modelsResponse.json();
-          setAvailableModels(modelsData);
-        }
-
-        // Load available knowledge bases
-        const kbResponse = await fetch(`${config.apiEndpoints.knowledge}/`);
-        if (kbResponse.ok) {
-          const kbData = await kbResponse.json();
-          setAvailableKnowledgeBases(kbData.documents || []);
-        }
-
-        // Load available tools
-        const toolsResponse = await fetch(`${config.apiEndpoints.tools}/`);
-        if (toolsResponse.ok) {
-          const toolsData = await toolsResponse.json();
-          setAvailableTools(toolsData);
-        }
-
-        // Load default assistant ID
-        try {
-          const defaultData = await getDefaultAssistantId();
-          setDefaultAssistantId(defaultData.assistant_id);
-        } catch (_error) {
-          // No default assistant configured yet
-          console.log("No default assistant configured");
-        }
-      } catch (_error) {
-        message.error(t("assistants.load_failed"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [t]);
+  const loading =
+    assistantsQuery.isLoading ||
+    modelsQuery.isLoading ||
+    knowledgeQuery.isLoading ||
+    toolsQuery.isLoading;
 
   const handleAdd = async () => {
     try {
@@ -264,7 +281,7 @@ const Assistants: React.FC = () => {
   });
 
   const getModelLabel = (modelValue: string) => {
-    const model = availableModels.find((m) => m.value === modelValue);
+    const model = modelsQuery.data?.find((m) => m.value === modelValue);
     return model ? model.label : modelValue;
   };
 
@@ -566,7 +583,7 @@ const Assistants: React.FC = () => {
               mode="multiple"
               placeholder={t("assistants.form.knowledge_bases_placeholder")}
             >
-              {availableKnowledgeBases.map((kb) => (
+              {knowledgeQuery.data?.map((kb) => (
                 <Option key={kb.id} value={kb.id}>
                   {kb.name}
                 </Option>
@@ -579,7 +596,7 @@ const Assistants: React.FC = () => {
               mode="multiple"
               placeholder={t("assistants.form.tools_placeholder")}
             >
-              {availableTools.map((tool) => (
+              {toolsQuery.data?.map((tool) => (
                 <Option key={tool.id} value={tool.id}>
                   {tool.name} - {tool.description}
                 </Option>
