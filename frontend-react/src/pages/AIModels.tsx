@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Card,
   Table,
@@ -41,10 +41,10 @@ import {
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
 // // import { colors } from "../styles/colors";
-import ModelPerformanceMonitor from "../components/ModelPerformanceMonitor";
-import ModelConfiguration from "../components/ModelConfiguration";
-import ModelFavorites from "../components/ModelFavorites";
-import ModelUsageAnalytics from "../components/ModelUsageAnalytics";
+const ModelPerformanceMonitor = React.lazy(() => import("../components/ModelPerformanceMonitor"));
+const ModelConfiguration = React.lazy(() => import("../components/ModelConfiguration"));
+const ModelFavorites = React.lazy(() => import("../components/ModelFavorites"));
+const ModelUsageAnalytics = React.lazy(() => import("../components/ModelUsageAnalytics"));
 import AIModelsService from "../services/aiModels";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -444,19 +444,27 @@ const AIModels: React.FC = () => {
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.analytics")} key="analytics">
-          <ModelPerformanceMonitor />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelPerformanceMonitor />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.configuration")} key="configuration">
-          <ModelConfiguration />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelConfiguration />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.favorites")} key="favorites">
-          <ModelFavorites />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelFavorites />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.usage")} key="usage">
-          <ModelUsageAnalytics />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelUsageAnalytics />
+          </Suspense>
         </TabPane>
       </Tabs>
 
