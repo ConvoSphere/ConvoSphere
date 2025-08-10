@@ -188,7 +188,13 @@ def create_application() -> FastAPI:
         allowed_hosts=(
             ["*"]
             if get_settings().debug
-            else ["localhost", "127.0.0.1", "yourdomain.com"]
+            else [
+                "localhost",
+                "127.0.0.1",
+                "yourdomain.com",
+                "testserver",
+                "testserver.local",
+            ]
         ),
     )
 

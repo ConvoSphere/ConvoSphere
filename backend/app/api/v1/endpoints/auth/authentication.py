@@ -302,11 +302,6 @@ async def forgot_password(request_data: PasswordResetRequest, db: Session = Depe
 
     # Rate limit by email and IP (basic: use validator methods as simple counters)
     client_ip = "unknown"
-    try:
-        # No Request object here; keep it simple for tests
-        pass
-    except Exception:
-        pass
 
     # Email-based simplistic rate-limit: 3 per hour
     if not validator.rate_limit_password_reset_by_email(request_data.email):
@@ -326,8 +321,9 @@ async def forgot_password(request_data: PasswordResetRequest, db: Session = Depe
     user = db.query(User).filter(User.email == request_data.email.lower()).first()
     if user:
         token = token_service.create_password_reset_token(user, db)
+        reset_url = f"{get_settings().backend_url}/reset-password?token={token}"
         try:
-            await email_service.send_password_reset_email(user.email, token, language=get_settings().default_language)
+            email_service.send_password_reset_email(user.email, token, reset_url, language=get_settings().default_language)
         except Exception:
             # Do not reveal email sending issues
             pass
