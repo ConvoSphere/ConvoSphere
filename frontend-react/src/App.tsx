@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { ConfigProvider, theme as antdTheme, Spin } from "antd";
+import { ConfigProvider, theme as antdTheme, Spin, Button } from "antd";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { DashboardOutlined } from "@ant-design/icons";
@@ -14,6 +14,8 @@ import performanceMonitor from "./utils/performance";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { useAuthStore } from "./store/authStore";
 import { detectLanguage, saveLanguagePreference } from "./utils/languageDetection";
+import ProtectedLayoutRoute from "./components/ProtectedLayoutRoute";
+import { protectedRoutes } from "./routes/routesConfig";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -120,7 +122,7 @@ const ErrorFallback: React.FC<{
             {t("common.refresh_page")}
           </Button>
         </div>
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.DEV && (
           <details style={{ marginTop: "16px", textAlign: "left" }}>
             <summary style={{ cursor: "pointer", color: simpleTheme.token.colorTextSecondary }}>
               {t("common.error_details")}
@@ -160,11 +162,16 @@ const App: React.FC = () => {
           await i18n.changeLanguage(detectedLanguage);
           saveLanguagePreference(detectedLanguage);
         }
+      
+        // Ensure document language attribute stays in sync
+        document.documentElement.lang = i18n.language;
 
         // Initialize authentication
         await initializeAuth();
       } catch (error) {
-        console.error("Failed to initialize application:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to initialize application:", error);
+        }
       } finally {
         setIsInitialized(true);
       }
@@ -178,6 +185,7 @@ const App: React.FC = () => {
     if (user?.language && user.language !== i18n.language) {
       i18n.changeLanguage(user.language);
       saveLanguagePreference(user.language);
+      document.documentElement.lang = user.language;
     }
   }, [user?.language]);
 
@@ -224,7 +232,9 @@ const App: React.FC = () => {
         />
       }
       onError={(error, errorInfo) => {
-        console.error("App Error:", error, errorInfo);
+        if (import.meta.env.DEV) {
+          console.error("App Error:", error, errorInfo);
+        }
         // Send to error reporting service
         performanceMonitor.logError("App Error", {
           error: error.message,
@@ -243,10 +253,12 @@ const App: React.FC = () => {
               token: simpleTheme.token,
             }}
           >
-          <Router>
+          <Router basename={import.meta.env.BASE_URL}>
             <ErrorBoundary
               onError={(error, errorInfo) => {
-                console.error("Router Error:", error, errorInfo);
+                if (import.meta.env.DEV) {
+                  console.error("Router Error:", error, errorInfo);
+                }
                 performanceMonitor.logError("Router Error", {
                   error: error.message,
                   errorInfo,
@@ -254,6 +266,7 @@ const App: React.FC = () => {
               }}
             >
               <Routes>
+                {/* auth routes */}
                 <Route
                   path="/login"
                   element={
@@ -294,244 +307,9 @@ const App: React.FC = () => {
                     </ErrorBoundary>
                   }
                 />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyHomePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyDashboardPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/overview"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyOverviewPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/chat"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyChatPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assistants"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyAssistantsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/ai-models"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyAIModelsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/knowledge-base"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyKnowledgeBasePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/tools"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyToolsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazySettingsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyAdminPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyProfilePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/conversations"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyConversationsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/mcp-tools"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyMcpToolsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/system-status"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazySystemStatusPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/conversation-intelligence"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyConversationIntelligencePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/domain-groups"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyDomainGroupsPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/export-backup"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ErrorBoundary>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <LazyExportBackupPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                {protectedRoutes.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
               </Routes>
             </ErrorBoundary>
           </Router>

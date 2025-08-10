@@ -12,6 +12,8 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import type { Tag as TagType } from "../../services/knowledge";
 import { useKnowledgeStore } from "../../store/knowledgeStore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getTags, createTag, deleteTag } from "../../services/knowledge";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -26,7 +28,7 @@ const TagManager: React.FC<TagManagerProps> = ({
   showCreateButton = true,
   showStatistics = true,
 }) => {
-  const { tags, fetchTags } = useKnowledgeStore();
+  const { fetchTags } = useKnowledgeStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -37,20 +39,36 @@ const TagManager: React.FC<TagManagerProps> = ({
     "all",
   );
 
+  const queryClient = useQueryClient();
+  const tagsQuery = useQuery({ queryKey: ["knowledge-tags"], queryFn: getTags, staleTime: 5 * 60 * 1000 });
+
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);
 
-  const handleCreateTag = async () => {
-    try {
-      // TODO: Implement create tag API call
+  const createMutation = useMutation({
+    mutationFn: (values: Partial<TagType>) => createTag(values),
+    onSuccess: async () => {
       message.success("Tag created successfully");
       setShowCreateModal(false);
       form.resetFields();
-      fetchTags();
-    } catch (_error) {
-      message.error("Failed to create tag");
-    }
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-tags"] });
+    },
+    onError: () => message.error("Failed to create tag"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (tagId: string) => deleteTag(tagId),
+    onSuccess: async () => {
+      message.success("Tag deleted successfully");
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-tags"] });
+    },
+    onError: () => message.error("Failed to delete tag"),
+  });
+
+  const handleCreateTag = async () => {
+    const values = await form.validateFields();
+    createMutation.mutate(values);
   };
 
   const handleEditTag = async () => {
@@ -61,15 +79,15 @@ const TagManager: React.FC<TagManagerProps> = ({
       setShowEditModal(false);
       setSelectedTag(null);
       editForm.resetFields();
-      fetchTags();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-tags"] });
     } catch (_error) {
       message.error("Failed to update tag");
     }
   };
 
+  const tags = tagsQuery.data || [];
 
-
-  const filteredTags = tags.filter((tag) => {
+  const filteredTags = tags.filter((tag: TagType) => {
     const matchesSearch =
       tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tag.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -82,9 +100,9 @@ const TagManager: React.FC<TagManagerProps> = ({
 
   const stats = {
     totalTags: tags.length,
-    systemTags: tags.filter((tag) => tag.is_system).length,
-    userTags: tags.filter((tag) => !tag.is_system).length,
-    totalUsage: tags.reduce((sum, tag) => sum + tag.usage_count, 0),
+    systemTags: tags.filter((tag: TagType) => tag.is_system).length,
+    userTags: tags.filter((tag: TagType) => !tag.is_system).length,
+    totalUsage: tags.reduce((sum: number, tag: TagType) => sum + tag.usage_count, 0),
   };
 
   return (
@@ -130,16 +148,22 @@ const TagManager: React.FC<TagManagerProps> = ({
         }
       >
         <div>
-          {filteredTags.map((tag) => (
+          {filteredTags.map((tag: TagType) => (
             <div
               key={tag.id}
               style={{
                 padding: "8px",
                 border: "1px solid #f0f0f0",
                 marginBottom: "4px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
               <Text>{tag.name}</Text>
+              <Button danger size="small" onClick={() => deleteMutation.mutate(tag.id)}>
+                Delete
+              </Button>
             </div>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Card,
   Table,
@@ -41,10 +41,12 @@ import {
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
 // // import { colors } from "../styles/colors";
-import ModelPerformanceMonitor from "../components/ModelPerformanceMonitor";
-import ModelConfiguration from "../components/ModelConfiguration";
-import ModelFavorites from "../components/ModelFavorites";
-import ModelUsageAnalytics from "../components/ModelUsageAnalytics";
+const ModelPerformanceMonitor = React.lazy(() => import("../components/ModelPerformanceMonitor"));
+const ModelConfiguration = React.lazy(() => import("../components/ModelConfiguration"));
+const ModelFavorites = React.lazy(() => import("../components/ModelFavorites"));
+const ModelUsageAnalytics = React.lazy(() => import("../components/ModelUsageAnalytics"));
+import AIModelsService from "../services/aiModels";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -84,10 +86,11 @@ interface ModelTest {
   timestamp: string;
 }
 
+const service = new (AIModelsService as any)();
+
 const AIModels: React.FC = () => {
   const { t } = useTranslation();
-  const [models, setModels] = useState<AIModel[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const [testModalVisible, setTestModalVisible] = useState(false);
   const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
@@ -97,27 +100,56 @@ const AIModels: React.FC = () => {
   const [testResults, setTestResults] = useState<ModelTest[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Load models on component mount
-  useEffect(() => {
-    loadModels();
-  }, []);
+  const modelsQuery = useQuery({
+    queryKey: ["ai-models"],
+    queryFn: () => service.getModels(),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const loadModels = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models`);
-      if (response.ok) {
-        const data = await response.json();
-        setModels(data);
-      } else {
-        message.error(t("ai_models.load_failed"));
-      }
-    } catch (error) {
-      message.error(t("ai_models.load_failed"));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: (values: any) => service.createModel(values),
+    onSuccess: () => {
+      message.success(t("ai_models.added_success"));
+      queryClient.invalidateQueries({ queryKey: ["ai-models"] });
+    },
+    onError: () => message.error(t("ai_models.add_failed")),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: any }) => service.updateModel(id, values),
+    onSuccess: () => {
+      message.success(t("ai_models.updated_success"));
+      queryClient.invalidateQueries({ queryKey: ["ai-models"] });
+    },
+    onError: () => message.error(t("ai_models.update_failed")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => service.deleteModel(id),
+    onSuccess: () => {
+      message.success(t("ai_models.deleted_success"));
+      queryClient.invalidateQueries({ queryKey: ["ai-models"] });
+    },
+    onError: () => message.error(t("ai_models.delete_failed")),
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => service.toggleModelActive(id, isActive),
+    onSuccess: () => {
+      message.success(t("ai_models.toggle_success"));
+      queryClient.invalidateQueries({ queryKey: ["ai-models"] });
+    },
+    onError: () => message.error(t("ai_models.toggle_failed")),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: ({ id, prompt }: { id: string; prompt: string }) => service.testModel(id, prompt),
+    onSuccess: (result: any) => {
+      setTestResults((prev) => [result, ...prev]);
+      message.success(t("ai_models.test_success"));
+    },
+    onError: () => message.error(t("ai_models.test_failed")),
+  });
 
   const handleAddModel = () => {
     setEditingModel(null);
@@ -142,79 +174,21 @@ const AIModels: React.FC = () => {
   };
 
   const handleSaveModel = async () => {
-    try {
-      const values = await form.validateFields();
-      
-      if (editingModel) {
-        // Update existing model
-        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models/${editingModel.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        
-        if (response.ok) {
-          message.success(t("ai_models.updated_success"));
-          loadModels();
-        } else {
-          message.error(t("ai_models.update_failed"));
-        }
-      } else {
-        // Create new model
-        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        
-        if (response.ok) {
-          message.success(t("ai_models.added_success"));
-          loadModels();
-        } else {
-          message.error(t("ai_models.add_failed"));
-        }
-      }
-      
-      setModalVisible(false);
-    } catch (error) {
-      message.error(t("ai_models.save_failed"));
+    const values = await form.validateFields();
+    if (editingModel) {
+      updateMutation.mutate({ id: editingModel.id, values });
+    } else {
+      createMutation.mutate(values);
     }
+    setModalVisible(false);
   };
 
   const handleDeleteModel = async (modelId: string) => {
-    try {
-      const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models/${modelId}`, {
-        method: "DELETE",
-      });
-      
-      if (response.ok) {
-        message.success(t("ai_models.deleted_success"));
-        loadModels();
-      } else {
-        message.error(t("ai_models.delete_failed"));
-      }
-    } catch (error) {
-      message.error(t("ai_models.delete_failed"));
-    }
+    deleteMutation.mutate(modelId);
   };
 
   const handleToggleActive = async (model: AIModel) => {
-    try {
-      const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models/${model.id}/toggle`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !model.isActive }),
-      });
-      
-      if (response.ok) {
-        message.success(t("ai_models.toggle_success"));
-        loadModels();
-      } else {
-        message.error(t("ai_models.toggle_failed"));
-      }
-    } catch (error) {
-      message.error(t("ai_models.toggle_failed"));
-    }
+    toggleMutation.mutate({ id: model.id, isActive: !model.isActive });
   };
 
   const handleTestModel = (model: AIModel) => {
@@ -225,25 +199,9 @@ const AIModels: React.FC = () => {
   };
 
   const handleRunTest = async () => {
-    try {
-      const values = await testForm.validateFields();
-      
-      const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}/models/${selectedModel?.id}/test`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: values.prompt }),
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        setTestResults(prev => [result, ...prev]);
-        message.success(t("ai_models.test_success"));
-      } else {
-        message.error(t("ai_models.test_failed"));
-      }
-    } catch (error) {
-      message.error(t("ai_models.test_failed"));
-    }
+    const values = await testForm.validateFields();
+    if (!selectedModel) return;
+    testMutation.mutate({ id: selectedModel.id, prompt: values.prompt });
   };
 
   const getPerformanceColor = (rate: number) => {
@@ -257,6 +215,9 @@ const AIModels: React.FC = () => {
     if (time <= 3000) return "warning";
     return "error";
   };
+
+  const models = modelsQuery.data || [];
+  const loading = modelsQuery.isLoading;
 
   const columns = [
     {
@@ -483,19 +444,27 @@ const AIModels: React.FC = () => {
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.analytics")} key="analytics">
-          <ModelPerformanceMonitor />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelPerformanceMonitor />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.configuration")} key="configuration">
-          <ModelConfiguration />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelConfiguration />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.favorites")} key="favorites">
-          <ModelFavorites />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelFavorites />
+          </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.usage")} key="usage">
-          <ModelUsageAnalytics />
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+            <ModelUsageAnalytics />
+          </Suspense>
         </TabPane>
       </Tabs>
 

@@ -55,7 +55,8 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import KnowledgeBaseSettings from "../components/knowledge/KnowledgeBaseSettings";
-
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { getDocuments, updateDocument as apiUpdateDocument } from "../services/knowledge";
 
 const { Title, Text } = Typography;
 
@@ -93,6 +94,22 @@ const KnowledgeBase: React.FC = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // React Query for documents list (read path only)
+  const docsQuery = useQuery({
+    queryKey: ["knowledge-documents", currentFilters],
+    queryFn: () => getDocuments(currentFilters),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const updateDocMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Document> }) => apiUpdateDocument(id, updates),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+    },
+  });
 
   useEffect(() => {
     fetchDocuments();
@@ -143,6 +160,7 @@ const KnowledgeBase: React.FC = () => {
       message.success(`Updated ${selectedRowKeys.length} documents`);
       setShowBulkEdit(false);
       setSelectedRowKeys([]);
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (error) {
       message.error("Failed to update documents");
     }
@@ -157,6 +175,7 @@ const KnowledgeBase: React.FC = () => {
           await deleteDocument(documentId);
           message.success("Dokument erfolgreich gelöscht");
           refreshDocuments();
+          await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
         } catch (error) {
           message.error("Fehler beim Löschen des Dokuments");
         }
@@ -177,6 +196,7 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success("Document reprocessing started");
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to reprocess document");
     }
@@ -187,6 +207,7 @@ const KnowledgeBase: React.FC = () => {
       message.success(`${documentIds.length} documents deleted successfully`);
       setSelectedRowKeys([]);
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to delete documents");
     }
@@ -200,6 +221,7 @@ const KnowledgeBase: React.FC = () => {
         `${documentIds.length} documents queued for reprocessing`,
       );
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to queue documents for reprocessing");
     }
@@ -571,6 +593,10 @@ const KnowledgeBase: React.FC = () => {
     );
   };
 
+  const listDocuments = docsQuery.data || documents;
+  const listLoading = docsQuery.isLoading || loading;
+  const listError = docsQuery.error ? (docsQuery.error as any).message : error;
+
   return (
     <div
       style={{
@@ -635,8 +661,9 @@ const KnowledgeBase: React.FC = () => {
                       {renderActions()}
 
                       <DocumentList
-                        documents={Array.isArray(documents) ? documents : []}
-                        loading={loading}
+                        documents={listDocuments}
+                        loading={listLoading}
+                        onError={listError}
                         onView={handleViewDocument}
                         onEdit={handleEditDocument}
                         onDelete={handleDeleteDocument}

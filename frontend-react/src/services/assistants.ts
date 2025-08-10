@@ -34,3 +34,8 @@ export async function getDefaultAssistant() {
   const response = await api.get(`${config.apiEndpoints.assistants}/default`);
   return response.data;
 }
+
+export async function getAssistantModels() {
+  const response = await api.get(`${config.apiEndpoints.assistants}/models`);
+  return response.data;
+}

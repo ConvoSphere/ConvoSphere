@@ -30,13 +30,16 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernForm, { ModernFormItem } from "../components/ModernForm";
 import { Form } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "../services/user";
 
 const { Title, Text } = Typography;
 
 const Profile: React.FC = () => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  const token = useAuthStore((s) => s.token);
+  const fetchProfileStore = useAuthStore((s) => s.fetchProfile);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
@@ -46,11 +49,18 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (!user) fetchProfile();
-  }, [fetchProfile, user]);
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(token || undefined),
+    enabled: Boolean(token),
+    staleTime: 5 * 60 * 1000,
+    initialData: user || undefined,
+    onSuccess: (data) => {
+      if (!user) fetchProfileStore();
+    },
+  });
 
-  if (!user) {
+  if (!profile || isProfileLoading) {
     return (
       <div
         style={{
@@ -178,11 +188,10 @@ const Profile: React.FC = () => {
                     {!editing && (
                       <ModernButton
                         variant="primary"
-                        size="md"
                         icon={<EditOutlined />}
                         onClick={() => setEditing(true)}
                       >
-                        {t("profile.edit", "Bearbeiten")}
+                        {t("common.edit", "Bearbeiten")}
                       </ModernButton>
                     )}
                   </div>
@@ -241,7 +250,7 @@ const Profile: React.FC = () => {
                                 color: colors.colorTextBase,
                               }}
                             >
-                              {user.username}
+                              {profile.username}
                             </Text>
                           </Space>
                         </div>
@@ -284,7 +293,7 @@ const Profile: React.FC = () => {
                                 color: colors.colorTextBase,
                               }}
                             >
-                              {user.email}
+                              {profile.email}
                             </Text>
                           </Space>
                         </div>
@@ -313,7 +322,7 @@ const Profile: React.FC = () => {
                                 gap: 12,
                               }}
                             >
-                              {getRoleIcon(user.role)}
+                              {getRoleIcon(profile.role)}
                               <Text strong style={{ fontSize: "16px" }}>
                                 {t("profile.role", "Rolle")}
                               </Text>
@@ -321,11 +330,11 @@ const Profile: React.FC = () => {
                             <Text
                               style={{
                                 fontSize: "18px",
-                                color: getRoleColor(user.role),
+                                color: getRoleColor(profile.role),
                                 fontWeight: 600,
                               }}
                             >
-                              {t(`profile.roles.${user.role}`, user.role)}
+                              {t(`profile.roles.${profile.role}`, profile.role)}
                             </Text>
                           </Space>
                         </div>
@@ -368,8 +377,8 @@ const Profile: React.FC = () => {
                                 color: colors.colorTextBase,
                               }}
                             >
-                              {user.createdAt
-                                ? formatDate(user.createdAt)
+                              {profile.createdAt
+                                ? formatDate(profile.createdAt)
                                 : t("profile.unknown", "Unbekannt")}
                             </Text>
                           </Space>
@@ -382,8 +391,8 @@ const Profile: React.FC = () => {
                     form={form}
                     onFinish={onFinish}
                     initialValues={{
-                      username: user.username,
-                      email: user.email,
+                      username: profile.username,
+                      email: profile.email,
                     }}
                     layout="vertical"
                   >
@@ -496,7 +505,7 @@ const Profile: React.FC = () => {
                   >
                     <Statistic
                       title={t("profile.total_conversations", "Gespräche")}
-                      value={user.totalConversations || 0}
+                      value={profile.totalConversations || 0}
                       prefix={
                         <UserOutlined style={{ color: colors.colorPrimary }} />
                       }
@@ -511,8 +520,8 @@ const Profile: React.FC = () => {
                     <Statistic
                       title={t("profile.last_login", "Letzter Login")}
                       value={
-                        user.lastLogin
-                          ? formatDate(user.lastLogin)
+                        profile.lastLogin
+                          ? formatDate(profile.lastLogin)
                           : t("profile.never", "Nie")
                       }
                       prefix={

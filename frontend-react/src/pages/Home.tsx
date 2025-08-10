@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Typography,
   Space,
@@ -18,6 +18,7 @@ import ModernCard from "../components/ModernCard";
 import ModernButton from "../components/ModernButton";
 import ChatInitializer from "../components/chat/ChatInitializer";
 import { config } from "../config";
+import { useQuery } from "@tanstack/react-query";
 
 const { Title, Text } = Typography;
 
@@ -29,6 +30,20 @@ interface Assistant {
   isActive: boolean;
 }
 
+const fetchAssistants = async (token: string) => {
+  const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to load assistants");
+  }
+  const data = await response.json();
+  return (data as Assistant[]).filter((assistant) => assistant.isActive);
+};
+
 const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,38 +52,12 @@ const Home: React.FC = () => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
 
-  const [assistants, setAssistants] = useState<Assistant[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load available assistants for quick start
-  useEffect(() => {
-    const loadAssistants = async () => {
-      if (!token) return;
-
-      try {
-        setLoading(true);
-        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setAssistants(data.filter((assistant: Assistant) => assistant.isActive));
-        } else {
-          throw new Error("Failed to load assistants");
-        }
-      } catch (err) {
-        console.error("Error loading assistants:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAssistants();
-  }, [token]);
+  const { data: assistants = [], isLoading } = useQuery({
+    queryKey: ["assistants", { userId: user?.id }],
+    queryFn: () => fetchAssistants(token!),
+    enabled: Boolean(token),
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <div style={{ padding: "24px 0", maxWidth: "800px", margin: "0 auto" }}>
@@ -93,7 +82,7 @@ const Home: React.FC = () => {
       <ChatInitializer variant="card" />
 
       {/* Quick Start Options */}
-      {assistants.length > 1 && (
+      {!isLoading && assistants.length > 1 && (
         <ModernCard
           variant="outlined"
           size="lg"
