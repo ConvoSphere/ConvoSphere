@@ -55,7 +55,8 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import KnowledgeBaseSettings from "../components/knowledge/KnowledgeBaseSettings";
-
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getDocuments } from "../services/knowledge";
 
 const { Title, Text } = Typography;
 
@@ -93,6 +94,13 @@ const KnowledgeBase: React.FC = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  // React Query for documents list (read path only)
+  const docsQuery = useQuery({
+    queryKey: ["knowledge-documents", currentFilters],
+    queryFn: () => getDocuments(currentFilters),
+    staleTime: 2 * 60 * 1000,
+  });
 
   useEffect(() => {
     fetchDocuments();
@@ -571,6 +579,10 @@ const KnowledgeBase: React.FC = () => {
     );
   };
 
+  const listDocuments = docsQuery.data || documents;
+  const listLoading = docsQuery.isLoading || loading;
+  const listError = docsQuery.error ? (docsQuery.error as any).message : error;
+
   return (
     <div
       style={{
@@ -635,8 +647,9 @@ const KnowledgeBase: React.FC = () => {
                       {renderActions()}
 
                       <DocumentList
-                        documents={Array.isArray(documents) ? documents : []}
-                        loading={loading}
+                        documents={listDocuments}
+                        loading={listLoading}
+                        onError={listError}
                         onView={handleViewDocument}
                         onEdit={handleEditDocument}
                         onDelete={handleDeleteDocument}
