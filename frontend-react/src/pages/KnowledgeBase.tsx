@@ -189,6 +189,7 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success("Document reprocessing started");
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to reprocess document");
     }
@@ -213,6 +214,7 @@ const KnowledgeBase: React.FC = () => {
         `${documentIds.length} documents queued for reprocessing`,
       );
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to queue documents for reprocessing");
     }
