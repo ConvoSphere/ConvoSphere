@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from .core import ChatProcessor, RequestBuilder, ResponseHandler
-from .middleware import RAGMiddleware, ToolMiddleware, CostMiddleware
+from .middleware import RAGMiddleware, ToolMiddleware
 from .types.ai_types import (
     ChatResponse,
     ChatStreamResponse,
@@ -27,7 +27,7 @@ class AIService:
         # Initialize middleware
         self.rag_middleware = RAGMiddleware()
         self.tool_middleware = ToolMiddleware()
-        self.cost_middleware = CostMiddleware()
+        # self.cost_middleware = CostMiddleware()  # Temporarily disabled
 
     async def chat_completion(
         self,

@@ -83,7 +83,7 @@ class EmbeddingService:
     """Service for generating and managing embeddings."""
 
     def __init__(self):
-        self.model = get_settings().default_embedding_model
+        self.model = get_settings().knowledge_base.default_embedding_model
         self.batch_size = 10  # Process embeddings in batches
         self.max_retries = 3
         self.retry_delay = 1.0

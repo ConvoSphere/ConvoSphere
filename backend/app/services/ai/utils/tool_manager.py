@@ -3,8 +3,8 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from app.models.tool import Tool
-from app.services.tools.base_tool import BaseTool
+from backend.app.models.tool import Tool
+from backend.app.tools.base import BaseTool
 from sqlalchemy.orm import Session
 
 

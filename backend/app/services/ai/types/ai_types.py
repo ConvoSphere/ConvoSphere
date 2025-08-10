@@ -49,7 +49,6 @@ class ChatRequest:
     provider: str = "openai"
     model: Optional[str] = None
     config: Optional[ChatConfig] = None
-    **kwargs: Any
 
 
 @dataclass

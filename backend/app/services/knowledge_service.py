@@ -36,7 +36,7 @@ from backend.app.services.document.recovery_manager import (
     get_state_manager,
 )
 
-from .ai_service import AIService
+# from .ai_service import AIService  # Removed to fix circular import
 from .document.document_service import DocumentService
 from .embedding_service import embedding_service
 from .storage.config import StorageConfig
@@ -206,7 +206,7 @@ class KnowledgeService:
     def __init__(self, db=None):
         self.db = db or get_db()
         self.weaviate_service = WeaviateService()
-        self.ai_service = AIService()
+        # self.ai_service = AIService()  # Removed to fix circular import
         self.tag_service = TagService(self.db)
         self.metadata_extractor = MetadataExtractor()
         self.error_handler = get_document_error_handler(self.db)
@@ -217,27 +217,27 @@ class KnowledgeService:
         # Initialize storage manager
         settings = get_settings()
         storage_config = StorageConfig(
-            provider=settings.storage_provider,
-            bucket_name=settings.storage_bucket_name,
-            minio_endpoint=settings.minio_endpoint,
-            minio_access_key=settings.minio_access_key,
-            minio_secret_key=settings.minio_secret_key,
-            minio_secure=settings.minio_secure,
-            s3_endpoint_url=settings.s3_endpoint_url,
-            s3_access_key_id=settings.s3_access_key_id,
-            s3_secret_access_key=settings.s3_secret_access_key,
-            s3_region=settings.s3_region,
-            gcs_project_id=settings.gcs_project_id,
-            gcs_credentials_file=settings.gcs_credentials_file,
-            azure_account_name=settings.azure_account_name,
-            azure_account_key=settings.azure_account_key,
-            azure_connection_string=settings.azure_connection_string,
-            local_base_path=settings.upload_dir,
+            provider=settings.storage.storage_provider,
+            bucket_name=settings.storage.storage_bucket_name,
+            minio_endpoint=settings.storage.minio_endpoint,
+            minio_access_key=settings.storage.minio_access_key,
+            minio_secret_key=settings.storage.minio_secret_key,
+            minio_secure=settings.storage.minio_secure,
+            s3_endpoint_url=settings.storage.s3_endpoint_url,
+            s3_access_key_id=settings.storage.s3_access_key_id,
+            s3_secret_access_key=settings.storage.s3_secret_access_key,
+            s3_region=settings.storage.s3_region,
+            gcs_project_id=settings.storage.gcs_project_id,
+            gcs_credentials_file=settings.storage.gcs_credentials_file,
+            azure_account_name=settings.storage.azure_account_name,
+            azure_account_key=settings.storage.azure_account_key,
+            azure_connection_string=settings.storage.azure_connection_string,
+            local_base_path=settings.storage.upload_dir,
         )
         self.storage_manager = StorageManager(storage_config)
 
         # Ensure upload directory exists (for local storage fallback)
-        self.upload_dir = Path(settings.upload_dir)
+        self.upload_dir = Path(settings.storage.upload_dir)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
 
     async def create_document(
