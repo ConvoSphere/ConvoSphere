@@ -59,6 +59,8 @@ export default defineConfig(({ mode }) => ({
       },
     },
     chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true,
+    assetsInlineLimit: 0,
     // Use esbuild for faster minification with console/debugger drop in production
     minify: 'esbuild',
     terserOptions: undefined,
