@@ -95,6 +95,8 @@ const KnowledgeBase: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
+  const queryClient = useQueryClient();
+
   // React Query for documents list (read path only)
   const docsQuery = useQuery({
     queryKey: ["knowledge-documents", currentFilters],
@@ -151,6 +153,7 @@ const KnowledgeBase: React.FC = () => {
       message.success(`Updated ${selectedRowKeys.length} documents`);
       setShowBulkEdit(false);
       setSelectedRowKeys([]);
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (error) {
       message.error("Failed to update documents");
     }
@@ -165,6 +168,7 @@ const KnowledgeBase: React.FC = () => {
           await deleteDocument(documentId);
           message.success("Dokument erfolgreich gelöscht");
           refreshDocuments();
+          await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
         } catch (error) {
           message.error("Fehler beim Löschen des Dokuments");
         }
@@ -195,6 +199,7 @@ const KnowledgeBase: React.FC = () => {
       message.success(`${documentIds.length} documents deleted successfully`);
       setSelectedRowKeys([]);
       refreshDocuments();
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
     } catch (_error) {
       message.error("Failed to delete documents");
     }
