@@ -15,6 +15,7 @@ import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { useAuthStore } from "./store/authStore";
 import { detectLanguage, saveLanguagePreference } from "./utils/languageDetection";
 import ProtectedLayoutRoute from "./components/ProtectedLayoutRoute";
+import { protectedRoutes } from "./routes/routesConfig";
 
 // Import modern UI styles
 import "./styles/animations.css";
@@ -265,6 +266,7 @@ const App: React.FC = () => {
               }}
             >
               <Routes>
+                {/* auth routes */}
                 <Route
                   path="/login"
                   element={
@@ -305,23 +307,9 @@ const App: React.FC = () => {
                     </ErrorBoundary>
                   }
                 />
-                <Route path="/" element={<ProtectedLayoutRoute><LazyHomePage /></ProtectedLayoutRoute>} />
-                <Route path="/dashboard" element={<ProtectedLayoutRoute><LazyDashboardPage /></ProtectedLayoutRoute>} />
-                <Route path="/overview" element={<ProtectedLayoutRoute><LazyOverviewPage /></ProtectedLayoutRoute>} />
-                <Route path="/chat" element={<ProtectedLayoutRoute><LazyChatPage /></ProtectedLayoutRoute>} />
-                <Route path="/assistants" element={<ProtectedLayoutRoute><LazyAssistantsPage /></ProtectedLayoutRoute>} />
-                <Route path="/ai-models" element={<ProtectedLayoutRoute><LazyAIModelsPage /></ProtectedLayoutRoute>} />
-                <Route path="/knowledge-base" element={<ProtectedLayoutRoute><LazyKnowledgeBasePage /></ProtectedLayoutRoute>} />
-                <Route path="/tools" element={<ProtectedLayoutRoute><LazyToolsPage /></ProtectedLayoutRoute>} />
-                <Route path="/settings" element={<ProtectedLayoutRoute><LazySettingsPage /></ProtectedLayoutRoute>} />
-                <Route path="/admin" element={<ProtectedLayoutRoute><LazyAdminPage /></ProtectedLayoutRoute>} />
-                <Route path="/profile" element={<ProtectedLayoutRoute><LazyProfilePage /></ProtectedLayoutRoute>} />
-                <Route path="/conversations" element={<ProtectedLayoutRoute><LazyConversationsPage /></ProtectedLayoutRoute>} />
-                <Route path="/mcp-tools" element={<ProtectedLayoutRoute><LazyMcpToolsPage /></ProtectedLayoutRoute>} />
-                <Route path="/system-status" element={<ProtectedLayoutRoute><LazySystemStatusPage /></ProtectedLayoutRoute>} />
-                <Route path="/conversation-intelligence" element={<ProtectedLayoutRoute><LazyConversationIntelligencePage /></ProtectedLayoutRoute>} />
-                <Route path="/domain-groups" element={<ProtectedLayoutRoute><LazyDomainGroupsPage /></ProtectedLayoutRoute>} />
-                <Route path="/export-backup" element={<ProtectedLayoutRoute><LazyExportBackupPage /></ProtectedLayoutRoute>} />
+                {protectedRoutes.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
               </Routes>
             </ErrorBoundary>
           </Router>
