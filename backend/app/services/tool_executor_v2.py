@@ -97,6 +97,9 @@ class ToolCache:
         self.ttl_hours = ttl_hours
         self.cache: dict[str, dict[str, Any]] = {}
         self.access_times: dict[str, datetime] = {}
+        # Track cache performance
+        self._hits: int = 0
+        self._misses: int = 0
 
     def _generate_cache_key(self, tool_name: str, arguments: dict[str, Any]) -> str:
         """Generate cache key from tool name and arguments."""
@@ -107,6 +110,7 @@ class ToolCache:
         cache_key = self._generate_cache_key(tool_name, arguments)
 
         if cache_key not in self.cache:
+            self._misses += 1
             return None
 
         # Check if expired
@@ -115,10 +119,12 @@ class ToolCache:
             if age.total_seconds() > self.ttl_hours * 3600:
                 del self.cache[cache_key]
                 del self.access_times[cache_key]
+                self._misses += 1
                 return None
 
-        # Update access time
+        # Update access time and count hit
         self.access_times[cache_key] = datetime.now(UTC)
+        self._hits += 1
         return self.cache[cache_key]["result"]
 
     def set(self, tool_name: str, arguments: dict[str, Any], result: Any) -> None:
@@ -145,6 +151,8 @@ class ToolCache:
         """Clear all cached data."""
         self.cache.clear()
         self.access_times.clear()
+        self._hits = 0
+        self._misses = 0
 
     def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
@@ -153,11 +161,16 @@ class ToolCache:
             "max_size": self.max_size,
             "hit_rate": self._calculate_hit_rate(),
             "ttl_hours": self.ttl_hours,
+            "hits": self._hits,
+            "misses": self._misses,
         }
 
     def _calculate_hit_rate(self) -> float:
-        """Calculate cache hit rate (placeholder implementation)."""
-        return 0.0  # TODO: Implement actual hit rate calculation
+        """Calculate cache hit rate based on tracked hits/misses."""
+        total = self._hits + self._misses
+        if total == 0:
+            return 0.0
+        return self._hits / total
 
 
 class ToolDependencyManager:

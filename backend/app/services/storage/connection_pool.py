@@ -54,13 +54,18 @@ class ConnectionPool:
         self._lock = asyncio.Lock()
         self._cleanup_task: asyncio.Task | None = None
 
-        # Start cleanup task
+        # Start cleanup task if running inside an event loop
         self._start_cleanup_task()
 
     def _start_cleanup_task(self):
         """Start background cleanup task."""
         if self._cleanup_task is None or self._cleanup_task.done():
-            self._cleanup_task = asyncio.create_task(self._cleanup_idle_connections())
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                # No running loop (e.g., module import, sync context). Defer start.
+                return
+            self._cleanup_task = loop.create_task(self._cleanup_idle_connections())
 
     async def _cleanup_idle_connections(self):
         """Clean up idle connections periodically."""
@@ -108,6 +113,8 @@ class ConnectionPool:
 
     async def get_connection(self, conn_id: str, factory: Callable) -> Any:
         """Get or create a connection."""
+        # Ensure cleanup task is running once we are in async context
+        self._start_cleanup_task()
         async with self._lock:
             # Check if connection exists and is valid
             if conn_id in self._connections:

@@ -5,8 +5,12 @@ This module validates document files.
 """
 
 from pathlib import Path
+import mimetypes
 
-import magic
+try:
+    import magic  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    magic = None
 
 
 class FileValidator:
@@ -37,5 +41,17 @@ class FileValidator:
         if file_size > self.MAX_FILE_SIZE:
             return False
 
-        mime_type = magic.from_file(file_path, mime=True)
+        mime_type = self._detect_mime(file_path)
+        if mime_type is None:
+            return False
         return mime_type in self.SUPPORTED_TYPES
+
+    def _detect_mime(self, file_path: str) -> str | None:
+        """Detect MIME type using libmagic if available, else mimetypes as fallback."""
+        if magic is not None:
+            try:
+                return magic.from_file(file_path, mime=True)
+            except Exception:
+                pass
+        guessed, _ = mimetypes.guess_type(file_path)
+        return guessed
