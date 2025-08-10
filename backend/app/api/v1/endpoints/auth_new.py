@@ -7,16 +7,16 @@ using the new modular architecture.
 
 from fastapi import APIRouter
 
-from backend.app.api.v1.endpoints.auth.authentication import router as auth_router
-from backend.app.api.v1.endpoints.auth.password import router as password_router
-from backend.app.api.v1.endpoints.auth.registration import router as registration_router
-from backend.app.api.v1.endpoints.auth.sso.account_management import (
+from .auth.authentication import router as auth_router
+from .auth.password import router as password_router
+from .auth.registration import router as registration_router
+from .auth.sso.account_management import (
     router as sso_account_router,
 )
-from backend.app.api.v1.endpoints.auth.sso.authentication import (
+from .auth.sso.authentication import (
     router as sso_auth_router,
 )
-from backend.app.api.v1.endpoints.auth.sso.providers import (
+from .auth.sso.providers import (
     router as sso_providers_router,
 )
 

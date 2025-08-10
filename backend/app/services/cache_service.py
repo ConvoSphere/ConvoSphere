@@ -628,7 +628,7 @@ class ToolResultCache:
 
 # Global cache service instance
 cache_config = CacheConfig(
-    redis_url=settings.redis_url or "redis://localhost:6379",
+    redis_url=settings.redis.redis_url or "redis://localhost:6379",
     default_ttl=3600,
     max_connections=10,
     enable_compression=True,

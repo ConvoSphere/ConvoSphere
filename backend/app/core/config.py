@@ -469,3 +469,7 @@ def get_settings() -> Settings:
     if _settings is None:
         _settings = Settings()
     return _settings
+
+
+# Create global settings instance for direct import
+settings = get_settings()
