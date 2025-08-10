@@ -55,8 +55,8 @@ import ModernButton from "../components/ModernButton";
 import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import KnowledgeBaseSettings from "../components/knowledge/KnowledgeBaseSettings";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getDocuments } from "../services/knowledge";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { getDocuments, updateDocument as apiUpdateDocument } from "../services/knowledge";
 
 const { Title, Text } = Typography;
 
@@ -102,6 +102,13 @@ const KnowledgeBase: React.FC = () => {
     queryKey: ["knowledge-documents", currentFilters],
     queryFn: () => getDocuments(currentFilters),
     staleTime: 2 * 60 * 1000,
+  });
+
+  const updateDocMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Document> }) => apiUpdateDocument(id, updates),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+    },
   });
 
   useEffect(() => {
