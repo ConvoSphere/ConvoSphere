@@ -230,11 +230,10 @@ def create_application() -> FastAPI:
         # Create standardized error response
         error_response = CommonErrors.internal_server_error(
             message=translated_detail,
-            status_code=exc.status_code,
         )
         return JSONResponse(
             status_code=exc.status_code,
-            content=error_response.dict(),
+            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
         )
 
     @app.exception_handler(RequestValidationError)
@@ -252,7 +251,7 @@ def create_application() -> FastAPI:
         )
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=error_response.dict(),
+            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
         )
 
     @app.exception_handler(Exception)
@@ -264,7 +263,7 @@ def create_application() -> FastAPI:
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=error_response.dict(),
+            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
         )
 
     # Health check endpoint
