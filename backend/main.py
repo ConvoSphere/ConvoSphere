@@ -231,9 +231,17 @@ def create_application() -> FastAPI:
         error_response = CommonErrors.internal_server_error(
             message=translated_detail,
         )
+        payload = (
+            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+        )
+        try:
+            if "timestamp" in payload:
+                payload["timestamp"] = payload["timestamp"].isoformat()
+        except Exception:
+            pass
         return JSONResponse(
             status_code=exc.status_code,
-            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
+            content=payload,
         )
 
     @app.exception_handler(RequestValidationError)
@@ -249,9 +257,17 @@ def create_application() -> FastAPI:
             message="Request validation failed",
             details=details,
         )
+        payload = (
+            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+        )
+        try:
+            if "timestamp" in payload:
+                payload["timestamp"] = payload["timestamp"].isoformat()
+        except Exception:
+            pass
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
+            content=payload,
         )
 
     @app.exception_handler(Exception)
@@ -261,9 +277,18 @@ def create_application() -> FastAPI:
         error_response = CommonErrors.internal_server_error(
             message="An unexpected error occurred",
         )
+        # Ensure JSON serializable
+        payload = (
+            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+        )
+        if hasattr(error_response, "timestamp"):
+            try:
+                payload["timestamp"] = payload["timestamp"].isoformat()
+            except Exception:
+                pass
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict(),
+            content=payload,
         )
 
     # Health check endpoint
