@@ -29,7 +29,7 @@ class TokenService:
             self.settings, "password_reset_token_expire_minutes", 60
         )
         # In-memory fallback store: token -> (user_id, expires_at)
-        self._memory_tokens: dict[str, tuple[str, "datetime"]] = {}
+        self._memory_tokens: dict[str, tuple[object, "datetime"]] = {}
 
     def generate_password_reset_token(self) -> str:
         """
@@ -128,7 +128,7 @@ class TokenService:
         # Commit changes
         db.commit()
         # Store in memory as well
-        self._memory_tokens[token] = (str(user.id), expires_at)
+        self._memory_tokens[token] = (user.id, expires_at)
 
         logger.info(f"Created password reset token for user {user.email}")
         return token

@@ -228,6 +228,9 @@ def create_application() -> FastAPI:
         )
 
         # Create standardized error response
+        # For 4xx, return a simple detail payload for compatibility with tests
+        if 400 <= exc.status_code < 500:
+            return JSONResponse(status_code=exc.status_code, content={"detail": translated_detail})
         error_response = CommonErrors.internal_server_error(
             message=translated_detail,
         )
