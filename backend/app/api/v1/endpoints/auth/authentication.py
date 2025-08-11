@@ -12,6 +12,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import func
 
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
@@ -316,7 +317,8 @@ async def forgot_password(request_data: PasswordResetRequest, db: Session = Depe
         )
 
     try:
-        user = db.query(User).filter(User.email == request_data.email.lower()).first()
+        email_lc = request_data.email.lower()
+        user = db.query(User).filter(func.lower(User.email) == email_lc).first()
         if user:
             token = token_service.create_password_reset_token(user, db)
             reset_url = f"{get_settings().backend_url}/reset-password?token={token}"
