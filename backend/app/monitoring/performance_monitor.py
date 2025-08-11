@@ -38,8 +38,8 @@ class PerformanceMonitor:
 
         # Initialize monitoring components
         self.metrics_collector = MetricsCollector(
-            max_metrics=self.settings.monitoring_max_metrics,
-            retention_hours=self.settings.monitoring_retention_hours,
+            max_metrics=self.settings.monitoring.monitoring_max_metrics,
+            retention_hours=self.settings.monitoring.monitoring_retention_hours,
         )
         self.alert_manager = AlertManager()
         self.system_monitor = SystemMonitor()
