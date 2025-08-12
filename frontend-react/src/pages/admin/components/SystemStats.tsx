@@ -1,12 +1,9 @@
 import React from "react";
-import { Row, Col, Statistic, Progress, Card, Space, Button } from "antd";
+import { Row, Col, Statistic, Progress, Card, Space } from "antd";
 import {
   UserOutlined,
   MessageOutlined,
-  FileOutlined,
-  ClockCircleOutlined,
   ReloadOutlined,
-  DashboardOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useSystemStats } from "../hooks/useSystemStats";
