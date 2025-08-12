@@ -6,6 +6,43 @@ import type {
   ModelTest,
 } from "../store/aiModelsStore";
 
+export interface ModelPerformance {
+  latencyMsAvg: number;
+  tokensPerSecond: number;
+  successRate: number;
+  timeframe: string;
+}
+
+export interface ModelUsage {
+  totalRequests: number;
+  totalTokens: number;
+  averageTokensPerRequest: number;
+  timeframe: string;
+}
+
+export interface ModelCosts {
+  totalCostUsd: number;
+  inputCostUsd: number;
+  outputCostUsd: number;
+  timeframe: string;
+}
+
+export interface ProviderInfo {
+  id: string;
+  name: string;
+  supportedModels: string[];
+}
+
+export interface CompareModelsResult {
+  differences: Array<{ key: string; a?: unknown; b?: unknown }>;
+}
+
+export interface ModelAnalytics {
+  byProvider: Record<string, number>;
+  byModel: Record<string, number>;
+  timeframe: string;
+}
+
 class AIModelsService {
   private baseUrl = config.apiUrl;
   private endpoints = config.apiEndpoints;
@@ -161,7 +198,7 @@ class AIModelsService {
   /**
    * Get model performance statistics
    */
-  async getModelPerformance(modelId: string, timeRange?: string): Promise<any> {
+  async getModelPerformance(modelId: string, timeRange?: string): Promise<ModelPerformance> {
     const params = timeRange ? `?timeRange=${timeRange}` : "";
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/performance${params}`,
@@ -177,7 +214,7 @@ class AIModelsService {
   /**
    * Get model usage statistics
    */
-  async getModelUsage(modelId: string, timeRange?: string): Promise<any> {
+  async getModelUsage(modelId: string, timeRange?: string): Promise<ModelUsage> {
     const params = timeRange ? `?timeRange=${timeRange}` : "";
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/usage${params}`,
@@ -193,7 +230,7 @@ class AIModelsService {
   /**
    * Get model cost statistics
    */
-  async getModelCosts(modelId: string, timeRange?: string): Promise<any> {
+  async getModelCosts(modelId: string, timeRange?: string): Promise<ModelCosts> {
     const params = timeRange ? `?timeRange=${timeRange}` : "";
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/costs${params}`,
@@ -209,7 +246,7 @@ class AIModelsService {
   /**
    * Get available providers
    */
-  async getProviders(): Promise<any[]> {
+  async getProviders(): Promise<ProviderInfo[]> {
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/providers`,
     );
@@ -224,7 +261,7 @@ class AIModelsService {
   /**
    * Get provider models
    */
-  async getProviderModels(provider: string): Promise<any[]> {
+  async getProviderModels(provider: string): Promise<string[]> {
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/providers/${provider}/models`,
     );
@@ -261,7 +298,7 @@ class AIModelsService {
   /**
    * Get model comparison data
    */
-  async compareModels(modelIds: string[]): Promise<any> {
+  async compareModels(modelIds: string[]): Promise<CompareModelsResult> {
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/models/compare`,
       {
@@ -283,7 +320,7 @@ class AIModelsService {
    */
   async getModelRecommendations(
     useCase: string,
-    requirements?: any,
+    requirements?: Partial<Record<string, unknown>>,
   ): Promise<AIModel[]> {
     const response = await fetch(
       `${this.baseUrl}${this.endpoints.assistants}/models/recommendations`,
@@ -304,7 +341,7 @@ class AIModelsService {
   /**
    * Get model analytics
    */
-  async getModelAnalytics(timeRange?: string, filters?: any): Promise<any> {
+  async getModelAnalytics(timeRange?: string, filters?: Partial<Record<string, unknown>>): Promise<ModelAnalytics> {
     const params = new URLSearchParams();
     if (timeRange) params.append("timeRange", timeRange);
     if (filters) params.append("filters", JSON.stringify(filters));
