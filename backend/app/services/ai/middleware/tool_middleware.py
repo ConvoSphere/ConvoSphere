@@ -2,10 +2,10 @@
 
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
+from ..types.ai_types import ToolCall
 from ..utils.tool_manager import ToolManager
-from ..types.ai_types import ToolInfo, ToolCall
 
 
 class ToolMiddleware:
@@ -57,15 +57,14 @@ class ToolMiddleware:
 
         if system_message_index >= 0:
             # Enhance existing system message
-            existing_content = enhanced_messages[system_message_index].get("content", "")
+            existing_content = enhanced_messages[system_message_index].get(
+                "content", ""
+            )
             enhanced_content = existing_content + "\n\n" + tool_prompt
             enhanced_messages[system_message_index]["content"] = enhanced_content
         else:
             # Create new system message
-            system_message = {
-                "role": "system",
-                "content": tool_prompt
-            }
+            system_message = {"role": "system", "content": tool_prompt}
             enhanced_messages.insert(0, system_message)
 
         return enhanced_messages
@@ -83,7 +82,7 @@ class ToolMiddleware:
             parameters = tool.get("parameters", {})
 
             prompt += f"**{name}**: {description}\n"
-            
+
             if parameters:
                 prompt += "Parameters:\n"
                 for param_name, param_info in parameters.items():
@@ -91,8 +90,10 @@ class ToolMiddleware:
                     param_desc = param_info.get("description", "")
                     required = param_info.get("required", False)
                     req_text = " (required)" if required else " (optional)"
-                    prompt += f"  - {param_name}: {param_type}{req_text} - {param_desc}\n"
-            
+                    prompt += (
+                        f"  - {param_name}: {param_type}{req_text} - {param_desc}\n"
+                    )
+
             prompt += "\n"
 
         prompt += """To use a tool, respond with the following format:
@@ -124,34 +125,40 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
                 try:
                     # Start timing
                     start_time = time.time()
-                    
+
                     result = await self.tool_manager.execute_tool(
                         tool_name=tool_call.tool_name,
                         parameters=tool_call.parameters,
                         user_id=user_id,
                     )
-                    
+
                     # Calculate execution time
                     execution_time = time.time() - start_time
-                    
-                    results.append({
-                        "tool": tool_call.tool_name,
-                        "parameters": tool_call.parameters,
-                        "result": result,
-                        "success": True,
-                        "execution_time": execution_time,
-                    })
+
+                    results.append(
+                        {
+                            "tool": tool_call.tool_name,
+                            "parameters": tool_call.parameters,
+                            "result": result,
+                            "success": True,
+                            "execution_time": execution_time,
+                        }
+                    )
                 except Exception as e:
                     # Calculate execution time even for failed executions
-                    execution_time = time.time() - start_time if 'start_time' in locals() else 0.0
-                    
-                    results.append({
-                        "tool": tool_call.tool_name,
-                        "parameters": tool_call.parameters,
-                        "result": str(e),
-                        "success": False,
-                        "execution_time": execution_time,
-                    })
+                    execution_time = (
+                        time.time() - start_time if "start_time" in locals() else 0.0
+                    )
+
+                    results.append(
+                        {
+                            "tool": tool_call.tool_name,
+                            "parameters": tool_call.parameters,
+                            "result": str(e),
+                            "success": False,
+                            "execution_time": execution_time,
+                        }
+                    )
 
             return results
 
@@ -164,14 +171,15 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
         tool_calls = []
 
         # Pattern to match tool calls
-        pattern = r'<tool_call>\s*<tool_name>(.*?)</tool_name>\s*<parameters>\s*(.*?)\s*</parameters>\s*</tool_call>'
+        pattern = r"<tool_call>\s*<tool_name>(.*?)</tool_name>\s*<parameters>\s*(.*?)\s*</parameters>\s*</tool_call>"
         matches = re.findall(pattern, ai_response, re.DOTALL)
 
         for tool_name, parameters_str in matches:
             try:
                 import json
+
                 parameters = json.loads(parameters_str.strip())
-                
+
                 tool_call = ToolCall(
                     tool_name=tool_name.strip(),
                     parameters=parameters,
@@ -183,7 +191,9 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
 
         return tool_calls
 
-    def should_apply_tools(self, messages: List[Dict[str, str]], use_tools: bool) -> bool:
+    def should_apply_tools(
+        self, messages: List[Dict[str, str]], use_tools: bool
+    ) -> bool:
         """Determine if tools should be applied."""
         if not use_tools:
             return False
@@ -197,9 +207,7 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
             return False
 
         # Check if there's a user message that might benefit from tools
-        has_user_message = any(
-            message.get("role") == "user" for message in messages
-        )
+        has_user_message = any(message.get("role") == "user" for message in messages)
 
         return has_user_message
 
@@ -216,8 +224,12 @@ You can make multiple tool calls if needed. After making tool calls, wait for th
 
         successful = sum(1 for result in tool_results if result.get("success", False))
         failed = len(tool_results) - successful
-        total_execution_time = sum(result.get("execution_time", 0.0) for result in tool_results)
-        avg_execution_time = total_execution_time / len(tool_results) if tool_results else 0.0
+        total_execution_time = sum(
+            result.get("execution_time", 0.0) for result in tool_results
+        )
+        avg_execution_time = (
+            total_execution_time / len(tool_results) if tool_results else 0.0
+        )
 
         return {
             "tools_executed": len(tool_results),

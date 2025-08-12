@@ -84,7 +84,9 @@ const KnowledgeBaseSettings: React.FC = () => {
     cacheExpiry: 3600,
   });
 
-  const [availableEmbeddingModels, setAvailableEmbeddingModels] = useState<EmbeddingModel[]>([
+  const [availableEmbeddingModels, setAvailableEmbeddingModels] = useState<
+    EmbeddingModel[]
+  >([
     {
       id: "text-embedding-ada-002",
       name: "OpenAI Ada-002",
@@ -130,12 +132,15 @@ const KnowledgeBaseSettings: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${config.apiUrl}/api/v1/knowledge/settings`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${config.apiUrl}/api/v1/knowledge/settings`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -159,14 +164,17 @@ const KnowledgeBaseSettings: React.FC = () => {
       setError(null);
       setSuccess(null);
 
-      const response = await fetch(`${config.apiUrl}/api/v1/knowledge/settings`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${config.apiUrl}/api/v1/knowledge/settings`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
         },
-        body: JSON.stringify(values),
-      });
+      );
 
       if (response.ok) {
         setSettings(values);
@@ -194,11 +202,11 @@ const KnowledgeBaseSettings: React.FC = () => {
     const sizes = ["B", "KB", "MB", "GB"];
     if (bytes === 0) return "0 B";
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${Math.round(bytes / Math.pow(1024, i) * 100) / 100} ${sizes[i]}`;
+    return `${Math.round((bytes / Math.pow(1024, i)) * 100) / 100} ${sizes[i]}`;
   };
 
   const getEmbeddingModelInfo = (modelId: string) => {
-    return availableEmbeddingModels.find(model => model.id === modelId);
+    return availableEmbeddingModels.find((model) => model.id === modelId);
   };
 
   if (loading) {
@@ -217,12 +225,12 @@ const KnowledgeBaseSettings: React.FC = () => {
       <ModernCard variant="elevated" size="lg">
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <Title level={2} style={{ marginBottom: "8px" }}>
-            <SettingOutlined style={{ marginRight: "12px", color: colors.colorPrimary }} />
+            <SettingOutlined
+              style={{ marginRight: "12px", color: colors.colorPrimary }}
+            />
             {t("knowledge.settings.title")}
           </Title>
-          <Text type="secondary">
-            {t("knowledge.settings.description")}
-          </Text>
+          <Text type="secondary">{t("knowledge.settings.description")}</Text>
         </div>
 
         {error && (
@@ -254,19 +262,31 @@ const KnowledgeBaseSettings: React.FC = () => {
           initialValues={settings}
         >
           {/* Document Processing Settings */}
-          <ModernCard variant="outlined" size="md" style={{ marginBottom: "24px" }}>
+          <ModernCard
+            variant="outlined"
+            size="md"
+            style={{ marginBottom: "24px" }}
+          >
             <Title level={4} style={{ marginBottom: "16px" }}>
               {t("knowledge.settings.document_processing")}
             </Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <ModernFormItem
                   name="chunkSize"
                   label={t("knowledge.settings.chunk_size")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.chunk_size_required") },
-                    { type: "number", min: 100, max: 2000, message: t("knowledge.settings.chunk_size_range") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.chunk_size_required"),
+                    },
+                    {
+                      type: "number",
+                      min: 100,
+                      max: 2000,
+                      message: t("knowledge.settings.chunk_size_range"),
+                    },
                   ]}
                 >
                   <ModernInput
@@ -282,8 +302,16 @@ const KnowledgeBaseSettings: React.FC = () => {
                   name="chunkOverlap"
                   label={t("knowledge.settings.chunk_overlap")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.chunk_overlap_required") },
-                    { type: "number", min: 0, max: 500, message: t("knowledge.settings.chunk_overlap_range") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.chunk_overlap_required"),
+                    },
+                    {
+                      type: "number",
+                      min: 0,
+                      max: 500,
+                      message: t("knowledge.settings.chunk_overlap_range"),
+                    },
                   ]}
                 >
                   <ModernInput
@@ -302,8 +330,16 @@ const KnowledgeBaseSettings: React.FC = () => {
                   name="maxFileSize"
                   label={t("knowledge.settings.max_file_size")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.max_file_size_required") },
-                    { type: "number", min: 1024 * 1024, max: 100 * 1024 * 1024, message: t("knowledge.settings.max_file_size_range") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.max_file_size_required"),
+                    },
+                    {
+                      type: "number",
+                      min: 1024 * 1024,
+                      max: 100 * 1024 * 1024,
+                      message: t("knowledge.settings.max_file_size_range"),
+                    },
                   ]}
                 >
                   <ModernInput
@@ -314,7 +350,8 @@ const KnowledgeBaseSettings: React.FC = () => {
                   />
                 </ModernFormItem>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  {t("knowledge.settings.current_size")}: {formatFileSize(settings.maxFileSize)}
+                  {t("knowledge.settings.current_size")}:{" "}
+                  {formatFileSize(settings.maxFileSize)}
                 </Text>
               </Col>
               <Col span={12}>
@@ -322,8 +359,18 @@ const KnowledgeBaseSettings: React.FC = () => {
                   name="processingTimeout"
                   label={t("knowledge.settings.processing_timeout")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.processing_timeout_required") },
-                    { type: "number", min: 60, max: 3600, message: t("knowledge.settings.processing_timeout_range") }
+                    {
+                      required: true,
+                      message: t(
+                        "knowledge.settings.processing_timeout_required",
+                      ),
+                    },
+                    {
+                      type: "number",
+                      min: 60,
+                      max: 3600,
+                      message: t("knowledge.settings.processing_timeout_range"),
+                    },
                   ]}
                 >
                   <ModernInput
@@ -338,48 +385,78 @@ const KnowledgeBaseSettings: React.FC = () => {
           </ModernCard>
 
           {/* Embedding and Indexing Settings */}
-          <ModernCard variant="outlined" size="md" style={{ marginBottom: "24px" }}>
+          <ModernCard
+            variant="outlined"
+            size="md"
+            style={{ marginBottom: "24px" }}
+          >
             <Title level={4} style={{ marginBottom: "16px" }}>
               {t("knowledge.settings.embedding_indexing")}
             </Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <ModernFormItem
                   name="embeddingModel"
                   label={t("knowledge.settings.embedding_model")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.embedding_model_required") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.embedding_model_required"),
+                    },
                   ]}
                 >
                   <ModernSelect
                     placeholder={t("knowledge.settings.select_embedding_model")}
                     showSearch
                     filterOption={(input, option) =>
-                      option?.children?.toLowerCase().includes(input.toLowerCase())
+                      option?.children
+                        ?.toLowerCase()
+                        .includes(input.toLowerCase())
                     }
                   >
-                    {availableEmbeddingModels.map(model => (
+                    {availableEmbeddingModels.map((model) => (
                       <ModernSelect.Option key={model.id} value={model.id}>
                         <div>
                           <div style={{ fontWeight: 500 }}>{model.name}</div>
-                          <div style={{ fontSize: "12px", color: colors.colorTextSecondary }}>
-                            {model.provider} • {model.dimensions}D • {model.maxTokens} tokens
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: colors.colorTextSecondary,
+                            }}
+                          >
+                            {model.provider} • {model.dimensions}D •{" "}
+                            {model.maxTokens} tokens
                           </div>
                         </div>
                       </ModernSelect.Option>
                     ))}
                   </ModernSelect>
                 </ModernFormItem>
-                
+
                 {settings.embeddingModel && (
-                  <div style={{ marginTop: "8px", padding: "12px", backgroundColor: colors.colorBgElevated, borderRadius: "8px" }}>
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      padding: "12px",
+                      backgroundColor: colors.colorBgElevated,
+                      borderRadius: "8px",
+                    }}
+                  >
                     <Text strong>{t("knowledge.settings.model_info")}:</Text>
                     <br />
                     <Text type="secondary" style={{ fontSize: "12px" }}>
-                      {getEmbeddingModelInfo(settings.embeddingModel)?.name} • 
-                      {getEmbeddingModelInfo(settings.embeddingModel)?.dimensions} dimensions • 
-                      {getEmbeddingModelInfo(settings.embeddingModel)?.maxTokens} max tokens
+                      {getEmbeddingModelInfo(settings.embeddingModel)?.name} •
+                      {
+                        getEmbeddingModelInfo(settings.embeddingModel)
+                          ?.dimensions
+                      }{" "}
+                      dimensions •
+                      {
+                        getEmbeddingModelInfo(settings.embeddingModel)
+                          ?.maxTokens
+                      }{" "}
+                      max tokens
                     </Text>
                   </div>
                 )}
@@ -389,10 +466,15 @@ const KnowledgeBaseSettings: React.FC = () => {
                   name="indexType"
                   label={t("knowledge.settings.index_type")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.index_type_required") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.index_type_required"),
+                    },
                   ]}
                 >
-                  <ModernSelect placeholder={t("knowledge.settings.select_index_type")}>
+                  <ModernSelect
+                    placeholder={t("knowledge.settings.select_index_type")}
+                  >
                     <ModernSelect.Option value="vector">
                       {t("knowledge.settings.vector_index")}
                     </ModernSelect.Option>
@@ -401,15 +483,24 @@ const KnowledgeBaseSettings: React.FC = () => {
                     </ModernSelect.Option>
                   </ModernSelect>
                 </ModernFormItem>
-                
+
                 <ModernFormItem
                   name="searchAlgorithm"
                   label={t("knowledge.settings.search_algorithm")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.search_algorithm_required") }
+                    {
+                      required: true,
+                      message: t(
+                        "knowledge.settings.search_algorithm_required",
+                      ),
+                    },
                   ]}
                 >
-                  <ModernSelect placeholder={t("knowledge.settings.select_search_algorithm")}>
+                  <ModernSelect
+                    placeholder={t(
+                      "knowledge.settings.select_search_algorithm",
+                    )}
+                  >
                     <ModernSelect.Option value="semantic">
                       {t("knowledge.settings.semantic_search")}
                     </ModernSelect.Option>
@@ -426,11 +517,15 @@ const KnowledgeBaseSettings: React.FC = () => {
           </ModernCard>
 
           {/* Processing Options */}
-          <ModernCard variant="outlined" size="md" style={{ marginBottom: "24px" }}>
+          <ModernCard
+            variant="outlined"
+            size="md"
+            style={{ marginBottom: "24px" }}
+          >
             <Title level={4} style={{ marginBottom: "16px" }}>
               {t("knowledge.settings.processing_options")}
             </Title>
-            
+
             <Row gutter={16}>
               <Col span={12}>
                 <ModernFormItem
@@ -447,7 +542,7 @@ const KnowledgeBaseSettings: React.FC = () => {
                     </ModernSelect.Option>
                   </ModernSelect>
                 </ModernFormItem>
-                
+
                 <ModernFormItem
                   name="autoTagging"
                   valuePropName="checked"
@@ -468,8 +563,16 @@ const KnowledgeBaseSettings: React.FC = () => {
                   name="batchSize"
                   label={t("knowledge.settings.batch_size")}
                   rules={[
-                    { required: true, message: t("knowledge.settings.batch_size_required") },
-                    { type: "number", min: 1, max: 100, message: t("knowledge.settings.batch_size_range") }
+                    {
+                      required: true,
+                      message: t("knowledge.settings.batch_size_required"),
+                    },
+                    {
+                      type: "number",
+                      min: 1,
+                      max: 100,
+                      message: t("knowledge.settings.batch_size_range"),
+                    },
                   ]}
                 >
                   <ModernInput
@@ -479,7 +582,7 @@ const KnowledgeBaseSettings: React.FC = () => {
                     suffix={t("knowledge.settings.documents")}
                   />
                 </ModernFormItem>
-                
+
                 <ModernFormItem
                   name="enableCache"
                   valuePropName="checked"
@@ -499,7 +602,14 @@ const KnowledgeBaseSettings: React.FC = () => {
           </ModernCard>
 
           {/* Actions */}
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "32px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "center",
+              marginTop: "32px",
+            }}
+          >
             <ModernButton
               type="primary"
               icon={<SaveOutlined />}
@@ -509,7 +619,7 @@ const KnowledgeBaseSettings: React.FC = () => {
             >
               {t("knowledge.settings.save_settings")}
             </ModernButton>
-            
+
             <ModernButton
               icon={<ReloadOutlined />}
               onClick={handleReset}

@@ -30,7 +30,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  RadialLinearScale
+  RadialLinearScale,
 );
 
 const { Title: AntTitle, Text } = Typography;
@@ -73,8 +73,14 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
   }, [token, config.settings.dataSource, config.settings.timeRange]);
 
   useEffect(() => {
-    if (config.settings.refreshInterval && config.settings.refreshInterval > 0) {
-      const interval = setInterval(loadChartData, config.settings.refreshInterval * 1000);
+    if (
+      config.settings.refreshInterval &&
+      config.settings.refreshInterval > 0
+    ) {
+      const interval = setInterval(
+        loadChartData,
+        config.settings.refreshInterval * 1000,
+      );
       return () => clearInterval(interval);
     }
   }, [config.settings.refreshInterval]);
@@ -87,8 +93,8 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
       setLocalError(null);
 
       // Simulate API call for chart data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const data = generateChartData();
       setChartData(data);
     } catch (error) {
@@ -118,7 +124,9 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
       case "24h":
         for (let i = 23; i >= 0; i--) {
           const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-          labels.push(time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+          labels.push(
+            time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          );
         }
         break;
       case "7d":
@@ -136,7 +144,9 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
       case "90d":
         for (let i = 89; i >= 0; i -= 3) {
           const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-          labels.push(date.toLocaleDateString([], { month: "short", day: "numeric" }));
+          labels.push(
+            date.toLocaleDateString([], { month: "short", day: "numeric" }),
+          );
         }
         break;
     }
@@ -149,8 +159,8 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
     const baseValue = getBaseValue(dataSource);
     const variance = getVariance(dataSource);
 
-    const data = labels.map(() => 
-      Math.max(0, baseValue + (Math.random() - 0.5) * variance)
+    const data = labels.map(() =>
+      Math.max(0, baseValue + (Math.random() - 0.5) * variance),
     );
 
     return [
@@ -167,21 +177,31 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   const getBaseValue = (dataSource: string) => {
     switch (dataSource) {
-      case "conversations": return 50;
-      case "messages": return 200;
-      case "users": return 25;
-      case "performance": return 85;
-      default: return 100;
+      case "conversations":
+        return 50;
+      case "messages":
+        return 200;
+      case "users":
+        return 25;
+      case "performance":
+        return 85;
+      default:
+        return 100;
     }
   };
 
   const getVariance = (dataSource: string) => {
     switch (dataSource) {
-      case "conversations": return 30;
-      case "messages": return 100;
-      case "users": return 10;
-      case "performance": return 15;
-      default: return 50;
+      case "conversations":
+        return 30;
+      case "messages":
+        return 100;
+      case "users":
+        return 10;
+      case "performance":
+        return 15;
+      default:
+        return 50;
     }
   };
 
@@ -197,28 +217,32 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
         display: false,
       },
     },
-    scales: config.settings.chartType !== "doughnut" && config.settings.chartType !== "radar" ? {
-      x: {
-        display: true,
-        grid: {
-          display: config.settings.showGrid,
-          color: colors.colorBorder,
-        },
-        ticks: {
-          color: colors.colorTextSecondary,
-        },
-      },
-      y: {
-        display: true,
-        grid: {
-          display: config.settings.showGrid,
-          color: colors.colorBorder,
-        },
-        ticks: {
-          color: colors.colorTextSecondary,
-        },
-      },
-    } : undefined,
+    scales:
+      config.settings.chartType !== "doughnut" &&
+      config.settings.chartType !== "radar"
+        ? {
+            x: {
+              display: true,
+              grid: {
+                display: config.settings.showGrid,
+                color: colors.colorBorder,
+              },
+              ticks: {
+                color: colors.colorTextSecondary,
+              },
+            },
+            y: {
+              display: true,
+              grid: {
+                display: config.settings.showGrid,
+                color: colors.colorBorder,
+              },
+              ticks: {
+                color: colors.colorTextSecondary,
+              },
+            },
+          }
+        : undefined,
   };
 
   const handleChartTypeChange = (chartType: string) => {
@@ -287,19 +311,21 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
           <Option value="doughnut">{t("widgets.chart.doughnut")}</Option>
           <Option value="radar">{t("widgets.chart.radar")}</Option>
         </Select>
-        
+
         <Select
           value={config.settings.dataSource}
           onChange={handleDataSourceChange}
           style={{ width: 140 }}
           size="small"
         >
-          <Option value="conversations">{t("widgets.chart.conversations")}</Option>
+          <Option value="conversations">
+            {t("widgets.chart.conversations")}
+          </Option>
           <Option value="messages">{t("widgets.chart.messages")}</Option>
           <Option value="users">{t("widgets.chart.users")}</Option>
           <Option value="performance">{t("widgets.chart.performance")}</Option>
         </Select>
-        
+
         <Select
           value={config.settings.timeRange}
           onChange={handleTimeRangeChange}

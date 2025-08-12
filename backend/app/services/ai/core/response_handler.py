@@ -71,83 +71,83 @@ class ResponseHandler:
         """Handle provider-specific errors."""
         error_message = f"Provider '{provider}' error: {str(error)}"
         logger.error(f"Request {self._request_id}: {error_message}")
-        
+
         # Log additional context for monitoring
         self._log_error_metrics("provider_error", provider, str(error))
-        
+
         return Exception(error_message)
 
     def handle_validation_error(self, error: Exception) -> Exception:
         """Handle validation errors."""
         error_message = f"Validation error: {str(error)}"
         logger.error(f"Request {self._request_id}: {error_message}")
-        
+
         # Log additional context for monitoring
         self._log_error_metrics("validation_error", "validation", str(error))
-        
+
         return error
 
     def handle_streaming_error(self, error: Exception) -> Exception:
         """Handle streaming-specific errors."""
         error_message = f"Streaming error: {str(error)}"
         logger.error(f"Request {self._request_id}: {error_message}")
-        
+
         # Log additional context for monitoring
         self._log_error_metrics("streaming_error", "streaming", str(error))
-        
+
         return Exception(error_message)
 
     def validate_response_content(self, content: str) -> bool:
         """Validate response content."""
         if not content or not content.strip():
             return False
-        
+
         # Check for reasonable content length (100KB limit)
         if len(content) > 100000:
             return False
-        
+
         return True
 
     def validate_embeddings(self, embeddings: List[List[float]]) -> bool:
         """Validate embeddings."""
         if not embeddings:
             return False
-        
+
         # Check that all items are lists of floats
         for embedding in embeddings:
             if not isinstance(embedding, list):
                 return False
             if not all(isinstance(x, (int, float)) for x in embedding):
                 return False
-        
+
         return True
 
     def extract_usage_info(self, response: Any) -> Dict[str, int]:
         """Extract usage information from response."""
-        if hasattr(response, 'usage'):
+        if hasattr(response, "usage"):
             return response.usage or {}
-        
-        if hasattr(response, 'model_dump') and callable(response.model_dump):
+
+        if hasattr(response, "model_dump") and callable(response.model_dump):
             data = response.model_dump()
-            return data.get('usage', {})
-        
+            return data.get("usage", {})
+
         if isinstance(response, dict):
-            return response.get('usage', {})
-        
+            return response.get("usage", {})
+
         return {}
 
     def extract_finish_reason(self, response: Any) -> Optional[str]:
         """Extract finish reason from response."""
-        if hasattr(response, 'finish_reason'):
+        if hasattr(response, "finish_reason"):
             return response.finish_reason
-        
-        if hasattr(response, 'model_dump') and callable(response.model_dump):
+
+        if hasattr(response, "model_dump") and callable(response.model_dump):
             data = response.model_dump()
-            return data.get('finish_reason')
-        
+            return data.get("finish_reason")
+
         if isinstance(response, dict):
-            return response.get('finish_reason')
-        
+            return response.get("finish_reason")
+
         return None
 
     def log_response_metrics(
@@ -164,7 +164,7 @@ class ResponseHandler:
             "finish_reason": response.finish_reason,
             "timestamp": time.time(),
         }
-        
+
         logger.info(f"Response metrics: {metrics}")
         self._log_metrics("response", metrics)
 
@@ -176,7 +176,7 @@ class ResponseHandler:
             "processing_time": processing_time,
             "timestamp": time.time(),
         }
-        
+
         logger.info(f"Streaming metrics: {metrics}")
         self._log_metrics("streaming", metrics)
 
@@ -190,11 +190,13 @@ class ResponseHandler:
             "model": response.model,
             "processing_time": processing_time,
             "embeddings_count": len(response.embeddings),
-            "embedding_dimensions": len(response.embeddings[0]) if response.embeddings else 0,
+            "embedding_dimensions": (
+                len(response.embeddings[0]) if response.embeddings else 0
+            ),
             "usage": response.usage,
             "timestamp": time.time(),
         }
-        
+
         logger.info(f"Embedding metrics: {metrics}")
         self._log_metrics("embedding", metrics)
 
@@ -203,17 +205,19 @@ class ResponseHandler:
         try:
             # Integration with monitoring system (e.g., Prometheus, DataDog, etc.)
             # This is a placeholder for actual monitoring integration
-            
+
             # Example: Send to monitoring system
             # monitoring_client.record_metric(metric_type, metrics)
-            
+
             # For now, just log to structured logging
             logger.info(f"Monitoring metric - {metric_type}: {metrics}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to log metrics: {str(e)}")
 
-    def _log_error_metrics(self, error_type: str, context: str, error_message: str) -> None:
+    def _log_error_metrics(
+        self, error_type: str, context: str, error_message: str
+    ) -> None:
         """Log error metrics for monitoring."""
         try:
             error_metrics = {
@@ -223,15 +227,15 @@ class ResponseHandler:
                 "error_message": error_message,
                 "timestamp": time.time(),
             }
-            
+
             # Integration with error monitoring system (e.g., Sentry, Rollbar, etc.)
             # This is a placeholder for actual error monitoring integration
-            
+
             # Example: Send to error monitoring system
             # error_monitoring_client.capture_exception(error_metrics)
-            
+
             # For now, just log to structured logging
             logger.error(f"Error monitoring - {error_type}: {error_metrics}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to log error metrics: {str(e)}")

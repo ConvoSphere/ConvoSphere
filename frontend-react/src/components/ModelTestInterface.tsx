@@ -48,7 +48,11 @@ import {
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 // // import { colors } from "../styles/colors";
-import { useAIModelsStore, type AIModel, type ModelTest } from "../store/aiModelsStore";
+import {
+  useAIModelsStore,
+  type AIModel,
+  type ModelTest,
+} from "../store/aiModelsStore";
 import { aiModelsService } from "../services/aiModels";
 
 const { Title, Text, Paragraph } = Typography;
@@ -98,7 +102,7 @@ interface TestSuite {
 const ModelTestInterface: React.FC = () => {
   const { t } = useTranslation();
   const { models, testModel } = useAIModelsStore();
-  
+
   const [activeTab, setActiveTab] = useState("single");
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [testResults, setTestResults] = useState<ModelTest[]>([]);
@@ -106,12 +110,12 @@ const ModelTestInterface: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [runningSuite, setRunningSuite] = useState<string | null>(null);
-  
+
   // Form states
   const [singleTestForm] = Form.useForm();
   const [abTestForm] = Form.useForm();
   const [suiteForm] = Form.useForm();
-  
+
   // Test scenarios
   const [scenarios, setScenarios] = useState<TestScenario[]>([
     {
@@ -145,7 +149,8 @@ const ModelTestInterface: React.FC = () => {
       id: "4",
       name: "Complex Reasoning",
       description: "Multi-step reasoning problem",
-      prompt: "If a train leaves station A at 2 PM traveling 60 mph and another train leaves station B at 3 PM traveling 80 mph, when will they meet if the stations are 200 miles apart?",
+      prompt:
+        "If a train leaves station A at 2 PM traveling 60 mph and another train leaves station B at 3 PM traveling 80 mph, when will they meet if the stations are 200 miles apart?",
       category: "reasoning",
       difficulty: "hard",
       tags: ["math", "reasoning"],
@@ -173,7 +178,7 @@ const ModelTestInterface: React.FC = () => {
         name: "Basic Functionality Test",
         description: "Tests basic model capabilities",
         scenarios: scenarios.slice(0, 2),
-        models: models.slice(0, 2).map(m => m.id),
+        models: models.slice(0, 2).map((m) => m.id),
         autoRun: false,
         status: "idle",
       },
@@ -182,7 +187,7 @@ const ModelTestInterface: React.FC = () => {
         name: "Performance Benchmark",
         description: "Comprehensive performance testing",
         scenarios: scenarios,
-        models: models.map(m => m.id),
+        models: models.map((m) => m.id),
         autoRun: true,
         schedule: "daily",
         status: "completed",
@@ -197,10 +202,13 @@ const ModelTestInterface: React.FC = () => {
       const values = await singleTestForm.validateFields();
       setLoading(true);
 
-      const prompt = values.customPrompt || scenarios.find(s => s.id === values.scenario)?.prompt || "";
+      const prompt =
+        values.customPrompt ||
+        scenarios.find((s) => s.id === values.scenario)?.prompt ||
+        "";
       const result = await testModel(values.model, prompt);
-      
-      setTestResults(prev => [result, ...prev]);
+
+      setTestResults((prev) => [result, ...prev]);
       message.success(t("test.single_test_success"));
     } catch (error) {
       message.error(t("test.single_test_failed"));
@@ -214,8 +222,11 @@ const ModelTestInterface: React.FC = () => {
       const values = await abTestForm.validateFields();
       setLoading(true);
 
-      const prompt = values.customPrompt || scenarios.find(s => s.id === values.scenario)?.prompt || "";
-      
+      const prompt =
+        values.customPrompt ||
+        scenarios.find((s) => s.id === values.scenario)?.prompt ||
+        "";
+
       // Run tests for both models
       const [resultA, resultB] = await Promise.all([
         testModel(values.modelA, prompt),
@@ -225,7 +236,10 @@ const ModelTestInterface: React.FC = () => {
       // Calculate comparison
       const comparison = {
         responseTime: {
-          winner: resultA.responseTime < resultB.responseTime ? values.modelA : values.modelB,
+          winner:
+            resultA.responseTime < resultB.responseTime
+              ? values.modelA
+              : values.modelB,
           difference: Math.abs(resultA.responseTime - resultB.responseTime),
         },
         cost: {
@@ -233,7 +247,10 @@ const ModelTestInterface: React.FC = () => {
           difference: Math.abs(resultA.cost - resultB.cost),
         },
         quality: {
-          winner: resultA.response.length > resultB.response.length ? values.modelA : values.modelB,
+          winner:
+            resultA.response.length > resultB.response.length
+              ? values.modelA
+              : values.modelB,
           score: Math.abs(resultA.response.length - resultB.response.length),
         },
       };
@@ -246,7 +263,7 @@ const ModelTestInterface: React.FC = () => {
         comparison,
       };
 
-      setAbTestResults(prev => [abResult, ...prev]);
+      setAbTestResults((prev) => [abResult, ...prev]);
       message.success(t("test.ab_test_success"));
     } catch (error) {
       message.error(t("test.ab_test_failed"));
@@ -256,17 +273,17 @@ const ModelTestInterface: React.FC = () => {
   };
 
   const runTestSuite = async (suiteId: string) => {
-    const suite = testSuites.find(s => s.id === suiteId);
+    const suite = testSuites.find((s) => s.id === suiteId);
     if (!suite) return;
 
     setRunningSuite(suiteId);
-    setTestSuites(prev => prev.map(s => 
-      s.id === suiteId ? { ...s, status: "running" } : s
-    ));
+    setTestSuites((prev) =>
+      prev.map((s) => (s.id === suiteId ? { ...s, status: "running" } : s)),
+    );
 
     try {
       const results: ModelTest[] = [];
-      
+
       for (const modelId of suite.models) {
         for (const scenario of suite.scenarios) {
           const result = await testModel(modelId, scenario.prompt);
@@ -274,21 +291,25 @@ const ModelTestInterface: React.FC = () => {
         }
       }
 
-      setTestResults(prev => [...results, ...prev]);
-      
-      setTestSuites(prev => prev.map(s => 
-        s.id === suiteId ? { 
-          ...s, 
-          status: "completed", 
-          lastRun: new Date().toISOString() 
-        } : s
-      ));
+      setTestResults((prev) => [...results, ...prev]);
+
+      setTestSuites((prev) =>
+        prev.map((s) =>
+          s.id === suiteId
+            ? {
+                ...s,
+                status: "completed",
+                lastRun: new Date().toISOString(),
+              }
+            : s,
+        ),
+      );
 
       message.success(t("test.suite_completed"));
     } catch (error) {
-      setTestSuites(prev => prev.map(s => 
-        s.id === suiteId ? { ...s, status: "failed" } : s
-      ));
+      setTestSuites((prev) =>
+        prev.map((s) => (s.id === suiteId ? { ...s, status: "failed" } : s)),
+      );
       message.error(t("test.suite_failed"));
     } finally {
       setRunningSuite(null);
@@ -298,19 +319,21 @@ const ModelTestInterface: React.FC = () => {
   const saveTestSuite = async () => {
     try {
       const values = await suiteForm.validateFields();
-      
+
       const newSuite: TestSuite = {
         id: Date.now().toString(),
         name: values.name,
         description: values.description,
-        scenarios: values.scenarios.map((id: string) => scenarios.find(s => s.id === id)!),
+        scenarios: values.scenarios.map(
+          (id: string) => scenarios.find((s) => s.id === id)!,
+        ),
         models: values.models,
         autoRun: values.autoRun,
         schedule: values.schedule,
         status: "idle",
       };
 
-      setTestSuites(prev => [...prev, newSuite]);
+      setTestSuites((prev) => [...prev, newSuite]);
       suiteForm.resetFields();
       message.success(t("test.suite_saved"));
     } catch (error) {
@@ -325,7 +348,9 @@ const ModelTestInterface: React.FC = () => {
       timestamp: new Date().toISOString(),
     };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -335,15 +360,19 @@ const ModelTestInterface: React.FC = () => {
   };
 
   const getModelName = (modelId: string) => {
-    return models.find(m => m.id === modelId)?.displayName || modelId;
+    return models.find((m) => m.id === modelId)?.displayName || modelId;
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "easy": return colors.colorSuccess;
-      case "medium": return colors.colorWarning;
-      case "hard": return colors.colorError;
-      default: return colors.colorTextSecondary;
+      case "easy":
+        return colors.colorSuccess;
+      case "medium":
+        return colors.colorWarning;
+      case "hard":
+        return colors.colorError;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
@@ -376,8 +405,7 @@ const ModelTestInterface: React.FC = () => {
       key: "cost",
       render: (cost: number) => (
         <Space>
-          <DollarOutlined />
-          ${cost.toFixed(4)}
+          <DollarOutlined />${cost.toFixed(4)}
         </Space>
       ),
     },
@@ -407,7 +435,9 @@ const ModelTestInterface: React.FC = () => {
       key: "models",
       render: (record: ABTestResult) => (
         <Space direction="vertical">
-          <Text strong>{getModelName(record.modelA)} vs {getModelName(record.modelB)}</Text>
+          <Text strong>
+            {getModelName(record.modelA)} vs {getModelName(record.modelB)}
+          </Text>
           <Text type="secondary">{record.scenario}</Text>
         </Space>
       ),
@@ -431,9 +461,7 @@ const ModelTestInterface: React.FC = () => {
       key: "cost",
       render: (record: ABTestResult) => (
         <Space direction="vertical">
-          <Text>
-            {getModelName(record.comparison.cost.winner)} wins
-          </Text>
+          <Text>{getModelName(record.comparison.cost.winner)} wins</Text>
           <Text type="secondary">
             ${record.comparison.cost.difference.toFixed(4)} difference
           </Text>
@@ -445,9 +473,7 @@ const ModelTestInterface: React.FC = () => {
       key: "quality",
       render: (record: ABTestResult) => (
         <Space direction="vertical">
-          <Text>
-            {getModelName(record.comparison.quality.winner)} wins
-          </Text>
+          <Text>{getModelName(record.comparison.quality.winner)} wins</Text>
           <Text type="secondary">
             {record.comparison.quality.score} chars difference
           </Text>
@@ -476,7 +502,7 @@ const ModelTestInterface: React.FC = () => {
                     rules={[{ required: true }]}
                   >
                     <Select placeholder={t("test.form.select_model")}>
-                      {models.map(model => (
+                      {models.map((model) => (
                         <Option key={model.id} value={model.id}>
                           {model.displayName}
                         </Option>
@@ -485,19 +511,19 @@ const ModelTestInterface: React.FC = () => {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="scenario"
-                    label={t("test.form.scenario")}
-                  >
-                    <Select 
+                  <Form.Item name="scenario" label={t("test.form.scenario")}>
+                    <Select
                       placeholder={t("test.form.select_scenario")}
                       onChange={setSelectedScenario}
                     >
-                      {scenarios.map(scenario => (
+                      {scenarios.map((scenario) => (
                         <Option key={scenario.id} value={scenario.id}>
                           <Space>
                             <Text>{scenario.name}</Text>
-                            <Tag color={getDifficultyColor(scenario.difficulty)} size="small">
+                            <Tag
+                              color={getDifficultyColor(scenario.difficulty)}
+                              size="small"
+                            >
                               {scenario.difficulty}
                             </Tag>
                           </Space>
@@ -512,8 +538,8 @@ const ModelTestInterface: React.FC = () => {
                 name="customPrompt"
                 label={t("test.form.custom_prompt")}
               >
-                <TextArea 
-                  rows={4} 
+                <TextArea
+                  rows={4}
                   placeholder={t("test.form.prompt_placeholder")}
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
@@ -540,10 +566,7 @@ const ModelTestInterface: React.FC = () => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item
-                    name="maxTokens"
-                    label={t("test.form.max_tokens")}
-                  >
+                  <Form.Item name="maxTokens" label={t("test.form.max_tokens")}>
                     <InputNumber
                       min={1}
                       max={4000}
@@ -588,7 +611,7 @@ const ModelTestInterface: React.FC = () => {
                     rules={[{ required: true }]}
                   >
                     <Select placeholder={t("test.form.select_model_a")}>
-                      {models.map(model => (
+                      {models.map((model) => (
                         <Option key={model.id} value={model.id}>
                           {model.displayName}
                         </Option>
@@ -603,7 +626,7 @@ const ModelTestInterface: React.FC = () => {
                     rules={[{ required: true }]}
                   >
                     <Select placeholder={t("test.form.select_model_b")}>
-                      {models.map(model => (
+                      {models.map((model) => (
                         <Option key={model.id} value={model.id}>
                           {model.displayName}
                         </Option>
@@ -612,12 +635,9 @@ const ModelTestInterface: React.FC = () => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item
-                    name="scenario"
-                    label={t("test.form.scenario")}
-                  >
+                  <Form.Item name="scenario" label={t("test.form.scenario")}>
                     <Select placeholder={t("test.form.select_scenario")}>
-                      {scenarios.map(scenario => (
+                      {scenarios.map((scenario) => (
                         <Option key={scenario.id} value={scenario.id}>
                           {scenario.name}
                         </Option>
@@ -631,8 +651,8 @@ const ModelTestInterface: React.FC = () => {
                 name="customPrompt"
                 label={t("test.form.custom_prompt")}
               >
-                <TextArea 
-                  rows={4} 
+                <TextArea
+                  rows={4}
                   placeholder={t("test.form.prompt_placeholder")}
                 />
               </Form.Item>
@@ -657,7 +677,9 @@ const ModelTestInterface: React.FC = () => {
               <Button
                 type="primary"
                 icon={<SaveOutlined />}
-                onClick={() => {/* TODO: Open suite creation modal */}}
+                onClick={() => {
+                  /* TODO: Open suite creation modal */
+                }}
               >
                 {t("test.create_suite")}
               </Button>
@@ -690,11 +712,15 @@ const ModelTestInterface: React.FC = () => {
                     title={
                       <Space>
                         <Text strong>{suite.name}</Text>
-                        <Badge 
+                        <Badge
                           status={
-                            suite.status === "completed" ? "success" :
-                            suite.status === "running" ? "processing" :
-                            suite.status === "failed" ? "error" : "default"
+                            suite.status === "completed"
+                              ? "success"
+                              : suite.status === "running"
+                                ? "processing"
+                                : suite.status === "failed"
+                                  ? "error"
+                                  : "default"
                           }
                           text={t(`test.status.${suite.status}`)}
                         />
@@ -713,7 +739,8 @@ const ModelTestInterface: React.FC = () => {
                           </Text>
                           {suite.lastRun && (
                             <Text type="secondary">
-                              {t("test.last_run")}: {new Date(suite.lastRun).toLocaleString()}
+                              {t("test.last_run")}:{" "}
+                              {new Date(suite.lastRun).toLocaleString()}
                             </Text>
                           )}
                         </Space>
@@ -729,17 +756,20 @@ const ModelTestInterface: React.FC = () => {
 
       {/* Results Section */}
       {(testResults.length > 0 || abTestResults.length > 0) && (
-        <Card 
+        <Card
           title={t("test.results.title")}
           extra={
             <Space>
               <Button icon={<DownloadOutlined />} onClick={exportResults}>
                 {t("test.export_results")}
               </Button>
-              <Button icon={<ReloadOutlined />} onClick={() => {
-                setTestResults([]);
-                setAbTestResults([]);
-              }}>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => {
+                  setTestResults([]);
+                  setAbTestResults([]);
+                }}
+              >
                 {t("test.clear_results")}
               </Button>
             </Space>
@@ -759,7 +789,9 @@ const ModelTestInterface: React.FC = () => {
               <Table
                 columns={abTestColumns}
                 dataSource={abTestResults}
-                rowKey={(record) => `${record.modelA}-${record.modelB}-${record.scenario}`}
+                rowKey={(record) =>
+                  `${record.modelA}-${record.modelB}-${record.scenario}`
+                }
                 pagination={{ pageSize: 10 }}
               />
             </TabPane>

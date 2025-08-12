@@ -8,7 +8,6 @@ for password reset operations.
 import secrets
 import string
 from datetime import timedelta
-from backend.app.utils.helpers import utc_now
 from typing import Optional
 
 from loguru import logger
@@ -16,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
 from backend.app.models.user import User
+from backend.app.utils.helpers import utc_now
 
 
 class TokenService:

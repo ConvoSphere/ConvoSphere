@@ -77,14 +77,23 @@ interface KnowledgeState {
   fetchStats: () => Promise<void>;
   getTags: () => Promise<void>;
   getDocuments: () => Promise<void>;
-  
+
   // Document actions
-  uploadDocument: (file: File, metadata?: Partial<Document>) => Promise<Document>;
-  updateDocument: (documentId: string, updates: Partial<Document>) => Promise<Document>;
+  uploadDocument: (
+    file: File,
+    metadata?: Partial<Document>,
+  ) => Promise<Document>;
+  updateDocument: (
+    documentId: string,
+    updates: Partial<Document>,
+  ) => Promise<Document>;
   deleteDocument: (documentId: string) => Promise<void>;
   downloadDocument: (documentId: string) => Promise<void>;
   reprocessDocument: (documentId: string) => Promise<void>;
-  bulkUpdateDocuments: (documentIds: string[], updates: Partial<Document>) => Promise<void>;
+  bulkUpdateDocuments: (
+    documentIds: string[],
+    updates: Partial<Document>,
+  ) => Promise<void>;
 
   // Upload actions
   addToUploadQueue: (files: File[]) => void;
@@ -246,8 +255,8 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       const document = await updateDocument(documentId, updates);
       // Update document in list
       const { documents } = get();
-      const updatedDocuments = documents.map(doc =>
-        doc.id === documentId ? document : doc
+      const updatedDocuments = documents.map((doc) =>
+        doc.id === documentId ? document : doc,
       );
       set({ documents: updatedDocuments });
       return document;
@@ -261,7 +270,7 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       await deleteDocument(documentId);
       // Remove document from list
       const { documents } = get();
-      const updatedDocuments = documents.filter(doc => doc.id !== documentId);
+      const updatedDocuments = documents.filter((doc) => doc.id !== documentId);
       set({ documents: updatedDocuments });
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : "Delete failed");
@@ -270,21 +279,26 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
 
   downloadDocument: async (documentId: string) => {
     try {
-      const response = await api.get(`/knowledge/documents/${documentId}/download`, {
-        responseType: 'blob'
-      });
-      
+      const response = await api.get(
+        `/knowledge/documents/${documentId}/download`,
+        {
+          responseType: "blob",
+        },
+      );
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `document-${documentId}`);
+      link.setAttribute("download", `document-${documentId}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Download failed");
+      throw new Error(
+        error instanceof Error ? error.message : "Download failed",
+      );
     }
   },
 
@@ -294,20 +308,29 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       // Refresh documents to get updated status
       await get().fetchDocuments();
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Reprocess failed");
+      throw new Error(
+        error instanceof Error ? error.message : "Reprocess failed",
+      );
     }
   },
 
-  bulkUpdateDocuments: async (documentIds: string[], updates: Partial<Document>) => {
+  bulkUpdateDocuments: async (
+    documentIds: string[],
+    updates: Partial<Document>,
+  ) => {
     try {
       // Update each document individually
-      const updatePromises = documentIds.map(id => updateDocument(id, updates));
+      const updatePromises = documentIds.map((id) =>
+        updateDocument(id, updates),
+      );
       await Promise.all(updatePromises);
-      
+
       // Refresh documents to get updated data
       await get().fetchDocuments();
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Bulk update failed");
+      throw new Error(
+        error instanceof Error ? error.message : "Bulk update failed",
+      );
     }
   },
 
@@ -430,8 +453,6 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
       searchError: null,
     });
   },
-
-
 }));
 
 // Selectors for better performance

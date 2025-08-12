@@ -66,16 +66,21 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
       try {
         setLoading(true);
-        const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${config.apiUrl}${config.apiEndpoints.assistants}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (response.ok) {
           const data = await response.json();
-          setAssistants(data.filter((assistant: Assistant) => assistant.isActive));
+          setAssistants(
+            data.filter((assistant: Assistant) => assistant.isActive),
+          );
         } else {
           throw new Error("Failed to load assistants");
         }
@@ -113,7 +118,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
             assistant_id: values.assistantId,
             title: values.initialMessage.substring(0, 50) + "...",
           }),
-        }
+        },
       );
 
       if (!conversationResponse.ok) {
@@ -135,7 +140,7 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
             content: values.initialMessage,
             role: "user",
           }),
-        }
+        },
       );
 
       if (!messageResponse.ok) {
@@ -188,7 +193,12 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
                 <div>
                   <div style={{ fontWeight: 500 }}>{assistant.name}</div>
                   {variant !== "minimal" && (
-                    <div style={{ fontSize: "12px", color: colors?.colorTextSecondary ?? "#999" }}>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: colors?.colorTextSecondary ?? "#999",
+                      }}
+                    >
                       {assistant.description}
                     </div>
                   )}
@@ -229,12 +239,14 @@ const ChatInitializer: React.FC<ChatInitializerProps> = ({
 
   if (loading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        padding: variant === "minimal" ? "16px" : "40px" 
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: variant === "minimal" ? "16px" : "40px",
+        }}
+      >
         <Spin size={variant === "minimal" ? "default" : "large"} />
       </div>
     );

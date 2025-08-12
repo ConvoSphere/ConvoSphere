@@ -22,7 +22,7 @@ const queryClient = new QueryClient();
 const initializeApp = () => {
   try {
     const root = ReactDOM.createRoot(document.getElementById("root")!);
-    
+
     const AppTree = (
       <React.StrictMode>
         <QueryClientProvider client={queryClient}>
@@ -35,16 +35,18 @@ const initializeApp = () => {
 
     // Dynamically load Devtools in development
     if (import.meta.env.DEV) {
-      import("@tanstack/react-query-devtools").then(({ ReactQueryDevtools }) => {
-        root.render(
-          <React.StrictMode>
-            <QueryClientProvider client={queryClient}>
-              <App />
-              <ReactQueryDevtools initialIsOpen={false} />
-            </QueryClientProvider>
-          </React.StrictMode>
-        );
-      }).catch(() => {});
+      import("@tanstack/react-query-devtools")
+        .then(({ ReactQueryDevtools }) => {
+          root.render(
+            <React.StrictMode>
+              <QueryClientProvider client={queryClient}>
+                <App />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </QueryClientProvider>
+            </React.StrictMode>,
+          );
+        })
+        .catch(() => {});
     }
 
     // Set document language dynamically

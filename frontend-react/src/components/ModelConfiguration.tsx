@@ -108,16 +108,22 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 }) => {
   const { t } = useTranslation();
   const { models, updateModel } = useAIModelsStore();
-  
+
   const [activeTab, setActiveTab] = useState("templates");
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
-  const [fallbackStrategies, setFallbackStrategies] = useState<FallbackStrategy[]>([]);
-  const [autoRoutingRules, setAutoRoutingRules] = useState<AutoRoutingRule[]>([]);
+  const [fallbackStrategies, setFallbackStrategies] = useState<
+    FallbackStrategy[]
+  >([]);
+  const [autoRoutingRules, setAutoRoutingRules] = useState<AutoRoutingRule[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [modalType, setModalType] = useState<"template" | "fallback" | "routing">("template");
-  
+  const [modalType, setModalType] = useState<
+    "template" | "fallback" | "routing"
+  >("template");
+
   // Forms
   const [templateForm] = Form.useForm();
   const [fallbackForm] = Form.useForm();
@@ -136,7 +142,8 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           id: "1",
           name: "General Assistant",
           description: "General purpose assistant template",
-          template: "You are a helpful AI assistant. Please help the user with their request: {{user_input}}",
+          template:
+            "You are a helpful AI assistant. Please help the user with their request: {{user_input}}",
           category: "general",
           variables: ["user_input"],
           isDefault: true,
@@ -147,7 +154,8 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           id: "2",
           name: "Code Review",
           description: "Code review and analysis template",
-          template: "You are an expert code reviewer. Please review this code and provide feedback:\n\n{{code}}\n\nFocus on: {{focus_areas}}",
+          template:
+            "You are an expert code reviewer. Please review this code and provide feedback:\n\n{{code}}\n\nFocus on: {{focus_areas}}",
           category: "programming",
           variables: ["code", "focus_areas"],
           isDefault: false,
@@ -160,7 +168,8 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
         {
           id: "1",
           name: "Performance Fallback",
-          description: "Fallback to faster model if response time exceeds threshold",
+          description:
+            "Fallback to faster model if response time exceeds threshold",
           primaryModel: "gpt-4",
           fallbackModels: ["gpt-3.5-turbo", "claude-3-haiku"],
           conditions: {
@@ -217,10 +226,12 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   const handleSaveTemplate = async () => {
     try {
       const values = await templateForm.validateFields();
-      
+
       if (editingItem) {
         const updatedTemplate = { ...editingItem, ...values };
-        setTemplates(prev => prev.map(t => t.id === editingItem.id ? updatedTemplate : t));
+        setTemplates((prev) =>
+          prev.map((t) => (t.id === editingItem.id ? updatedTemplate : t)),
+        );
         message.success(t("configuration.template_updated"));
       } else {
         const newTemplate: PromptTemplate = {
@@ -229,10 +240,10 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        setTemplates(prev => [...prev, newTemplate]);
+        setTemplates((prev) => [...prev, newTemplate]);
         message.success(t("configuration.template_created"));
       }
-      
+
       setModalVisible(false);
       templateForm.resetFields();
       setEditingItem(null);
@@ -244,20 +255,22 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   const handleSaveFallback = async () => {
     try {
       const values = await fallbackForm.validateFields();
-      
+
       if (editingItem) {
         const updatedFallback = { ...editingItem, ...values };
-        setFallbackStrategies(prev => prev.map(f => f.id === editingItem.id ? updatedFallback : f));
+        setFallbackStrategies((prev) =>
+          prev.map((f) => (f.id === editingItem.id ? updatedFallback : f)),
+        );
         message.success(t("configuration.fallback_updated"));
       } else {
         const newFallback: FallbackStrategy = {
           id: Date.now().toString(),
           ...values,
         };
-        setFallbackStrategies(prev => [...prev, newFallback]);
+        setFallbackStrategies((prev) => [...prev, newFallback]);
         message.success(t("configuration.fallback_created"));
       }
-      
+
       setModalVisible(false);
       fallbackForm.resetFields();
       setEditingItem(null);
@@ -269,20 +282,22 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   const handleSaveRouting = async () => {
     try {
       const values = await routingForm.validateFields();
-      
+
       if (editingItem) {
         const updatedRouting = { ...editingItem, ...values };
-        setAutoRoutingRules(prev => prev.map(r => r.id === editingItem.id ? updatedRouting : r));
+        setAutoRoutingRules((prev) =>
+          prev.map((r) => (r.id === editingItem.id ? updatedRouting : r)),
+        );
         message.success(t("configuration.routing_updated"));
       } else {
         const newRouting: AutoRoutingRule = {
           id: Date.now().toString(),
           ...values,
         };
-        setAutoRoutingRules(prev => [...prev, newRouting]);
+        setAutoRoutingRules((prev) => [...prev, newRouting]);
         message.success(t("configuration.routing_created"));
       }
-      
+
       setModalVisible(false);
       routingForm.resetFields();
       setEditingItem(null);
@@ -295,7 +310,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
     setModalType(type);
     setEditingItem(item || null);
     setModalVisible(true);
-    
+
     if (item) {
       if (type === "template") {
         templateForm.setFieldsValue(item);
@@ -307,13 +322,16 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
     }
   };
 
-  const deleteItem = (type: "template" | "fallback" | "routing", id: string) => {
+  const deleteItem = (
+    type: "template" | "fallback" | "routing",
+    id: string,
+  ) => {
     if (type === "template") {
-      setTemplates(prev => prev.filter(t => t.id !== id));
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
     } else if (type === "fallback") {
-      setFallbackStrategies(prev => prev.filter(f => f.id !== id));
+      setFallbackStrategies((prev) => prev.filter((f) => f.id !== id));
     } else if (type === "routing") {
-      setAutoRoutingRules(prev => prev.filter(r => r.id !== id));
+      setAutoRoutingRules((prev) => prev.filter((r) => r.id !== id));
     }
     message.success(t("configuration.item_deleted"));
   };
@@ -324,7 +342,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   };
 
   const getModelName = (modelId: string) => {
-    return models.find(m => m.id === modelId)?.displayName || modelId;
+    return models.find((m) => m.id === modelId)?.displayName || modelId;
   };
 
   const templateColumns = [
@@ -335,7 +353,9 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       render: (text: string, record: PromptTemplate) => (
         <Space>
           <Text strong>{text}</Text>
-          {record.isDefault && <Tag color="blue">{t("configuration.default")}</Tag>}
+          {record.isDefault && (
+            <Tag color="blue">{t("configuration.default")}</Tag>
+          )}
         </Space>
       ),
     },
@@ -343,9 +363,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       title: t("configuration.templates.category"),
       dataIndex: "category",
       key: "category",
-      render: (category: string) => (
-        <Tag color="green">{category}</Tag>
-      ),
+      render: (category: string) => <Tag color="green">{category}</Tag>,
     },
     {
       title: t("configuration.templates.variables"),
@@ -353,8 +371,10 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       key: "variables",
       render: (variables: string[]) => (
         <Space>
-          {variables.map(v => (
-            <Tag key={v} size="small">{{v}}</Tag>
+          {variables.map((v) => (
+            <Tag key={v} size="small">
+              {{ v }}
+            </Tag>
           ))}
         </Space>
       ),
@@ -365,22 +385,22 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       render: (record: PromptTemplate) => (
         <Space>
           <Tooltip title={t("configuration.templates.copy")}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={<CopyOutlined />}
               onClick={() => copyTemplate(record)}
             />
           </Tooltip>
           <Tooltip title={t("configuration.templates.edit")}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={<EditOutlined />}
               onClick={() => openModal("template", record)}
             />
           </Tooltip>
           <Tooltip title={t("configuration.templates.delete")}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               danger
               icon={<DeleteOutlined />}
               onClick={() => deleteItem("template", record.id)}
@@ -415,8 +435,10 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       key: "fallbackModels",
       render: (models: string[]) => (
         <Space>
-          {models.map(m => (
-            <Tag key={m} size="small">{getModelName(m)}</Tag>
+          {models.map((m) => (
+            <Tag key={m} size="small">
+              {getModelName(m)}
+            </Tag>
           ))}
         </Space>
       ),
@@ -426,8 +448,12 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       key: "conditions",
       render: (record: FallbackStrategy) => (
         <Space direction="vertical" size="small">
-          <Text type="secondary">RT: {record.conditions.responseTimeThreshold}ms</Text>
-          <Text type="secondary">ER: {record.conditions.errorRateThreshold}%</Text>
+          <Text type="secondary">
+            RT: {record.conditions.responseTimeThreshold}ms
+          </Text>
+          <Text type="secondary">
+            ER: {record.conditions.errorRateThreshold}%
+          </Text>
           <Text type="secondary">Cost: ${record.conditions.costThreshold}</Text>
         </Space>
       ),
@@ -437,13 +463,13 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       key: "actions",
       render: (record: FallbackStrategy) => (
         <Space>
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<EditOutlined />}
             onClick={() => openModal("fallback", record)}
           />
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             danger
             icon={<DeleteOutlined />}
             onClick={() => deleteItem("fallback", record.id)}
@@ -472,7 +498,9 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
         <Space direction="vertical" size="small">
           <Tag color="blue">{record.conditions.complexity}</Tag>
           <Text type="secondary">{record.conditions.taskType.join(", ")}</Text>
-          <Text type="secondary">Tokens: {record.conditions.tokenEstimate}</Text>
+          <Text type="secondary">
+            Tokens: {record.conditions.tokenEstimate}
+          </Text>
         </Space>
       ),
     },
@@ -487,10 +515,15 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       dataIndex: ["conditions", "priority"],
       key: "priority",
       render: (priority: string) => (
-        <Tag color={
-          priority === "high" ? "red" : 
-          priority === "medium" ? "orange" : "green"
-        }>
+        <Tag
+          color={
+            priority === "high"
+              ? "red"
+              : priority === "medium"
+                ? "orange"
+                : "green"
+          }
+        >
           {priority}
         </Tag>
       ),
@@ -500,13 +533,13 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
       key: "actions",
       render: (record: AutoRoutingRule) => (
         <Space>
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<EditOutlined />}
             onClick={() => openModal("routing", record)}
           />
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             danger
             icon={<DeleteOutlined />}
             onClick={() => deleteItem("routing", record.id)}
@@ -545,7 +578,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
               showIcon
               style={{ marginBottom: 16 }}
             />
-            
+
             <Table
               columns={templateColumns}
               dataSource={templates}
@@ -576,7 +609,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
               showIcon
               style={{ marginBottom: 16 }}
             />
-            
+
             <Table
               columns={fallbackColumns}
               dataSource={fallbackStrategies}
@@ -607,7 +640,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
               showIcon
               style={{ marginBottom: 16 }}
             />
-            
+
             <Table
               columns={routingColumns}
               dataSource={autoRoutingRules}
@@ -620,7 +653,11 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
       {/* Template Modal */}
       <Modal
-        title={editingItem ? t("configuration.templates.edit") : t("configuration.templates.create")}
+        title={
+          editingItem
+            ? t("configuration.templates.edit")
+            : t("configuration.templates.create")
+        }
         open={modalVisible && modalType === "template"}
         onOk={handleSaveTemplate}
         onCancel={() => setModalVisible(false)}
@@ -632,40 +669,60 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
             label={t("configuration.templates.form.name")}
             rules={[{ required: true }]}
           >
-            <Input placeholder={t("configuration.templates.form.name_placeholder")} />
+            <Input
+              placeholder={t("configuration.templates.form.name_placeholder")}
+            />
           </Form.Item>
-          
+
           <Form.Item
             name="description"
             label={t("configuration.templates.form.description")}
           >
-            <Input placeholder={t("configuration.templates.form.description_placeholder")} />
+            <Input
+              placeholder={t(
+                "configuration.templates.form.description_placeholder",
+              )}
+            />
           </Form.Item>
-          
+
           <Form.Item
             name="category"
             label={t("configuration.templates.form.category")}
             rules={[{ required: true }]}
           >
-            <Select placeholder={t("configuration.templates.form.category_placeholder")}>
-              <Option value="general">{t("configuration.categories.general")}</Option>
-              <Option value="programming">{t("configuration.categories.programming")}</Option>
-              <Option value="creative">{t("configuration.categories.creative")}</Option>
-              <Option value="analysis">{t("configuration.categories.analysis")}</Option>
+            <Select
+              placeholder={t(
+                "configuration.templates.form.category_placeholder",
+              )}
+            >
+              <Option value="general">
+                {t("configuration.categories.general")}
+              </Option>
+              <Option value="programming">
+                {t("configuration.categories.programming")}
+              </Option>
+              <Option value="creative">
+                {t("configuration.categories.creative")}
+              </Option>
+              <Option value="analysis">
+                {t("configuration.categories.analysis")}
+              </Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             name="template"
             label={t("configuration.templates.form.template")}
             rules={[{ required: true }]}
           >
-            <TextArea 
-              rows={6} 
-              placeholder={t("configuration.templates.form.template_placeholder")}
+            <TextArea
+              rows={6}
+              placeholder={t(
+                "configuration.templates.form.template_placeholder",
+              )}
             />
           </Form.Item>
-          
+
           <Form.Item
             name="isDefault"
             label={t("configuration.templates.form.is_default")}
@@ -678,7 +735,11 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
       {/* Fallback Modal */}
       <Modal
-        title={editingItem ? t("configuration.fallbacks.edit") : t("configuration.fallbacks.create")}
+        title={
+          editingItem
+            ? t("configuration.fallbacks.edit")
+            : t("configuration.fallbacks.create")
+        }
         open={modalVisible && modalType === "fallback"}
         onOk={handleSaveFallback}
         onCancel={() => setModalVisible(false)}
@@ -690,58 +751,72 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
             label={t("configuration.fallbacks.form.name")}
             rules={[{ required: true }]}
           >
-            <Input placeholder={t("configuration.fallbacks.form.name_placeholder")} />
+            <Input
+              placeholder={t("configuration.fallbacks.form.name_placeholder")}
+            />
           </Form.Item>
-          
+
           <Form.Item
             name="description"
             label={t("configuration.fallbacks.form.description")}
           >
-            <Input placeholder={t("configuration.fallbacks.form.description_placeholder")} />
+            <Input
+              placeholder={t(
+                "configuration.fallbacks.form.description_placeholder",
+              )}
+            />
           </Form.Item>
-          
+
           <Form.Item
             name="primaryModel"
             label={t("configuration.fallbacks.form.primary_model")}
             rules={[{ required: true }]}
           >
-            <Select placeholder={t("configuration.fallbacks.form.primary_model_placeholder")}>
-              {models.map(model => (
+            <Select
+              placeholder={t(
+                "configuration.fallbacks.form.primary_model_placeholder",
+              )}
+            >
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             name="fallbackModels"
             label={t("configuration.fallbacks.form.fallback_models")}
             rules={[{ required: true }]}
           >
-            <Select 
+            <Select
               mode="multiple"
-              placeholder={t("configuration.fallbacks.form.fallback_models_placeholder")}
+              placeholder={t(
+                "configuration.fallbacks.form.fallback_models_placeholder",
+              )}
             >
-              {models.map(model => (
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          
+
           <Divider>{t("configuration.fallbacks.form.conditions")}</Divider>
-          
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name={["conditions", "responseTimeThreshold"]}
-                label={t("configuration.fallbacks.form.response_time_threshold")}
+                label={t(
+                  "configuration.fallbacks.form.response_time_threshold",
+                )}
               >
-                <InputNumber 
-                  min={1000} 
-                  max={30000} 
+                <InputNumber
+                  min={1000}
+                  max={30000}
                   step={1000}
                   style={{ width: "100%" }}
                 />
@@ -752,25 +827,25 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
                 name={["conditions", "errorRateThreshold"]}
                 label={t("configuration.fallbacks.form.error_rate_threshold")}
               >
-                <InputNumber 
-                  min={1} 
-                  max={50} 
+                <InputNumber
+                  min={1}
+                  max={50}
                   step={1}
                   style={{ width: "100%" }}
                 />
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name={["conditions", "costThreshold"]}
                 label={t("configuration.fallbacks.form.cost_threshold")}
               >
-                <InputNumber 
-                  min={0.001} 
-                  max={1} 
+                <InputNumber
+                  min={0.001}
+                  max={1}
                   step={0.001}
                   precision={3}
                   style={{ width: "100%" }}
@@ -782,16 +857,16 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
                 name={["conditions", "maxRetries"]}
                 label={t("configuration.fallbacks.form.max_retries")}
               >
-                <InputNumber 
-                  min={1} 
-                  max={10} 
+                <InputNumber
+                  min={1}
+                  max={10}
                   step={1}
                   style={{ width: "100%" }}
                 />
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Form.Item
             name="isActive"
             label={t("configuration.fallbacks.form.is_active")}
@@ -804,7 +879,11 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
       {/* Routing Modal */}
       <Modal
-        title={editingItem ? t("configuration.routing.edit") : t("configuration.routing.create")}
+        title={
+          editingItem
+            ? t("configuration.routing.edit")
+            : t("configuration.routing.create")
+        }
         open={modalVisible && modalType === "routing"}
         onOk={handleSaveRouting}
         onCancel={() => setModalVisible(false)}
@@ -816,18 +895,24 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
             label={t("configuration.routing.form.name")}
             rules={[{ required: true }]}
           >
-            <Input placeholder={t("configuration.routing.form.name_placeholder")} />
+            <Input
+              placeholder={t("configuration.routing.form.name_placeholder")}
+            />
           </Form.Item>
-          
+
           <Form.Item
             name="description"
             label={t("configuration.routing.form.description")}
           >
-            <Input placeholder={t("configuration.routing.form.description_placeholder")} />
+            <Input
+              placeholder={t(
+                "configuration.routing.form.description_placeholder",
+              )}
+            />
           </Form.Item>
-          
+
           <Divider>{t("configuration.routing.form.conditions")}</Divider>
-          
+
           <Form.Item
             name={["conditions", "complexity"]}
             label={t("configuration.routing.form.complexity")}
@@ -835,35 +920,52 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           >
             <Radio.Group>
               <Radio value="low">{t("configuration.complexity.low")}</Radio>
-              <Radio value="medium">{t("configuration.complexity.medium")}</Radio>
+              <Radio value="medium">
+                {t("configuration.complexity.medium")}
+              </Radio>
               <Radio value="high">{t("configuration.complexity.high")}</Radio>
             </Radio.Group>
           </Form.Item>
-          
+
           <Form.Item
             name={["conditions", "taskType"]}
             label={t("configuration.routing.form.task_type")}
             rules={[{ required: true }]}
           >
-            <Select mode="multiple" placeholder={t("configuration.routing.form.task_type_placeholder")}>
-              <Option value="question">{t("configuration.task_types.question")}</Option>
-              <Option value="translation">{t("configuration.task_types.translation")}</Option>
-              <Option value="analysis">{t("configuration.task_types.analysis")}</Option>
-              <Option value="reasoning">{t("configuration.task_types.reasoning")}</Option>
-              <Option value="creative">{t("configuration.task_types.creative")}</Option>
+            <Select
+              mode="multiple"
+              placeholder={t(
+                "configuration.routing.form.task_type_placeholder",
+              )}
+            >
+              <Option value="question">
+                {t("configuration.task_types.question")}
+              </Option>
+              <Option value="translation">
+                {t("configuration.task_types.translation")}
+              </Option>
+              <Option value="analysis">
+                {t("configuration.task_types.analysis")}
+              </Option>
+              <Option value="reasoning">
+                {t("configuration.task_types.reasoning")}
+              </Option>
+              <Option value="creative">
+                {t("configuration.task_types.creative")}
+              </Option>
               <Option value="code">{t("configuration.task_types.code")}</Option>
             </Select>
           </Form.Item>
-          
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name={["conditions", "tokenEstimate"]}
                 label={t("configuration.routing.form.token_estimate")}
               >
-                <InputNumber 
-                  min={1} 
-                  max={4000} 
+                <InputNumber
+                  min={1}
+                  max={4000}
                   step={100}
                   style={{ width: "100%" }}
                 />
@@ -874,9 +976,9 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
                 name={["conditions", "costBudget"]}
                 label={t("configuration.routing.form.cost_budget")}
               >
-                <InputNumber 
-                  min={0.001} 
-                  max={1} 
+                <InputNumber
+                  min={0.001}
+                  max={1}
                   step={0.001}
                   precision={3}
                   style={{ width: "100%" }}
@@ -884,7 +986,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Form.Item
             name={["conditions", "priority"]}
             label={t("configuration.routing.form.priority")}
@@ -896,21 +998,25 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
               <Radio value="high">{t("configuration.priority.high")}</Radio>
             </Radio.Group>
           </Form.Item>
-          
+
           <Form.Item
             name="targetModel"
             label={t("configuration.routing.form.target_model")}
             rules={[{ required: true }]}
           >
-            <Select placeholder={t("configuration.routing.form.target_model_placeholder")}>
-              {models.map(model => (
+            <Select
+              placeholder={t(
+                "configuration.routing.form.target_model_placeholder",
+              )}
+            >
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             name="isActive"
             label={t("configuration.routing.form.is_active")}

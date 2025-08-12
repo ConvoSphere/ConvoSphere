@@ -32,10 +32,10 @@ const ForgotPassword: React.FC = () => {
 
   const onFinish = async (values: { email: string }) => {
     setLoading(true);
-    
+
     try {
       const result = await forgotPassword(values.email);
-      
+
       if (result.success) {
         setEmailSent(true);
         message.success(t("auth.passwordResetSent"));
@@ -79,15 +79,17 @@ const ForgotPassword: React.FC = () => {
             <div style={{ fontSize: "64px", color: "#52c41a" }}>
               <MailOutlined />
             </div>
-            
+
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.checkYourEmail")}
             </Title>
-            
-            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
+
+            <Text
+              style={{ fontSize: "16px", color: colors.colorTextSecondary }}
+            >
               {t("auth.passwordResetEmailSent")}
             </Text>
-            
+
             <Alert
               message={t("auth.emailInstructions")}
               description={t("auth.emailInstructionsDetail")}
@@ -95,7 +97,7 @@ const ForgotPassword: React.FC = () => {
               showIcon
               style={{ textAlign: "left" }}
             />
-            
+
             <Space direction="vertical" style={{ width: "100%" }}>
               <ModernButton
                 type="primary"
@@ -105,7 +107,7 @@ const ForgotPassword: React.FC = () => {
               >
                 {t("auth.backToLogin")}
               </ModernButton>
-              
+
               <ModernButton
                 type="link"
                 onClick={() => setEmailSent(false)}
@@ -144,7 +146,9 @@ const ForgotPassword: React.FC = () => {
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.forgotPassword")}
             </Title>
-            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
+            <Text
+              style={{ fontSize: "16px", color: colors.colorTextSecondary }}
+            >
               {t("auth.forgotPasswordDescription")}
             </Text>
           </div>
@@ -164,7 +168,9 @@ const ForgotPassword: React.FC = () => {
               ]}
             >
               <ModernInput
-                prefix={<MailOutlined style={{ color: colors.colorTextSecondary }} />}
+                prefix={
+                  <MailOutlined style={{ color: colors.colorTextSecondary }} />
+                }
                 placeholder={t("auth.emailPlaceholder")}
                 variant="filled"
                 size="lg"

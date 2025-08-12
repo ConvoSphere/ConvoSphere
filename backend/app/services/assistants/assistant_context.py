@@ -78,9 +78,9 @@ class AssistantContextManager:
                 "user_id": request.user_id,
                 "assistant_id": request.assistant_id,
                 "hybrid_mode_state": mode_state.dict() if mode_state else None,
-                "conversation_metadata": conversation.conversation_metadata
-                if conversation
-                else {},
+                "conversation_metadata": (
+                    conversation.conversation_metadata if conversation else {}
+                ),
             }
 
             logger.debug(
@@ -244,9 +244,11 @@ class AssistantContextManager:
                 "title": conversation.title,
                 "message_count": len(messages),
                 "total_tokens": conversation.total_tokens,
-                "created_at": conversation.created_at.isoformat()
-                if conversation.created_at
-                else None,
+                "created_at": (
+                    conversation.created_at.isoformat()
+                    if conversation.created_at
+                    else None
+                ),
                 "last_message": messages[-1].dict() if messages else None,
                 "metadata": conversation.conversation_metadata,
             }

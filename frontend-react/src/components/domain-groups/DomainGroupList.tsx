@@ -1,19 +1,28 @@
-import React from 'react';
-import { Table, Space, Tag, Avatar, Typography, Tooltip, Popconfirm, Badge } from 'antd';
-import ModernButton from '../ModernButton';
-import { 
-  TeamOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
+import React from "react";
+import {
+  Table,
+  Space,
+  Tag,
+  Avatar,
+  Typography,
+  Tooltip,
+  Popconfirm,
+  Badge,
+} from "antd";
+import ModernButton from "../ModernButton";
+import {
+  TeamOutlined,
+  EditOutlined,
+  DeleteOutlined,
   UserAddOutlined,
   SettingOutlined,
   EyeOutlined,
   ExportOutlined,
-  SearchOutlined 
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import type { DomainGroup } from '../../services/domainGroups';
-import ModernButton from '../ModernButton';
+  SearchOutlined,
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import type { DomainGroup } from "../../services/domainGroups";
+import ModernButton from "../ModernButton";
 
 const { Text } = Typography;
 
@@ -45,27 +54,27 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'default';
+    return isActive ? "success" : "default";
   };
 
   const getRoleIcon = (level: number) => {
-    if (level === 0) return <TeamOutlined style={{ color: '#1890ff' }} />;
-    if (level === 1) return <TeamOutlined style={{ color: '#52c41a' }} />;
-    return <TeamOutlined style={{ color: '#faad14' }} />;
+    if (level === 0) return <TeamOutlined style={{ color: "#1890ff" }} />;
+    if (level === 1) return <TeamOutlined style={{ color: "#52c41a" }} />;
+    return <TeamOutlined style={{ color: "#faad14" }} />;
   };
 
   const columns = [
     {
-      title: t('domain_groups.name'),
-      dataIndex: 'name',
-      key: 'name',
+      title: t("domain_groups.name"),
+      dataIndex: "name",
+      key: "name",
       render: (name: string, record: DomainGroup) => (
         <div style={{ paddingLeft: getLevelIndent(record.level) }}>
           <Space>
             {getRoleIcon(record.level)}
             <Text strong>{name}</Text>
             {record.level === 0 && (
-              <Tag color="blue">{t('domain_groups.root')}</Tag>
+              <Tag color="blue">{t("domain_groups.root")}</Tag>
             )}
           </Space>
         </div>
@@ -73,69 +82,72 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
       sorter: (a: DomainGroup, b: DomainGroup) => a.name.localeCompare(b.name),
     },
     {
-      title: t('domain_groups.description'),
-      dataIndex: 'description',
-      key: 'description',
+      title: t("domain_groups.description"),
+      dataIndex: "description",
+      key: "description",
       render: (description: string) => (
         <Text type="secondary" ellipsis={{ tooltip: description }}>
-          {description || t('domain_groups.no_description')}
+          {description || t("domain_groups.no_description")}
         </Text>
       ),
     },
     {
-      title: t('domain_groups.path'),
-      dataIndex: 'path',
-      key: 'path',
+      title: t("domain_groups.path"),
+      dataIndex: "path",
+      key: "path",
       render: (path: string) => (
-        <Text code style={{ fontSize: '12px' }}>
+        <Text code style={{ fontSize: "12px" }}>
           {path}
         </Text>
       ),
     },
     {
-      title: t('domain_groups.users'),
-      dataIndex: 'userCount',
-      key: 'userCount',
+      title: t("domain_groups.users"),
+      dataIndex: "userCount",
+      key: "userCount",
       render: (userCount: number) => (
-        <Badge count={userCount} showZero style={{ backgroundColor: '#1890ff' }}>
+        <Badge
+          count={userCount}
+          showZero
+          style={{ backgroundColor: "#1890ff" }}
+        >
           <Avatar size="small" icon={<TeamOutlined />} />
         </Badge>
       ),
       sorter: (a: DomainGroup, b: DomainGroup) => a.userCount - b.userCount,
     },
     {
-      title: t('domain_groups.status'),
-      dataIndex: 'isActive',
-      key: 'isActive',
+      title: t("domain_groups.status"),
+      dataIndex: "isActive",
+      key: "isActive",
       render: (isActive: boolean) => (
         <Tag color={getStatusColor(isActive)}>
-          {isActive ? t('domain_groups.active') : t('domain_groups.inactive')}
+          {isActive ? t("domain_groups.active") : t("domain_groups.inactive")}
         </Tag>
       ),
       filters: [
-        { text: t('domain_groups.active'), value: true },
-        { text: t('domain_groups.inactive'), value: false },
+        { text: t("domain_groups.active"), value: true },
+        { text: t("domain_groups.inactive"), value: false },
       ],
-      onFilter: (value: boolean, record: DomainGroup) => record.isActive === value,
+      onFilter: (value: boolean, record: DomainGroup) =>
+        record.isActive === value,
     },
     {
-      title: t('domain_groups.created'),
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: t("domain_groups.created"),
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (createdAt: string) => (
-        <Text type="secondary">
-          {new Date(createdAt).toLocaleDateString()}
-        </Text>
+        <Text type="secondary">{new Date(createdAt).toLocaleDateString()}</Text>
       ),
-      sorter: (a: DomainGroup, b: DomainGroup) => 
+      sorter: (a: DomainGroup, b: DomainGroup) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
-      title: t('domain_groups.actions'),
-      key: 'actions',
+      title: t("domain_groups.actions"),
+      key: "actions",
       render: (_, record: DomainGroup) => (
         <Space size="small">
-          <Tooltip title={t('domain_groups.view_users')}>
+          <Tooltip title={t("domain_groups.view_users")}>
             <ModernButton
               type="text"
               size="small"
@@ -143,8 +155,8 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
               onClick={() => onViewUsers(record.id)}
             />
           </Tooltip>
-          
-          <Tooltip title={t('domain_groups.assign_users')}>
+
+          <Tooltip title={t("domain_groups.assign_users")}>
             <ModernButton
               type="text"
               size="small"
@@ -152,8 +164,8 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
               onClick={() => onAssignUsers(record.id)}
             />
           </Tooltip>
-          
-          <Tooltip title={t('domain_groups.manage_permissions')}>
+
+          <Tooltip title={t("domain_groups.manage_permissions")}>
             <ModernButton
               type="text"
               size="small"
@@ -161,8 +173,8 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
               onClick={() => onManagePermissions(record.id)}
             />
           </Tooltip>
-          
-          <Tooltip title={t('domain_groups.edit')}>
+
+          <Tooltip title={t("domain_groups.edit")}>
             <ModernButton
               type="text"
               size="small"
@@ -170,8 +182,8 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
               onClick={() => onEdit(record)}
             />
           </Tooltip>
-          
-          <Tooltip title={t('domain_groups.export')}>
+
+          <Tooltip title={t("domain_groups.export")}>
             <ModernButton
               type="text"
               size="small"
@@ -179,16 +191,16 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
               onClick={() => onExport(record.id)}
             />
           </Tooltip>
-          
+
           <Popconfirm
-            title={t('domain_groups.delete_confirm_title')}
-            description={t('domain_groups.delete_confirm_description')}
+            title={t("domain_groups.delete_confirm_title")}
+            description={t("domain_groups.delete_confirm_description")}
             onConfirm={() => onDelete(record.id)}
-            okText={t('common.yes')}
-            cancelText={t('common.no')}
+            okText={t("common.yes")}
+            cancelText={t("common.no")}
             placement="left"
           >
-            <Tooltip title={t('domain_groups.delete')}>
+            <Tooltip title={t("domain_groups.delete")}>
               <ModernButton
                 type="text"
                 size="small"
@@ -212,16 +224,16 @@ const DomainGroupList: React.FC<DomainGroupListProps> = ({
         pageSize: 20,
         showSizeChanger: true,
         showQuickJumper: true,
-        showTotal: (total, range) => 
-          `${t('domain_groups.showing')} ${range[0]}-${range[1]} ${t('domain_groups.of')} ${total} ${t('domain_groups.groups')}`,
+        showTotal: (total, range) =>
+          `${t("domain_groups.showing")} ${range[0]}-${range[1]} ${t("domain_groups.of")} ${total} ${t("domain_groups.groups")}`,
       }}
       scroll={{ x: 1200 }}
       expandable={{
         rowExpandable: (record) => record.userCount > 0,
         expandedRowRender: (record) => (
-          <div style={{ padding: '16px', backgroundColor: '#fafafa' }}>
+          <div style={{ padding: "16px", backgroundColor: "#fafafa" }}>
             <Text type="secondary">
-              {t('domain_groups.user_count_info', { count: record.userCount })}
+              {t("domain_groups.user_count_info", { count: record.userCount })}
             </Text>
           </div>
         ),

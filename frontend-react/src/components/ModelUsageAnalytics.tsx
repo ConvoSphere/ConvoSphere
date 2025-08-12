@@ -124,7 +124,7 @@ interface UserUsage {
 const ModelUsageAnalytics: React.FC = () => {
   const { t } = useTranslation();
   const { models } = useAIModelsStore();
-  
+
   const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState<[string, string]>([
     new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -132,10 +132,12 @@ const ModelUsageAnalytics: React.FC = () => {
   ]);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"overview" | "detailed" | "costs" | "users">("overview");
+  const [viewMode, setViewMode] = useState<
+    "overview" | "detailed" | "costs" | "users"
+  >("overview");
   const [refreshInterval, setRefreshInterval] = useState<number>(30000);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
-  
+
   // Data states
   const [usageData, setUsageData] = useState<UsageData[]>([]);
   const [usageSummary, setUsageSummary] = useState<UsageSummary[]>([]);
@@ -146,7 +148,7 @@ const ModelUsageAnalytics: React.FC = () => {
 
   useEffect(() => {
     loadUsageData();
-    
+
     if (autoRefresh) {
       const interval = setInterval(loadUsageData, refreshInterval);
       return () => clearInterval(interval);
@@ -156,22 +158,29 @@ const ModelUsageAnalytics: React.FC = () => {
   const loadUsageData = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - replace with API calls
-      const mockUsageData: UsageData[] = Array.from({ length: 168 }, (_, i) => ({
-        timestamp: new Date(Date.now() - (168 - i) * 60 * 60 * 1000).toISOString(),
-        modelId: ["gpt-4", "gpt-3.5-turbo", "claude-3-sonnet"][Math.floor(Math.random() * 3)],
-        requests: Math.floor(Math.random() * 50) + 10,
-        tokens: Math.floor(Math.random() * 10000) + 1000,
-        cost: Math.random() * 0.5 + 0.01,
-        responseTime: Math.random() * 3000 + 500,
-        successRate: Math.random() * 0.1 + 0.9,
-        errorRate: Math.random() * 0.1,
-        userId: `user${Math.floor(Math.random() * 5) + 1}`,
-        sessionId: `session${Math.floor(Math.random() * 1000)}`,
-      }));
-      
-      const mockSummary: UsageSummary[] = models.map(model => ({
+      const mockUsageData: UsageData[] = Array.from(
+        { length: 168 },
+        (_, i) => ({
+          timestamp: new Date(
+            Date.now() - (168 - i) * 60 * 60 * 1000,
+          ).toISOString(),
+          modelId: ["gpt-4", "gpt-3.5-turbo", "claude-3-sonnet"][
+            Math.floor(Math.random() * 3)
+          ],
+          requests: Math.floor(Math.random() * 50) + 10,
+          tokens: Math.floor(Math.random() * 10000) + 1000,
+          cost: Math.random() * 0.5 + 0.01,
+          responseTime: Math.random() * 3000 + 500,
+          successRate: Math.random() * 0.1 + 0.9,
+          errorRate: Math.random() * 0.1,
+          userId: `user${Math.floor(Math.random() * 5) + 1}`,
+          sessionId: `session${Math.floor(Math.random() * 1000)}`,
+        }),
+      );
+
+      const mockSummary: UsageSummary[] = models.map((model) => ({
         modelId: model.id,
         modelName: model.displayName,
         totalRequests: Math.floor(Math.random() * 10000) + 1000,
@@ -184,11 +193,15 @@ const ModelUsageAnalytics: React.FC = () => {
           timestamp: new Date().toISOString(),
           requests: Math.floor(Math.random() * 100) + 50,
         },
-        usageTrend: ["increasing", "decreasing", "stable"][Math.floor(Math.random() * 3)] as any,
-        costTrend: ["increasing", "decreasing", "stable"][Math.floor(Math.random() * 3)] as any,
+        usageTrend: ["increasing", "decreasing", "stable"][
+          Math.floor(Math.random() * 3)
+        ] as any,
+        costTrend: ["increasing", "decreasing", "stable"][
+          Math.floor(Math.random() * 3)
+        ] as any,
       }));
-      
-      const mockCostBreakdown: CostBreakdown[] = models.map(model => ({
+
+      const mockCostBreakdown: CostBreakdown[] = models.map((model) => ({
         modelId: model.id,
         modelName: model.displayName,
         cost: Math.random() * 100 + 10,
@@ -196,17 +209,22 @@ const ModelUsageAnalytics: React.FC = () => {
         requests: Math.floor(Math.random() * 10000) + 1000,
         avgCostPerRequest: Math.random() * 0.01 + 0.001,
       }));
-      
+
       const mockUserUsage: UserUsage[] = Array.from({ length: 10 }, (_, i) => ({
         userId: `user${i + 1}`,
         username: `User ${i + 1}`,
         totalRequests: Math.floor(Math.random() * 5000) + 100,
         totalCost: Math.random() * 50 + 5,
-        favoriteModel: models[Math.floor(Math.random() * models.length)]?.id || "",
-        lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        usagePattern: ["heavy", "moderate", "light"][Math.floor(Math.random() * 3)] as any,
+        favoriteModel:
+          models[Math.floor(Math.random() * models.length)]?.id || "",
+        lastActivity: new Date(
+          Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        usagePattern: ["heavy", "moderate", "light"][
+          Math.floor(Math.random() * 3)
+        ] as any,
       }));
-      
+
       setUsageData(mockUsageData);
       setUsageSummary(mockSummary);
       setCostBreakdown(mockCostBreakdown);
@@ -219,17 +237,17 @@ const ModelUsageAnalytics: React.FC = () => {
   };
 
   const getModelName = (modelId: string) => {
-    return models.find(m => m.id === modelId)?.displayName || modelId;
+    return models.find((m) => m.id === modelId)?.displayName || modelId;
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "increasing":
-        return <RiseOutlined style={{ color: '#52c41a' }} />;
-              case "decreasing":
-          return <FallOutlined style={{ color: '#ff4d4f' }} />;
+        return <RiseOutlined style={{ color: "#52c41a" }} />;
+      case "decreasing":
+        return <FallOutlined style={{ color: "#ff4d4f" }} />;
       default:
-        return <RiseOutlined style={{ color: '#8c8c8c' }} />;
+        return <RiseOutlined style={{ color: "#8c8c8c" }} />;
     }
   };
 
@@ -283,14 +301,16 @@ const ModelUsageAnalytics: React.FC = () => {
       dataIndex: "totalRequests",
       key: "totalRequests",
       render: (value: number) => formatNumber(value),
-      sorter: (a: UsageSummary, b: UsageSummary) => a.totalRequests - b.totalRequests,
+      sorter: (a: UsageSummary, b: UsageSummary) =>
+        a.totalRequests - b.totalRequests,
     },
     {
       title: t("analytics.table.tokens"),
       dataIndex: "totalTokens",
       key: "totalTokens",
       render: (value: number) => formatNumber(value),
-      sorter: (a: UsageSummary, b: UsageSummary) => a.totalTokens - b.totalTokens,
+      sorter: (a: UsageSummary, b: UsageSummary) =>
+        a.totalTokens - b.totalTokens,
     },
     {
       title: t("analytics.table.cost"),
@@ -304,20 +324,24 @@ const ModelUsageAnalytics: React.FC = () => {
       dataIndex: "avgResponseTime",
       key: "avgResponseTime",
       render: (value: number) => `${value.toFixed(0)}ms`,
-      sorter: (a: UsageSummary, b: UsageSummary) => a.avgResponseTime - b.avgResponseTime,
+      sorter: (a: UsageSummary, b: UsageSummary) =>
+        a.avgResponseTime - b.avgResponseTime,
     },
     {
       title: t("analytics.table.success_rate"),
       dataIndex: "avgSuccessRate",
       key: "avgSuccessRate",
       render: (value: number) => (
-        <Progress 
-          percent={value * 100} 
-          size="small" 
-          status={value > 0.95 ? "success" : value > 0.9 ? "normal" : "exception"}
+        <Progress
+          percent={value * 100}
+          size="small"
+          status={
+            value > 0.95 ? "success" : value > 0.9 ? "normal" : "exception"
+          }
         />
       ),
-      sorter: (a: UsageSummary, b: UsageSummary) => a.avgSuccessRate - b.avgSuccessRate,
+      sorter: (a: UsageSummary, b: UsageSummary) =>
+        a.avgSuccessRate - b.avgSuccessRate,
     },
     {
       title: t("analytics.table.trend"),
@@ -325,7 +349,9 @@ const ModelUsageAnalytics: React.FC = () => {
       render: (record: UsageSummary) => (
         <Space>
           {getTrendIcon(record.usageTrend)}
-          <Text type="secondary">{t(`analytics.trend.${record.usageTrend}`)}</Text>
+          <Text type="secondary">
+            {t(`analytics.trend.${record.usageTrend}`)}
+          </Text>
         </Space>
       ),
     },
@@ -354,10 +380,9 @@ const ModelUsageAnalytics: React.FC = () => {
       title: t("analytics.table.percentage"),
       dataIndex: "percentage",
       key: "percentage",
-      render: (value: number) => (
-        <Progress percent={value} size="small" />
-      ),
-      sorter: (a: CostBreakdown, b: CostBreakdown) => a.percentage - b.percentage,
+      render: (value: number) => <Progress percent={value} size="small" />,
+      sorter: (a: CostBreakdown, b: CostBreakdown) =>
+        a.percentage - b.percentage,
     },
     {
       title: t("analytics.table.requests"),
@@ -371,7 +396,8 @@ const ModelUsageAnalytics: React.FC = () => {
       dataIndex: "avgCostPerRequest",
       key: "avgCostPerRequest",
       render: (value: number) => formatCurrency(value),
-      sorter: (a: CostBreakdown, b: CostBreakdown) => a.avgCostPerRequest - b.avgCostPerRequest,
+      sorter: (a: CostBreakdown, b: CostBreakdown) =>
+        a.avgCostPerRequest - b.avgCostPerRequest,
     },
   ];
 
@@ -423,21 +449,32 @@ const ModelUsageAnalytics: React.FC = () => {
       dataIndex: "lastActivity",
       key: "lastActivity",
       render: (timestamp: string) => new Date(timestamp).toLocaleDateString(),
-      sorter: (a: UserUsage, b: UserUsage) => 
+      sorter: (a: UserUsage, b: UserUsage) =>
         new Date(a.lastActivity).getTime() - new Date(b.lastActivity).getTime(),
     },
   ];
 
-  const totalRequests = usageSummary.reduce((sum, item) => sum + item.totalRequests, 0);
-  const totalTokens = usageSummary.reduce((sum, item) => sum + item.totalTokens, 0);
+  const totalRequests = usageSummary.reduce(
+    (sum, item) => sum + item.totalRequests,
+    0,
+  );
+  const totalTokens = usageSummary.reduce(
+    (sum, item) => sum + item.totalTokens,
+    0,
+  );
   const totalCost = usageSummary.reduce((sum, item) => sum + item.totalCost, 0);
-  const avgResponseTime = usageSummary.reduce((sum, item) => sum + item.avgResponseTime, 0) / usageSummary.length;
+  const avgResponseTime =
+    usageSummary.reduce((sum, item) => sum + item.avgResponseTime, 0) /
+    usageSummary.length;
 
   const chartData = usageData
-    .filter(data => selectedModels.length === 0 || selectedModels.includes(data.modelId))
+    .filter(
+      (data) =>
+        selectedModels.length === 0 || selectedModels.includes(data.modelId),
+    )
     .reduce((acc, data) => {
       const date = new Date(data.timestamp).toLocaleDateString();
-      const existing = acc.find(item => item.date === date);
+      const existing = acc.find((item) => item.date === date);
       if (existing) {
         existing.requests += data.requests;
         existing.cost += data.cost;
@@ -468,7 +505,10 @@ const ModelUsageAnalytics: React.FC = () => {
               value={[new Date(timeRange[0]), new Date(timeRange[1])]}
               onChange={(dates) => {
                 if (dates) {
-                  setTimeRange([dates[0]!.toISOString(), dates[1]!.toISOString()]);
+                  setTimeRange([
+                    dates[0]!.toISOString(),
+                    dates[1]!.toISOString(),
+                  ]);
                 }
               }}
               style={{ width: "100%" }}
@@ -483,7 +523,7 @@ const ModelUsageAnalytics: React.FC = () => {
               style={{ width: "100%" }}
               allowClear
             >
-              {models.map(model => (
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
@@ -594,7 +634,11 @@ const ModelUsageAnalytics: React.FC = () => {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <RechartsTooltip />
-                    <Line type="monotone" dataKey="requests" stroke={colors.colorPrimary} />
+                    <Line
+                      type="monotone"
+                      dataKey="requests"
+                      stroke={colors.colorPrimary}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -607,7 +651,13 @@ const ModelUsageAnalytics: React.FC = () => {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <RechartsTooltip />
-                    <Area type="monotone" dataKey="cost" stroke={colors.colorSuccess} fill={colors.colorSuccess} fillOpacity={0.3} />
+                    <Area
+                      type="monotone"
+                      dataKey="cost"
+                      stroke={colors.colorSuccess}
+                      fill={colors.colorSuccess}
+                      fillOpacity={0.3}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </Card>
@@ -629,7 +679,17 @@ const ModelUsageAnalytics: React.FC = () => {
                       label
                     >
                       {costBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={[colors.colorPrimary, colors.colorSuccess, colors.colorWarning, colors.colorError][index % 4]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            [
+                              colors.colorPrimary,
+                              colors.colorSuccess,
+                              colors.colorWarning,
+                              colors.colorError,
+                            ][index % 4]
+                          }
+                        />
                       ))}
                     </Pie>
                     <RechartsTooltip />
@@ -647,8 +707,17 @@ const ModelUsageAnalytics: React.FC = () => {
                     <YAxis yAxisId="right" orientation="right" />
                     <RechartsTooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="totalRequests" fill={colors.colorPrimary} />
-                    <Line yAxisId="right" type="monotone" dataKey="avgResponseTime" stroke={colors.colorError} />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="totalRequests"
+                      fill={colors.colorPrimary}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="avgResponseTime"
+                      stroke={colors.colorError}
+                    />
                   </ComposedChart>
                 </ResponsiveContainer>
               </Card>
@@ -704,22 +773,22 @@ const ModelUsageAnalytics: React.FC = () => {
         footer={null}
       >
         <Space direction="vertical" style={{ width: "100%" }}>
-          <Button 
-            block 
+          <Button
+            block
             icon={<DownloadOutlined />}
             onClick={() => exportData("csv")}
           >
             {t("analytics.export_csv")}
           </Button>
-          <Button 
-            block 
+          <Button
+            block
             icon={<DownloadOutlined />}
             onClick={() => exportData("json")}
           >
             {t("analytics.export_json")}
           </Button>
-          <Button 
-            block 
+          <Button
+            block
             icon={<DownloadOutlined />}
             onClick={() => exportData("excel")}
           >
@@ -737,10 +806,7 @@ const ModelUsageAnalytics: React.FC = () => {
       >
         <Form layout="vertical">
           <Form.Item label={t("analytics.settings.auto_refresh")}>
-            <Switch
-              checked={autoRefresh}
-              onChange={setAutoRefresh}
-            />
+            <Switch checked={autoRefresh} onChange={setAutoRefresh} />
           </Form.Item>
           <Form.Item label={t("analytics.settings.refresh_interval")}>
             <Select
@@ -748,10 +814,16 @@ const ModelUsageAnalytics: React.FC = () => {
               onChange={setRefreshInterval}
               disabled={!autoRefresh}
             >
-              <Option value={10000}>10 {t("analytics.settings.seconds")}</Option>
-              <Option value={30000}>30 {t("analytics.settings.seconds")}</Option>
+              <Option value={10000}>
+                10 {t("analytics.settings.seconds")}
+              </Option>
+              <Option value={30000}>
+                30 {t("analytics.settings.seconds")}
+              </Option>
               <Option value={60000}>1 {t("analytics.settings.minute")}</Option>
-              <Option value={300000}>5 {t("analytics.settings.minutes")}</Option>
+              <Option value={300000}>
+                5 {t("analytics.settings.minutes")}
+              </Option>
             </Select>
           </Form.Item>
         </Form>

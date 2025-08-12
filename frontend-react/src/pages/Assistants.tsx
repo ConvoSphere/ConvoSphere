@@ -144,7 +144,9 @@ const Assistants: React.FC = () => {
     },
     onSuccess: async () => {
       message.success(t("assistants.default_set"));
-      await queryClient.invalidateQueries({ queryKey: ["assistants", "defaultId"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["assistants", "defaultId"],
+      });
     },
     onError: () => {
       message.error(t("assistants.default_set_failed"));

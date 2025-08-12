@@ -1,5 +1,13 @@
-import { create } from 'zustand';
-import { domainGroupsService, type DomainGroup, type DomainGroupCreate, type DomainGroupUpdate, type UserAssignment, type BulkUserAssignment, type GroupPermissions } from '../services/domainGroups';
+import { create } from "zustand";
+import {
+  domainGroupsService,
+  type DomainGroup,
+  type DomainGroupCreate,
+  type DomainGroupUpdate,
+  type UserAssignment,
+  type BulkUserAssignment,
+  type GroupPermissions,
+} from "../services/domainGroups";
 
 interface DomainGroupsState {
   // State
@@ -18,12 +26,23 @@ interface DomainGroupsState {
   updateGroup: (groupId: string, groupData: DomainGroupUpdate) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
   fetchGroupUsers: (groupId: string) => Promise<void>;
-  assignUser: (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer') => Promise<void>;
+  assignUser: (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ) => Promise<void>;
   bulkAssignUsers: (assignment: BulkUserAssignment) => Promise<void>;
   removeUser: (groupId: string, userId: string) => Promise<void>;
-  updateUserRole: (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer') => Promise<void>;
+  updateUserRole: (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ) => Promise<void>;
   fetchGroupPermissions: (groupId: string) => Promise<void>;
-  updateGroupPermissions: (groupId: string, permissions: GroupPermissions['permissions']) => Promise<void>;
+  updateGroupPermissions: (
+    groupId: string,
+    permissions: GroupPermissions["permissions"],
+  ) => Promise<void>;
   searchGroups: (query: string) => Promise<void>;
   setSelectedGroup: (group: DomainGroup | null) => void;
   setSearchQuery: (query: string) => void;
@@ -39,7 +58,7 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
   groupPermissions: null,
   loading: false,
   error: null,
-  searchQuery: '',
+  searchQuery: "",
 
   // Actions
   fetchGroups: async () => {
@@ -48,9 +67,9 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       const groups = await domainGroupsService.getGroups();
       set({ groups, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to fetch domain groups', 
-        loading: false 
+      set({
+        error: error.message || "Failed to fetch domain groups",
+        loading: false,
       });
     }
   },
@@ -61,9 +80,9 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       const group = await domainGroupsService.getGroup(groupId);
       set({ selectedGroup: group, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to fetch domain group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to fetch domain group",
+        loading: false,
       });
     }
   },
@@ -73,14 +92,14 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
     try {
       const newGroup = await domainGroupsService.createGroup(groupData);
       const { groups } = get();
-      set({ 
-        groups: [...groups, newGroup], 
-        loading: false 
+      set({
+        groups: [...groups, newGroup],
+        loading: false,
       });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to create domain group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to create domain group",
+        loading: false,
       });
     }
   },
@@ -88,22 +107,26 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
   updateGroup: async (groupId: string, groupData: DomainGroupUpdate) => {
     set({ loading: true, error: null });
     try {
-      const updatedGroup = await domainGroupsService.updateGroup(groupId, groupData);
-      const { groups, selectedGroup } = get();
-      
-      const updatedGroups = groups.map(group => 
-        group.id === groupId ? updatedGroup : group
+      const updatedGroup = await domainGroupsService.updateGroup(
+        groupId,
+        groupData,
       );
-      
-      set({ 
+      const { groups, selectedGroup } = get();
+
+      const updatedGroups = groups.map((group) =>
+        group.id === groupId ? updatedGroup : group,
+      );
+
+      set({
         groups: updatedGroups,
-        selectedGroup: selectedGroup?.id === groupId ? updatedGroup : selectedGroup,
-        loading: false 
+        selectedGroup:
+          selectedGroup?.id === groupId ? updatedGroup : selectedGroup,
+        loading: false,
       });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to update domain group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to update domain group",
+        loading: false,
       });
     }
   },
@@ -113,18 +136,18 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
     try {
       await domainGroupsService.deleteGroup(groupId);
       const { groups, selectedGroup } = get();
-      
-      const updatedGroups = groups.filter(group => group.id !== groupId);
-      
-      set({ 
+
+      const updatedGroups = groups.filter((group) => group.id !== groupId);
+
+      set({
         groups: updatedGroups,
         selectedGroup: selectedGroup?.id === groupId ? null : selectedGroup,
-        loading: false 
+        loading: false,
       });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to delete domain group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to delete domain group",
+        loading: false,
       });
     }
   },
@@ -135,23 +158,27 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       const users = await domainGroupsService.getGroupUsers(groupId);
       set({ groupUsers: users, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to fetch group users', 
-        loading: false 
+      set({
+        error: error.message || "Failed to fetch group users",
+        loading: false,
       });
     }
   },
 
-  assignUser: async (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer') => {
+  assignUser: async (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ) => {
     set({ loading: true, error: null });
     try {
       await domainGroupsService.assignUser(groupId, userId, role);
       await get().fetchGroupUsers(groupId);
       set({ loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to assign user to group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to assign user to group",
+        loading: false,
       });
     }
   },
@@ -163,9 +190,9 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       await get().fetchGroupUsers(assignment.groupId);
       set({ loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to bulk assign users', 
-        loading: false 
+      set({
+        error: error.message || "Failed to bulk assign users",
+        loading: false,
       });
     }
   },
@@ -177,23 +204,27 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       await get().fetchGroupUsers(groupId);
       set({ loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to remove user from group', 
-        loading: false 
+      set({
+        error: error.message || "Failed to remove user from group",
+        loading: false,
       });
     }
   },
 
-  updateUserRole: async (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer') => {
+  updateUserRole: async (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ) => {
     set({ loading: true, error: null });
     try {
       await domainGroupsService.updateUserRole(groupId, userId, role);
       await get().fetchGroupUsers(groupId);
       set({ loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to update user role', 
-        loading: false 
+      set({
+        error: error.message || "Failed to update user role",
+        loading: false,
       });
     }
   },
@@ -201,25 +232,30 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
   fetchGroupPermissions: async (groupId: string) => {
     set({ loading: true, error: null });
     try {
-      const permissions = await domainGroupsService.getGroupPermissions(groupId);
+      const permissions =
+        await domainGroupsService.getGroupPermissions(groupId);
       set({ groupPermissions: permissions, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to fetch group permissions', 
-        loading: false 
+      set({
+        error: error.message || "Failed to fetch group permissions",
+        loading: false,
       });
     }
   },
 
-  updateGroupPermissions: async (groupId: string, permissions: GroupPermissions['permissions']) => {
+  updateGroupPermissions: async (
+    groupId: string,
+    permissions: GroupPermissions["permissions"],
+  ) => {
     set({ loading: true, error: null });
     try {
-      const updatedPermissions = await domainGroupsService.updateGroupPermissions(groupId, permissions);
+      const updatedPermissions =
+        await domainGroupsService.updateGroupPermissions(groupId, permissions);
       set({ groupPermissions: updatedPermissions, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to update group permissions', 
-        loading: false 
+      set({
+        error: error.message || "Failed to update group permissions",
+        loading: false,
       });
     }
   },
@@ -230,9 +266,9 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       const groups = await domainGroupsService.searchGroups(query);
       set({ groups, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to search groups', 
-        loading: false 
+      set({
+        error: error.message || "Failed to search groups",
+        loading: false,
       });
     }
   },
@@ -257,7 +293,7 @@ export const useDomainGroupsStore = create<DomainGroupsState>((set, get) => ({
       groupPermissions: null,
       loading: false,
       error: null,
-      searchQuery: '',
+      searchQuery: "",
     });
   },
 }));

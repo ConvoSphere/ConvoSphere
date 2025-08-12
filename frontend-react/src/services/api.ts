@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import config from "../config";
 import { refreshToken, isTokenExpired } from "./auth";
 
@@ -16,20 +16,22 @@ const REFRESH_COOLDOWN = 30000; // 30 seconds cooldown
 let isLoopDetected = false;
 
 // Request interceptor - simplified to prevent loops
-api.interceptors.request.use(async (config: any) => {
+api.interceptors.request.use(async (requestConfig: AxiosRequestConfig) => {
   // Skip token handling only for auth endpoints that don't need authentication
-  if (config.url?.includes('/auth/') && 
-      !config.url?.includes('/auth/me') && 
-      !config.url?.includes('/auth/sso/link') &&
-      !config.url?.includes('/auth/sso/unlink') &&
-      !config.url?.includes('/auth/sso/provisioning') &&
-      !config.url?.includes('/auth/sso/bulk-sync')) {
-    return config;
+  if (
+    requestConfig.url?.includes("/auth/") &&
+    !requestConfig.url?.includes("/auth/me") &&
+    !requestConfig.url?.includes("/auth/sso/link") &&
+    !requestConfig.url?.includes("/auth/sso/unlink") &&
+    !requestConfig.url?.includes("/auth/sso/provisioning") &&
+    !requestConfig.url?.includes("/auth/sso/bulk-sync")
+  ) {
+    return requestConfig;
   }
 
   // If we've detected a loop, don't add any auth headers
   if (isLoopDetected) {
-    return config;
+    return requestConfig;
   }
 
   // Check if we've exceeded max refresh attempts
@@ -39,53 +41,57 @@ api.interceptors.request.use(async (config: any) => {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("token_expiry");
     isLoopDetected = true;
-    if (!window.location.pathname.includes('/login')) {
+    if (!window.location.pathname.includes("/login")) {
       window.location.href = "/login";
     }
-    return config;
+    return requestConfig;
   }
 
   // Only add token if it exists and is not expired
   const token = localStorage.getItem("token");
   if (token && !isTokenExpired()) {
-    config.headers = config.headers || {};
-    config.headers["Authorization"] = `Bearer ${token}`;
+    requestConfig.headers = requestConfig.headers || {};
+    (requestConfig.headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
 
-  return config;
+  return requestConfig;
 });
 
 // Response interceptor - simplified to prevent loops
 api.interceptors.response.use(
-  (response: any) => response,
-  async (error: any) => {
-    const originalRequest = error.config;
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    const originalRequest = (error as AxiosError & { config: AxiosRequestConfig & { _retry?: boolean } }).config;
 
     // If we've detected a loop, don't try to refresh
     if (isLoopDetected) {
       return Promise.reject(error);
     }
 
+    const status = error.response?.status;
+
     // Only handle 401 errors and only if we haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       // Skip auth endpoints that don't need authentication
-      if (originalRequest.url?.includes('/auth/') && 
-          !originalRequest.url?.includes('/auth/me') && 
-          !originalRequest.url?.includes('/auth/sso/link') &&
-          !originalRequest.url?.includes('/auth/sso/unlink') &&
-          !originalRequest.url?.includes('/auth/sso/provisioning') &&
-          !originalRequest.url?.includes('/auth/sso/bulk-sync')) {
+      if (
+        originalRequest.url?.includes("/auth/") &&
+        !originalRequest.url?.includes("/auth/me") &&
+        !originalRequest.url?.includes("/auth/sso/link") &&
+        !originalRequest.url?.includes("/auth/sso/unlink") &&
+        !originalRequest.url?.includes("/auth/sso/provisioning") &&
+        !originalRequest.url?.includes("/auth/sso/bulk-sync")
+      ) {
         return Promise.reject(error);
       }
 
       const now = Date.now();
-      
+
       // Check cooldown
       if (now - lastRefreshTime < REFRESH_COOLDOWN) {
         console.warn("Refresh cooldown active, redirecting to login");
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(error);
@@ -94,7 +100,7 @@ api.interceptors.response.use(
       // Check if already refreshing
       if (isRefreshing) {
         console.warn("Already refreshing, redirecting to login");
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(error);
@@ -107,22 +113,22 @@ api.interceptors.response.use(
 
       try {
         const newToken = await refreshToken();
-        if (newToken) {
+        if (newToken && originalRequest.headers) {
           // Reset attempts on success
           refreshAttempts = 0;
-          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+          (originalRequest.headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`;
           return api(originalRequest);
         } else {
           // Refresh failed
           console.warn("Token refresh failed");
-          if (!window.location.pathname.includes('/login')) {
+          if (!window.location.pathname.includes("/login")) {
             window.location.href = "/login";
           }
           return Promise.reject(error);
         }
       } catch (refreshError) {
         console.error("Token refresh error:", refreshError);
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
@@ -132,15 +138,15 @@ api.interceptors.response.use(
     }
 
     // Handle rate limiting
-    if (error.response?.status === 429) {
+    if (status === 429) {
       console.warn("Rate limit exceeded, redirecting to login");
-      if (!window.location.pathname.includes('/login')) {
+      if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

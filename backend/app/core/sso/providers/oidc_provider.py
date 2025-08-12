@@ -92,9 +92,9 @@ class OIDCProvider(OAuthProvider):
                     "full_name": user.full_name,
                     "provider": "oidc",
                     "issuer_url": self.issuer_url,
-                    "last_sync": user.last_login.isoformat()
-                    if user.last_login
-                    else None,
+                    "last_sync": (
+                        user.last_login.isoformat() if user.last_login else None
+                    ),
                 }
             except Exception as e:
                 logger.exception(f"Failed to get OIDC user info: {str(e)}")

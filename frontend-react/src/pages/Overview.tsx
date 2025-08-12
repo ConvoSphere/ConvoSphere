@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Row,
-  Col,
-  Statistic,
-  Typography,
-} from "antd";
+import { Row, Col, Statistic, Typography } from "antd";
 import {
   UserOutlined,
   ClockCircleOutlined,

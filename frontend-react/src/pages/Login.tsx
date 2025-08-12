@@ -37,7 +37,7 @@ const Login: React.FC = () => {
     // Load SSO providers on component mount only once with caching
     const loadSSOProviders = async () => {
       // Check if we already have providers cached
-      const cachedProviders = sessionStorage.getItem('sso_providers');
+      const cachedProviders = sessionStorage.getItem("sso_providers");
       if (cachedProviders) {
         try {
           const providers = JSON.parse(cachedProviders);
@@ -45,12 +45,12 @@ const Login: React.FC = () => {
           return;
         } catch {
           // Invalid cache, remove it
-          sessionStorage.removeItem('sso_providers');
+          sessionStorage.removeItem("sso_providers");
         }
       }
-      
+
       if (ssoLoading) return; // Prevent multiple simultaneous requests
-      
+
       setSsoLoading(true);
       try {
         const providers = await getSSOProviders();
@@ -58,23 +58,23 @@ const Login: React.FC = () => {
         if (providers && providers.length > 0) {
           setSsoProviders(providers);
           // Cache the providers for this session
-          sessionStorage.setItem('sso_providers', JSON.stringify(providers));
+          sessionStorage.setItem("sso_providers", JSON.stringify(providers));
         } else {
           setSsoProviders([]);
           // Cache empty array to prevent future requests
-          sessionStorage.setItem('sso_providers', JSON.stringify([]));
+          sessionStorage.setItem("sso_providers", JSON.stringify([]));
           console.log("No SSO providers configured");
         }
       } catch {
         setSsoProviders([]); // auch im Fehlerfall ein Array
         // Cache empty array on error to prevent repeated failed requests
-        sessionStorage.setItem('sso_providers', JSON.stringify([]));
+        sessionStorage.setItem("sso_providers", JSON.stringify([]));
         console.log("No SSO providers configured or error loading providers");
       } finally {
         setSsoLoading(false);
       }
     };
-    
+
     // Only load if not already loaded and not currently loading
     if (ssoProviders.length === 0 && !ssoLoading) {
       loadSSOProviders();
@@ -226,13 +226,13 @@ const Login: React.FC = () => {
           aria-label={t("auth.login.title")}
           name="login-form"
         >
-          <ModernFormItem 
-            label={t("auth.login.username")} 
+          <ModernFormItem
+            label={t("auth.login.username")}
             required
             name="username"
             rules={[
               { required: true, message: t("auth.login.username_required") },
-              { min: 3, message: t("auth.login.username_min_length") }
+              { min: 3, message: t("auth.login.username_min_length") },
             ]}
           >
             <ModernInput
@@ -244,13 +244,13 @@ const Login: React.FC = () => {
             />
           </ModernFormItem>
 
-          <ModernFormItem 
-            label={t("auth.login.password")} 
+          <ModernFormItem
+            label={t("auth.login.password")}
             required
             name="password"
             rules={[
               { required: true, message: t("auth.login.password_required") },
-              { min: 6, message: t("auth.login.password_min_length") }
+              { min: 6, message: t("auth.login.password_min_length") },
             ]}
           >
             <ModernInput
@@ -309,8 +309,6 @@ const Login: React.FC = () => {
           </ModernButton>
         </div>
       </ModernCard>
-
-
     </div>
   );
 };

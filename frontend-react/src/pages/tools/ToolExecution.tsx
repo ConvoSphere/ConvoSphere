@@ -1,5 +1,15 @@
-import React from 'react';
-import { Modal, Alert, Typography, Space, Tag, Table, Form, Switch, Upload } from 'antd';
+import React from "react";
+import {
+  Modal,
+  Alert,
+  Typography,
+  Space,
+  Tag,
+  Table,
+  Form,
+  Switch,
+  Upload,
+} from "antd";
 import {
   PlayCircleOutlined,
   ToolOutlined,
@@ -8,15 +18,15 @@ import {
   ExclamationCircleOutlined,
   InfoCircleOutlined,
   UploadOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import ModernCard from '../../components/ModernCard';
-import ModernButton from '../../components/ModernButton';
-import ModernForm, { ModernFormItem } from '../../components/ModernForm';
-import ModernInput from '../../components/ModernInput';
-import ModernSelect from '../../components/ModernSelect';
-import { useThemeStore } from '../../store/themeStore';
-import type { Tool, ToolExecution, ToolParameter } from './types/tools.types';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import ModernCard from "../../components/ModernCard";
+import ModernButton from "../../components/ModernButton";
+import ModernForm, { ModernFormItem } from "../../components/ModernForm";
+import ModernInput from "../../components/ModernInput";
+import ModernSelect from "../../components/ModernSelect";
+import { useThemeStore } from "../../store/themeStore";
+import type { Tool, ToolExecution, ToolParameter } from "./types/tools.types";
 
 const { Title, Text } = Typography;
 
@@ -46,7 +56,10 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
   const categories = [
     { value: "utility", label: t("tools.categories.utility", "Utility") },
     { value: "api", label: t("tools.categories.api", "API") },
-    { value: "calculation", label: t("tools.categories.calculation", "Calculation") },
+    {
+      value: "calculation",
+      label: t("tools.categories.calculation", "Calculation"),
+    },
     { value: "file", label: t("tools.categories.file", "File") },
     { value: "code", label: t("tools.categories.code", "Code") },
   ];
@@ -234,11 +247,15 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              t("tools.table.showing", "{{start}}-{{end}} von {{total}} Einträgen", {
-                start: range[0],
-                end: range[1],
-                total,
-              }),
+              t(
+                "tools.table.showing",
+                "{{start}}-{{end}} von {{total}} Einträgen",
+                {
+                  start: range[0],
+                  end: range[1],
+                  total,
+                },
+              ),
           }}
           scroll={{ x: 800 }}
         />
@@ -272,9 +289,19 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
               style={{ marginBottom: 16 }}
             />
 
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                marginBottom: 16,
+              }}
+            >
               <Tag color={getCategoryColor(selectedTool.category)}>
-                {categories.find((c) => c.value === selectedTool.category)?.label}
+                {
+                  categories.find((c) => c.value === selectedTool.category)
+                    ?.label
+                }
               </Tag>
               <Text type="secondary">
                 <ClockCircleOutlined style={{ marginRight: 4 }} />
@@ -299,7 +326,10 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
                   ? [
                       {
                         required: true,
-                        message: t("tools.parameter_required", "Parameter ist erforderlich"),
+                        message: t(
+                          "tools.parameter_required",
+                          "Parameter ist erforderlich",
+                        ),
                       },
                     ]
                   : []),

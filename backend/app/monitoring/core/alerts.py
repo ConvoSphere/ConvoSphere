@@ -124,9 +124,11 @@ class AlertManager:
                         threshold=rule["threshold"],
                         current_value=current_value,
                         tags=rule["tags"],
-                        channel=rule["channels"][0]
-                        if rule["channels"]
-                        else AlertChannel.LOG,
+                        channel=(
+                            rule["channels"][0]
+                            if rule["channels"]
+                            else AlertChannel.LOG
+                        ),
                         metadata={"rule": rule},
                     )
 

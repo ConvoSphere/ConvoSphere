@@ -1,6 +1,6 @@
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: string;
   metadata?: {
@@ -10,7 +10,7 @@ export interface ChatMessage {
     tools_used?: string[];
     sources?: string[];
   };
-  status?: 'sending' | 'sent' | 'error';
+  status?: "sending" | "sent" | "error";
   error?: string;
 }
 
@@ -91,7 +91,7 @@ export interface ChatFormData {
 }
 
 export interface ChatExportOptions {
-  format: 'json' | 'txt' | 'md' | 'pdf';
+  format: "json" | "txt" | "md" | "pdf";
   include_metadata: boolean;
   include_sources: boolean;
 }

@@ -40,7 +40,11 @@ const TagManager: React.FC<TagManagerProps> = ({
   );
 
   const queryClient = useQueryClient();
-  const tagsQuery = useQuery({ queryKey: ["knowledge-tags"], queryFn: getTags, staleTime: 5 * 60 * 1000 });
+  const tagsQuery = useQuery({
+    queryKey: ["knowledge-tags"],
+    queryFn: getTags,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     fetchTags();
@@ -102,7 +106,10 @@ const TagManager: React.FC<TagManagerProps> = ({
     totalTags: tags.length,
     systemTags: tags.filter((tag: TagType) => tag.is_system).length,
     userTags: tags.filter((tag: TagType) => !tag.is_system).length,
-    totalUsage: tags.reduce((sum: number, tag: TagType) => sum + tag.usage_count, 0),
+    totalUsage: tags.reduce(
+      (sum: number, tag: TagType) => sum + tag.usage_count,
+      0,
+    ),
   };
 
   return (
@@ -161,7 +168,11 @@ const TagManager: React.FC<TagManagerProps> = ({
               }}
             >
               <Text>{tag.name}</Text>
-              <Button danger size="small" onClick={() => deleteMutation.mutate(tag.id)}>
+              <Button
+                danger
+                size="small"
+                onClick={() => deleteMutation.mutate(tag.id)}
+              >
                 Delete
               </Button>
             </div>

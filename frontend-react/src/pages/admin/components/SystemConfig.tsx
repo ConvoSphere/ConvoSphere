@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Card,
   Switch,
@@ -11,17 +11,18 @@ import {
   Col,
   Divider,
   message,
-} from 'antd';
+  Modal,
+} from "antd";
 import {
   SettingOutlined,
   SaveOutlined,
   ReloadOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { useSystemConfig } from '../hooks/useSystemConfig';
-import { SystemConfigFormData } from '../types/admin.types';
-import ModernCard from '../../../components/ModernCard';
-import ModernButton from '../../../components/ModernButton';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { useSystemConfig } from "../hooks/useSystemConfig";
+import { SystemConfig, SystemConfigFormData } from "../types/admin.types";
+import ModernCard from "../../../components/ModernCard";
+import ModernButton from "../../../components/ModernButton";
 
 const { Option } = Select;
 
@@ -62,35 +63,37 @@ const SystemConfig: React.FC = () => {
   return (
     <div>
       <ModernCard
-        title={t('admin.config.title')}
+        title={t("admin.config.title")}
         extra={
           <Space>
             <ModernButton
               icon={<ReloadOutlined />}
               onClick={() => window.location.reload()}
             >
-              {t('common.refresh')}
+              {t("common.refresh")}
             </ModernButton>
             <ModernButton
               type="primary"
               icon={<SaveOutlined />}
               onClick={openConfigModal}
             >
-              {t('common.save')}
+              {t("common.save")}
             </ModernButton>
           </Space>
         }
       >
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={12}>
-            <Card title={t('admin.config.general')} size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
+            <Card title={t("admin.config.general")} size="small">
+              <Space direction="vertical" style={{ width: "100%" }}>
                 <div>
-                  <label>{t('admin.config.default_language')}</label>
+                  <label>{t("admin.config.default_language")}</label>
                   <Select
                     value={systemConfig.defaultLanguage}
-                    style={{ width: '100%', marginTop: 8 }}
-                    onChange={(value) => handleSelectChange('defaultLanguage', value)}
+                    style={{ width: "100%", marginTop: 8 }}
+                    onChange={(value) =>
+                      handleSelectChange("defaultLanguage", value)
+                    }
                   >
                     <Option value="en">English</Option>
                     <Option value="de">Deutsch</Option>
@@ -100,26 +103,31 @@ const SystemConfig: React.FC = () => {
                 </div>
 
                 <div>
-                  <label>{t('admin.config.max_file_size')} (MB)</label>
+                  <label>{t("admin.config.max_file_size")} (MB)</label>
                   <InputNumber
                     value={systemConfig.maxFileSize / (1024 * 1024)}
-                    style={{ width: '100%', marginTop: 8 }}
+                    style={{ width: "100%", marginTop: 8 }}
                     min={1}
                     max={100}
                     onChange={(value) =>
-                      handleNumberChange('maxFileSize', (value || 10) * 1024 * 1024)
+                      handleNumberChange(
+                        "maxFileSize",
+                        (value || 10) * 1024 * 1024,
+                      )
                     }
                   />
                 </div>
 
                 <div>
-                  <label>{t('admin.config.max_users')}</label>
+                  <label>{t("admin.config.max_users")}</label>
                   <InputNumber
                     value={systemConfig.maxUsers}
-                    style={{ width: '100%', marginTop: 8 }}
+                    style={{ width: "100%", marginTop: 8 }}
                     min={1}
                     max={10000}
-                    onChange={(value) => handleNumberChange('maxUsers', value || 1000)}
+                    onChange={(value) =>
+                      handleNumberChange("maxUsers", value || 1000)
+                    }
                   />
                 </div>
               </Space>
@@ -127,39 +135,71 @@ const SystemConfig: React.FC = () => {
           </Col>
 
           <Col xs={24} lg={12}>
-            <Card title={t('admin.config.features')} size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{t('admin.config.enable_registration')}</span>
+            <Card title={t("admin.config.features")} size="small">
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{t("admin.config.enable_registration")}</span>
                   <Switch
                     checked={systemConfig.enableRegistration}
-                    onChange={(checked) => handleSwitchChange('enableRegistration', checked)}
+                    onChange={(checked) =>
+                      handleSwitchChange("enableRegistration", checked)
+                    }
                   />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{t('admin.config.enable_email_verification')}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{t("admin.config.enable_email_verification")}</span>
                   <Switch
                     checked={systemConfig.enableEmailVerification}
-                    onChange={(checked) => handleSwitchChange('enableEmailVerification', checked)}
+                    onChange={(checked) =>
+                      handleSwitchChange("enableEmailVerification", checked)
+                    }
                   />
                 </div>
 
                 <Divider />
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{t('admin.config.maintenance_mode')}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{t("admin.config.maintenance_mode")}</span>
                   <Switch
                     checked={systemConfig.maintenanceMode}
-                    onChange={(checked) => handleSwitchChange('maintenanceMode', checked)}
+                    onChange={(checked) =>
+                      handleSwitchChange("maintenanceMode", checked)
+                    }
                   />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{t('admin.config.debug_mode')}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>{t("admin.config.debug_mode")}</span>
                   <Switch
                     checked={systemConfig.debugMode}
-                    onChange={(checked) => handleSwitchChange('debugMode', checked)}
+                    onChange={(checked) =>
+                      handleSwitchChange("debugMode", checked)
+                    }
                   />
                 </div>
               </Space>
@@ -169,7 +209,7 @@ const SystemConfig: React.FC = () => {
       </ModernCard>
 
       <Modal
-        title={t('admin.config.save_configuration')}
+        title={t("admin.config.save_configuration")}
         open={configModalVisible}
         onCancel={closeConfigModal}
         footer={null}
@@ -183,8 +223,10 @@ const SystemConfig: React.FC = () => {
         >
           <Form.Item
             name="defaultLanguage"
-            label={t('admin.config.default_language')}
-            rules={[{ required: true, message: t('admin.config.language_required') }]}
+            label={t("admin.config.default_language")}
+            rules={[
+              { required: true, message: t("admin.config.language_required") },
+            ]}
           >
             <Select>
               <Option value="en">English</Option>
@@ -196,33 +238,33 @@ const SystemConfig: React.FC = () => {
 
           <Form.Item
             name="maxFileSize"
-            label={t('admin.config.max_file_size')}
-            rules={[{ required: true, message: t('admin.config.file_size_required') }]}
+            label={t("admin.config.max_file_size")}
+            rules={[
+              { required: true, message: t("admin.config.file_size_required") },
+            ]}
           >
             <InputNumber
               min={1}
               max={100}
               addonAfter="MB"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             />
           </Form.Item>
 
           <Form.Item
             name="maxUsers"
-            label={t('admin.config.max_users')}
-            rules={[{ required: true, message: t('admin.config.max_users_required') }]}
+            label={t("admin.config.max_users")}
+            rules={[
+              { required: true, message: t("admin.config.max_users_required") },
+            ]}
           >
-            <InputNumber
-              min={1}
-              max={10000}
-              style={{ width: '100%' }}
-            />
+            <InputNumber min={1} max={10000} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
             name="enableRegistration"
             valuePropName="checked"
-            label={t('admin.config.enable_registration')}
+            label={t("admin.config.enable_registration")}
           >
             <Switch />
           </Form.Item>
@@ -230,7 +272,7 @@ const SystemConfig: React.FC = () => {
           <Form.Item
             name="enableEmailVerification"
             valuePropName="checked"
-            label={t('admin.config.enable_email_verification')}
+            label={t("admin.config.enable_email_verification")}
           >
             <Switch />
           </Form.Item>
@@ -238,7 +280,7 @@ const SystemConfig: React.FC = () => {
           <Form.Item
             name="maintenanceMode"
             valuePropName="checked"
-            label={t('admin.config.maintenance_mode')}
+            label={t("admin.config.maintenance_mode")}
           >
             <Switch />
           </Form.Item>
@@ -246,7 +288,7 @@ const SystemConfig: React.FC = () => {
           <Form.Item
             name="debugMode"
             valuePropName="checked"
-            label={t('admin.config.debug_mode')}
+            label={t("admin.config.debug_mode")}
           >
             <Switch />
           </Form.Item>
@@ -254,11 +296,9 @@ const SystemConfig: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit">
-                {t('common.save')}
+                {t("common.save")}
               </ModernButton>
-              <Button onClick={closeConfigModal}>
-                {t('common.cancel')}
-              </Button>
+              <Button onClick={closeConfigModal}>{t("common.cancel")}</Button>
             </Space>
           </Form.Item>
         </Form>

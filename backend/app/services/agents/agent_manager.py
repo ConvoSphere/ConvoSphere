@@ -396,9 +396,9 @@ class AgentManager:
                 "current_agent": current_agent,
                 "agent_states": [state.dict() for state in agent_states],
                 "collaboration_active": collaboration_session is not None,
-                "collaboration_info": collaboration_session.dict()
-                if collaboration_session
-                else None,
+                "collaboration_info": (
+                    collaboration_session.dict() if collaboration_session else None
+                ),
             }
 
         except Exception as e:

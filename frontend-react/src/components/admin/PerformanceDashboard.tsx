@@ -34,7 +34,20 @@ import {
   InfoCircleOutlined,
   GlobalOutlined,
 } from "@ant-design/icons";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -216,11 +229,13 @@ const PerformanceDashboard: React.FC = () => {
 
   // Chart configurations
   const systemChartConfig = {
-    data: report?.system_metrics ? Object.entries(report.system_metrics).map(([key, value]) => ({
-      metric: key,
-      value: value.average || 0,
-      max: value.max || 0,
-    })) : [],
+    data: report?.system_metrics
+      ? Object.entries(report.system_metrics).map(([key, value]) => ({
+          metric: key,
+          value: value.average || 0,
+          max: value.max || 0,
+        }))
+      : [],
     xField: "metric",
     yField: "value",
     seriesField: "type",
@@ -228,11 +243,14 @@ const PerformanceDashboard: React.FC = () => {
   };
 
   const alertsChartConfig = {
-    data: alerts.reduce((acc, alert) => {
-      const severity = alert.severity.toLowerCase();
-      acc[severity] = (acc[severity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
+    data: alerts.reduce(
+      (acc, alert) => {
+        const severity = alert.severity.toLowerCase();
+        acc[severity] = (acc[severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
     angleField: "value",
     colorField: "type",
     radius: 0.8,
@@ -264,7 +282,10 @@ const PerformanceDashboard: React.FC = () => {
             value={[new Date(timeRange[0]), new Date(timeRange[1])]}
             onChange={(dates) => {
               if (dates) {
-                setTimeRange([dates[0]!.toISOString(), dates[1]!.toISOString()]);
+                setTimeRange([
+                  dates[0]!.toISOString(),
+                  dates[1]!.toISOString(),
+                ]);
               }
             }}
           />
@@ -290,7 +311,9 @@ const PerformanceDashboard: React.FC = () => {
               value={metrics?.cpu_percent || 0}
               suffix="%"
               prefix={<DesktopOutlined />}
-              valueStyle={{ color: metrics?.cpu_percent > 80 ? "#cf1322" : "#3f8600" }}
+              valueStyle={{
+                color: metrics?.cpu_percent > 80 ? "#cf1322" : "#3f8600",
+              }}
             />
             <Progress
               percent={metrics?.cpu_percent || 0}
@@ -306,7 +329,9 @@ const PerformanceDashboard: React.FC = () => {
               value={metrics?.memory_percent || 0}
               suffix="%"
               prefix={<DesktopOutlined />}
-              valueStyle={{ color: metrics?.memory_percent > 85 ? "#cf1322" : "#3f8600" }}
+              valueStyle={{
+                color: metrics?.memory_percent > 85 ? "#cf1322" : "#3f8600",
+              }}
             />
             <Progress
               percent={metrics?.memory_percent || 0}
@@ -322,7 +347,9 @@ const PerformanceDashboard: React.FC = () => {
               value={metrics?.disk_percent || 0}
               suffix="%"
               prefix={<HddOutlined />}
-              valueStyle={{ color: metrics?.disk_percent > 90 ? "#cf1322" : "#3f8600" }}
+              valueStyle={{
+                color: metrics?.disk_percent > 90 ? "#cf1322" : "#3f8600",
+              }}
             />
             <Progress
               percent={metrics?.disk_percent || 0}
@@ -335,10 +362,16 @@ const PerformanceDashboard: React.FC = () => {
           <Card>
             <Statistic
               title="Cache Hit Rate"
-              value={cacheMetrics?.hit_rate ? (cacheMetrics.hit_rate * 100).toFixed(1) : 0}
+              value={
+                cacheMetrics?.hit_rate
+                  ? (cacheMetrics.hit_rate * 100).toFixed(1)
+                  : 0
+              }
               suffix="%"
               prefix={<CloudOutlined />}
-              valueStyle={{ color: cacheMetrics?.hit_rate > 0.8 ? "#3f8600" : "#cf1322" }}
+              valueStyle={{
+                color: cacheMetrics?.hit_rate > 0.8 ? "#3f8600" : "#cf1322",
+              }}
             />
             <Progress
               percent={cacheMetrics?.hit_rate ? cacheMetrics.hit_rate * 100 : 0}
@@ -352,12 +385,22 @@ const PerformanceDashboard: React.FC = () => {
       {/* Database and Cache Metrics */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={12}>
-          <Card title={<><DatabaseOutlined /> Database Performance</>}>
+          <Card
+            title={
+              <>
+                <DatabaseOutlined /> Database Performance
+              </>
+            }
+          >
             <Row gutter={16}>
               <Col span={12}>
                 <Statistic
                   title="Avg Query Time"
-                  value={dbMetrics?.avg_query_time ? formatDuration(dbMetrics.avg_query_time) : "0ms"}
+                  value={
+                    dbMetrics?.avg_query_time
+                      ? formatDuration(dbMetrics.avg_query_time)
+                      : "0ms"
+                  }
                   prefix={<ClockCircleOutlined />}
                 />
               </Col>
@@ -374,7 +417,11 @@ const PerformanceDashboard: React.FC = () => {
               <Col span={12}>
                 <Statistic
                   title="Max Query Time"
-                  value={dbMetrics?.max_query_time ? formatDuration(dbMetrics.max_query_time) : "0ms"}
+                  value={
+                    dbMetrics?.max_query_time
+                      ? formatDuration(dbMetrics.max_query_time)
+                      : "0ms"
+                  }
                   prefix={<ClockCircleOutlined />}
                 />
               </Col>
@@ -383,14 +430,23 @@ const PerformanceDashboard: React.FC = () => {
                   title="Slow Queries"
                   value={dbMetrics?.slow_queries_count || 0}
                   prefix={<AlertOutlined />}
-                  valueStyle={{ color: dbMetrics?.slow_queries_count > 0 ? "#cf1322" : "#3f8600" }}
+                  valueStyle={{
+                    color:
+                      dbMetrics?.slow_queries_count > 0 ? "#cf1322" : "#3f8600",
+                  }}
                 />
               </Col>
             </Row>
           </Card>
         </Col>
         <Col span={12}>
-          <Card title={<><CloudOutlined /> Cache Performance</>}>
+          <Card
+            title={
+              <>
+                <CloudOutlined /> Cache Performance
+              </>
+            }
+          >
             <Row gutter={16}>
               <Col span={12}>
                 <Statistic
@@ -432,19 +488,33 @@ const PerformanceDashboard: React.FC = () => {
       {/* Network and Storage */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={12}>
-          <Card title={<><GlobalOutlined /> Network I/O</>}>
+          <Card
+            title={
+              <>
+                <GlobalOutlined /> Network I/O
+              </>
+            }
+          >
             <Row gutter={16}>
               <Col span={12}>
                 <Statistic
                   title="Bytes Sent/sec"
-                  value={metrics?.network_bytes_sent_per_sec ? formatBytes(metrics.network_bytes_sent_per_sec) : "0 B"}
+                  value={
+                    metrics?.network_bytes_sent_per_sec
+                      ? formatBytes(metrics.network_bytes_sent_per_sec)
+                      : "0 B"
+                  }
                   prefix={<GlobalOutlined />}
                 />
               </Col>
               <Col span={12}>
                 <Statistic
                   title="Bytes Received/sec"
-                  value={metrics?.network_bytes_recv_per_sec ? formatBytes(metrics.network_bytes_recv_per_sec) : "0 B"}
+                  value={
+                    metrics?.network_bytes_recv_per_sec
+                      ? formatBytes(metrics.network_bytes_recv_per_sec)
+                      : "0 B"
+                  }
                   prefix={<GlobalOutlined />}
                 />
               </Col>
@@ -452,19 +522,33 @@ const PerformanceDashboard: React.FC = () => {
           </Card>
         </Col>
         <Col span={12}>
-          <Card title={<><HddOutlined /> Storage</>}>
+          <Card
+            title={
+              <>
+                <HddOutlined /> Storage
+              </>
+            }
+          >
             <Row gutter={16}>
               <Col span={12}>
                 <Statistic
                   title="Available Memory"
-                  value={metrics?.memory_available_gb ? `${metrics.memory_available_gb.toFixed(2)} GB` : "0 GB"}
+                  value={
+                    metrics?.memory_available_gb
+                      ? `${metrics.memory_available_gb.toFixed(2)} GB`
+                      : "0 GB"
+                  }
                   prefix={<DesktopOutlined />}
                 />
               </Col>
               <Col span={12}>
                 <Statistic
                   title="Free Disk Space"
-                  value={metrics?.disk_free_gb ? `${metrics.disk_free_gb.toFixed(2)} GB` : "0 GB"}
+                  value={
+                    metrics?.disk_free_gb
+                      ? `${metrics.disk_free_gb.toFixed(2)} GB`
+                      : "0 GB"
+                  }
                   prefix={<HddOutlined />}
                 />
               </Col>
@@ -479,7 +563,10 @@ const PerformanceDashboard: React.FC = () => {
           <Space>
             <AlertOutlined />
             Active Alerts
-            <Badge count={alerts.length} style={{ backgroundColor: "#52c41a" }} />
+            <Badge
+              count={alerts.length}
+              style={{ backgroundColor: "#52c41a" }}
+            />
           </Space>
         }
         style={{ marginBottom: 24 }}
@@ -498,7 +585,10 @@ const PerformanceDashboard: React.FC = () => {
               <List.Item>
                 <List.Item.Meta
                   avatar={
-                    <Tag color={getSeverityColor(alert.severity)} icon={getSeverityIcon(alert.severity)}>
+                    <Tag
+                      color={getSeverityColor(alert.severity)}
+                      icon={getSeverityIcon(alert.severity)}
+                    >
                       {alert.severity.toUpperCase()}
                     </Tag>
                   }
@@ -507,7 +597,9 @@ const PerformanceDashboard: React.FC = () => {
                     <Space direction="vertical" size="small">
                       <Text>{alert.message}</Text>
                       <Text type="secondary">
-                        {new Date(alert.timestamp).toLocaleString()} | {alert.metric_name}: {alert.current_value} (threshold: {alert.threshold})
+                        {new Date(alert.timestamp).toLocaleString()} |{" "}
+                        {alert.metric_name}: {alert.current_value} (threshold:{" "}
+                        {alert.threshold})
                       </Text>
                     </Space>
                   }
@@ -521,12 +613,24 @@ const PerformanceDashboard: React.FC = () => {
       {/* Performance Charts */}
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Card title={<><LineChartOutlined /> System Metrics Trend</>}>
+          <Card
+            title={
+              <>
+                <LineChartOutlined /> System Metrics Trend
+              </>
+            }
+          >
             <Bar {...systemChartConfig} height={300} />
           </Card>
         </Col>
         <Col span={12}>
-          <Card title={<><LineChartOutlined /> Alerts by Severity</>}>
+          <Card
+            title={
+              <>
+                <LineChartOutlined /> Alerts by Severity
+              </>
+            }
+          >
             <Pie {...alertsChartConfig} height={300} />
           </Card>
         </Col>
@@ -540,7 +644,8 @@ const PerformanceDashboard: React.FC = () => {
               <Col span={24}>
                 <Text strong>Report Period: </Text>
                 <Text>
-                  {new Date(report.period.start).toLocaleString()} - {new Date(report.period.end).toLocaleString()}
+                  {new Date(report.period.start).toLocaleString()} -{" "}
+                  {new Date(report.period.end).toLocaleString()}
                 </Text>
               </Col>
             </Row>
@@ -553,7 +658,9 @@ const PerformanceDashboard: React.FC = () => {
                     dataSource={Object.entries(report.application_metrics)}
                     renderItem={([key, value]) => (
                       <List.Item>
-                        <Text>{key}: {value.total || value.average?.toFixed(2) || 0}</Text>
+                        <Text>
+                          {key}: {value.total || value.average?.toFixed(2) || 0}
+                        </Text>
                       </List.Item>
                     )}
                   />
@@ -566,7 +673,9 @@ const PerformanceDashboard: React.FC = () => {
                     dataSource={Object.entries(report.database_metrics)}
                     renderItem={([key, value]) => (
                       <List.Item>
-                        <Text>{key}: {value.average?.toFixed(2) || 0}</Text>
+                        <Text>
+                          {key}: {value.average?.toFixed(2) || 0}
+                        </Text>
                       </List.Item>
                     )}
                   />
@@ -579,7 +688,9 @@ const PerformanceDashboard: React.FC = () => {
                     dataSource={Object.entries(report.cache_metrics)}
                     renderItem={([key, value]) => (
                       <List.Item>
-                        <Text>{key}: {value.average?.toFixed(2) || 0}</Text>
+                        <Text>
+                          {key}: {value.average?.toFixed(2) || 0}
+                        </Text>
                       </List.Item>
                     )}
                   />
@@ -592,7 +703,9 @@ const PerformanceDashboard: React.FC = () => {
                     dataSource={Object.entries(report.system_metrics)}
                     renderItem={([key, value]) => (
                       <List.Item>
-                        <Text>{key}: {value.average?.toFixed(2) || 0}</Text>
+                        <Text>
+                          {key}: {value.average?.toFixed(2) || 0}
+                        </Text>
                       </List.Item>
                     )}
                   />

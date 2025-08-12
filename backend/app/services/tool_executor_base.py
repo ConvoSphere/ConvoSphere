@@ -161,9 +161,9 @@ class BaseToolExecutor(ABC):
             "completed": completed,
             "failed": failed,
             "running": running,
-            "success_rate": (completed / total_executions * 100)
-            if total_executions > 0
-            else 0,
+            "success_rate": (
+                (completed / total_executions * 100) if total_executions > 0 else 0
+            ),
         }
 
     def _validate_parameters(

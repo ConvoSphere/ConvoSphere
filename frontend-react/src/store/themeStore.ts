@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { lightTheme, darkTheme, getThemeColors } from "../styles/theme";
-import type { ThemeConfig } from 'antd';
+import type { ThemeConfig } from "antd";
 
 export type ThemeMode = "light" | "dark";
 

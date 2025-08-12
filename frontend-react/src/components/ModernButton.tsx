@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button, ButtonProps } from 'antd';
+import React from "react";
+import { Button, ButtonProps } from "antd";
 
 interface ModernButtonProps extends ButtonProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ const ModernButton: React.FC<ModernButtonProps> = ({ children, ...props }) => {
     <Button
       {...props}
       style={{
-        borderRadius: '8px',
+        borderRadius: "8px",
         fontWeight: 500,
         ...props.style,
       }}

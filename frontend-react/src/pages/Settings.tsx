@@ -14,6 +14,7 @@ import {
   Switch,
   Input,
   Divider,
+  Form,
 } from "antd";
 import {
   GlobalOutlined,
@@ -32,6 +33,7 @@ import ModernButton from "../components/ModernButton";
 import ModernSelect from "../components/ModernSelect";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 interface SettingsState {
   language: string;
@@ -83,10 +85,18 @@ const Settings: React.FC = () => {
     autoFallback: true,
     openaiApiKey: "",
     anthropicApiKey: "",
-    modelPriorities: ["gpt-4", "claude-3-sonnet", "gpt-3.5-turbo", "claude-3-haiku"],
+    modelPriorities: [
+      "gpt-4",
+      "claude-3-sonnet",
+      "gpt-3.5-turbo",
+      "claude-3-haiku",
+    ],
   });
 
-  const handleSettingChange = async (key: keyof SettingsState, value: string | boolean) => {
+  const handleSettingChange = async (
+    key: keyof SettingsState,
+    value: string | boolean,
+  ) => {
     setSaving(true);
     try {
       if (key === "language") {
@@ -292,15 +302,24 @@ const Settings: React.FC = () => {
                           style={{ width: "100%" }}
                         >
                           <Option value="gpt-4">GPT-4 (OpenAI)</Option>
-                          <Option value="gpt-3.5-turbo">GPT-3.5 Turbo (OpenAI)</Option>
-                          <Option value="claude-3-sonnet">Claude 3 Sonnet (Anthropic)</Option>
-                          <Option value="claude-3-haiku">Claude 3 Haiku (Anthropic)</Option>
+                          <Option value="gpt-3.5-turbo">
+                            GPT-3.5 Turbo (OpenAI)
+                          </Option>
+                          <Option value="claude-3-sonnet">
+                            Claude 3 Sonnet (Anthropic)
+                          </Option>
+                          <Option value="claude-3-haiku">
+                            Claude 3 Haiku (Anthropic)
+                          </Option>
                         </Select>
                       </Form.Item>
                     </Col>
                     <Col xs={24} md={12}>
                       <Form.Item
-                        label={t("settings.model_temperature", "Modell-Temperatur")}
+                        label={t(
+                          "settings.model_temperature",
+                          "Modell-Temperatur",
+                        )}
                         style={{ marginBottom: 0 }}
                       >
                         <Slider
@@ -337,7 +356,10 @@ const Settings: React.FC = () => {
                     </Col>
                     <Col xs={24} md={12}>
                       <Form.Item
-                        label={t("settings.auto_fallback", "Automatischer Fallback")}
+                        label={t(
+                          "settings.auto_fallback",
+                          "Automatischer Fallback",
+                        )}
                         style={{ marginBottom: 0 }}
                       >
                         <Switch
@@ -349,11 +371,16 @@ const Settings: React.FC = () => {
                       </Form.Item>
                     </Col>
                   </Row>
-                  
+
                   <Divider />
-                  
-                  <Title level={4}>{t("settings.provider_configuration", "Anbieter-Konfiguration")}</Title>
-                  
+
+                  <Title level={4}>
+                    {t(
+                      "settings.provider_configuration",
+                      "Anbieter-Konfiguration",
+                    )}
+                  </Title>
+
                   <Row gutter={[24, 24]}>
                     <Col xs={24} md={12}>
                       <Form.Item
@@ -365,34 +392,51 @@ const Settings: React.FC = () => {
                           onChange={(e) =>
                             handleSettingChange("openaiApiKey", e.target.value)
                           }
-                          placeholder={t("settings.api_key_placeholder", "API Key eingeben")}
+                          placeholder={t(
+                            "settings.api_key_placeholder",
+                            "API Key eingeben",
+                          )}
                         />
                       </Form.Item>
                     </Col>
                     <Col xs={24} md={12}>
                       <Form.Item
-                        label={t("settings.anthropic_api_key", "Anthropic API Key")}
+                        label={t(
+                          "settings.anthropic_api_key",
+                          "Anthropic API Key",
+                        )}
                         style={{ marginBottom: 0 }}
                       >
                         <Input.Password
                           value={settings.anthropicApiKey}
                           onChange={(e) =>
-                            handleSettingChange("anthropicApiKey", e.target.value)
+                            handleSettingChange(
+                              "anthropicApiKey",
+                              e.target.value,
+                            )
                           }
-                          placeholder={t("settings.api_key_placeholder", "API Key eingeben")}
+                          placeholder={t(
+                            "settings.api_key_placeholder",
+                            "API Key eingeben",
+                          )}
                         />
                       </Form.Item>
                     </Col>
                   </Row>
-                  
+
                   <Divider />
-                  
-                  <Title level={4}>{t("settings.model_priorities", "Modell-Prioritäten")}</Title>
-                  
+
+                  <Title level={4}>
+                    {t("settings.model_priorities", "Modell-Prioritäten")}
+                  </Title>
+
                   <Row gutter={[24, 24]}>
                     <Col xs={24}>
                       <Form.Item
-                        label={t("settings.priority_order", "Prioritätsreihenfolge")}
+                        label={t(
+                          "settings.priority_order",
+                          "Prioritätsreihenfolge",
+                        )}
                         style={{ marginBottom: 0 }}
                       >
                         <Select
@@ -403,10 +447,16 @@ const Settings: React.FC = () => {
                           }
                           style={{ width: "100%" }}
                         >
-                          <Option value="gpt-4">GPT-4 (Höchste Priorität)</Option>
-                          <Option value="claude-3-sonnet">Claude 3 Sonnet</Option>
+                          <Option value="gpt-4">
+                            GPT-4 (Höchste Priorität)
+                          </Option>
+                          <Option value="claude-3-sonnet">
+                            Claude 3 Sonnet
+                          </Option>
                           <Option value="gpt-3.5-turbo">GPT-3.5 Turbo</Option>
-                          <Option value="claude-3-haiku">Claude 3 Haiku (Niedrigste Priorität)</Option>
+                          <Option value="claude-3-haiku">
+                            Claude 3 Haiku (Niedrigste Priorität)
+                          </Option>
                         </Select>
                       </Form.Item>
                     </Col>

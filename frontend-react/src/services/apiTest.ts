@@ -22,10 +22,10 @@ class ApiTestService {
   private async testEndpoint(
     endpoint: string,
     method: string = "GET",
-    data?: any
+    data?: any,
   ): Promise<ApiTestResult> {
     const startTime = Date.now();
-    
+
     try {
       let response;
       switch (method.toUpperCase()) {
@@ -46,7 +46,7 @@ class ApiTestService {
       }
 
       const responseTime = Date.now() - startTime;
-      
+
       return {
         endpoint,
         method,
@@ -56,7 +56,7 @@ class ApiTestService {
       };
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
-      
+
       return {
         endpoint,
         method,
@@ -72,11 +72,15 @@ class ApiTestService {
       { endpoint: "/knowledge/documents", method: "GET" },
       { endpoint: "/knowledge/tags", method: "GET" },
       { endpoint: "/knowledge/stats", method: "GET" },
-      { endpoint: "/knowledge/search", method: "POST", data: { query: "test" } },
+      {
+        endpoint: "/knowledge/search",
+        method: "POST",
+        data: { query: "test" },
+      },
     ];
 
     const results: ApiTestResult[] = [];
-    
+
     for (const ep of endpoints) {
       const result = await this.testEndpoint(ep.endpoint, ep.method, ep.data);
       results.push(result);
@@ -92,7 +96,7 @@ class ApiTestService {
     ];
 
     const results: ApiTestResult[] = [];
-    
+
     for (const ep of endpoints) {
       const result = await this.testEndpoint(ep.endpoint, ep.method, ep.data);
       results.push(result);
@@ -108,7 +112,7 @@ class ApiTestService {
     ];
 
     const results: ApiTestResult[] = [];
-    
+
     for (const ep of endpoints) {
       const result = await this.testEndpoint(ep.endpoint, ep.method, ep.data);
       results.push(result);
@@ -124,7 +128,7 @@ class ApiTestService {
     ];
 
     const results: ApiTestResult[] = [];
-    
+
     for (const ep of endpoints) {
       const result = await this.testEndpoint(ep.endpoint, ep.method, ep.data);
       results.push(result);
@@ -135,19 +139,26 @@ class ApiTestService {
 
   async runAllTests(): Promise<ApiTestSummary> {
     const allResults: ApiTestResult[] = [];
-    
+
     // Test all endpoint categories
     const knowledgeResults = await this.testKnowledgeEndpoints();
     const toolsResults = await this.testToolsEndpoints();
     const mcpResults = await this.testMcpEndpoints();
     const authResults = await this.testAuthEndpoints();
-    
-    allResults.push(...knowledgeResults, ...toolsResults, ...mcpResults, ...authResults);
-    
-    const successful = allResults.filter(r => r.success).length;
-    const failed = allResults.filter(r => !r.success).length;
-    const averageResponseTime = allResults.reduce((sum, r) => sum + r.responseTime, 0) / allResults.length;
-    
+
+    allResults.push(
+      ...knowledgeResults,
+      ...toolsResults,
+      ...mcpResults,
+      ...authResults,
+    );
+
+    const successful = allResults.filter((r) => r.success).length;
+    const failed = allResults.filter((r) => !r.success).length;
+    const averageResponseTime =
+      allResults.reduce((sum, r) => sum + r.responseTime, 0) /
+      allResults.length;
+
     return {
       total: allResults.length,
       successful,
@@ -157,7 +168,11 @@ class ApiTestService {
     };
   }
 
-  async testSpecificEndpoint(endpoint: string, method: string = "GET", data?: any): Promise<ApiTestResult> {
+  async testSpecificEndpoint(
+    endpoint: string,
+    method: string = "GET",
+    data?: any,
+  ): Promise<ApiTestResult> {
     return await this.testEndpoint(endpoint, method, data);
   }
 }
@@ -167,19 +182,25 @@ export const apiTestService = new ApiTestService();
 // Utility function to show test results
 export const showApiTestResults = (summary: ApiTestSummary) => {
   const successRate = ((summary.successful / summary.total) * 100).toFixed(1);
-  
+
   if (summary.failed === 0) {
-    message.success(`API Tests: ${summary.successful}/${summary.total} successful (${successRate}%)`);
+    message.success(
+      `API Tests: ${summary.successful}/${summary.total} successful (${successRate}%)`,
+    );
   } else {
-    message.warning(`API Tests: ${summary.successful}/${summary.total} successful (${successRate}%) - ${summary.failed} failed`);
+    message.warning(
+      `API Tests: ${summary.successful}/${summary.total} successful (${successRate}%) - ${summary.failed} failed`,
+    );
   }
-  
+
   // Log detailed results for debugging
   console.group("API Test Results");
   console.log("Summary:", summary);
-  summary.results.forEach(result => {
+  summary.results.forEach((result) => {
     if (result.success) {
-      console.log(`✅ ${result.method} ${result.endpoint} - ${result.responseTime}ms`);
+      console.log(
+        `✅ ${result.method} ${result.endpoint} - ${result.responseTime}ms`,
+      );
     } else {
       console.error(`❌ ${result.method} ${result.endpoint} - ${result.error}`);
     }

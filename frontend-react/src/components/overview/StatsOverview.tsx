@@ -31,8 +31,17 @@ import { useThemeStore } from "../../store/themeStore";
 import { useAuthStore } from "../../store/authStore";
 import ModernCard from "../ModernCard";
 import ModernButton from "../ModernButton";
-import { statisticsService, type OverviewStats, type ActivityItem } from "../../services/statistics";
-import { realtimeService, type StatsUpdate, type SystemHealthUpdate, type ActivityUpdate } from "../../services/realtime";
+import {
+  statisticsService,
+  type OverviewStats,
+  type ActivityItem,
+} from "../../services/statistics";
+import {
+  realtimeService,
+  type StatsUpdate,
+  type SystemHealthUpdate,
+  type ActivityUpdate,
+} from "../../services/realtime";
 
 const { Title, Text } = Typography;
 
@@ -79,7 +88,8 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
     if (!token) return;
 
     // Connect to realtime service
-    realtimeService.connect(token)
+    realtimeService
+      .connect(token)
       .then(() => {
         setRealtimeConnected(true);
         console.log("Realtime updates connected");
@@ -90,42 +100,51 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
       });
 
     // Subscribe to realtime updates
-    const unsubscribeStats = realtimeService.onStatsUpdate((statsUpdate: StatsUpdate) => {
-      setStats(prevStats => {
-        if (!prevStats) return prevStats;
-        return {
-          ...prevStats,
-          systemStats: {
-            ...prevStats.systemStats,
-            ...statsUpdate,
-          }
-        };
-      });
-    });
+    const unsubscribeStats = realtimeService.onStatsUpdate(
+      (statsUpdate: StatsUpdate) => {
+        setStats((prevStats) => {
+          if (!prevStats) return prevStats;
+          return {
+            ...prevStats,
+            systemStats: {
+              ...prevStats.systemStats,
+              ...statsUpdate,
+            },
+          };
+        });
+      },
+    );
 
-    const unsubscribeHealth = realtimeService.onSystemHealth((healthUpdate: SystemHealthUpdate) => {
-      setStats(prevStats => {
-        if (!prevStats) return prevStats;
-        return {
-          ...prevStats,
-          systemStats: {
-            ...prevStats.systemStats,
-            systemHealth: healthUpdate.status,
-            performance: healthUpdate.performance,
-          }
-        };
-      });
-    });
+    const unsubscribeHealth = realtimeService.onSystemHealth(
+      (healthUpdate: SystemHealthUpdate) => {
+        setStats((prevStats) => {
+          if (!prevStats) return prevStats;
+          return {
+            ...prevStats,
+            systemStats: {
+              ...prevStats.systemStats,
+              systemHealth: healthUpdate.status,
+              performance: healthUpdate.performance,
+            },
+          };
+        });
+      },
+    );
 
-    const unsubscribeActivity = realtimeService.onActivity((activityUpdate: ActivityUpdate) => {
-      setStats(prevStats => {
-        if (!prevStats) return prevStats;
-        return {
-          ...prevStats,
-          recentActivity: [activityUpdate, ...prevStats.recentActivity.slice(0, 9)], // Keep max 10 activities
-        };
-      });
-    });
+    const unsubscribeActivity = realtimeService.onActivity(
+      (activityUpdate: ActivityUpdate) => {
+        setStats((prevStats) => {
+          if (!prevStats) return prevStats;
+          return {
+            ...prevStats,
+            recentActivity: [
+              activityUpdate,
+              ...prevStats.recentActivity.slice(0, 9),
+            ], // Keep max 10 activities
+          };
+        });
+      },
+    );
 
     // Cleanup function
     return () => {
@@ -315,12 +334,20 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
               >
                 {t(`overview.health.${stats.systemStats.systemHealth}`)}
               </Tag>
-              <Tooltip title={realtimeConnected ? t("overview.realtime_connected") : t("overview.realtime_disconnected")}>
-                <WifiOutlined 
-                  style={{ 
-                    color: realtimeConnected ? colors.success : colors.textSecondary,
-                    fontSize: "14px"
-                  }} 
+              <Tooltip
+                title={
+                  realtimeConnected
+                    ? t("overview.realtime_connected")
+                    : t("overview.realtime_disconnected")
+                }
+              >
+                <WifiOutlined
+                  style={{
+                    color: realtimeConnected
+                      ? colors.success
+                      : colors.textSecondary,
+                    fontSize: "14px",
+                  }}
                 />
               </Tooltip>
               <ModernButton
@@ -416,7 +443,10 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
       >
         <List
           loading={loading}
-          dataSource={stats.recentActivity.slice(0, variant === "compact" ? 3 : 5)}
+          dataSource={stats.recentActivity.slice(
+            0,
+            variant === "compact" ? 3 : 5,
+          )}
           renderItem={(item: ActivityItem) => (
             <List.Item
               style={{
@@ -438,7 +468,12 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                 }
                 title={
                   <Space>
-                    <Text strong style={{ fontSize: variant === "compact" ? "14px" : "16px" }}>
+                    <Text
+                      strong
+                      style={{
+                        fontSize: variant === "compact" ? "14px" : "16px",
+                      }}
+                    >
                       {item.title}
                     </Text>
                     <Tag color="blue" style={{ fontSize: "12px" }}>
@@ -449,7 +484,10 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
                 description={
                   <div>
                     {item.description && (
-                      <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>
+                      <Text
+                        type="secondary"
+                        style={{ display: "block", marginBottom: 4 }}
+                      >
                         {item.description}
                       </Text>
                     )}
@@ -488,9 +526,9 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
           }
         />
       )}
-      
+
       {renderStatsCards()}
-      
+
       {variant === "full" && (
         <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
           <Col xs={24} lg={16}>
@@ -504,20 +542,14 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
 
       {variant === "compact" && (
         <Row gutter={[16, 16]}>
-          <Col span={12}>
-            {renderHealthSection()}
-          </Col>
-          <Col span={12}>
-            {renderActivitySection()}
-          </Col>
+          <Col span={12}>{renderHealthSection()}</Col>
+          <Col span={12}>{renderActivitySection()}</Col>
         </Row>
       )}
 
       {variant === "minimal" && (
         <Row gutter={[16, 16]}>
-          <Col span={12}>
-            {renderHealthSection()}
-          </Col>
+          <Col span={12}>{renderHealthSection()}</Col>
         </Row>
       )}
     </div>

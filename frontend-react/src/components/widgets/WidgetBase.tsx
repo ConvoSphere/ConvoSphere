@@ -112,7 +112,9 @@ const WidgetBase: React.FC<WidgetProps> = ({
     {
       key: "fullscreen",
       icon: <FullscreenOutlined />,
-      label: isFullscreen ? t("widgets.exit_fullscreen") : t("widgets.fullscreen"),
+      label: isFullscreen
+        ? t("widgets.exit_fullscreen")
+        : t("widgets.fullscreen"),
       onClick: handleToggleFullscreen,
     },
     {
@@ -157,7 +159,11 @@ const WidgetBase: React.FC<WidgetProps> = ({
         )}
 
         {config.lastRefresh && (
-          <Tooltip title={t("widgets.last_refresh", { time: new Date(config.lastRefresh).toLocaleTimeString() })}>
+          <Tooltip
+            title={t("widgets.last_refresh", {
+              time: new Date(config.lastRefresh).toLocaleTimeString(),
+            })}
+          >
             <Text type="secondary" style={{ fontSize: "11px" }}>
               {new Date(config.lastRefresh).toLocaleTimeString()}
             </Text>
@@ -209,11 +215,7 @@ const WidgetBase: React.FC<WidgetProps> = ({
       );
     }
 
-    return (
-      <div style={{ padding: "16px", height: "100%" }}>
-        {children}
-      </div>
-    );
+    return <div style={{ padding: "16px", height: "100%" }}>{children}</div>;
   };
 
   const widgetStyle: React.CSSProperties = {

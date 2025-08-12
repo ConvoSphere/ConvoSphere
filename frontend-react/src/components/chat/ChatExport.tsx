@@ -73,42 +73,60 @@ const ChatExport: React.FC<ChatExportProps> = ({
       value: "json",
       label: "JSON",
       icon: <FileTextOutlined />,
-      description: t("chat.export.json_description", "Strukturierte Daten für Entwickler"),
+      description: t(
+        "chat.export.json_description",
+        "Strukturierte Daten für Entwickler",
+      ),
       color: "#1890ff",
     },
     {
       value: "pdf",
       label: "PDF",
       icon: <FilePdfOutlined />,
-      description: t("chat.export.pdf_description", "Professionelles Dokument für Druck"),
+      description: t(
+        "chat.export.pdf_description",
+        "Professionelles Dokument für Druck",
+      ),
       color: "#ff4d4f",
     },
     {
       value: "excel",
       label: "Excel",
       icon: <FileExcelOutlined />,
-      description: t("chat.export.excel_description", "Tabellarische Daten mit Charts"),
+      description: t(
+        "chat.export.excel_description",
+        "Tabellarische Daten mit Charts",
+      ),
       color: "#52c41a",
     },
     {
       value: "powerpoint",
       label: "PowerPoint",
-              icon: <FilePptOutlined />,
-      description: t("chat.export.powerpoint_description", "Präsentation mit Themes"),
+      icon: <FilePptOutlined />,
+      description: t(
+        "chat.export.powerpoint_description",
+        "Präsentation mit Themes",
+      ),
       color: "#fa8c16",
     },
     {
       value: "html",
       label: "HTML",
       icon: <FileTextOutlined />,
-      description: t("chat.export.html_description", "Web-Dokument mit Templates"),
+      description: t(
+        "chat.export.html_description",
+        "Web-Dokument mit Templates",
+      ),
       color: "#722ed1",
     },
     {
       value: "markdown",
       label: "Markdown",
       icon: <FileMarkdownOutlined />,
-      description: t("chat.export.markdown_description", "Formatiert für Dokumentation"),
+      description: t(
+        "chat.export.markdown_description",
+        "Formatiert für Dokumentation",
+      ),
       color: "#13c2c2",
     },
     {
@@ -134,7 +152,7 @@ const ChatExport: React.FC<ChatExportProps> = ({
 
       const values = await form.validateFields();
       await onExport(values);
-      
+
       onClose();
     } catch (err) {
       console.error("Export error:", err);
@@ -151,7 +169,7 @@ const ChatExport: React.FC<ChatExportProps> = ({
   };
 
   const getFormatIcon = (format: string) => {
-    const formatInfo = exportFormats.find(f => f.value === format);
+    const formatInfo = exportFormats.find((f) => f.value === format);
     return formatInfo?.icon || <FileTextOutlined />;
   };
 
@@ -161,7 +179,10 @@ const ChatExport: React.FC<ChatExportProps> = ({
       hoverable
       style={{
         cursor: "pointer",
-        border: selectedFormat === format.value ? `2px solid ${format.color}` : "1px solid #d9d9d9",
+        border:
+          selectedFormat === format.value
+            ? `2px solid ${format.color}`
+            : "1px solid #d9d9d9",
         borderRadius: "12px",
         transition: "all 0.3s ease",
       }}
@@ -172,12 +193,14 @@ const ChatExport: React.FC<ChatExportProps> = ({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ 
-          color: format.color, 
-          fontSize: "24px",
-          display: "flex",
-          alignItems: "center"
-        }}>
+        <div
+          style={{
+            color: format.color,
+            fontSize: "24px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           {format.icon}
         </div>
         <div style={{ flex: 1 }}>
@@ -193,7 +216,14 @@ const ChatExport: React.FC<ChatExportProps> = ({
   );
 
   const renderExcelOptions = () => (
-    <Panel header={<><BarChartOutlined /> Excel Optionen</>} key="excel">
+    <Panel
+      header={
+        <>
+          <BarChartOutlined /> Excel Optionen
+        </>
+      }
+      key="excel"
+    >
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
@@ -238,7 +268,14 @@ const ChatExport: React.FC<ChatExportProps> = ({
   );
 
   const renderPowerPointOptions = () => (
-    <Panel header={<><LayoutOutlined /> PowerPoint Optionen</>} key="powerpoint">
+    <Panel
+      header={
+        <>
+          <LayoutOutlined /> PowerPoint Optionen
+        </>
+      }
+      key="powerpoint"
+    >
       <Form.Item
         name={["powerpointOptions", "slideLayout"]}
         label="Slide Layout"
@@ -250,11 +287,8 @@ const ChatExport: React.FC<ChatExportProps> = ({
           <Option value="summary">Zusammenfassung</Option>
         </Select>
       </Form.Item>
-      
-      <Form.Item
-        name={["powerpointOptions", "theme"]}
-        label="Theme"
-      >
+
+      <Form.Item name={["powerpointOptions", "theme"]} label="Theme">
         <Select size="large">
           <Option value="default">Standard</Option>
           <Option value="modern">Modern</Option>
@@ -262,7 +296,7 @@ const ChatExport: React.FC<ChatExportProps> = ({
           <Option value="creative">Creative</Option>
         </Select>
       </Form.Item>
-      
+
       <Form.Item
         name={["powerpointOptions", "includeCharts"]}
         valuePropName="checked"
@@ -274,13 +308,17 @@ const ChatExport: React.FC<ChatExportProps> = ({
   );
 
   const renderPDFOptions = () => (
-    <Panel header={<><PrinterOutlined /> PDF Optionen</>} key="pdf">
+    <Panel
+      header={
+        <>
+          <PrinterOutlined /> PDF Optionen
+        </>
+      }
+      key="pdf"
+    >
       <Row gutter={16}>
         <Col span={12}>
-          <Form.Item
-            name={["pdfOptions", "pageSize"]}
-            label="Seitengröße"
-          >
+          <Form.Item name={["pdfOptions", "pageSize"]} label="Seitengröße">
             <Select size="large">
               <Option value="A4">A4</Option>
               <Option value="Letter">Letter</Option>
@@ -290,10 +328,7 @@ const ChatExport: React.FC<ChatExportProps> = ({
           </Form.Item>
         </Col>
         <Col span={12}>
-          <Form.Item
-            name={["pdfOptions", "orientation"]}
-            label="Ausrichtung"
-          >
+          <Form.Item name={["pdfOptions", "orientation"]} label="Ausrichtung">
             <Radio.Group>
               <Radio.Button value="portrait">Hochformat</Radio.Button>
               <Radio.Button value="landscape">Querformat</Radio.Button>
@@ -301,22 +336,16 @@ const ChatExport: React.FC<ChatExportProps> = ({
           </Form.Item>
         </Col>
       </Row>
-      
+
       <Row gutter={16}>
         <Col span={8}>
-          <Form.Item
-            name={["pdfOptions", "header"]}
-            valuePropName="checked"
-          >
+          <Form.Item name={["pdfOptions", "header"]} valuePropName="checked">
             <Switch checkedChildren="Aktiv" unCheckedChildren="Inaktiv" />
           </Form.Item>
           <Text>Header</Text>
         </Col>
         <Col span={8}>
-          <Form.Item
-            name={["pdfOptions", "footer"]}
-            valuePropName="checked"
-          >
+          <Form.Item name={["pdfOptions", "footer"]} valuePropName="checked">
             <Switch checkedChildren="Aktiv" unCheckedChildren="Inaktiv" />
           </Form.Item>
           <Text>Footer</Text>
@@ -331,8 +360,10 @@ const ChatExport: React.FC<ChatExportProps> = ({
           <Text>Seitennummern</Text>
         </Col>
       </Row>
-      
-      <Text strong style={{ display: "block", marginBottom: 8 }}>Ränder (mm)</Text>
+
+      <Text strong style={{ display: "block", marginBottom: 8 }}>
+        Ränder (mm)
+      </Text>
       <Row gutter={8}>
         <Col span={6}>
           <Form.Item name={["pdfOptions", "margins", "top"]} label="Oben">
@@ -359,11 +390,15 @@ const ChatExport: React.FC<ChatExportProps> = ({
   );
 
   const renderHTMLOptions = () => (
-    <Panel header={<><PaletteOutlined /> HTML Template</>} key="html">
-      <Form.Item
-        name="template"
-        label="Template"
-      >
+    <Panel
+      header={
+        <>
+          <PaletteOutlined /> HTML Template
+        </>
+      }
+      key="html"
+    >
+      <Form.Item name="template" label="Template">
         <Select size="large">
           <Option value="default">Standard</Option>
           <Option value="professional">Professional</Option>
@@ -400,7 +435,11 @@ const ChatExport: React.FC<ChatExportProps> = ({
 
       <div style={{ marginBottom: 16 }}>
         <Text type="secondary">
-          {t("chat.export.messages_count", { count: messages.length }, `${messages.length} Nachrichten`)}
+          {t(
+            "chat.export.messages_count",
+            { count: messages.length },
+            `${messages.length} Nachrichten`,
+          )}
         </Text>
       </div>
 
@@ -448,14 +487,28 @@ const ChatExport: React.FC<ChatExportProps> = ({
           <TabPane tab="Export Format" key="format">
             <Form.Item
               name="format"
-              rules={[{ required: true, message: t("chat.export.format_required", "Bitte wählen Sie ein Format") }]}
+              rules={[
+                {
+                  required: true,
+                  message: t(
+                    "chat.export.format_required",
+                    "Bitte wählen Sie ein Format",
+                  ),
+                },
+              ]}
             >
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: 12,
+                }}
+              >
                 {exportFormats.map(renderFormatCard)}
               </div>
             </Form.Item>
           </TabPane>
-          
+
           <TabPane tab="Erweiterte Optionen" key="advanced">
             <Collapse defaultActiveKey={[]} ghost>
               {selectedFormat === "excel" && renderExcelOptions()}
@@ -464,49 +517,60 @@ const ChatExport: React.FC<ChatExportProps> = ({
               {selectedFormat === "html" && renderHTMLOptions()}
             </Collapse>
           </TabPane>
-          
+
           <TabPane tab="Inhalt" key="content">
             <Form.Item
               name="messageFilter"
               label={t("chat.export.message_filter", "Nachrichten Filter")}
             >
               <Select size="large">
-                <Option value="all">{t("chat.export.filter_all", "Alle Nachrichten")}</Option>
-                <Option value="user">{t("chat.export.filter_user", "Nur User Nachrichten")}</Option>
-                <Option value="assistant">{t("chat.export.filter_assistant", "Nur Assistant Nachrichten")}</Option>
+                <Option value="all">
+                  {t("chat.export.filter_all", "Alle Nachrichten")}
+                </Option>
+                <Option value="user">
+                  {t("chat.export.filter_user", "Nur User Nachrichten")}
+                </Option>
+                <Option value="assistant">
+                  {t(
+                    "chat.export.filter_assistant",
+                    "Nur Assistant Nachrichten",
+                  )}
+                </Option>
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="includeMetadata"
-              valuePropName="checked"
-            >
-              <Checkbox>{t("chat.export.include_metadata", "Metadaten einbeziehen")}</Checkbox>
+            <Form.Item name="includeMetadata" valuePropName="checked">
+              <Checkbox>
+                {t("chat.export.include_metadata", "Metadaten einbeziehen")}
+              </Checkbox>
             </Form.Item>
 
-            <Form.Item
-              name="includeTimestamps"
-              valuePropName="checked"
-            >
-              <Checkbox>{t("chat.export.include_timestamps", "Zeitstempel einbeziehen")}</Checkbox>
+            <Form.Item name="includeTimestamps" valuePropName="checked">
+              <Checkbox>
+                {t("chat.export.include_timestamps", "Zeitstempel einbeziehen")}
+              </Checkbox>
             </Form.Item>
 
-            <Form.Item
-              name="includeUserInfo"
-              valuePropName="checked"
-            >
-              <Checkbox>{t("chat.export.include_user_info", "Benutzer-Info einbeziehen")}</Checkbox>
+            <Form.Item name="includeUserInfo" valuePropName="checked">
+              <Checkbox>
+                {t(
+                  "chat.export.include_user_info",
+                  "Benutzer-Info einbeziehen",
+                )}
+              </Checkbox>
             </Form.Item>
           </TabPane>
         </Tabs>
       </Form>
 
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "flex-end", 
-        gap: 12, 
-        marginTop: 24 
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 12,
+          marginTop: 24,
+        }}
+      >
         <ModernButton
           variant="ghost"
           onClick={handleClose}
@@ -520,7 +584,9 @@ const ChatExport: React.FC<ChatExportProps> = ({
           onClick={handleExport}
           loading={exporting}
         >
-          {exporting ? t("chat.export.exporting", "Exportiere...") : t("chat.export.export", "Exportieren")}
+          {exporting
+            ? t("chat.export.exporting", "Exportiere...")
+            : t("chat.export.export", "Exportieren")}
         </ModernButton>
       </div>
     </Modal>

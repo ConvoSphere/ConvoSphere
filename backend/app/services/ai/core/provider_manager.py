@@ -8,9 +8,9 @@ and integrates them with the new modular architecture.
 import os
 from typing import Any, Dict, List, Optional
 
-from ..providers.factory import AIProviderFactory
 from ..providers.base import BaseAIProvider
-from ..types.ai_types import ProviderType, ModelType, ProviderConfig
+from ..providers.factory import AIProviderFactory
+from ..types.ai_types import ProviderConfig, ProviderType
 
 
 class ProviderManager:
@@ -147,23 +147,29 @@ class ProviderManager:
         }
 
         if model.startswith("gpt-4"):
-            model_info.update({
-                "max_tokens": 8192,
-                "cost_per_1k_input": 0.03,
-                "cost_per_1k_output": 0.06,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 8192,
+                    "cost_per_1k_input": 0.03,
+                    "cost_per_1k_output": 0.06,
+                }
+            )
         elif model.startswith("gpt-3.5-turbo-16k"):
-            model_info.update({
-                "max_tokens": 16384,
-                "cost_per_1k_input": 0.003,
-                "cost_per_1k_output": 0.004,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 16384,
+                    "cost_per_1k_input": 0.003,
+                    "cost_per_1k_output": 0.004,
+                }
+            )
         elif model.startswith("text-embedding"):
-            model_info.update({
-                "max_tokens": 8192,
-                "cost_per_1k_input": 0.0001,
-                "cost_per_1k_output": 0.0,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 8192,
+                    "cost_per_1k_input": 0.0001,
+                    "cost_per_1k_output": 0.0,
+                }
+            )
 
         return model_info
 
@@ -176,23 +182,29 @@ class ProviderManager:
         }
 
         if model.startswith("claude-3-opus"):
-            model_info.update({
-                "max_tokens": 200000,
-                "cost_per_1k_input": 0.015,
-                "cost_per_1k_output": 0.075,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 200000,
+                    "cost_per_1k_input": 0.015,
+                    "cost_per_1k_output": 0.075,
+                }
+            )
         elif model.startswith("claude-3-sonnet"):
-            model_info.update({
-                "max_tokens": 200000,
-                "cost_per_1k_input": 0.003,
-                "cost_per_1k_output": 0.015,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 200000,
+                    "cost_per_1k_input": 0.003,
+                    "cost_per_1k_output": 0.015,
+                }
+            )
         elif model.startswith("claude-3-haiku"):
-            model_info.update({
-                "max_tokens": 200000,
-                "cost_per_1k_input": 0.00025,
-                "cost_per_1k_output": 0.00125,
-            })
+            model_info.update(
+                {
+                    "max_tokens": 200000,
+                    "cost_per_1k_input": 0.00025,
+                    "cost_per_1k_output": 0.00125,
+                }
+            )
 
         return model_info
 
@@ -233,7 +245,7 @@ class ProviderManager:
         for provider_name in self.get_available_providers():
             config = self._provider_configs[provider_name]
             provider_instance = self.get_provider(provider_name)
-            
+
             status[provider_name] = {
                 "available": provider_instance is not None,
                 "config": {
@@ -243,5 +255,5 @@ class ProviderManager:
                 },
                 "initialized": provider_name in self._providers,
             }
-        
+
         return status

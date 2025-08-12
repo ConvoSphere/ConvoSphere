@@ -2,23 +2,25 @@
 const getEnvVar = (key: keyof ImportMetaEnv, defaultValue: string): string => {
   try {
     // Prefer Vite env
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
+    if (typeof import.meta !== "undefined" && import.meta.env) {
       const value = import.meta.env[key] as unknown as string | undefined;
-      if (value != null && value !== '') return value;
+      if (value != null && value !== "") return value;
     }
-  } catch {}
+  } catch {
+    // Ignore: accessing import.meta may throw in non-Vite contexts
+  }
   return defaultValue;
 };
 
-const apiUrl = getEnvVar('VITE_API_URL', 'http://localhost:8000');
-const wsUrl = getEnvVar('VITE_WS_URL', 'ws://localhost:8000');
+const apiUrl = getEnvVar("VITE_API_URL", "http://localhost:8000");
+const wsUrl = getEnvVar("VITE_WS_URL", "ws://localhost:8000");
 
 export const config = {
   apiUrl,
   wsUrl,
-  isDevelopment: typeof import.meta !== 'undefined' && !!import.meta.env?.DEV,
-  isProduction: typeof import.meta !== 'undefined' && !!import.meta.env?.PROD,
-  enableDebug: getEnvVar('VITE_ENABLE_DEBUG', 'false') === 'true',
+  isDevelopment: typeof import.meta !== "undefined" && !!import.meta.env?.DEV,
+  isProduction: typeof import.meta !== "undefined" && !!import.meta.env?.PROD,
+  enableDebug: getEnvVar("VITE_ENABLE_DEBUG", "false") === "true",
   wsEndpoints: {
     chat: "/api/v1/chat/ws/",
     notifications: "/api/v1/ws/notifications",

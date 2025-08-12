@@ -62,84 +62,134 @@ const Sidebar: React.FC = () => {
   const items = [
     {
       key: "/",
-      icon: <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("navigation.home"),
     },
     {
       key: "/dashboard",
-      icon: <DashboardOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <DashboardOutlined
+          style={{ color: colors?.colorPrimary || "#1890ff" }}
+        />
+      ),
       label: t("navigation.dashboard"),
     },
     {
       key: "/overview",
-      icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
+      icon: (
+        <BarChartOutlined
+          style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+        />
+      ),
       label: t("navigation.overview"),
     },
     {
       key: "/chat",
-      icon: <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <MessageOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("chat.title"),
     },
     {
       key: "/assistants",
-      icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("navigation.assistants"),
     },
     {
       key: "/knowledge-base",
-      icon: <BookOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <BookOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("knowledge.title"),
     },
     {
       key: "/tools",
-      icon: <ToolOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
+      icon: (
+        <ToolOutlined
+          style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+        />
+      ),
       label: t("tools.title"),
     },
     {
       key: "/conversations",
-      icon: <AppstoreOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <AppstoreOutlined
+          style={{ color: colors?.colorPrimary || "#1890ff" }}
+        />
+      ),
       label: t("navigation.conversations"),
     },
     {
       key: "/conversation-intelligence",
-      icon: <BarChartOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <BarChartOutlined
+          style={{ color: colors?.colorPrimary || "#1890ff" }}
+        />
+      ),
       label: t("navigation.conversation_intelligence"),
     },
     {
       key: "/domain-groups",
-      icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("navigation.domain_groups"),
     },
     {
       key: "/export-backup",
-      icon: <DownloadOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <DownloadOutlined
+          style={{ color: colors?.colorPrimary || "#1890ff" }}
+        />
+      ),
       label: t("navigation.export_backup"),
     },
     {
       key: "/mcp-tools",
-      icon: <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("navigation.mcp_tools"),
     },
     {
       key: "/settings",
-      icon: <SettingOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
+      icon: (
+        <SettingOutlined
+          style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+        />
+      ),
       label: t("settings.title"),
     },
     {
       key: "/profile",
-      icon: <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+      icon: (
+        <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+      ),
       label: t("profile.title"),
     },
     ...(isAdmin
       ? [
           {
             key: "/admin",
-            icon: <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />,
+            icon: (
+              <TeamOutlined
+                style={{ color: colors?.colorPrimary || "#1890ff" }}
+              />
+            ),
             label: t("admin.title"),
           },
           {
             key: "/admin/system-status",
-            icon: <BarChartOutlined style={{ color: colors?.colorTextSecondary || "#cccccc" }} />,
+            icon: (
+              <BarChartOutlined
+                style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+              />
+            ),
             label: t("admin.system_status"),
           },
         ]

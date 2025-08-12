@@ -107,8 +107,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   ];
 
   const statusOptions = [
-    { label: t("documents.status.processed", "Verarbeitet"), value: "processed" },
-    { label: t("documents.status.processing", "Wird verarbeitet"), value: "processing" },
+    {
+      label: t("documents.status.processed", "Verarbeitet"),
+      value: "processed",
+    },
+    {
+      label: t("documents.status.processing", "Wird verarbeitet"),
+      value: "processing",
+    },
     { label: t("documents.status.failed", "Fehlgeschlagen"), value: "failed" },
   ];
 
@@ -140,28 +146,28 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   const handleSaveSearch = () => {
     if (searchName.trim() && onSaveSearch) {
       onSaveSearch(searchName.trim(), filters);
-      setSavedSearches(prev => [...prev, searchName.trim()]);
+      setSavedSearches((prev) => [...prev, searchName.trim()]);
       setSearchName("");
     }
   };
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
     }));
   };
 
   const handleTagRemove = (tag: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      tags: prev.tags.filter(t => t !== tag),
+      tags: prev.tags.filter((t) => t !== tag),
     }));
   };
 
   const handleTagAdd = (tag: string) => {
     if (tag.trim() && !filters.tags.includes(tag.trim())) {
-      setFilters(prev => ({
+      setFilters((prev) => ({
         ...prev,
         tags: [...prev.tags, tag.trim()],
       }));
@@ -169,11 +175,11 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getRelevanceColor = (relevance: number): string => {
@@ -191,7 +197,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <SearchOutlined style={{ marginRight: 8 }} />
             {t("search.title", "Erweiterte Suche")}
           </Title>
-          
+
           <Space.Compact style={{ width: "100%" }}>
             <Search
               placeholder={t("search.placeholder", "Dokumente durchsuchen...")}
@@ -210,7 +216,9 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               icon={<FilterOutlined />}
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
-              {showAdvanced ? t("search.hide_filters", "Filter ausblenden") : t("search.show_filters", "Filter anzeigen")}
+              {showAdvanced
+                ? t("search.hide_filters", "Filter ausblenden")
+                : t("search.show_filters", "Filter anzeigen")}
             </ModernButton>
           </Space.Compact>
         </div>
@@ -234,9 +242,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     <Text strong>{t("search.file_types", "Dateitypen")}</Text>
                     <ModernSelect
                       mode="multiple"
-                      placeholder={t("search.select_file_types", "Dateitypen auswählen")}
+                      placeholder={t(
+                        "search.select_file_types",
+                        "Dateitypen auswählen",
+                      )}
                       value={filters.fileTypes}
-                      onChange={(value) => handleFilterChange("fileTypes", value)}
+                      onChange={(value) =>
+                        handleFilterChange("fileTypes", value)
+                      }
                       options={fileTypeOptions}
                       style={{ width: "100%", marginTop: 8 }}
                     />
@@ -249,7 +262,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     <Text strong>{t("search.status", "Status")}</Text>
                     <ModernSelect
                       mode="multiple"
-                      placeholder={t("search.select_status", "Status auswählen")}
+                      placeholder={t(
+                        "search.select_status",
+                        "Status auswählen",
+                      )}
                       value={filters.status}
                       onChange={(value) => handleFilterChange("status", value)}
                       options={statusOptions}
@@ -264,7 +280,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     <Text strong>{t("search.date_range", "Datum")}</Text>
                     <RangePicker
                       style={{ width: "100%", marginTop: 8 }}
-                      placeholder={[t("search.start_date", "Startdatum"), t("search.end_date", "Enddatum")]}
+                      placeholder={[
+                        t("search.start_date", "Startdatum"),
+                        t("search.end_date", "Enddatum"),
+                      ]}
                       onChange={(dates) => {
                         if (dates) {
                           handleFilterChange("dateRange", [
@@ -284,9 +303,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                   <div style={{ marginBottom: 16 }}>
                     <Text strong>{t("search.author", "Autor")}</Text>
                     <ModernInput
-                      placeholder={t("search.author_placeholder", "Autor eingeben")}
+                      placeholder={t(
+                        "search.author_placeholder",
+                        "Autor eingeben",
+                      )}
                       value={filters.author}
-                      onChange={(e) => handleFilterChange("author", e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("author", e.target.value)
+                      }
                       style={{ marginTop: 8 }}
                     />
                   </div>
@@ -295,13 +319,17 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 {/* File Size Range */}
                 <Col xs={24}>
                   <div style={{ marginBottom: 16 }}>
-                    <Text strong>{t("search.file_size", "Dateigröße (MB)")}</Text>
+                    <Text strong>
+                      {t("search.file_size", "Dateigröße (MB)")}
+                    </Text>
                     <Slider
                       range
                       min={0}
                       max={100}
                       value={filters.sizeRange}
-                      onChange={(value) => handleFilterChange("sizeRange", value)}
+                      onChange={(value) =>
+                        handleFilterChange("sizeRange", value)
+                      }
                       style={{ marginTop: 8 }}
                     />
                     <Text type="secondary">
@@ -382,21 +410,44 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         {/* Search Results */}
         {results.length > 0 && (
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
               <Text>
-                {t("search.results_count", "{{count}} Ergebnisse gefunden", { count: totalResults })}
+                {t("search.results_count", "{{count}} Ergebnisse gefunden", {
+                  count: totalResults,
+                })}
               </Text>
               <Text type="secondary">
-                {t("search.loading", "Lädt...")} {loading && <Spin size="small" />}
+                {t("search.loading", "Lädt...")}{" "}
+                {loading && <Spin size="small" />}
               </Text>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {results.map((result) => (
                 <Card key={result.id} size="small" hoverable>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 8,
+                        }}
+                      >
                         <FileTextOutlined style={{ color: "#1890ff" }} />
                         <Title level={5} style={{ margin: 0 }}>
                           {result.title}
@@ -405,16 +456,26 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                           {(result.relevance * 100).toFixed(0)}%
                         </Tag>
                       </div>
-                      
-                      <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
-                        {result.filename} • {formatFileSize(result.fileSize)} • {result.fileType.toUpperCase()}
+
+                      <Text
+                        type="secondary"
+                        style={{ display: "block", marginBottom: 8 }}
+                      >
+                        {result.filename} • {formatFileSize(result.fileSize)} •{" "}
+                        {result.fileType.toUpperCase()}
                       </Text>
-                      
+
                       <Paragraph style={{ marginBottom: 8 }}>
                         {result.description}
                       </Paragraph>
-                      
-                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 16,
+                        }}
+                      >
                         <Space>
                           <TagOutlined />
                           {result.tags.map((tag, index) => (

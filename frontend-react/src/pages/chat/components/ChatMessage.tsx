@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Avatar,
   Card,
@@ -9,7 +9,7 @@ import {
   Button,
   Popconfirm,
   Spin,
-} from 'antd';
+} from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -17,9 +17,9 @@ import {
   DeleteOutlined,
   ReloadOutlined,
   ExclamationCircleOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { ChatMessage as ChatMessageType } from '../types/chat.types';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { ChatMessage as ChatMessageType } from "../types/chat.types";
 // import ReactMarkdown from 'react-markdown';
 // import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -43,35 +43,50 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const isUser = message.role === 'user';
-  const isAssistant = message.role === 'assistant';
-  const isSystem = message.role === 'system';
+  const isUser = message.role === "user";
+  const isAssistant = message.role === "assistant";
+  const isSystem = message.role === "system";
 
   const getAvatar = () => {
     if (isUser) {
-      return <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />;
+      return (
+        <Avatar
+          icon={<UserOutlined />}
+          style={{ backgroundColor: "#1890ff" }}
+        />
+      );
     } else if (isAssistant) {
-      return <Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#52c41a' }} />;
+      return (
+        <Avatar
+          icon={<RobotOutlined />}
+          style={{ backgroundColor: "#52c41a" }}
+        />
+      );
     } else {
-      return <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#722ed1' }} />;
+      return (
+        <Avatar
+          icon={<UserOutlined />}
+          style={{ backgroundColor: "#722ed1" }}
+        />
+      );
     }
   };
 
   const getMessageStyle = () => {
     if (isUser) {
       return {
-        backgroundColor: '#f0f8ff',
-        borderLeft: '4px solid #1890ff',
+        backgroundColor: "#f0f8ff",
+        borderLeft: "4px solid #1890ff",
       };
     } else if (isAssistant) {
       return {
-        backgroundColor: '#f6ffed',
-        borderLeft: '4px solid #52c41a',
+        backgroundColor: "#f6ffed",
+        borderLeft: "4px solid #52c41a",
       };
     } else {
       return {
-        backgroundColor: '#f9f0ff',
-        borderLeft: '4px solid #722ed1',
+        backgroundColor: "#f9f0ff",
+        borderLeft: "4px solid #722ed1",
       };
     }
   };
@@ -81,12 +96,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const formatCost = (cost?: number) => {
-    if (!cost) return 'N/A';
+    if (!cost) return "N/A";
     return `$${cost.toFixed(4)}`;
   };
 
   const formatTokens = (tokens?: number) => {
-    if (!tokens) return 'N/A';
+    if (!tokens) return "N/A";
     return tokens.toLocaleString();
   };
 
@@ -111,27 +126,27 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const renderContent = () => {
-    if (message.status === 'sending') {
+    if (message.status === "sending") {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Spin size="small" />
-          <Text type="secondary">{t('chat.sending_message')}</Text>
+          <Text type="secondary">{t("chat.sending_message")}</Text>
         </div>
       );
     }
 
-    if (message.status === 'error') {
+    if (message.status === "error") {
       return (
-        <div style={{ color: '#ff4d4f' }}>
+        <div style={{ color: "#ff4d4f" }}>
           <ExclamationCircleOutlined style={{ marginRight: 8 }} />
-          {message.error || t('chat.message_error')}
+          {message.error || t("chat.message_error")}
         </div>
       );
     }
 
     return (
       <div className="chat-message-content">
-        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
           {message.content}
         </pre>
       </div>
@@ -144,7 +159,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const { model, tokens, cost, tools_used, sources } = message.metadata;
 
     return (
-      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
+      <div
+        style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #f0f0f0" }}
+      >
         <Space size="small" wrap>
           {model && (
             <Tag size="small" color="blue">
@@ -180,8 +197,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     if (isSystem) return null;
 
     return (
-      <div style={{ marginTop: 8, display: 'flex', gap: 4 }}>
-        <Tooltip title={t('chat.copy_message')}>
+      <div style={{ marginTop: 8, display: "flex", gap: 4 }}>
+        <Tooltip title={t("chat.copy_message")}>
           <Button
             type="text"
             size="small"
@@ -189,15 +206,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             onClick={handleCopy}
           />
         </Tooltip>
-        
+
         {onDelete && (
           <Popconfirm
-            title={t('chat.delete_message_confirm')}
+            title={t("chat.delete_message_confirm")}
             onConfirm={handleDelete}
-            okText={t('common.yes')}
-            cancelText={t('common.no')}
+            okText={t("common.yes")}
+            cancelText={t("common.no")}
           >
-            <Tooltip title={t('chat.delete_message')}>
+            <Tooltip title={t("chat.delete_message")}>
               <Button
                 type="text"
                 size="small"
@@ -208,8 +225,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           </Popconfirm>
         )}
 
-        {message.status === 'error' && onRetry && (
-          <Tooltip title={t('chat.retry_message')}>
+        {message.status === "error" && onRetry && (
+          <Tooltip title={t("chat.retry_message")}>
             <Button
               type="text"
               size="small"
@@ -224,19 +241,26 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <Card
-        size="small"
-        style={getMessageStyle()}
-        bodyStyle={{ padding: 12 }}
-      >
-        <div style={{ display: 'flex', gap: 12 }}>
+      <Card size="small" style={getMessageStyle()} bodyStyle={{ padding: 12 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           {getAvatar()}
-          
+
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 8,
+              }}
+            >
               <Space>
                 <Text strong>
-                  {isUser ? t('chat.you') : isAssistant ? t('chat.assistant') : t('chat.system')}
+                  {isUser
+                    ? t("chat.you")
+                    : isAssistant
+                      ? t("chat.assistant")
+                      : t("chat.system")}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {formatTimestamp(message.timestamp)}

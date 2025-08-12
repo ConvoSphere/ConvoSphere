@@ -14,7 +14,10 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
 import WidgetBase, { type WidgetConfig, type WidgetProps } from "./WidgetBase";
-import { statisticsService, type ActivityItem } from "../../services/statistics";
+import {
+  statisticsService,
+  type ActivityItem,
+} from "../../services/statistics";
 import { realtimeService, type ActivityUpdate } from "../../services/realtime";
 
 const { Title, Text } = Typography;
@@ -56,8 +59,14 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
   }, [token]);
 
   useEffect(() => {
-    if (config.settings.refreshInterval && config.settings.refreshInterval > 0) {
-      const interval = setInterval(loadActivities, config.settings.refreshInterval * 1000);
+    if (
+      config.settings.refreshInterval &&
+      config.settings.refreshInterval > 0
+    ) {
+      const interval = setInterval(
+        loadActivities,
+        config.settings.refreshInterval * 1000,
+      );
       return () => clearInterval(interval);
     }
   }, [config.settings.refreshInterval]);
@@ -69,7 +78,10 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
       setLocalLoading(true);
       setLocalError(null);
 
-      const data = await statisticsService.getRecentActivity(token, config.settings.maxItems);
+      const data = await statisticsService.getRecentActivity(
+        token,
+        config.settings.maxItems,
+      );
       setActivities(data);
     } catch (error) {
       console.error("Error loading activities:", error);
@@ -82,21 +94,26 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
   const setupRealtimeUpdates = () => {
     if (!token) return;
 
-    const unsubscribeActivity = realtimeService.onActivity((activityUpdate: ActivityUpdate) => {
-      setActivities(prevActivities => {
-        const newActivity: ActivityItem = {
-          id: activityUpdate.id,
-          type: activityUpdate.type,
-          title: activityUpdate.title,
-          description: activityUpdate.description,
-          timestamp: activityUpdate.timestamp,
-          user: activityUpdate.user,
-          metadata: activityUpdate.metadata,
-        };
+    const unsubscribeActivity = realtimeService.onActivity(
+      (activityUpdate: ActivityUpdate) => {
+        setActivities((prevActivities) => {
+          const newActivity: ActivityItem = {
+            id: activityUpdate.id,
+            type: activityUpdate.type,
+            title: activityUpdate.title,
+            description: activityUpdate.description,
+            timestamp: activityUpdate.timestamp,
+            user: activityUpdate.user,
+            metadata: activityUpdate.metadata,
+          };
 
-        return [newActivity, ...prevActivities.slice(0, config.settings.maxItems - 1)];
-      });
-    });
+          return [
+            newActivity,
+            ...prevActivities.slice(0, config.settings.maxItems - 1),
+          ];
+        });
+      },
+    );
 
     return () => {
       unsubscribeActivity();
@@ -151,7 +168,9 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60),
+    );
 
     if (diffInMinutes < 1) {
       return t("widgets.just_now");
@@ -166,9 +185,10 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
     }
   };
 
-  const filteredActivities = activities.filter(activity => 
-    config.settings.filterTypes.length === 0 || 
-    config.settings.filterTypes.includes(activity.type)
+  const filteredActivities = activities.filter(
+    (activity) =>
+      config.settings.filterTypes.length === 0 ||
+      config.settings.filterTypes.includes(activity.type),
   );
 
   const renderActivityItem = (activity: ActivityItem) => (
@@ -203,7 +223,10 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
         description={
           <div>
             {activity.description && (
-              <Text type="secondary" style={{ display: "block", marginBottom: 4, fontSize: "12px" }}>
+              <Text
+                type="secondary"
+                style={{ display: "block", marginBottom: 4, fontSize: "12px" }}
+              >
                 {activity.description}
               </Text>
             )}
@@ -215,7 +238,12 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
               )}
               {config.settings.showTimestamps && (
                 <Space size="small">
-                  <ClockCircleOutlined style={{ fontSize: "11px", color: colors.colorTextSecondary }} />
+                  <ClockCircleOutlined
+                    style={{
+                      fontSize: "11px",
+                      color: colors.colorTextSecondary,
+                    }}
+                  />
                   <Text type="secondary" style={{ fontSize: "11px" }}>
                     {formatTime(activity.timestamp)}
                   </Text>
@@ -244,7 +272,7 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({
           renderItem={renderActivityItem}
           style={{ maxHeight: "400px", overflowY: "auto" }}
         />
-        
+
         {activities.length > config.settings.maxItems && (
           <div style={{ textAlign: "center", marginTop: 12 }}>
             <ModernButton

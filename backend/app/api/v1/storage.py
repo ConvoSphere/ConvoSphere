@@ -60,9 +60,9 @@ async def get_storage_health(
         return {
             "healthy": is_healthy,
             "provider": storage_manager.get_provider_name(),
-            "message": "Storage is healthy"
-            if is_healthy
-            else "Storage health check failed",
+            "message": (
+                "Storage is healthy" if is_healthy else "Storage health check failed"
+            ),
         }
     except Exception as e:
         logger.error(f"Storage health check failed: {e}")
@@ -141,9 +141,9 @@ async def test_storage_config(
         return {
             "success": True,
             "valid": is_valid,
-            "message": "Configuration is valid"
-            if is_valid
-            else "Configuration test failed",
+            "message": (
+                "Configuration is valid" if is_valid else "Configuration test failed"
+            ),
         }
     except Exception as e:
         logger.error(f"Storage configuration test failed: {e}")

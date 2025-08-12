@@ -85,9 +85,9 @@ class GitHubOAuthProvider(OAuthProvider):
                     "email": user.email,
                     "full_name": user.full_name,
                     "provider": "github",
-                    "last_sync": user.last_login.isoformat()
-                    if user.last_login
-                    else None,
+                    "last_sync": (
+                        user.last_login.isoformat() if user.last_login else None
+                    ),
                 }
             except Exception as e:
                 logger.exception(f"Failed to get GitHub user info: {str(e)}")

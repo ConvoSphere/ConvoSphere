@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Typography,
-  Space,
-  Row,
-  Col,
-} from "antd";
+import { Typography, Space, Row, Col } from "antd";
 import {
   MessageOutlined,
   RobotOutlined,
@@ -31,12 +26,15 @@ interface Assistant {
 }
 
 const fetchAssistants = async (token: string) => {
-  const response = await fetch(`${config.apiUrl}${config.apiEndpoints.assistants}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${config.apiUrl}${config.apiEndpoints.assistants}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     },
-  });
+  );
   if (!response.ok) {
     throw new Error("Failed to load assistants");
   }

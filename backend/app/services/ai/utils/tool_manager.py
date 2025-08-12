@@ -3,9 +3,10 @@
 import json
 from typing import Any, Dict, List, Optional
 
+from sqlalchemy.orm import Session
+
 from backend.app.models.tool import Tool
 from backend.app.tools.base import BaseTool
-from sqlalchemy.orm import Session
 
 
 class ToolManager:

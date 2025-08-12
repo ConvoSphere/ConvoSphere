@@ -1,6 +1,6 @@
 /**
  * Offline Service for handling offline functionality and data synchronization.
- * 
+ *
  * This service provides:
  * - Offline detection
  * - Data caching
@@ -42,8 +42,8 @@ class OfflineService {
 
   private initialize() {
     // Listen for online/offline events
-    window.addEventListener('online', () => this.handleOnline());
-    window.addEventListener('offline', () => this.handleOffline());
+    window.addEventListener("online", () => this.handleOnline());
+    window.addEventListener("offline", () => this.handleOffline());
 
     // Load cached data and action queue from localStorage
     this.loadFromStorage();
@@ -67,7 +67,7 @@ class OfflineService {
   }
 
   private notifyListeners(online: boolean) {
-    this.listeners.forEach(listener => listener(online));
+    this.listeners.forEach((listener) => listener(online));
   }
 
   public addOnlineStatusListener(listener: (online: boolean) => void) {
@@ -80,12 +80,13 @@ class OfflineService {
   }
 
   // Cache Management
-  public setCache(key: string, data: any, ttl: number = 3600000) { // Default 1 hour
+  public setCache(key: string, data: any, ttl: number = 3600000) {
+    // Default 1 hour
     const cachedData: CachedData = {
       key,
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     };
     this.cache.set(key, cachedData);
     this.saveCacheToStorage();
@@ -125,13 +126,15 @@ class OfflineService {
   }
 
   // Offline Action Queue
-  public queueAction(action: Omit<OfflineAction, 'id' | 'timestamp' | 'retryCount'>): string {
+  public queueAction(
+    action: Omit<OfflineAction, "id" | "timestamp" | "retryCount">,
+  ): string {
     const offlineAction: OfflineAction = {
       ...action,
       id: this.generateId(),
       timestamp: Date.now(),
       retryCount: 0,
-      maxRetries: action.maxRetries || 3
+      maxRetries: action.maxRetries || 3,
     };
 
     this.actionQueue.push(offlineAction);
@@ -144,7 +147,9 @@ class OfflineService {
   }
 
   public removeQueuedAction(actionId: string): boolean {
-    const index = this.actionQueue.findIndex(action => action.id === actionId);
+    const index = this.actionQueue.findIndex(
+      (action) => action.id === actionId,
+    );
     if (index !== -1) {
       this.actionQueue.splice(index, 1);
       this.saveQueueToStorage();
@@ -154,7 +159,11 @@ class OfflineService {
   }
 
   private async syncOfflineActions() {
-    if (this.syncInProgress || !this.isOnline || this.actionQueue.length === 0) {
+    if (
+      this.syncInProgress ||
+      !this.isOnline ||
+      this.actionQueue.length === 0
+    ) {
       return;
     }
 
@@ -166,7 +175,7 @@ class OfflineService {
         await this.executeQueuedAction(action);
       }
     } catch (error) {
-      console.error('Error syncing offline actions:', error);
+      console.error("Error syncing offline actions:", error);
     } finally {
       this.syncInProgress = false;
     }
@@ -184,10 +193,10 @@ class OfflineService {
       const response = await fetch(action.endpoint, {
         method: action.method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: action.method !== 'GET' ? JSON.stringify(action.data) : undefined
+        body: action.method !== "GET" ? JSON.stringify(action.data) : undefined,
       });
 
       if (response.ok) {
@@ -198,7 +207,9 @@ class OfflineService {
         action.retryCount++;
         if (action.retryCount >= action.maxRetries) {
           this.removeQueuedAction(action.id);
-          console.warn(`Action ${action.id} failed permanently after ${action.maxRetries} retries`);
+          console.warn(
+            `Action ${action.id} failed permanently after ${action.maxRetries} retries`,
+          );
         }
         return false;
       }
@@ -222,39 +233,39 @@ class OfflineService {
   private saveCacheToStorage() {
     try {
       const cacheData = Array.from(this.cache.entries());
-      localStorage.setItem('offline_cache', JSON.stringify(cacheData));
+      localStorage.setItem("offline_cache", JSON.stringify(cacheData));
     } catch (error) {
-      console.error('Error saving cache to storage:', error);
+      console.error("Error saving cache to storage:", error);
     }
   }
 
   private saveQueueToStorage() {
     try {
-      localStorage.setItem('offline_queue', JSON.stringify(this.actionQueue));
+      localStorage.setItem("offline_queue", JSON.stringify(this.actionQueue));
     } catch (error) {
-      console.error('Error saving queue to storage:', error);
+      console.error("Error saving queue to storage:", error);
     }
   }
 
   private loadFromStorage() {
     try {
       // Load cache
-      const cacheData = localStorage.getItem('offline_cache');
+      const cacheData = localStorage.getItem("offline_cache");
       if (cacheData) {
         const parsed = JSON.parse(cacheData);
         this.cache = new Map(parsed);
       }
 
       // Load action queue
-      const queueData = localStorage.getItem('offline_queue');
+      const queueData = localStorage.getItem("offline_queue");
       if (queueData) {
         this.actionQueue = JSON.parse(queueData);
       }
     } catch (error) {
-      console.error('Error loading from storage:', error);
+      console.error("Error loading from storage:", error);
       // Clear corrupted data
-      localStorage.removeItem('offline_cache');
-      localStorage.removeItem('offline_queue');
+      localStorage.removeItem("offline_cache");
+      localStorage.removeItem("offline_queue");
     }
   }
 
@@ -268,15 +279,15 @@ class OfflineService {
       isOnline: this.isOnline,
       queuedActions: this.actionQueue.length,
       cacheSize: this.cache.size,
-      syncInProgress: this.syncInProgress
+      syncInProgress: this.syncInProgress,
     };
   }
 
   public clearAllData() {
     this.actionQueue = [];
     this.cache.clear();
-    localStorage.removeItem('offline_cache');
-    localStorage.removeItem('offline_queue');
+    localStorage.removeItem("offline_cache");
+    localStorage.removeItem("offline_queue");
   }
 }
 
@@ -285,7 +296,9 @@ export const offlineService = new OfflineService();
 
 // React Hook for offline status
 export const useOfflineStatus = () => {
-  const [isOnline, setIsOnline] = React.useState(offlineService.isOnlineStatus());
+  const [isOnline, setIsOnline] = React.useState(
+    offlineService.isOnlineStatus(),
+  );
 
   React.useEffect(() => {
     const unsubscribe = offlineService.addOnlineStatusListener(setIsOnline);
@@ -305,27 +318,27 @@ export class OfflineAPI {
 
   async request(endpoint: string, options: any = {}): Promise<Response> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // Check if we're online
     if (offlineService.isOnlineStatus()) {
       try {
         const response = await fetch(url, options);
-        
+
         // Cache successful GET requests
-        if (response.ok && options.method === 'GET') {
+        if (response.ok && options.method === "GET") {
           const data = await response.clone().json();
           offlineService.setCache(endpoint, data);
         }
-        
+
         return response;
       } catch (error) {
         // If request fails and it's a GET, try to return cached data
-        if (options.method === 'GET') {
+        if (options.method === "GET") {
           const cached = offlineService.getCache(endpoint);
           if (cached) {
             return new Response(JSON.stringify(cached), {
               status: 200,
-              headers: { 'Content-Type': 'application/json' }
+              headers: { "Content-Type": "application/json" },
             });
           }
         }
@@ -333,61 +346,66 @@ export class OfflineAPI {
       }
     } else {
       // Offline mode
-      if (options.method === 'GET') {
+      if (options.method === "GET") {
         const cached = offlineService.getCache(endpoint);
         if (cached) {
           return new Response(JSON.stringify(cached), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" },
           });
         }
-        throw new Error('No cached data available offline');
+        throw new Error("No cached data available offline");
       } else {
         // Queue non-GET requests for later sync
         const actionId = offlineService.queueAction({
-          type: 'api_request',
+          type: "api_request",
           endpoint: url,
-          method: options.method || 'GET',
+          method: options.method || "GET",
           data: options.body ? JSON.parse(options.body as string) : null,
-          maxRetries: 3
+          maxRetries: 3,
         });
-        
-        return new Response(JSON.stringify({ 
-          queued: true, 
-          actionId,
-          message: 'Action queued for offline sync' 
-        }), {
-          status: 202,
-          headers: { 'Content-Type': 'application/json' }
-        });
+
+        return new Response(
+          JSON.stringify({
+            queued: true,
+            actionId,
+            message: "Action queued for offline sync",
+          }),
+          {
+            status: 202,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
     }
   }
 
   async get(endpoint: string): Promise<Response> {
-    return this.request(endpoint, { method: 'GET' });
+    return this.request(endpoint, { method: "GET" });
   }
 
   async post(endpoint: string, data: any): Promise<Response> {
     return this.request(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
   }
 
   async put(endpoint: string, data: any): Promise<Response> {
     return this.request(endpoint, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
   }
 
   async delete(endpoint: string): Promise<Response> {
-    return this.request(endpoint, { method: 'DELETE' });
+    return this.request(endpoint, { method: "DELETE" });
   }
 }
 
 // Export the enhanced API instance
-export const offlineAPI = new OfflineAPI(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+export const offlineAPI = new OfflineAPI(
+  import.meta.env.VITE_API_URL || "http://localhost:8000",
+);

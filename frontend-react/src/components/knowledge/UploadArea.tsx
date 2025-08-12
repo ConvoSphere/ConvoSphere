@@ -26,11 +26,11 @@ import {
 } from "@ant-design/icons";
 import { useKnowledgeStore } from "../../store/knowledgeStore";
 import { formatFileSize } from "../../utils/formatters";
-import { 
-  createFileValidator, 
-  showValidationErrors, 
+import {
+  createFileValidator,
+  showValidationErrors,
   showValidationWarnings,
-  type FileValidationConfig 
+  type FileValidationConfig,
 } from "../../utils/fileValidation";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -68,7 +68,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
     useKnowledgeStore();
   const [dragOver, setDragOver] = useState(false);
   const queryClient = useQueryClient();
-  
+
   // Create file validator with custom config
   const fileValidator = createFileValidator({
     maxFileSize,
@@ -117,7 +117,8 @@ const UploadArea: React.FC<UploadAreaProps> = ({
 
   const handleFileSelect = useCallback(
     (files: File[]) => {
-      const { validFiles, invalidFiles, warnings } = fileValidator.validateFiles(files);
+      const { validFiles, invalidFiles, warnings } =
+        fileValidator.validateFiles(files);
 
       if (invalidFiles.length > 0) {
         showValidationErrors(invalidFiles);
@@ -131,11 +132,19 @@ const UploadArea: React.FC<UploadAreaProps> = ({
         addToUploadQueue(validFiles);
         uploadFiles(validFiles).then(async () => {
           onUploadComplete?.();
-          await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+          await queryClient.invalidateQueries({
+            queryKey: ["knowledge-documents"],
+          });
         });
       }
     },
-    [fileValidator, addToUploadQueue, uploadFiles, onUploadComplete, queryClient],
+    [
+      fileValidator,
+      addToUploadQueue,
+      uploadFiles,
+      onUploadComplete,
+      queryClient,
+    ],
   );
 
   const uploadProps = {

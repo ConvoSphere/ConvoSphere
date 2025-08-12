@@ -473,9 +473,11 @@ class EnhancedToolExecutor:
             "total_executions": total_executions,
             "successful_executions": successful_executions,
             "failed_executions": failed_executions,
-            "success_rate": successful_executions / total_executions
-            if total_executions > 0
-            else 0.0,
+            "success_rate": (
+                successful_executions / total_executions
+                if total_executions > 0
+                else 0.0
+            ),
             "average_execution_time": avg_execution_time,
             "cache_stats": self.cache.get_stats(),
         }

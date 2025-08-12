@@ -57,8 +57,14 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
   }, [token]);
 
   useEffect(() => {
-    if (config.settings.refreshInterval && config.settings.refreshInterval > 0) {
-      const interval = setInterval(loadStats, config.settings.refreshInterval * 1000);
+    if (
+      config.settings.refreshInterval &&
+      config.settings.refreshInterval > 0
+    ) {
+      const interval = setInterval(
+        loadStats,
+        config.settings.refreshInterval * 1000,
+      );
       return () => clearInterval(interval);
     }
   }, [config.settings.refreshInterval]);
@@ -84,14 +90,14 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
     if (!token) return;
 
     const unsubscribeStats = realtimeService.onStatsUpdate((statsUpdate) => {
-      setStats(prevStats => {
+      setStats((prevStats) => {
         if (!prevStats) return prevStats;
         return {
           ...prevStats,
           systemStats: {
             ...prevStats.systemStats,
             ...statsUpdate,
-          }
+          },
         };
       });
     });
@@ -113,7 +119,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
     value: number,
     icon: React.ReactNode,
     color: string,
-    suffix?: string
+    suffix?: string,
   ) => (
     <Col span={12} style={{ marginBottom: 16 }}>
       <Statistic
@@ -203,7 +209,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.conversations"),
               stats.systemStats.totalConversations,
               <MessageOutlined style={{ color: colors.colorPrimary }} />,
-              colors.colorPrimary
+              colors.colorPrimary,
             )}
 
           {config.settings.showMessages &&
@@ -211,7 +217,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.messages"),
               stats.systemStats.totalMessages,
               <MessageOutlined style={{ color: colors.colorSecondary }} />,
-              colors.colorSecondary
+              colors.colorSecondary,
             )}
 
           {config.settings.showDocuments &&
@@ -219,7 +225,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.documents"),
               stats.systemStats.totalDocuments,
               <BookOutlined style={{ color: colors.colorAccent }} />,
-              colors.colorAccent
+              colors.colorAccent,
             )}
 
           {config.settings.showAssistants &&
@@ -227,7 +233,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.assistants"),
               stats.systemStats.totalAssistants,
               <TeamOutlined style={{ color: colors.colorPrimary }} />,
-              colors.colorPrimary
+              colors.colorPrimary,
             )}
 
           {config.settings.showTools &&
@@ -235,7 +241,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.tools"),
               stats.systemStats.totalTools,
               <ToolOutlined style={{ color: colors.colorSecondary }} />,
-              colors.colorSecondary
+              colors.colorSecondary,
             )}
 
           {config.settings.showUsers &&
@@ -243,7 +249,7 @@ const StatsWidget: React.FC<StatsWidgetProps> = ({
               t("widgets.active_users"),
               stats.systemStats.activeUsers,
               <UserOutlined style={{ color: colors.colorAccent }} />,
-              colors.colorAccent
+              colors.colorAccent,
             )}
         </Row>
 

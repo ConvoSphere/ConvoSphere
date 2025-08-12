@@ -30,7 +30,7 @@ export class AppError extends Error {
     details?: string,
     endpoint?: string,
     userAction?: string,
-    recovery?: ErrorRecovery
+    recovery?: ErrorRecovery,
   ) {
     super(message);
     this.name = "AppError";
@@ -47,29 +47,29 @@ export const ErrorCodes = {
   NETWORK_ERROR: "NETWORK_ERROR",
   TIMEOUT_ERROR: "TIMEOUT_ERROR",
   CONNECTION_REFUSED: "CONNECTION_REFUSED",
-  
+
   // Authentication errors
   UNAUTHORIZED: "UNAUTHORIZED",
   FORBIDDEN: "FORBIDDEN",
   TOKEN_EXPIRED: "TOKEN_EXPIRED",
   INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
-  
+
   // API errors
   API_ERROR: "API_ERROR",
   VALIDATION_ERROR: "VALIDATION_ERROR",
   NOT_FOUND: "NOT_FOUND",
   CONFLICT: "CONFLICT",
   RATE_LIMIT: "RATE_LIMIT",
-  
+
   // File errors
   FILE_TOO_LARGE: "FILE_TOO_LARGE",
   INVALID_FILE_TYPE: "INVALID_FILE_TYPE",
   UPLOAD_FAILED: "UPLOAD_FAILED",
-  
+
   // Processing errors
   PROCESSING_ERROR: "PROCESSING_ERROR",
   TIMEOUT: "TIMEOUT",
-  
+
   // General errors
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
   INTERNAL_ERROR: "INTERNAL_ERROR",
@@ -84,12 +84,15 @@ export const getErrorMessage = (error: any, t: any): string => {
   if (error.response) {
     const status = error.response.status;
     const data = error.response.data;
-    
+
     switch (status) {
       case 400:
         return data?.detail || t("errors.bad_request", "Invalid request");
       case 401:
-        return t("errors.unauthorized", "You are not authorized to perform this action");
+        return t(
+          "errors.unauthorized",
+          "You are not authorized to perform this action",
+        );
       case 403:
         return t("errors.forbidden", "Access denied");
       case 404:
@@ -99,13 +102,19 @@ export const getErrorMessage = (error: any, t: any): string => {
       case 422:
         return data?.detail || t("errors.validation_error", "Validation error");
       case 429:
-        return t("errors.rate_limit", "Too many requests. Please try again later");
+        return t(
+          "errors.rate_limit",
+          "Too many requests. Please try again later",
+        );
       case 500:
         return t("errors.server_error", "Server error. Please try again later");
       case 502:
       case 503:
       case 504:
-        return t("errors.service_unavailable", "Service temporarily unavailable");
+        return t(
+          "errors.service_unavailable",
+          "Service temporarily unavailable",
+        );
       default:
         return data?.detail || t("errors.unknown", "An unknown error occurred");
     }
@@ -117,7 +126,10 @@ export const getErrorMessage = (error: any, t: any): string => {
       return t("errors.timeout", "Request timed out. Please try again");
     }
     if (error.code === "ERR_NETWORK") {
-      return t("errors.network_error", "Network error. Please check your connection");
+      return t(
+        "errors.network_error",
+        "Network error. Please check your connection",
+      );
     }
     return t("errors.connection_error", "Connection error. Please try again");
   }
@@ -130,7 +142,10 @@ export const getErrorMessage = (error: any, t: any): string => {
   return t("errors.unknown", "An unknown error occurred");
 };
 
-export const getErrorRecovery = (error: any, t: any): ErrorRecovery | undefined => {
+export const getErrorRecovery = (
+  error: any,
+  t: any,
+): ErrorRecovery | undefined => {
   if (error instanceof AppError && error.recovery) {
     return error.recovery;
   }
@@ -138,7 +153,7 @@ export const getErrorRecovery = (error: any, t: any): ErrorRecovery | undefined 
   // Handle specific error types
   if (error.response) {
     const status = error.response.status;
-    
+
     switch (status) {
       case 401:
         return {
@@ -152,12 +167,18 @@ export const getErrorRecovery = (error: any, t: any): ErrorRecovery | undefined 
       case 403:
         return {
           action: t("errors.recovery.contact_admin", "Contact Admin"),
-          description: t("errors.recovery.contact_admin_desc", "Contact your administrator for access"),
+          description: t(
+            "errors.recovery.contact_admin_desc",
+            "Contact your administrator for access",
+          ),
         };
       case 429:
         return {
           action: t("errors.recovery.wait", "Wait"),
-          description: t("errors.recovery.wait_desc", "Please wait a few minutes before trying again"),
+          description: t(
+            "errors.recovery.wait_desc",
+            "Please wait a few minutes before trying again",
+          ),
         };
       case 500:
       case 502:
@@ -165,7 +186,10 @@ export const getErrorRecovery = (error: any, t: any): ErrorRecovery | undefined 
       case 504:
         return {
           action: t("errors.recovery.retry", "Retry"),
-          description: t("errors.recovery.retry_desc", "Try again in a few moments"),
+          description: t(
+            "errors.recovery.retry_desc",
+            "Try again in a few moments",
+          ),
           handler: () => {
             // Retry the last action
             window.location.reload();
@@ -177,7 +201,10 @@ export const getErrorRecovery = (error: any, t: any): ErrorRecovery | undefined 
   if (error.code === "ECONNABORTED" || error.code === "ERR_NETWORK") {
     return {
       action: t("errors.recovery.check_connection", "Check Connection"),
-      description: t("errors.recovery.check_connection_desc", "Check your internet connection and try again"),
+      description: t(
+        "errors.recovery.check_connection_desc",
+        "Check your internet connection and try again",
+      ),
     };
   }
 
@@ -189,11 +216,17 @@ export const handleError = (
   context: string = "general",
   showNotification: boolean = true,
   showMessage: boolean = true,
-  t?: (key: string, defaultValue?: string) => string
+  t?: (key: string, defaultValue?: string) => string,
 ): ErrorInfo => {
-  const errorMessage = getErrorMessage(error, t || ((key: string, defaultValue?: string) => defaultValue || key));
-  const recovery = getErrorRecovery(error, t || ((key: string, defaultValue?: string) => defaultValue || key));
-  
+  const errorMessage = getErrorMessage(
+    error,
+    t || ((key: string, defaultValue?: string) => defaultValue || key),
+  );
+  const recovery = getErrorRecovery(
+    error,
+    t || ((key: string, defaultValue?: string) => defaultValue || key),
+  );
+
   const errorInfo: ErrorInfo = {
     code: error.code || ErrorCodes.UNKNOWN_ERROR,
     message: errorMessage,
@@ -217,10 +250,12 @@ export const handleError = (
       message: errorMessage,
       description: recovery.description,
       duration: 0,
-      btn: recovery.handler ? {
-        text: recovery.action,
-        onClick: recovery.handler
-      } : undefined,
+      btn: recovery.handler
+        ? {
+            text: recovery.action,
+            onClick: recovery.handler,
+          }
+        : undefined,
     });
   }
 
@@ -233,13 +268,16 @@ export const createAppError = (
   details?: string,
   endpoint?: string,
   userAction?: string,
-  recovery?: ErrorRecovery
+  recovery?: ErrorRecovery,
 ): AppError => {
   return new AppError(message, code, details, endpoint, userAction, recovery);
 };
 
 // Specific error creators
-export const createNetworkError = (endpoint: string, details?: string): AppError => {
+export const createNetworkError = (
+  endpoint: string,
+  details?: string,
+): AppError => {
   return createAppError(
     "Network error occurred",
     ErrorCodes.NETWORK_ERROR,
@@ -250,7 +288,7 @@ export const createNetworkError = (endpoint: string, details?: string): AppError
       action: "Retry",
       description: "Check your connection and try again",
       handler: () => window.location.reload(),
-    }
+    },
   );
 };
 
@@ -267,36 +305,45 @@ export const createAuthError = (endpoint: string): AppError => {
       handler: () => {
         window.location.href = "/login";
       },
-    }
+    },
   );
 };
 
-export const createValidationError = (field: string, message: string): AppError => {
+export const createValidationError = (
+  field: string,
+  message: string,
+): AppError => {
   return createAppError(
     `Validation error: ${field}`,
     ErrorCodes.VALIDATION_ERROR,
     message,
     undefined,
-    "form_validation"
+    "form_validation",
   );
 };
 
-export const createFileError = (fileType: string, details?: string): AppError => {
+export const createFileError = (
+  fileType: string,
+  details?: string,
+): AppError => {
   return createAppError(
     `File error: ${fileType}`,
     ErrorCodes.FILE_TOO_LARGE,
     details,
     undefined,
-    "file_upload"
+    "file_upload",
   );
 };
 
 // Error boundary helper
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>
+  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>,
 ) => {
-  return class ErrorBoundary extends React.Component<P, { hasError: boolean; error?: Error }> {
+  return class ErrorBoundary extends React.Component<
+    P,
+    { hasError: boolean; error?: Error }
+  > {
     constructor(props: P) {
       super(props);
       this.state = { hasError: false };
@@ -322,10 +369,16 @@ export const withErrorBoundary = <P extends object>(
             resetError: this.resetError,
           });
         }
-        
-        return React.createElement('div', { style: { padding: 20, textAlign: "center" } },
-          React.createElement('h3', null, 'Something went wrong'),
-          React.createElement('button', { onClick: this.resetError }, 'Try again')
+
+        return React.createElement(
+          "div",
+          { style: { padding: 20, textAlign: "center" } },
+          React.createElement("h3", null, "Something went wrong"),
+          React.createElement(
+            "button",
+            { onClick: this.resetError },
+            "Try again",
+          ),
         );
       }
 

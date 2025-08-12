@@ -69,21 +69,28 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
   loading = false,
 }) => {
   const { t } = useTranslation();
-  const [currentOperation, setCurrentOperation] = useState<BulkOperation | null>(null);
+  const [currentOperation, setCurrentOperation] =
+    useState<BulkOperation | null>(null);
   const [showTagModal, setShowTagModal] = useState(false);
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [selectedFolder, setSelectedFolder] = useState("");
   const [availableTags, setAvailableTags] = useState<string[]>([
-    "important", "draft", "final", "review", "archived"
+    "important",
+    "draft",
+    "final",
+    "review",
+    "archived",
   ]);
 
-  const selectedDocs = documents.filter(doc => selectedDocuments.includes(doc.id));
+  const selectedDocs = documents.filter((doc) =>
+    selectedDocuments.includes(doc.id),
+  );
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange(documents.map(doc => doc.id));
+      onSelectionChange(documents.map((doc) => doc.id));
     } else {
       onSelectionChange([]);
     }
@@ -93,7 +100,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
     if (checked) {
       onSelectionChange([...selectedDocuments, documentId]);
     } else {
-      onSelectionChange(selectedDocuments.filter(id => id !== documentId));
+      onSelectionChange(selectedDocuments.filter((id) => id !== documentId));
     }
   };
 
@@ -105,12 +112,19 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
       content: (
         <div>
           <Paragraph>
-            {t("bulk.delete_confirm_message", "Sind Sie sicher, dass Sie {{count}} Dokumente löschen möchten?", {
-              count: selectedDocuments.length
-            })}
+            {t(
+              "bulk.delete_confirm_message",
+              "Sind Sie sicher, dass Sie {{count}} Dokumente löschen möchten?",
+              {
+                count: selectedDocuments.length,
+              },
+            )}
           </Paragraph>
           <Alert
-            message={t("bulk.delete_warning", "Diese Aktion kann nicht rückgängig gemacht werden")}
+            message={t(
+              "bulk.delete_warning",
+              "Diese Aktion kann nicht rückgängig gemacht werden",
+            )}
             type="warning"
             showIcon
           />
@@ -159,7 +173,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
     try {
       await operation(selectedDocuments, ...args);
-      
+
       setCurrentOperation({
         ...operationData,
         status: "completed",
@@ -169,7 +183,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
       // Clear selection after successful operation
       onSelectionChange([]);
-      
+
       // Hide operation status after 3 seconds
       setTimeout(() => setCurrentOperation(null), 3000);
     } catch (error) {
@@ -183,7 +197,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
   const handleTagSubmit = async () => {
     if (selectedTags.length === 0) return;
-    
+
     await executeBulkOperation("tag", onBulkTag, selectedTags);
     setShowTagModal(false);
     setSelectedTags([]);
@@ -191,7 +205,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
   const handleMoveSubmit = async () => {
     if (!selectedFolder) return;
-    
+
     await executeBulkOperation("move", onBulkMove, selectedFolder);
     setShowMoveModal(false);
     setSelectedFolder("");
@@ -199,18 +213,18 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
   const addNewTag = () => {
     if (newTag.trim() && !availableTags.includes(newTag.trim())) {
-      setAvailableTags(prev => [...prev, newTag.trim()]);
-      setSelectedTags(prev => [...prev, newTag.trim()]);
+      setAvailableTags((prev) => [...prev, newTag.trim()]);
+      setSelectedTags((prev) => [...prev, newTag.trim()]);
       setNewTag("");
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getTotalSize = (): number => {
@@ -219,21 +233,31 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
   const getOperationIcon = (type: string) => {
     switch (type) {
-      case "delete": return <DeleteOutlined />;
-      case "download": return <DownloadOutlined />;
-      case "tag": return <TagOutlined />;
-      case "move": return <FolderOutlined />;
-      default: return <FileTextOutlined />;
+      case "delete":
+        return <DeleteOutlined />;
+      case "download":
+        return <DownloadOutlined />;
+      case "tag":
+        return <TagOutlined />;
+      case "move":
+        return <FolderOutlined />;
+      default:
+        return <FileTextOutlined />;
     }
   };
 
   const getOperationColor = (type: string) => {
     switch (type) {
-      case "delete": return "#ff4d4f";
-      case "download": return "#52c41a";
-      case "tag": return "#1890ff";
-      case "move": return "#722ed1";
-      default: return "#8c8c8c";
+      case "delete":
+        return "#ff4d4f";
+      case "download":
+        return "#52c41a";
+      case "tag":
+        return "#1890ff";
+      case "move":
+        return "#722ed1";
+      default:
+        return "#8c8c8c";
     }
   };
 
@@ -242,16 +266,22 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
       {/* Selection Summary */}
       {selectedDocuments.length > 0 && (
         <ModernCard variant="elevated" size="md" style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <div>
               <Title level={5} style={{ margin: 0 }}>
                 {t("bulk.selected_count", "{{count}} Dokumente ausgewählt", {
-                  count: selectedDocuments.length
+                  count: selectedDocuments.length,
                 })}
               </Title>
               <Text type="secondary">
                 {t("bulk.total_size", "Gesamtgröße: {{size}}", {
-                  size: formatFileSize(getTotalSize())
+                  size: formatFileSize(getTotalSize()),
                 })}
               </Text>
             </div>
@@ -274,7 +304,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
           <Title level={5} style={{ marginBottom: 16 }}>
             {t("bulk.operations", "Massenoperationen")}
           </Title>
-          
+
           <Space wrap>
             <ModernButton
               variant="outlined"
@@ -284,7 +314,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             >
               {t("bulk.download", "Herunterladen")}
             </ModernButton>
-            
+
             <ModernButton
               variant="outlined"
               icon={<TagOutlined />}
@@ -293,7 +323,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             >
               {t("bulk.add_tags", "Tags hinzufügen")}
             </ModernButton>
-            
+
             <ModernButton
               variant="outlined"
               icon={<FolderOutlined />}
@@ -302,7 +332,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             >
               {t("bulk.move", "Verschieben")}
             </ModernButton>
-            
+
             <Popconfirm
               title={t("bulk.delete_confirm", "Dokumente löschen?")}
               onConfirm={handleBulkDelete}
@@ -325,24 +355,49 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
       {/* Operation Progress */}
       {currentOperation && (
         <ModernCard variant="elevated" size="md" style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 12,
+            }}
+          >
             <span style={{ color: getOperationColor(currentOperation.type) }}>
               {getOperationIcon(currentOperation.type)}
             </span>
             <Title level={5} style={{ margin: 0 }}>
-              {t(`bulk.operation.${currentOperation.type}`, currentOperation.type)}
+              {t(
+                `bulk.operation.${currentOperation.type}`,
+                currentOperation.type,
+              )}
             </Title>
-            <Tag color={currentOperation.status === "completed" ? "green" : currentOperation.status === "failed" ? "red" : "blue"}>
-              {t(`bulk.status.${currentOperation.status}`, currentOperation.status)}
+            <Tag
+              color={
+                currentOperation.status === "completed"
+                  ? "green"
+                  : currentOperation.status === "failed"
+                    ? "red"
+                    : "blue"
+              }
+            >
+              {t(
+                `bulk.status.${currentOperation.status}`,
+                currentOperation.status,
+              )}
             </Tag>
           </div>
-          
+
           <Progress
             percent={currentOperation.progress}
-            status={currentOperation.status === "failed" ? "exception" : undefined}
-            format={() => `${currentOperation.completed}/${currentOperation.total}`}
+            status={
+              currentOperation.status === "failed" ? "exception" : undefined
+            }
+            format={() =>
+              `${currentOperation.completed}/${currentOperation.total}`
+            }
           />
-          
+
           {currentOperation.errors.length > 0 && (
             <Alert
               message={t("bulk.errors_occurred", "Fehler aufgetreten")}
@@ -363,13 +418,26 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
 
       {/* Document List */}
       <ModernCard variant="elevated" size="lg">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
           <Title level={4} style={{ margin: 0 }}>
             {t("documents.title", "Dokumente")}
           </Title>
           <Checkbox
-            checked={selectedDocuments.length === documents.length && documents.length > 0}
-            indeterminate={selectedDocuments.length > 0 && selectedDocuments.length < documents.length}
+            checked={
+              selectedDocuments.length === documents.length &&
+              documents.length > 0
+            }
+            indeterminate={
+              selectedDocuments.length > 0 &&
+              selectedDocuments.length < documents.length
+            }
             onChange={(e) => handleSelectAll(e.target.checked)}
           >
             {t("bulk.select_all", "Alle auswählen")}
@@ -390,22 +458,35 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             >
               <Checkbox
                 checked={selectedDocuments.includes(document.id)}
-                onChange={(e) => handleSelectDocument(document.id, e.target.checked)}
+                onChange={(e) =>
+                  handleSelectDocument(document.id, e.target.checked)
+                }
               />
-              
+
               <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 4,
+                  }}
+                >
                   <FileTextOutlined style={{ color: "#1890ff" }} />
                   <Text strong>{document.title || document.filename}</Text>
-                  <Tag color={document.status === "processed" ? "green" : "orange"}>
+                  <Tag
+                    color={document.status === "processed" ? "green" : "orange"}
+                  >
                     {t(`documents.status.${document.status}`, document.status)}
                   </Tag>
                 </div>
-                
+
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  {document.filename} • {formatFileSize(document.file_size || 0)} • {new Date(document.created_at).toLocaleDateString()}
+                  {document.filename} •{" "}
+                  {formatFileSize(document.file_size || 0)} •{" "}
+                  {new Date(document.created_at).toLocaleDateString()}
                 </Text>
-                
+
                 {document.tags && document.tags.length > 0 && (
                   <div style={{ marginTop: 4 }}>
                     {document.tags.map((tag, index) => (
@@ -439,12 +520,14 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             onChange={setSelectedTags}
             style={{ width: "100%", marginTop: 8 }}
           >
-            {availableTags.map(tag => (
-              <Option key={tag} value={tag}>{tag}</Option>
+            {availableTags.map((tag) => (
+              <Option key={tag} value={tag}>
+                {tag}
+              </Option>
             ))}
           </ModernSelect>
         </div>
-        
+
         <div>
           <Text strong>{t("bulk.add_new_tag", "Neuen Tag hinzufügen")}</Text>
           <Space.Compact style={{ width: "100%", marginTop: 8 }}>
@@ -477,7 +560,10 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
         <div>
           <Text strong>{t("bulk.select_folder", "Ordner auswählen")}</Text>
           <ModernSelect
-            placeholder={t("bulk.select_folder_placeholder", "Ordner auswählen")}
+            placeholder={t(
+              "bulk.select_folder_placeholder",
+              "Ordner auswählen",
+            )}
             value={selectedFolder}
             onChange={setSelectedFolder}
             style={{ width: "100%", marginTop: 8 }}

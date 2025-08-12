@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Button, Card, Alert, Spinner, Badge } from "./ui";
 import { ssoLink, getSSOProviders } from "../services/auth";
 
-
 interface SSOProvider {
   id: string;
   name: string;
@@ -26,8 +25,6 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
   const [linking, setLinking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-
 
   useEffect(() => {
     loadSSOProviders();

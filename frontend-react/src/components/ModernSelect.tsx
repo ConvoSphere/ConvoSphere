@@ -31,7 +31,6 @@ const ModernSelect: React.FC<ModernSelectProps> = ({
   children,
   ...props
 }) => {
-
   const [isOpen, setIsOpen] = useState(false);
   const [hasValue, setHasValue] = useState(!!props.value);
 

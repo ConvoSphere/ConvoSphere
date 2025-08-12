@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Button,
   Space,
@@ -12,7 +12,8 @@ import {
   Switch,
   message,
   Divider,
-} from 'antd';
+  Input,
+} from "antd";
 import {
   SaveOutlined,
   DownloadOutlined,
@@ -24,9 +25,9 @@ import {
   ShareAltOutlined,
   BookOutlined,
   ToolOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { ChatSettings, ChatExportOptions } from '../types/chat.types';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { ChatSettings, ChatExportOptions } from "../types/chat.types";
 
 const { Option } = Select;
 
@@ -97,7 +98,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
       onSettings(values);
     }
     setSettingsModalVisible(false);
-    message.success(t('chat.settings_updated'));
+    message.success(t("chat.settings_updated"));
   };
 
   const handleExportSubmit = (values: ChatExportOptions) => {
@@ -109,42 +110,72 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
   const exportMenu = (
     <Menu>
-      <Menu.Item key="json" icon={<ExportOutlined />} onClick={() => handleExport()}>
-        {t('chat.export_json')}
+      <Menu.Item
+        key="json"
+        icon={<ExportOutlined />}
+        onClick={() => handleExport()}
+      >
+        {t("chat.export_json")}
       </Menu.Item>
-      <Menu.Item key="txt" icon={<ExportOutlined />} onClick={() => handleExport()}>
-        {t('chat.export_txt')}
+      <Menu.Item
+        key="txt"
+        icon={<ExportOutlined />}
+        onClick={() => handleExport()}
+      >
+        {t("chat.export_txt")}
       </Menu.Item>
-      <Menu.Item key="md" icon={<ExportOutlined />} onClick={() => handleExport()}>
-        {t('chat.export_md')}
+      <Menu.Item
+        key="md"
+        icon={<ExportOutlined />}
+        onClick={() => handleExport()}
+      >
+        {t("chat.export_md")}
       </Menu.Item>
-      <Menu.Item key="pdf" icon={<ExportOutlined />} onClick={() => handleExport()}>
-        {t('chat.export_pdf')}
+      <Menu.Item
+        key="pdf"
+        icon={<ExportOutlined />}
+        onClick={() => handleExport()}
+      >
+        {t("chat.export_pdf")}
       </Menu.Item>
     </Menu>
   );
 
   const moreMenu = (
     <Menu>
-      <Menu.Item key="import" icon={<ImportOutlined />} onClick={() => document.getElementById('import-input')?.click()}>
-        {t('chat.import')}
+      <Menu.Item
+        key="import"
+        icon={<ImportOutlined />}
+        onClick={() => document.getElementById("import-input")?.click()}
+      >
+        {t("chat.import")}
       </Menu.Item>
       <Menu.Item key="share" icon={<ShareAltOutlined />} onClick={handleShare}>
-        {t('chat.share')}
+        {t("chat.share")}
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="settings" icon={<SettingOutlined />} onClick={handleSettings}>
-        {t('chat.settings')}
+      <Menu.Item
+        key="settings"
+        icon={<SettingOutlined />}
+        onClick={handleSettings}
+      >
+        {t("chat.settings")}
       </Menu.Item>
     </Menu>
   );
 
   return (
-    <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+    <div
+      style={{
+        padding: "12px 16px",
+        borderBottom: "1px solid #f0f0f0",
+        backgroundColor: "#fafafa",
+      }}
+    >
       <Space>
         {/* Save Button */}
         {onSave && (
-          <Tooltip title={t('chat.save_thread')}>
+          <Tooltip title={t("chat.save_thread")}>
             <Button
               icon={<SaveOutlined />}
               onClick={handleSave}
@@ -156,8 +187,8 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
         {/* Export Dropdown */}
         {onExport && hasMessages && (
-          <Dropdown overlay={exportMenu} trigger={['click']}>
-            <Tooltip title={t('chat.export')}>
+          <Dropdown overlay={exportMenu} trigger={["click"]}>
+            <Tooltip title={t("chat.export")}>
               <Button
                 icon={<DownloadOutlined />}
                 disabled={disabled || isLoading}
@@ -171,14 +202,16 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
         {/* Knowledge Base Toggle */}
         {settings?.use_knowledge_base !== undefined && (
-          <Tooltip title={t('chat.knowledge_base')}>
+          <Tooltip title={t("chat.knowledge_base")}>
             <Button
               icon={<BookOutlined />}
-              type={settings.use_knowledge_base ? 'primary' : 'default'}
-              onClick={() => onSettings?.({
-                ...settings,
-                use_knowledge_base: !settings.use_knowledge_base
-              })}
+              type={settings.use_knowledge_base ? "primary" : "default"}
+              onClick={() =>
+                onSettings?.({
+                  ...settings,
+                  use_knowledge_base: !settings.use_knowledge_base,
+                })
+              }
               disabled={disabled || isLoading}
               size="small"
             />
@@ -187,14 +220,16 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
         {/* Tools Toggle */}
         {settings?.use_tools !== undefined && (
-          <Tooltip title={t('chat.tools')}>
+          <Tooltip title={t("chat.tools")}>
             <Button
               icon={<ToolOutlined />}
-              type={settings.use_tools ? 'primary' : 'default'}
-              onClick={() => onSettings?.({
-                ...settings,
-                use_tools: !settings.use_tools
-              })}
+              type={settings.use_tools ? "primary" : "default"}
+              onClick={() =>
+                onSettings?.({
+                  ...settings,
+                  use_tools: !settings.use_tools,
+                })
+              }
               disabled={disabled || isLoading}
               size="small"
             />
@@ -205,7 +240,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
         {/* Clear Button */}
         {onClear && hasMessages && (
-          <Tooltip title={t('chat.clear_messages')}>
+          <Tooltip title={t("chat.clear_messages")}>
             <Button
               icon={<ClearOutlined />}
               onClick={handleClear}
@@ -216,8 +251,8 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
         )}
 
         {/* More Actions Dropdown */}
-        <Dropdown overlay={moreMenu} trigger={['click']}>
-          <Tooltip title={t('chat.more_actions')}>
+        <Dropdown overlay={moreMenu} trigger={["click"]}>
+          <Tooltip title={t("chat.more_actions")}>
             <Button
               icon={<MoreOutlined />}
               disabled={disabled || isLoading}
@@ -231,7 +266,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
           id="import-input"
           type="file"
           accept=".json,.txt,.md"
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -243,7 +278,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
       {/* Settings Modal */}
       <Modal
-        title={t('chat.settings')}
+        title={t("chat.settings")}
         open={settingsModalVisible}
         onCancel={() => setSettingsModalVisible(false)}
         footer={null}
@@ -257,8 +292,8 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
         >
           <Form.Item
             name="model"
-            label={t('chat.model')}
-            rules={[{ required: true, message: t('chat.model_required') }]}
+            label={t("chat.model")}
+            rules={[{ required: true, message: t("chat.model_required") }]}
           >
             <Select>
               <Option value="gpt-3.5-turbo">GPT-3.5 Turbo</Option>
@@ -271,33 +306,30 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
           <Form.Item
             name="temperature"
-            label={t('chat.temperature')}
-            rules={[{ required: true, message: t('chat.temperature_required') }]}
+            label={t("chat.temperature")}
+            rules={[
+              { required: true, message: t("chat.temperature_required") },
+            ]}
           >
-            <InputNumber
-              min={0}
-              max={2}
-              step={0.1}
-              style={{ width: '100%' }}
-            />
+            <InputNumber min={0} max={2} step={0.1} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
             name="max_tokens"
-            label={t('chat.max_tokens')}
-            rules={[{ required: true, message: t('chat.max_tokens_required') }]}
+            label={t("chat.max_tokens")}
+            rules={[{ required: true, message: t("chat.max_tokens_required") }]}
           >
             <InputNumber
               min={1}
               max={8192}
               step={1}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             />
           </Form.Item>
 
           <Form.Item
             name="use_knowledge_base"
-            label={t('chat.use_knowledge_base')}
+            label={t("chat.use_knowledge_base")}
             valuePropName="checked"
           >
             <Switch />
@@ -305,29 +337,26 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
           <Form.Item
             name="use_tools"
-            label={t('chat.use_tools')}
+            label={t("chat.use_tools")}
             valuePropName="checked"
           >
             <Switch />
           </Form.Item>
 
-          <Form.Item
-            name="system_prompt"
-            label={t('chat.system_prompt')}
-          >
+          <Form.Item name="system_prompt" label={t("chat.system_prompt")}>
             <Input.TextArea
               rows={4}
-              placeholder={t('chat.system_prompt_placeholder')}
+              placeholder={t("chat.system_prompt_placeholder")}
             />
           </Form.Item>
 
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit">
-                {t('common.save')}
+                {t("common.save")}
               </Button>
               <Button onClick={() => setSettingsModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </Button>
             </Space>
           </Form.Item>
@@ -336,7 +365,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
       {/* Export Modal */}
       <Modal
-        title={t('chat.export_options')}
+        title={t("chat.export_options")}
         open={exportModalVisible}
         onCancel={() => setExportModalVisible(false)}
         footer={null}
@@ -346,15 +375,15 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
           layout="vertical"
           onFinish={handleExportSubmit}
           initialValues={{
-            format: 'json',
+            format: "json",
             include_metadata: true,
             include_sources: true,
           }}
         >
           <Form.Item
             name="format"
-            label={t('chat.export_format')}
-            rules={[{ required: true, message: t('chat.format_required') }]}
+            label={t("chat.export_format")}
+            rules={[{ required: true, message: t("chat.format_required") }]}
           >
             <Select>
               <Option value="json">JSON</Option>
@@ -366,7 +395,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
           <Form.Item
             name="include_metadata"
-            label={t('chat.include_metadata')}
+            label={t("chat.include_metadata")}
             valuePropName="checked"
           >
             <Switch />
@@ -374,7 +403,7 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
 
           <Form.Item
             name="include_sources"
-            label={t('chat.include_sources')}
+            label={t("chat.include_sources")}
             valuePropName="checked"
           >
             <Switch />
@@ -383,10 +412,10 @@ const ChatToolbar: React.FC<ChatToolbarProps> = ({
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit">
-                {t('chat.export')}
+                {t("chat.export")}
               </Button>
               <Button onClick={() => setExportModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </Button>
             </Space>
           </Form.Item>

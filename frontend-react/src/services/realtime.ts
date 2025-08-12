@@ -1,7 +1,12 @@
 import { config } from "../config";
 
 export interface RealtimeEvent {
-  type: "stats_update" | "system_health" | "activity" | "user_status" | "notification";
+  type:
+    | "stats_update"
+    | "system_health"
+    | "activity"
+    | "user_status"
+    | "notification";
   data: any;
   timestamp: string;
 }
@@ -64,7 +69,8 @@ class RealtimeService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private heartbeatInterval: NodeJS.Timeout | null = null;
-  private eventListeners: Map<string, Set<(event: RealtimeEvent) => void>> = new Map();
+  private eventListeners: Map<string, Set<(event: RealtimeEvent) => void>> =
+    new Map();
   private isConnecting = false;
   private token: string | null = null;
 
@@ -90,8 +96,10 @@ class RealtimeService {
       this.token = token;
 
       try {
-        const wsUrl = config.wsUrl || config.apiUrl.replace('http', 'ws');
-        this.ws = new WebSocket(`${wsUrl}${config.wsEndpoints.realtime}?token=${token}`);
+        const wsUrl = config.wsUrl || config.apiUrl.replace("http", "ws");
+        this.ws = new WebSocket(
+          `${wsUrl}${config.wsEndpoints.realtime}?token=${token}`,
+        );
 
         this.ws.onopen = () => {
           console.log("Realtime WebSocket connected");
@@ -112,7 +120,6 @@ class RealtimeService {
             reject(new Error("Connection timeout"));
           }
         }, 10000);
-
       } catch (error) {
         this.isConnecting = false;
         reject(error);
@@ -139,7 +146,10 @@ class RealtimeService {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-  subscribe(eventType: string, callback: (event: RealtimeEvent) => void): () => void {
+  subscribe(
+    eventType: string,
+    callback: (event: RealtimeEvent) => void,
+  ): () => void {
     if (!this.eventListeners.has(eventType)) {
       this.eventListeners.set(eventType, new Set());
     }
@@ -161,11 +171,11 @@ class RealtimeService {
   private handleMessage(event: MessageEvent): void {
     try {
       const realtimeEvent: RealtimeEvent = JSON.parse(event.data);
-      
+
       // Emit to all listeners for this event type
       const listeners = this.eventListeners.get(realtimeEvent.type);
       if (listeners) {
-        listeners.forEach(callback => {
+        listeners.forEach((callback) => {
           try {
             callback(realtimeEvent);
           } catch (error) {
@@ -177,7 +187,7 @@ class RealtimeService {
       // Also emit to general listeners
       const generalListeners = this.eventListeners.get("*");
       if (generalListeners) {
-        generalListeners.forEach(callback => {
+        generalListeners.forEach((callback) => {
           try {
             callback(realtimeEvent);
           } catch (error) {
@@ -185,7 +195,6 @@ class RealtimeService {
           }
         });
       }
-
     } catch (error) {
       console.error("Error parsing realtime message:", error);
     }
@@ -206,7 +215,10 @@ class RealtimeService {
     }
 
     // Attempt to reconnect if not a normal closure
-    if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+    if (
+      event.code !== 1000 &&
+      this.reconnectAttempts < this.maxReconnectAttempts
+    ) {
       this.attemptReconnect();
     }
   }
@@ -217,11 +229,13 @@ class RealtimeService {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
-    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    console.log(
+      `Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`,
+    );
 
     setTimeout(() => {
       if (this.token) {
-        this.connect(this.token).catch(error => {
+        this.connect(this.token).catch((error) => {
           console.error("Reconnection failed:", error);
         });
       }
@@ -235,7 +249,9 @@ class RealtimeService {
 
     this.heartbeatInterval = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: "ping", timestamp: new Date().toISOString() }));
+        this.ws.send(
+          JSON.stringify({ type: "ping", timestamp: new Date().toISOString() }),
+        );
       }
     }, 30000); // Send ping every 30 seconds
   }
@@ -257,7 +273,9 @@ class RealtimeService {
     return this.subscribe("user_status", (event) => callback(event.data));
   }
 
-  onNotification(callback: (notification: NotificationUpdate) => void): () => void {
+  onNotification(
+    callback: (notification: NotificationUpdate) => void,
+  ): () => void {
     return this.subscribe("notification", (event) => callback(event.data));
   }
 

@@ -4,8 +4,8 @@ File validator.
 This module validates document files.
 """
 
-from pathlib import Path
 import mimetypes
+from pathlib import Path
 
 try:
     import magic  # type: ignore

@@ -122,8 +122,14 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
   }, [token]);
 
   useEffect(() => {
-    if (config.settings.refreshInterval && config.settings.refreshInterval > 0) {
-      const interval = setInterval(loadNotifications, config.settings.refreshInterval * 1000);
+    if (
+      config.settings.refreshInterval &&
+      config.settings.refreshInterval > 0
+    ) {
+      const interval = setInterval(
+        loadNotifications,
+        config.settings.refreshInterval * 1000,
+      );
       return () => clearInterval(interval);
     }
   }, [config.settings.refreshInterval]);
@@ -132,9 +138,9 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
     try {
       setLocalLoading(true);
       setLocalError(null);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setNotifications(mockNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -145,61 +151,79 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
   };
 
   const markAsRead = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
+    setNotifications((prev) =>
+      prev.map((notification) =>
         notification.id === notificationId
           ? { ...notification, isRead: true }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, isRead: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, isRead: true })),
     );
   };
 
   const deleteNotification = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.filter(notification => notification.id !== notificationId)
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== notificationId),
     );
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "info": return <InfoCircleOutlined />;
-      case "success": return <CheckCircleOutlined />;
-      case "warning": return <WarningOutlined />;
-      case "error": return <ExclamationCircleOutlined />;
-      default: return <BellOutlined />;
+      case "info":
+        return <InfoCircleOutlined />;
+      case "success":
+        return <CheckCircleOutlined />;
+      case "warning":
+        return <WarningOutlined />;
+      case "error":
+        return <ExclamationCircleOutlined />;
+      default:
+        return <BellOutlined />;
     }
   };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case "info": return colors.colorPrimary;
-      case "success": return colors.colorSuccess;
-      case "warning": return colors.colorWarning;
-      case "error": return colors.colorError;
-      default: return colors.colorTextSecondary;
+      case "info":
+        return colors.colorPrimary;
+      case "success":
+        return colors.colorSuccess;
+      case "warning":
+        return colors.colorWarning;
+      case "error":
+        return colors.colorError;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "system": return colors.colorPrimary;
-      case "user": return colors.colorSecondary;
-      case "chat": return colors.colorAccent;
-      case "assistant": return colors.colorSuccess;
-      case "document": return colors.colorWarning;
-      default: return colors.colorTextSecondary;
+      case "system":
+        return colors.colorPrimary;
+      case "user":
+        return colors.colorSecondary;
+      case "chat":
+        return colors.colorAccent;
+      case "assistant":
+        return colors.colorSuccess;
+      case "document":
+        return colors.colorWarning;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - timestamp.getTime()) / (1000 * 60),
+    );
 
     if (diffInMinutes < 1) {
       return t("widgets.notifications.just_now");
@@ -219,13 +243,13 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
 
     // Filter by read status
     if (!config.settings.showRead) {
-      filtered = filtered.filter(notification => !notification.isRead);
+      filtered = filtered.filter((notification) => !notification.isRead);
     }
 
     // Filter by categories
     if (config.settings.filterCategories.length > 0) {
-      filtered = filtered.filter(notification =>
-        config.settings.filterCategories.includes(notification.category)
+      filtered = filtered.filter((notification) =>
+        config.settings.filterCategories.includes(notification.category),
       );
     }
 
@@ -240,8 +264,10 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
     return filtered.slice(0, config.settings.maxNotifications);
   }, [notifications, config.settings]);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const importantCount = notifications.filter(n => n.isImportant && !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const importantCount = notifications.filter(
+    (n) => n.isImportant && !n.isRead,
+  ).length;
 
   const renderNotificationItem = (notification: Notification) => (
     <List.Item
@@ -316,25 +342,70 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
 
   const renderQuickStats = () => (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorPrimary }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorPrimary,
+            }}
+          >
             {unreadCount}
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
             {t("widgets.notifications.unread")}
           </div>
         </div>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorError }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorError,
+            }}
+          >
             {importantCount}
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
             {t("widgets.notifications.important")}
           </div>
         </div>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorSuccess }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorSuccess,
+            }}
+          >
             {notifications.length}
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
@@ -357,7 +428,7 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
     return (
       <div>
         {renderQuickStats()}
-        
+
         <div style={{ marginBottom: 16 }}>
           <Space>
             <ModernButton
@@ -390,8 +461,16 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
           />
         ) : (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
-            <BellOutlined style={{ fontSize: "48px", color: colors.colorTextSecondary, marginBottom: 16 }} />
-            <Text type="secondary">{t("widgets.notifications.no_notifications")}</Text>
+            <BellOutlined
+              style={{
+                fontSize: "48px",
+                color: colors.colorTextSecondary,
+                marginBottom: 16,
+              }}
+            />
+            <Text type="secondary">
+              {t("widgets.notifications.no_notifications")}
+            </Text>
           </div>
         )}
       </div>

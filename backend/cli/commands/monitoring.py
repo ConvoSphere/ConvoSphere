@@ -45,7 +45,11 @@ class MonitoringCommands:
                 print_error(f"Database: ERROR - {str(e)}")
 
             # Overall health
-            if cpu_percent < HEALTH_THRESHOLD_PERCENT and memory.percent < HEALTH_THRESHOLD_PERCENT and disk.percent < HEALTH_THRESHOLD_PERCENT:
+            if (
+                cpu_percent < HEALTH_THRESHOLD_PERCENT
+                and memory.percent < HEALTH_THRESHOLD_PERCENT
+                and disk.percent < HEALTH_THRESHOLD_PERCENT
+            ):
                 print_success("System Health: GOOD")
             else:
                 print_error("System Health: WARNING - High resource usage")

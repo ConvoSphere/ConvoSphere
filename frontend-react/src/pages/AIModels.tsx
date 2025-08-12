@@ -41,10 +41,16 @@ import {
 import { useTranslation } from "react-i18next";
 import { config } from "../config";
 // // import { colors } from "../styles/colors";
-const ModelPerformanceMonitor = React.lazy(() => import("../components/ModelPerformanceMonitor"));
-const ModelConfiguration = React.lazy(() => import("../components/ModelConfiguration"));
+const ModelPerformanceMonitor = React.lazy(
+  () => import("../components/ModelPerformanceMonitor"),
+);
+const ModelConfiguration = React.lazy(
+  () => import("../components/ModelConfiguration"),
+);
 const ModelFavorites = React.lazy(() => import("../components/ModelFavorites"));
-const ModelUsageAnalytics = React.lazy(() => import("../components/ModelUsageAnalytics"));
+const ModelUsageAnalytics = React.lazy(
+  () => import("../components/ModelUsageAnalytics"),
+);
 import AIModelsService from "../services/aiModels";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -116,7 +122,8 @@ const AIModels: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, values }: { id: string; values: any }) => service.updateModel(id, values),
+    mutationFn: ({ id, values }: { id: string; values: any }) =>
+      service.updateModel(id, values),
     onSuccess: () => {
       message.success(t("ai_models.updated_success"));
       queryClient.invalidateQueries({ queryKey: ["ai-models"] });
@@ -134,7 +141,8 @@ const AIModels: React.FC = () => {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => service.toggleModelActive(id, isActive),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      service.toggleModelActive(id, isActive),
     onSuccess: () => {
       message.success(t("ai_models.toggle_success"));
       queryClient.invalidateQueries({ queryKey: ["ai-models"] });
@@ -143,7 +151,8 @@ const AIModels: React.FC = () => {
   });
 
   const testMutation = useMutation({
-    mutationFn: ({ id, prompt }: { id: string; prompt: string }) => service.testModel(id, prompt),
+    mutationFn: ({ id, prompt }: { id: string; prompt: string }) =>
+      service.testModel(id, prompt),
     onSuccess: (result: any) => {
       setTestResults((prev) => [result, ...prev]);
       message.success(t("ai_models.test_success"));
@@ -239,9 +248,13 @@ const AIModels: React.FC = () => {
       key: "status",
       render: (isActive: boolean, record: AIModel) => (
         <Space>
-          <Badge 
-            status={isActive ? "success" : "default"} 
-            text={isActive ? t("ai_models.status.active") : t("ai_models.status.inactive")} 
+          <Badge
+            status={isActive ? "success" : "default"}
+            text={
+              isActive
+                ? t("ai_models.status.active")
+                : t("ai_models.status.inactive")
+            }
           />
           {record.isDefault && (
             <Tag color="blue">{t("ai_models.status.default")}</Tag>
@@ -255,13 +268,17 @@ const AIModels: React.FC = () => {
       render: (record: AIModel) => (
         <div>
           <div style={{ marginBottom: 4 }}>
-            <Text style={{ fontSize: "12px" }}>{t("ai_models.performance.response_time")}</Text>
+            <Text style={{ fontSize: "12px" }}>
+              {t("ai_models.performance.response_time")}
+            </Text>
             <Tag color={getResponseTimeColor(record.performance.responseTime)}>
               {record.performance.responseTime}ms
             </Tag>
           </div>
           <div>
-            <Text style={{ fontSize: "12px" }}>{t("ai_models.performance.success_rate")}</Text>
+            <Text style={{ fontSize: "12px" }}>
+              {t("ai_models.performance.success_rate")}
+            </Text>
             <Tag color={getPerformanceColor(record.performance.successRate)}>
               {record.performance.successRate}%
             </Tag>
@@ -286,11 +303,15 @@ const AIModels: React.FC = () => {
       render: (record: AIModel) => (
         <div>
           <div style={{ marginBottom: 4 }}>
-            <Text style={{ fontSize: "12px" }}>{t("ai_models.usage.requests")}</Text>
+            <Text style={{ fontSize: "12px" }}>
+              {t("ai_models.usage.requests")}
+            </Text>
             <div>{record.performance.totalRequests.toLocaleString()}</div>
           </div>
           <div>
-            <Text style={{ fontSize: "12px" }}>{t("ai_models.usage.last_used")}</Text>
+            <Text style={{ fontSize: "12px" }}>
+              {t("ai_models.usage.last_used")}
+            </Text>
             <div>{new Date(record.lastUsed).toLocaleDateString()}</div>
           </div>
         </div>
@@ -304,7 +325,7 @@ const AIModels: React.FC = () => {
           <Tooltip title={t("ai_models.actions.test")}>
             <Button
               type="text"
-                              icon={<ExperimentOutlined />}
+              icon={<ExperimentOutlined />}
               onClick={() => handleTestModel(record)}
             />
           </Tooltip>
@@ -315,10 +336,22 @@ const AIModels: React.FC = () => {
               onClick={() => handleEditModel(record)}
             />
           </Tooltip>
-          <Tooltip title={record.isActive ? t("ai_models.actions.deactivate") : t("ai_models.actions.activate")}>
+          <Tooltip
+            title={
+              record.isActive
+                ? t("ai_models.actions.deactivate")
+                : t("ai_models.actions.activate")
+            }
+          >
             <Button
               type="text"
-              icon={record.isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+              icon={
+                record.isActive ? (
+                  <PauseCircleOutlined />
+                ) : (
+                  <PlayCircleOutlined />
+                )
+              }
               onClick={() => handleToggleActive(record)}
             />
           </Tooltip>
@@ -337,17 +370,25 @@ const AIModels: React.FC = () => {
 
   const overviewStats = {
     totalModels: models.length,
-    activeModels: models.filter(m => m.isActive).length,
-    totalRequests: models.reduce((sum, m) => sum + m.performance.totalRequests, 0),
-    avgResponseTime: models.length > 0 
-      ? models.reduce((sum, m) => sum + m.performance.responseTime, 0) / models.length 
-      : 0,
+    activeModels: models.filter((m) => m.isActive).length,
+    totalRequests: models.reduce(
+      (sum, m) => sum + m.performance.totalRequests,
+      0,
+    ),
+    avgResponseTime:
+      models.length > 0
+        ? models.reduce((sum, m) => sum + m.performance.responseTime, 0) /
+          models.length
+        : 0,
   };
 
   return (
     <div style={{ padding: "24px 0" }}>
       <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ color: colors.colorTextBase, marginBottom: 8 }}>
+        <Title
+          level={2}
+          style={{ color: colors.colorTextBase, marginBottom: 8 }}
+        >
           {t("ai_models.title")}
         </Title>
         <Text type="secondary">{t("ai_models.subtitle")}</Text>
@@ -437,32 +478,54 @@ const AIModels: React.FC = () => {
               showIcon
               style={{ marginBottom: 16 }}
             />
-            <Text type="secondary">
-              {t("ai_models.provider_coming_soon")}
-            </Text>
+            <Text type="secondary">{t("ai_models.provider_coming_soon")}</Text>
           </Card>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.analytics")} key="analytics">
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", padding: 16 }}>
+                <Spin />
+              </div>
+            }
+          >
             <ModelPerformanceMonitor />
           </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.configuration")} key="configuration">
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", padding: 16 }}>
+                <Spin />
+              </div>
+            }
+          >
             <ModelConfiguration />
           </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.favorites")} key="favorites">
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", padding: 16 }}>
+                <Spin />
+              </div>
+            }
+          >
             <ModelFavorites />
           </Suspense>
         </TabPane>
 
         <TabPane tab={t("ai_models.tabs.usage")} key="usage">
-          <Suspense fallback={<div style={{ textAlign: 'center', padding: 16 }}><Spin /></div>}>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", padding: 16 }}>
+                <Spin />
+              </div>
+            }
+          >
             <ModelUsageAnalytics />
           </Suspense>
         </TabPane>
@@ -470,7 +533,9 @@ const AIModels: React.FC = () => {
 
       {/* Add/Edit Model Modal */}
       <Modal
-        title={editingModel ? t("ai_models.edit_model") : t("ai_models.add_model")}
+        title={
+          editingModel ? t("ai_models.edit_model") : t("ai_models.add_model")
+        }
         open={modalVisible}
         onOk={handleSaveModel}
         onCancel={() => setModalVisible(false)}
@@ -519,16 +584,18 @@ const AIModels: React.FC = () => {
                 label={t("ai_models.form.display_name")}
                 rules={[{ required: true }]}
               >
-                <Input placeholder={t("ai_models.form.display_name_placeholder")} />
+                <Input
+                  placeholder={t("ai_models.form.display_name_placeholder")}
+                />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item
-            name="description"
-            label={t("ai_models.form.description")}
-          >
-            <Input.TextArea rows={3} placeholder={t("ai_models.form.description_placeholder")} />
+          <Form.Item name="description" label={t("ai_models.form.description")}>
+            <Input.TextArea
+              rows={3}
+              placeholder={t("ai_models.form.description_placeholder")}
+            />
           </Form.Item>
 
           <Row gutter={16}>
@@ -556,7 +623,10 @@ const AIModels: React.FC = () => {
             name="capabilities"
             label={t("ai_models.form.capabilities")}
           >
-            <Select mode="multiple" placeholder={t("ai_models.form.capabilities_placeholder")}>
+            <Select
+              mode="multiple"
+              placeholder={t("ai_models.form.capabilities_placeholder")}
+            >
               <Option value="chat">Chat</Option>
               <Option value="completion">Completion</Option>
               <Option value="embedding">Embedding</Option>
@@ -589,14 +659,14 @@ const AIModels: React.FC = () => {
             label={t("ai_models.test.prompt")}
             rules={[{ required: true }]}
           >
-            <Input.TextArea 
-              rows={4} 
-              placeholder={t("ai_models.test.prompt_placeholder")} 
+            <Input.TextArea
+              rows={4}
+              placeholder={t("ai_models.test.prompt_placeholder")}
             />
           </Form.Item>
-          
-          <Button 
-            type="primary" 
+
+          <Button
+            type="primary"
             onClick={handleRunTest}
             icon={<PlayCircleOutlined />}
             style={{ marginBottom: 16 }}
@@ -612,26 +682,36 @@ const AIModels: React.FC = () => {
             <div style={{ marginBottom: 8 }}>
               <Text strong>{t("ai_models.test.response")}:</Text>
             </div>
-            <div style={{ 
-              backgroundColor: colors.colorBgContainer, 
-              padding: 8, 
-              borderRadius: 4,
-              marginBottom: 8 
-            }}>
+            <div
+              style={{
+                backgroundColor: colors.colorBgContainer,
+                padding: 8,
+                borderRadius: 4,
+                marginBottom: 8,
+              }}
+            >
               {result.response}
             </div>
             <Row gutter={16}>
               <Col span={6}>
-                <Text type="secondary">{t("ai_models.test.response_time")}: {result.responseTime}ms</Text>
+                <Text type="secondary">
+                  {t("ai_models.test.response_time")}: {result.responseTime}ms
+                </Text>
               </Col>
               <Col span={6}>
-                <Text type="secondary">{t("ai_models.test.tokens_used")}: {result.tokensUsed}</Text>
+                <Text type="secondary">
+                  {t("ai_models.test.tokens_used")}: {result.tokensUsed}
+                </Text>
               </Col>
               <Col span={6}>
-                <Text type="secondary">{t("ai_models.test.cost")}: ${result.cost.toFixed(4)}</Text>
+                <Text type="secondary">
+                  {t("ai_models.test.cost")}: ${result.cost.toFixed(4)}
+                </Text>
               </Col>
               <Col span={6}>
-                <Text type="secondary">{new Date(result.timestamp).toLocaleTimeString()}</Text>
+                <Text type="secondary">
+                  {new Date(result.timestamp).toLocaleTimeString()}
+                </Text>
               </Col>
             </Row>
           </Card>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Row, Col, Typography, Space, Tag } from 'antd';
+import React from "react";
+import { Row, Col, Typography, Space, Tag } from "antd";
 import {
   LineChartOutlined,
   HddOutlined,
@@ -12,12 +12,20 @@ import {
   ReloadOutlined,
   ClockCircleOutlined,
   CloudServerOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import ModernCard from '../../components/ModernCard';
-import ModernButton from '../../components/ModernButton';
-import { useThemeStore } from '../../store/themeStore';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+import ModernCard from "../../components/ModernCard";
+import ModernButton from "../../components/ModernButton";
+import { useThemeStore } from "../../store/themeStore";
 
 const { Title, Text } = Typography;
 
@@ -400,15 +408,9 @@ const SystemOverview: React.FC<SystemOverviewProps> = ({
           </ModernCard>
 
           {/* Quick Stats */}
-          <ModernCard
-            variant="outlined"
-            size="md"
-            style={{ marginBottom: 24 }}
-          >
+          <ModernCard variant="outlined" size="md" style={{ marginBottom: 24 }}>
             <Title level={4}>{t("system.quick_stats")}</Title>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: 16 }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div
                 style={{
                   display: "flex",

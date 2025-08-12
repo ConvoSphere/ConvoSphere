@@ -84,7 +84,7 @@ const BulkEditModal: React.FC<BulkEditModalProps> = ({
 
     // Find common values across documents
     const commonValues = findCommonValues();
-    
+
     form.setFieldsValue({
       title: commonValues.title,
       description: commonValues.description,
@@ -120,21 +120,24 @@ const BulkEditModal: React.FC<BulkEditModalProps> = ({
     // Check if all documents have the same values
     for (const doc of documents.slice(1)) {
       if (doc.title !== common.title) common.title = undefined;
-      if (doc.description !== common.description) common.description = undefined;
+      if (doc.description !== common.description)
+        common.description = undefined;
       if (doc.author !== common.author) common.author = undefined;
       if (doc.source !== common.source) common.source = undefined;
       if (doc.year !== common.year) common.year = undefined;
       if (doc.language !== common.language) common.language = undefined;
-      
+
       // For arrays, find intersection
       if (common.tags) {
         const docTags = doc.tag_names || [];
-        common.tags = common.tags.filter(tag => docTags.includes(tag));
+        common.tags = common.tags.filter((tag) => docTags.includes(tag));
       }
-      
+
       if (common.keywords) {
         const docKeywords = doc.keywords || [];
-        common.keywords = common.keywords.filter(keyword => docKeywords.includes(keyword));
+        common.keywords = common.keywords.filter((keyword) =>
+          docKeywords.includes(keyword),
+        );
       }
     }
 
@@ -145,7 +148,7 @@ const BulkEditModal: React.FC<BulkEditModalProps> = ({
     try {
       setSaving(true);
       const values = await form.validateFields();
-      
+
       const updates: BulkEditUpdates = {
         ...values,
         tags: selectedTags,
@@ -189,7 +192,8 @@ const BulkEditModal: React.FC<BulkEditModalProps> = ({
               display: "flex",
               alignItems: "center",
               padding: "8px 0",
-              borderBottom: index < documents.length - 1 ? "1px solid #f0f0f0" : "none",
+              borderBottom:
+                index < documents.length - 1 ? "1px solid #f0f0f0" : "none",
             }}
           >
             {getFileTypeIcon(doc.file_type)}

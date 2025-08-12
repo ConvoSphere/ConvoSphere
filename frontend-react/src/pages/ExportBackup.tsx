@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Space,
@@ -21,7 +21,7 @@ import {
   Tag,
   Tooltip,
   Popconfirm,
-} from 'antd';
+} from "antd";
 import {
   DownloadOutlined,
   UploadOutlined,
@@ -42,20 +42,20 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../store/authStore';
-import { useThemeStore } from '../store/themeStore';
-import { useExportStore } from '../store/exportStore';
-import { RangePickerProps } from 'antd/es/date-picker';
-import dayjs from 'dayjs';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { useAuthStore } from "../store/authStore";
+import { useThemeStore } from "../store/themeStore";
+import { useExportStore } from "../store/exportStore";
+import { RangePickerProps } from "antd/es/date-picker";
+import dayjs from "dayjs";
 
-import ModernCard from '../components/ModernCard';
-import ModernButton from '../components/ModernButton';
-import ModernInput from '../components/ModernInput';
-import ModernSelect from '../components/ModernSelect';
-import ExportJobList from '../components/export/ExportJobList';
-import type { ExportOptions, BackupConfig } from '../services/export';
+import ModernCard from "../components/ModernCard";
+import ModernButton from "../components/ModernButton";
+import ModernInput from "../components/ModernInput";
+import ModernSelect from "../components/ModernSelect";
+import ExportJobList from "../components/export/ExportJobList";
+import type { ExportOptions, BackupConfig } from "../services/export";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -65,7 +65,8 @@ const ExportBackup: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
+  const isAdmin =
+    user && (user.role === "admin" || user.role === "super_admin");
 
   const {
     exportJobs,
@@ -102,13 +103,14 @@ const ExportBackup: React.FC = () => {
   } = useExportStore();
 
   // Local state
-  const [activeTab, setActiveTab] = useState('export');
+  const [activeTab, setActiveTab] = useState("export");
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [backupModalVisible, setBackupModalVisible] = useState(false);
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [configModalVisible, setConfigModalVisible] = useState(false);
-  const [selectedExportType, setSelectedExportType] = useState<string>('conversations');
+  const [selectedExportType, setSelectedExportType] =
+    useState<string>("conversations");
   const [exportForm] = Form.useForm();
   const [backupForm] = Form.useForm();
   const [templateForm] = Form.useForm();
@@ -137,21 +139,23 @@ const ExportBackup: React.FC = () => {
     try {
       const exportOptions: ExportOptions = {
         format: values.format,
-        dateRange: values.dateRange ? {
-          start: values.dateRange[0].toISOString(),
-          end: values.dateRange[1].toISOString(),
-        } : undefined,
+        dateRange: values.dateRange
+          ? {
+              start: values.dateRange[0].toISOString(),
+              end: values.dateRange[1].toISOString(),
+            }
+          : undefined,
         includeMetadata: values.includeMetadata,
         compression: values.compression,
         customFields: values.customFields,
       };
 
       await createExportJob(selectedExportType, exportOptions);
-      message.success(t('export.job_created'));
+      message.success(t("export.job_created"));
       setExportModalVisible(false);
       exportForm.resetFields();
     } catch (error) {
-      message.error(t('export.job_creation_failed'));
+      message.error(t("export.job_creation_failed"));
     }
   };
 
@@ -167,11 +171,11 @@ const ExportBackup: React.FC = () => {
       };
 
       await createBackup(backupConfig);
-      message.success(t('backup.job_created'));
+      message.success(t("backup.job_created"));
       setBackupModalVisible(false);
       backupForm.resetFields();
     } catch (error) {
-      message.error(t('backup.job_creation_failed'));
+      message.error(t("backup.job_creation_failed"));
     }
   };
 
@@ -184,11 +188,11 @@ const ExportBackup: React.FC = () => {
         type: selectedExportType,
         options: exportForm.getFieldsValue(),
       });
-      message.success(t('export.template_saved'));
+      message.success(t("export.template_saved"));
       setTemplateModalVisible(false);
       templateForm.resetFields();
     } catch (error) {
-      message.error(t('export.template_save_failed'));
+      message.error(t("export.template_save_failed"));
     }
   };
 
@@ -201,11 +205,11 @@ const ExportBackup: React.FC = () => {
         cronExpression: values.cronExpression,
         enabled: values.enabled,
       });
-      message.success(t('export.schedule_created'));
+      message.success(t("export.schedule_created"));
       setScheduleModalVisible(false);
       scheduleForm.resetFields();
     } catch (error) {
-      message.error(t('export.schedule_creation_failed'));
+      message.error(t("export.schedule_creation_failed"));
     }
   };
 
@@ -217,9 +221,9 @@ const ExportBackup: React.FC = () => {
         restoreDatabase: true,
         restoreConfig: true,
       });
-      message.success(t('backup.restore_started'));
+      message.success(t("backup.restore_started"));
     } catch (error) {
-      message.error(t('backup.restore_failed'));
+      message.error(t("backup.restore_failed"));
     }
   };
 
@@ -236,11 +240,11 @@ const ExportBackup: React.FC = () => {
         backupLocation: values.backupLocation,
         credentials: values.credentials,
       });
-      message.success(t('backup.config_updated'));
+      message.success(t("backup.config_updated"));
       setConfigModalVisible(false);
       configForm.resetFields();
     } catch (error) {
-      message.error(t('backup.config_update_failed'));
+      message.error(t("backup.config_update_failed"));
     }
   };
 
@@ -248,9 +252,9 @@ const ExportBackup: React.FC = () => {
   const handleDownload = async (jobId: string) => {
     try {
       await downloadExport(jobId);
-      message.success(t('export.download_started'));
+      message.success(t("export.download_started"));
     } catch (error) {
-      message.error(t('export.download_failed'));
+      message.error(t("export.download_failed"));
     }
   };
 
@@ -258,9 +262,9 @@ const ExportBackup: React.FC = () => {
   const handleCancel = async (jobId: string) => {
     try {
       await cancelExportJob(jobId);
-      message.success(t('export.job_cancelled'));
+      message.success(t("export.job_cancelled"));
     } catch (error) {
-      message.error(t('export.job_cancel_failed'));
+      message.error(t("export.job_cancel_failed"));
     }
   };
 
@@ -269,29 +273,33 @@ const ExportBackup: React.FC = () => {
     try {
       await getExportJobStatus(jobId);
     } catch (error) {
-      message.error(t('export.refresh_failed'));
+      message.error(t("export.refresh_failed"));
     }
   };
 
   if (!isAdmin) {
     return (
-      <div style={{ padding: '24px', textAlign: 'center' }}>
-        <Alert type="error" message={t('errors.forbidden')} showIcon />
+      <div style={{ padding: "24px", textAlign: "center" }}>
+        <Alert type="error" message={t("errors.forbidden")} showIcon />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: "24px" }}>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+      <Row
+        justify="space-between"
+        align="middle"
+        style={{ marginBottom: "24px" }}
+      >
         <Col>
           <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
-            <DownloadOutlined style={{ marginRight: '8px' }} />
-            {t('export_backup.title')}
+            <DownloadOutlined style={{ marginRight: "8px" }} />
+            {t("export_backup.title")}
           </Title>
           <Text type="secondary" style={{ color: colors.colorTextSecondary }}>
-            {t('export_backup.subtitle')}
+            {t("export_backup.subtitle")}
           </Text>
         </Col>
         <Col>
@@ -304,7 +312,7 @@ const ExportBackup: React.FC = () => {
               }}
               loading={loading}
             >
-              {t('common.refresh')}
+              {t("common.refresh")}
             </ModernButton>
           </Space>
         </Col>
@@ -313,22 +321,22 @@ const ExportBackup: React.FC = () => {
       {/* Error Alert */}
       {error && (
         <Alert
-          message={t('export_backup.error')}
+          message={t("export_backup.error")}
           description={error}
           type="error"
           showIcon
           closable
           onClose={clearError}
-          style={{ marginBottom: '16px' }}
+          style={{ marginBottom: "16px" }}
         />
       )}
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('export_backup.total_exports')}
+              title={t("export_backup.total_exports")}
               value={exportJobs.length}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: colors.colorPrimary }}
@@ -338,8 +346,8 @@ const ExportBackup: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('export_backup.completed_exports')}
-              value={exportJobs.filter(j => j.status === 'completed').length}
+              title={t("export_backup.completed_exports")}
+              value={exportJobs.filter((j) => j.status === "completed").length}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: colors.colorSuccess }}
             />
@@ -348,7 +356,7 @@ const ExportBackup: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('export_backup.total_backups')}
+              title={t("export_backup.total_backups")}
               value={backupJobs.length}
               prefix={<CloudUploadOutlined />}
               valueStyle={{ color: colors.colorWarning }}
@@ -358,7 +366,7 @@ const ExportBackup: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('export_backup.scheduled_exports')}
+              title={t("export_backup.scheduled_exports")}
               value={scheduledExports.length}
               prefix={<ScheduleOutlined />}
               valueStyle={{ color: colors.colorInfo }}
@@ -374,12 +382,12 @@ const ExportBackup: React.FC = () => {
           tab={
             <span>
               <DownloadOutlined />
-              {t('export_backup.export')}
+              {t("export_backup.export")}
             </span>
           }
           key="export"
         >
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
             {/* Export Actions */}
             <ModernCard>
               <Row gutter={[16, 16]} align="middle">
@@ -387,25 +395,25 @@ const ExportBackup: React.FC = () => {
                   <ModernSelect
                     value={selectedExportType}
                     onChange={setSelectedExportType}
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                   >
                     <Option value="conversations">
-                      <FileTextOutlined /> {t('export.types.conversations')}
+                      <FileTextOutlined /> {t("export.types.conversations")}
                     </Option>
                     <Option value="knowledge">
-                      <DatabaseOutlined /> {t('export.types.knowledge')}
+                      <DatabaseOutlined /> {t("export.types.knowledge")}
                     </Option>
                     <Option value="analytics">
-                      <BarChartOutlined /> {t('export.types.analytics')}
+                      <BarChartOutlined /> {t("export.types.analytics")}
                     </Option>
                     <Option value="system">
-                      <SettingIcon /> {t('export.types.system')}
+                      <SettingIcon /> {t("export.types.system")}
                     </Option>
                     <Option value="users">
-                      <UserOutlined /> {t('export.types.users')}
+                      <UserOutlined /> {t("export.types.users")}
                     </Option>
                     <Option value="assistants">
-                      <RobotOutlined /> {t('export.types.assistants')}
+                      <RobotOutlined /> {t("export.types.assistants")}
                     </Option>
                   </ModernSelect>
                 </Col>
@@ -415,7 +423,7 @@ const ExportBackup: React.FC = () => {
                     icon={<PlusOutlined />}
                     onClick={() => setExportModalVisible(true)}
                   >
-                    {t('export.create_job')}
+                    {t("export.create_job")}
                   </ModernButton>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
@@ -423,7 +431,7 @@ const ExportBackup: React.FC = () => {
                     icon={<HistoryOutlined />}
                     onClick={() => setTemplateModalVisible(true)}
                   >
-                    {t('export.save_template')}
+                    {t("export.save_template")}
                   </ModernButton>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
@@ -431,7 +439,7 @@ const ExportBackup: React.FC = () => {
                     icon={<ScheduleOutlined />}
                     onClick={() => setScheduleModalVisible(true)}
                   >
-                    {t('export.schedule')}
+                    {t("export.schedule")}
                   </ModernButton>
                 </Col>
               </Row>
@@ -453,12 +461,12 @@ const ExportBackup: React.FC = () => {
           tab={
             <span>
               <CloudUploadOutlined />
-              {t('export_backup.backup')}
+              {t("export_backup.backup")}
             </span>
           }
           key="backup"
         >
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
             {/* Backup Actions */}
             <ModernCard>
               <Row gutter={[16, 16]} align="middle">
@@ -468,7 +476,7 @@ const ExportBackup: React.FC = () => {
                     icon={<CloudUploadOutlined />}
                     onClick={() => setBackupModalVisible(true)}
                   >
-                    {t('backup.create')}
+                    {t("backup.create")}
                   </ModernButton>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
@@ -476,67 +484,67 @@ const ExportBackup: React.FC = () => {
                     icon={<SettingOutlined />}
                     onClick={() => setConfigModalVisible(true)}
                   >
-                    {t('backup.configuration')}
+                    {t("backup.configuration")}
                   </ModernButton>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
                   <Text type="secondary">
-                    {t('backup.auto_backup')}: {backupConfig?.autoBackup ? t('common.enabled') : t('common.disabled')}
+                    {t("backup.auto_backup")}:{" "}
+                    {backupConfig?.autoBackup
+                      ? t("common.enabled")
+                      : t("common.disabled")}
                   </Text>
                 </Col>
               </Row>
             </ModernCard>
 
             {/* Backup Jobs List */}
-            <ModernCard title={t('backup.jobs')}>
+            <ModernCard title={t("backup.jobs")}>
               <List
                 dataSource={backupJobs}
                 loading={loading}
                 renderItem={(backup) => (
                   <List.Item
                     actions={[
-                      backup.status === 'completed' && (
-                        <Tooltip title={t('backup.download')}>
+                      backup.status === "completed" && (
+                        <Tooltip title={t("backup.download")}>
                           <ModernButton
                             variant="primary"
                             icon={<CloudDownloadOutlined />}
                             size="sm"
                             onClick={() => downloadBackup(backup.id)}
                           >
-                            {t('backup.download')}
+                            {t("backup.download")}
                           </ModernButton>
                         </Tooltip>
                       ),
-                      backup.status === 'completed' && (
-                        <Tooltip title={t('backup.restore')}>
+                      backup.status === "completed" && (
+                        <Tooltip title={t("backup.restore")}>
                           <Popconfirm
-                            title={t('backup.restore_confirm')}
+                            title={t("backup.restore_confirm")}
                             onConfirm={() => handleRestoreBackup(backup.id)}
-                            okText={t('common.yes')}
-                            cancelText={t('common.no')}
+                            okText={t("common.yes")}
+                            cancelText={t("common.no")}
                           >
-                            <ModernButton
-                              icon={<UploadOutlined />}
-                              size="sm"
-                            >
-                              {t('backup.restore')}
+                            <ModernButton icon={<UploadOutlined />} size="sm">
+                              {t("backup.restore")}
                             </ModernButton>
                           </Popconfirm>
                         </Tooltip>
                       ),
-                      <Tooltip title={t('backup.delete')}>
+                      <Tooltip title={t("backup.delete")}>
                         <Popconfirm
-                          title={t('backup.delete_confirm')}
+                          title={t("backup.delete_confirm")}
                           onConfirm={() => deleteBackup(backup.id)}
-                          okText={t('common.yes')}
-                          cancelText={t('common.no')}
+                          okText={t("common.yes")}
+                          cancelText={t("common.no")}
                         >
                           <ModernButton
                             variant="error"
                             icon={<DeleteOutlined />}
                             size="sm"
                           >
-                            {t('backup.delete')}
+                            {t("backup.delete")}
                           </ModernButton>
                         </Popconfirm>
                       </Tooltip>,
@@ -546,26 +554,38 @@ const ExportBackup: React.FC = () => {
                       avatar={
                         <Avatar
                           icon={
-                            backup.status === 'completed' ? <CheckCircleOutlined /> :
-                            backup.status === 'processing' ? <ClockCircleOutlined /> :
-                            <ExclamationCircleOutlined />
+                            backup.status === "completed" ? (
+                              <CheckCircleOutlined />
+                            ) : backup.status === "processing" ? (
+                              <ClockCircleOutlined />
+                            ) : (
+                              <ExclamationCircleOutlined />
+                            )
                           }
                           style={{
-                            backgroundColor: 
-                              backup.status === 'completed' ? '#52c41a' :
-                              backup.status === 'processing' ? '#1890ff' :
-                              '#ff4d4f',
+                            backgroundColor:
+                              backup.status === "completed"
+                                ? "#52c41a"
+                                : backup.status === "processing"
+                                  ? "#1890ff"
+                                  : "#ff4d4f",
                           }}
                         />
                       }
                       title={
                         <Space>
-                          <Text strong>{t('backup.job')} #{backup.id}</Text>
-                          <Tag color={
-                            backup.status === 'completed' ? 'success' :
-                            backup.status === 'processing' ? 'processing' :
-                            'error'
-                          }>
+                          <Text strong>
+                            {t("backup.job")} #{backup.id}
+                          </Text>
+                          <Tag
+                            color={
+                              backup.status === "completed"
+                                ? "success"
+                                : backup.status === "processing"
+                                  ? "processing"
+                                  : "error"
+                            }
+                          >
                             {t(`backup.status.${backup.status}`)}
                           </Tag>
                           <Tag color="blue">{backup.type}</Tag>
@@ -574,19 +594,22 @@ const ExportBackup: React.FC = () => {
                       description={
                         <Space direction="vertical" size="small">
                           <Text type="secondary">
-                            {t('backup.created')}: {new Date(backup.createdAt).toLocaleString()}
+                            {t("backup.created")}:{" "}
+                            {new Date(backup.createdAt).toLocaleString()}
                           </Text>
                           {backup.completedAt && (
                             <Text type="secondary">
-                              {t('backup.completed')}: {new Date(backup.completedAt).toLocaleString()}
+                              {t("backup.completed")}:{" "}
+                              {new Date(backup.completedAt).toLocaleString()}
                             </Text>
                           )}
                           {backup.fileSize && (
                             <Text type="secondary">
-                              {t('backup.file_size')}: {(backup.fileSize / 1024 / 1024).toFixed(2)} MB
+                              {t("backup.file_size")}:{" "}
+                              {(backup.fileSize / 1024 / 1024).toFixed(2)} MB
                             </Text>
                           )}
-                          {backup.status === 'processing' && (
+                          {backup.status === "processing" && (
                             <Progress percent={backup.progress} size="small" />
                           )}
                         </Space>
@@ -602,21 +625,17 @@ const ExportBackup: React.FC = () => {
 
       {/* Export Modal */}
       <Modal
-        title={t('export.create_job')}
+        title={t("export.create_job")}
         open={exportModalVisible}
         onCancel={() => setExportModalVisible(false)}
         footer={null}
         width={600}
       >
-        <Form
-          form={exportForm}
-          layout="vertical"
-          onFinish={handleCreateExport}
-        >
+        <Form form={exportForm} layout="vertical" onFinish={handleCreateExport}>
           <Form.Item
             name="format"
-            label={t('export.format')}
-            rules={[{ required: true, message: t('export.format_required') }]}
+            label={t("export.format")}
+            rules={[{ required: true, message: t("export.format_required") }]}
           >
             <ModernSelect>
               <Option value="csv">CSV</Option>
@@ -626,16 +645,13 @@ const ExportBackup: React.FC = () => {
             </ModernSelect>
           </Form.Item>
 
-          <Form.Item
-            name="dateRange"
-            label={t('export.date_range')}
-          >
-            <RangePicker style={{ width: '100%' }} />
+          <Form.Item name="dateRange" label={t("export.date_range")}>
+            <RangePicker style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
             name="includeMetadata"
-            label={t('export.include_metadata')}
+            label={t("export.include_metadata")}
             valuePropName="checked"
           >
             <Switch />
@@ -643,7 +659,7 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="compression"
-            label={t('export.compression')}
+            label={t("export.compression")}
             valuePropName="checked"
           >
             <Switch />
@@ -652,10 +668,10 @@ const ExportBackup: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {t('export.create')}
+                {t("export.create")}
               </ModernButton>
               <ModernButton onClick={() => setExportModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>
@@ -664,20 +680,16 @@ const ExportBackup: React.FC = () => {
 
       {/* Backup Modal */}
       <Modal
-        title={t('backup.create')}
+        title={t("backup.create")}
         open={backupModalVisible}
         onCancel={() => setBackupModalVisible(false)}
         footer={null}
         width={600}
       >
-        <Form
-          form={backupForm}
-          layout="vertical"
-          onFinish={handleCreateBackup}
-        >
+        <Form form={backupForm} layout="vertical" onFinish={handleCreateBackup}>
           <Form.Item
             name="includeFiles"
-            label={t('backup.include_files')}
+            label={t("backup.include_files")}
             valuePropName="checked"
           >
             <Switch />
@@ -685,7 +697,7 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="includeDatabase"
-            label={t('backup.include_database')}
+            label={t("backup.include_database")}
             valuePropName="checked"
           >
             <Switch />
@@ -693,7 +705,7 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="includeConfig"
-            label={t('backup.include_config')}
+            label={t("backup.include_config")}
             valuePropName="checked"
           >
             <Switch />
@@ -701,11 +713,11 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="backupLocation"
-            label={t('backup.location')}
-            rules={[{ required: true, message: t('backup.location_required') }]}
+            label={t("backup.location")}
+            rules={[{ required: true, message: t("backup.location_required") }]}
           >
             <ModernSelect>
-              <Option value="local">{t('backup.location_local')}</Option>
+              <Option value="local">{t("backup.location_local")}</Option>
               <Option value="s3">Amazon S3</Option>
               <Option value="gcs">Google Cloud Storage</Option>
             </ModernSelect>
@@ -714,10 +726,10 @@ const ExportBackup: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {t('backup.create')}
+                {t("backup.create")}
               </ModernButton>
               <ModernButton onClick={() => setBackupModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>
@@ -726,7 +738,7 @@ const ExportBackup: React.FC = () => {
 
       {/* Template Modal */}
       <Modal
-        title={t('export.save_template')}
+        title={t("export.save_template")}
         open={templateModalVisible}
         onCancel={() => setTemplateModalVisible(false)}
         footer={null}
@@ -739,15 +751,17 @@ const ExportBackup: React.FC = () => {
         >
           <Form.Item
             name="name"
-            label={t('export.template_name')}
-            rules={[{ required: true, message: t('export.template_name_required') }]}
+            label={t("export.template_name")}
+            rules={[
+              { required: true, message: t("export.template_name_required") },
+            ]}
           >
             <ModernInput />
           </Form.Item>
 
           <Form.Item
             name="description"
-            label={t('export.template_description')}
+            label={t("export.template_description")}
           >
             <ModernInput.TextArea rows={3} />
           </Form.Item>
@@ -755,10 +769,10 @@ const ExportBackup: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {t('export.save')}
+                {t("export.save")}
               </ModernButton>
               <ModernButton onClick={() => setTemplateModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>
@@ -767,7 +781,7 @@ const ExportBackup: React.FC = () => {
 
       {/* Schedule Modal */}
       <Modal
-        title={t('export.schedule')}
+        title={t("export.schedule")}
         open={scheduleModalVisible}
         onCancel={() => setScheduleModalVisible(false)}
         footer={null}
@@ -780,15 +794,17 @@ const ExportBackup: React.FC = () => {
         >
           <Form.Item
             name="cronExpression"
-            label={t('export.cron_expression')}
-            rules={[{ required: true, message: t('export.cron_expression_required') }]}
+            label={t("export.cron_expression")}
+            rules={[
+              { required: true, message: t("export.cron_expression_required") },
+            ]}
           >
             <ModernInput placeholder="0 0 * * *" />
           </Form.Item>
 
           <Form.Item
             name="enabled"
-            label={t('export.enabled')}
+            label={t("export.enabled")}
             valuePropName="checked"
           >
             <Switch />
@@ -797,10 +813,10 @@ const ExportBackup: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {t('export.schedule')}
+                {t("export.schedule")}
               </ModernButton>
               <ModernButton onClick={() => setScheduleModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>
@@ -809,7 +825,7 @@ const ExportBackup: React.FC = () => {
 
       {/* Config Modal */}
       <Modal
-        title={t('backup.configuration')}
+        title={t("backup.configuration")}
         open={configModalVisible}
         onCancel={() => setConfigModalVisible(false)}
         footer={null}
@@ -823,33 +839,27 @@ const ExportBackup: React.FC = () => {
         >
           <Form.Item
             name="autoBackup"
-            label={t('backup.auto_backup')}
+            label={t("backup.auto_backup")}
             valuePropName="checked"
           >
             <Switch />
           </Form.Item>
 
-          <Form.Item
-            name="backupInterval"
-            label={t('backup.interval')}
-          >
+          <Form.Item name="backupInterval" label={t("backup.interval")}>
             <ModernSelect>
-              <Option value="daily">{t('backup.interval_daily')}</Option>
-              <Option value="weekly">{t('backup.interval_weekly')}</Option>
-              <Option value="monthly">{t('backup.interval_monthly')}</Option>
+              <Option value="daily">{t("backup.interval_daily")}</Option>
+              <Option value="weekly">{t("backup.interval_weekly")}</Option>
+              <Option value="monthly">{t("backup.interval_monthly")}</Option>
             </ModernSelect>
           </Form.Item>
 
-          <Form.Item
-            name="retentionDays"
-            label={t('backup.retention_days')}
-          >
+          <Form.Item name="retentionDays" label={t("backup.retention_days")}>
             <ModernInput type="number" min={1} />
           </Form.Item>
 
           <Form.Item
             name="includeFiles"
-            label={t('backup.include_files')}
+            label={t("backup.include_files")}
             valuePropName="checked"
           >
             <Switch />
@@ -857,7 +867,7 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="includeDatabase"
-            label={t('backup.include_database')}
+            label={t("backup.include_database")}
             valuePropName="checked"
           >
             <Switch />
@@ -865,18 +875,15 @@ const ExportBackup: React.FC = () => {
 
           <Form.Item
             name="includeConfig"
-            label={t('backup.include_config')}
+            label={t("backup.include_config")}
             valuePropName="checked"
           >
             <Switch />
           </Form.Item>
 
-          <Form.Item
-            name="backupLocation"
-            label={t('backup.location')}
-          >
+          <Form.Item name="backupLocation" label={t("backup.location")}>
             <ModernSelect>
-              <Option value="local">{t('backup.location_local')}</Option>
+              <Option value="local">{t("backup.location_local")}</Option>
               <Option value="s3">Amazon S3</Option>
               <Option value="gcs">Google Cloud Storage</Option>
             </ModernSelect>
@@ -885,10 +892,10 @@ const ExportBackup: React.FC = () => {
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {t('backup.save_config')}
+                {t("backup.save_config")}
               </ModernButton>
               <ModernButton onClick={() => setConfigModalVisible(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>

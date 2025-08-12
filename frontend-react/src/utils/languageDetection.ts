@@ -5,12 +5,14 @@
 
 // Supported languages in the application
 export const SUPPORTED_LANGUAGES = ["en", "de", "fr", "es"] as const;
-export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 /**
  * Validates if a language code is supported
  */
-export const isSupportedLanguage = (language: string): language is SupportedLanguage => {
+export const isSupportedLanguage = (
+  language: string,
+): language is SupportedLanguage => {
   return SUPPORTED_LANGUAGES.includes(language as SupportedLanguage);
 };
 
@@ -72,4 +74,4 @@ export const saveLanguagePreference = (language: string): void => {
 export const getSavedLanguage = (): SupportedLanguage | null => {
   const saved = localStorage.getItem("i18n_language");
   return saved && isSupportedLanguage(saved) ? saved : null;
-}; 
+};

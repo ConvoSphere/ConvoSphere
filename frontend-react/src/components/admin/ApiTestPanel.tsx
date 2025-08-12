@@ -20,7 +20,12 @@ import {
   StopOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { apiTestService, showApiTestResults, type ApiTestResult, type ApiTestSummary } from "../../services/apiTest";
+import {
+  apiTestService,
+  showApiTestResults,
+  type ApiTestResult,
+  type ApiTestSummary,
+} from "../../services/apiTest";
 import { handleError } from "../../utils/errorHandler";
 import ModernCard from "../ModernCard";
 import ModernButton from "../ModernButton";
@@ -53,7 +58,7 @@ const ApiTestPanel: React.FC = () => {
     setSelectedCategory(category);
     try {
       let results: ApiTestResult[] = [];
-      
+
       switch (category) {
         case "knowledge":
           results = await apiTestService.testKnowledgeEndpoints();
@@ -73,9 +78,10 @@ const ApiTestPanel: React.FC = () => {
 
       const summary: ApiTestSummary = {
         total: results.length,
-        successful: results.filter(r => r.success).length,
-        failed: results.filter(r => !r.success).length,
-        averageResponseTime: results.reduce((sum, r) => sum + r.responseTime, 0) / results.length,
+        successful: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
+        averageResponseTime:
+          results.reduce((sum, r) => sum + r.responseTime, 0) / results.length,
         results,
       };
 
@@ -129,7 +135,9 @@ const ApiTestPanel: React.FC = () => {
       key: "success",
       render: (success: boolean) => (
         <Tag color={getStatusColor(success)} icon={getStatusIcon(success)}>
-          {success ? t("api_test.success", "Success") : t("api_test.failed", "Failed")}
+          {success
+            ? t("api_test.success", "Success")
+            : t("api_test.failed", "Failed")}
         </Tag>
       ),
     },
@@ -138,24 +146,21 @@ const ApiTestPanel: React.FC = () => {
       dataIndex: "responseTime",
       key: "responseTime",
       render: (time: number) => (
-        <Text style={{ color: getResponseTimeColor(time) }}>
-          {time}ms
-        </Text>
+        <Text style={{ color: getResponseTimeColor(time) }}>{time}ms</Text>
       ),
     },
     {
       title: t("api_test.error", "Error"),
       dataIndex: "error",
       key: "error",
-      render: (error: string) => (
+      render: (error: string) =>
         error ? (
           <Text type="danger" style={{ fontSize: "12px" }}>
             {error}
           </Text>
         ) : (
           <Text type="secondary">-</Text>
-        )
-      ),
+        ),
     },
   ];
 
@@ -163,25 +168,42 @@ const ApiTestPanel: React.FC = () => {
     {
       key: "knowledge",
       label: t("api_test.categories.knowledge", "Knowledge Base"),
-      description: t("api_test.categories.knowledge_desc", "Test document and search endpoints"),
-      endpoints: ["/knowledge/documents", "/knowledge/tags", "/knowledge/stats", "/knowledge/search"],
+      description: t(
+        "api_test.categories.knowledge_desc",
+        "Test document and search endpoints",
+      ),
+      endpoints: [
+        "/knowledge/documents",
+        "/knowledge/tags",
+        "/knowledge/stats",
+        "/knowledge/search",
+      ],
     },
     {
       key: "tools",
       label: t("api_test.categories.tools", "Tools"),
-      description: t("api_test.categories.tools_desc", "Test tool management endpoints"),
+      description: t(
+        "api_test.categories.tools_desc",
+        "Test tool management endpoints",
+      ),
       endpoints: ["/tools", "/tools/categories/list"],
     },
     {
       key: "mcp",
       label: t("api_test.categories.mcp", "MCP Tools"),
-      description: t("api_test.categories.mcp_desc", "Test MCP server and tool endpoints"),
+      description: t(
+        "api_test.categories.mcp_desc",
+        "Test MCP server and tool endpoints",
+      ),
       endpoints: ["/mcp/servers", "/mcp/tools"],
     },
     {
       key: "auth",
       label: t("api_test.categories.auth", "Authentication"),
-      description: t("api_test.categories.auth_desc", "Test authentication endpoints"),
+      description: t(
+        "api_test.categories.auth_desc",
+        "Test authentication endpoints",
+      ),
       endpoints: ["/auth/me", "/users/profile"],
     },
   ];
@@ -189,40 +211,67 @@ const ApiTestPanel: React.FC = () => {
   const renderSummary = () => {
     if (!testResults) return null;
 
-    const successRate = ((testResults.successful / testResults.total) * 100).toFixed(1);
+    const successRate = (
+      (testResults.successful / testResults.total) *
+      100
+    ).toFixed(1);
     const isHealthy = testResults.failed === 0;
 
     return (
       <ModernCard variant="elevated" size="md" style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
           <Title level={4} style={{ margin: 0 }}>
-            <ApiOutlined style={{ marginRight: 8, color: isHealthy ? "#52c41a" : "#ff4d4f" }} />
+            <ApiOutlined
+              style={{
+                marginRight: 8,
+                color: isHealthy ? "#52c41a" : "#ff4d4f",
+              }}
+            />
             {t("api_test.summary", "API Test Summary")}
           </Title>
           <Tag color={isHealthy ? "green" : "red"} size="large">
-            {isHealthy ? t("api_test.healthy", "Healthy") : t("api_test.unhealthy", "Unhealthy")}
+            {isHealthy
+              ? t("api_test.healthy", "Healthy")
+              : t("api_test.unhealthy", "Unhealthy")}
           </Tag>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+          }}
+        >
           <div>
-            <Text type="secondary">{t("api_test.total_endpoints", "Total Endpoints")}</Text>
+            <Text type="secondary">
+              {t("api_test.total_endpoints", "Total Endpoints")}
+            </Text>
             <div>
               <Text strong style={{ fontSize: "24px" }}>
                 {testResults.total}
               </Text>
             </div>
           </div>
-          
+
           <div>
-            <Text type="secondary">{t("api_test.successful", "Successful")}</Text>
+            <Text type="secondary">
+              {t("api_test.successful", "Successful")}
+            </Text>
             <div>
               <Text strong style={{ fontSize: "24px", color: "#52c41a" }}>
                 {testResults.successful}
               </Text>
             </div>
           </div>
-          
+
           <div>
             <Text type="secondary">{t("api_test.failed", "Failed")}</Text>
             <div>
@@ -231,18 +280,22 @@ const ApiTestPanel: React.FC = () => {
               </Text>
             </div>
           </div>
-          
+
           <div>
-            <Text type="secondary">{t("api_test.success_rate", "Success Rate")}</Text>
+            <Text type="secondary">
+              {t("api_test.success_rate", "Success Rate")}
+            </Text>
             <div>
               <Text strong style={{ fontSize: "24px" }}>
                 {successRate}%
               </Text>
             </div>
           </div>
-          
+
           <div>
-            <Text type="secondary">{t("api_test.avg_response_time", "Avg Response Time")}</Text>
+            <Text type="secondary">
+              {t("api_test.avg_response_time", "Avg Response Time")}
+            </Text>
             <div>
               <Text strong style={{ fontSize: "24px" }}>
                 {testResults.averageResponseTime.toFixed(0)}ms
@@ -254,7 +307,9 @@ const ApiTestPanel: React.FC = () => {
         <Divider />
 
         <div>
-          <Text type="secondary">{t("api_test.overall_health", "Overall Health")}</Text>
+          <Text type="secondary">
+            {t("api_test.overall_health", "Overall Health")}
+          </Text>
           <Progress
             percent={parseFloat(successRate)}
             status={isHealthy ? "success" : "exception"}
@@ -272,7 +327,13 @@ const ApiTestPanel: React.FC = () => {
         variant="elevated"
         size="lg"
         header={
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Title level={3} style={{ margin: 0 }}>
               <ApiOutlined style={{ marginRight: 8, color: "#1890ff" }} />
               {t("api_test.title", "API Health Check")}
@@ -292,19 +353,27 @@ const ApiTestPanel: React.FC = () => {
                 onClick={runAllTests}
                 loading={running}
               >
-                {running ? t("api_test.running", "Running...") : t("api_test.run_all", "Run All Tests")}
+                {running
+                  ? t("api_test.running", "Running...")
+                  : t("api_test.run_all", "Run All Tests")}
               </ModernButton>
             </Space>
           </div>
         }
       >
         <Paragraph type="secondary" style={{ marginBottom: 24 }}>
-          {t("api_test.description", "Test the health and connectivity of all API endpoints to ensure the system is functioning correctly.")}
+          {t(
+            "api_test.description",
+            "Test the health and connectivity of all API endpoints to ensure the system is functioning correctly.",
+          )}
         </Paragraph>
 
         {renderSummary()}
 
-        <Collapse defaultActiveKey={["categories"]} style={{ marginBottom: 24 }}>
+        <Collapse
+          defaultActiveKey={["categories"]}
+          style={{ marginBottom: 24 }}
+        >
           <Panel
             header={
               <Space>
@@ -314,7 +383,13 @@ const ApiTestPanel: React.FC = () => {
             }
             key="categories"
           >
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: 16,
+              }}
+            >
               {categories.map((category) => (
                 <Card
                   key={category.key}
@@ -337,12 +412,19 @@ const ApiTestPanel: React.FC = () => {
                     </ModernButton>
                   }
                 >
-                  <Paragraph type="secondary" style={{ fontSize: "12px", marginBottom: 12 }}>
+                  <Paragraph
+                    type="secondary"
+                    style={{ fontSize: "12px", marginBottom: 12 }}
+                  >
                     {category.description}
                   </Paragraph>
                   <div>
                     {category.endpoints.map((endpoint) => (
-                      <Tag key={endpoint} size="small" style={{ marginBottom: 4 }}>
+                      <Tag
+                        key={endpoint}
+                        size="small"
+                        style={{ marginBottom: 4 }}
+                      >
                         {endpoint}
                       </Tag>
                     ))}
@@ -372,7 +454,10 @@ const ApiTestPanel: React.FC = () => {
         {testResults && testResults.failed > 0 && (
           <Alert
             message={t("api_test.issues_detected", "Issues Detected")}
-            description={t("api_test.issues_description", "Some API endpoints are not responding correctly. Check the detailed results above and contact your system administrator if the issues persist.")}
+            description={t(
+              "api_test.issues_description",
+              "Some API endpoints are not responding correctly. Check the detailed results above and contact your system administrator if the issues persist.",
+            )}
             type="warning"
             showIcon
             style={{ marginTop: 16 }}

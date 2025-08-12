@@ -17,7 +17,9 @@ interface AccessibilityContextType {
   applyAccessibilityStyles: () => void;
 }
 
-const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
+const AccessibilityContext = createContext<
+  AccessibilityContextType | undefined
+>(undefined);
 
 const defaultSettings: AccessibilitySettings = {
   highContrast: false,
@@ -31,7 +33,9 @@ const defaultSettings: AccessibilitySettings = {
 export const useAccessibility = () => {
   const context = useContext(AccessibilityContext);
   if (!context) {
-    throw new Error("useAccessibility must be used within an AccessibilityProvider");
+    throw new Error(
+      "useAccessibility must be used within an AccessibilityProvider",
+    );
   }
   return context;
 };
@@ -40,11 +44,15 @@ interface AccessibilityProviderProps {
   children: React.ReactNode;
 }
 
-export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ children }) => {
+export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({
+  children,
+}) => {
   const [settings, setSettings] = useState<AccessibilitySettings>(() => {
     // Load settings from localStorage
     const saved = localStorage.getItem("accessibility_settings");
-    return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+    return saved
+      ? { ...defaultSettings, ...JSON.parse(saved) }
+      : defaultSettings;
   });
 
   const updateSettings = (newSettings: Partial<AccessibilitySettings>) => {
@@ -60,7 +68,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
 
   const applyAccessibilityStyles = () => {
     const root = document.documentElement;
-    
+
     // High contrast
     if (settings.highContrast) {
       root.style.setProperty("--color-primary", "#ffffff");
@@ -115,9 +123,11 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Skip if user is typing in an input
-      if (event.target instanceof HTMLInputElement || 
-          event.target instanceof HTMLTextAreaElement ||
-          event.target instanceof HTMLSelectElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement
+      ) {
         return;
       }
 
@@ -136,9 +146,11 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
             event.preventDefault();
             // Navigate to next section
             const focusableElements = document.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             );
-            const currentIndex = Array.from(focusableElements).findIndex(el => el === document.activeElement);
+            const currentIndex = Array.from(focusableElements).findIndex(
+              (el) => el === document.activeElement,
+            );
             const nextIndex = (currentIndex + 1) % focusableElements.length;
             (focusableElements[nextIndex] as HTMLElement)?.focus();
           }
@@ -149,10 +161,15 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
             event.preventDefault();
             // Navigate to previous section
             const focusableElements = document.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             );
-            const currentIndex = Array.from(focusableElements).findIndex(el => el === document.activeElement);
-            const prevIndex = currentIndex > 0 ? currentIndex - 1 : focusableElements.length - 1;
+            const currentIndex = Array.from(focusableElements).findIndex(
+              (el) => el === document.activeElement,
+            );
+            const prevIndex =
+              currentIndex > 0
+                ? currentIndex - 1
+                : focusableElements.length - 1;
             (focusableElements[prevIndex] as HTMLElement)?.focus();
           }
           break;
@@ -184,7 +201,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       announcement.style.height = "1px";
       announcement.style.overflow = "hidden";
       announcement.textContent = message;
-      
+
       document.body.appendChild(announcement);
       setTimeout(() => document.body.removeChild(announcement), 1000);
     };
@@ -250,7 +267,8 @@ export const accessibilityUtils = {
 
   // Skip to main content
   skipToMainContent: () => {
-    const mainContent = document.querySelector("main") || document.querySelector("[role='main']");
+    const mainContent =
+      document.querySelector("main") || document.querySelector("[role='main']");
     if (mainContent) {
       (mainContent as HTMLElement).focus();
     }
@@ -259,15 +277,18 @@ export const accessibilityUtils = {
   // Get focusable elements
   getFocusableElements: (container: HTMLElement = document.body) => {
     return container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
   },
 
   // Trap focus within container
   trapFocus: (container: HTMLElement) => {
-    const focusableElements = accessibilityUtils.getFocusableElements(container);
+    const focusableElements =
+      accessibilityUtils.getFocusableElements(container);
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
 
     const handleTabKey = (event: KeyboardEvent) => {
       if (event.key === "Tab") {

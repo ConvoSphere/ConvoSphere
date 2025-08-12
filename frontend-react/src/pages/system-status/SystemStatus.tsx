@@ -47,8 +47,9 @@ const SystemStatus: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
-  
+  const isAdmin =
+    user && (user.role === "admin" || user.role === "super_admin");
+
   // State for active tab
   const [activeTab, setActiveTab] = useState<string>("overview");
 
@@ -90,32 +91,34 @@ const SystemStatus: React.FC = () => {
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
       await acknowledgeAlert(alertId);
-      message.success(t('monitoring.alert_acknowledged'));
+      message.success(t("monitoring.alert_acknowledged"));
     } catch (err) {
-      message.error(t('monitoring.alert_acknowledge_failed'));
+      message.error(t("monitoring.alert_acknowledge_failed"));
     }
   };
 
-  const handleExport = async (format: 'csv' | 'json' = 'csv') => {
+  const handleExport = async (format: "csv" | "json" = "csv") => {
     try {
-      const response = await fetch(`/api/v1/monitoring/export?format=${format}`);
+      const response = await fetch(
+        `/api/v1/monitoring/export?format=${format}`,
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `system-status-${new Date().toISOString().split('T')[0]}.${format}`;
+      a.download = `system-status-${new Date().toISOString().split("T")[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
-      message.success(t('monitoring.export_success'));
+
+      message.success(t("monitoring.export_success"));
     } catch (err) {
-      message.error(t('monitoring.export_failed'));
+      message.error(t("monitoring.export_failed"));
     }
   };
 
@@ -196,33 +199,37 @@ const SystemStatus: React.FC = () => {
     >
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         {/* Header */}
-        <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: "24px" }}
+        >
           <Col>
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
-              <MonitorOutlined style={{ marginRight: '8px' }} />
-              {t('monitoring.system_status')}
+              <MonitorOutlined style={{ marginRight: "8px" }} />
+              {t("monitoring.system_status")}
             </Title>
             <Text type="secondary" style={{ color: colors.colorTextSecondary }}>
-              {t('monitoring.system_status_description')}
+              {t("monitoring.system_status_description")}
             </Text>
           </Col>
           <Col>
             <Space>
-              <Tooltip title={t('monitoring.refresh_data')}>
+              <Tooltip title={t("monitoring.refresh_data")}>
                 <ModernButton
                   icon={<ReloadOutlined />}
                   onClick={fetchStatus}
                   loading={loading || monitoringLoading}
                 >
-                  {t('monitoring.refresh')}
+                  {t("monitoring.refresh")}
                 </ModernButton>
               </Tooltip>
-              <Tooltip title={t('monitoring.export_data')}>
+              <Tooltip title={t("monitoring.export_data")}>
                 <ModernButton
                   icon={<DownloadOutlined />}
-                  onClick={() => handleExport('csv')}
+                  onClick={() => handleExport("csv")}
                 >
-                  {t('monitoring.export')}
+                  {t("monitoring.export")}
                 </ModernButton>
               </Tooltip>
             </Space>
@@ -232,7 +239,7 @@ const SystemStatus: React.FC = () => {
         {/* Error Alert */}
         {(error || monitoringError) && (
           <Alert
-            message={t('monitoring.error')}
+            message={t("monitoring.error")}
             description={error || monitoringError}
             type="error"
             showIcon
@@ -241,7 +248,7 @@ const SystemStatus: React.FC = () => {
               clearError();
               clearMonitoringError();
             }}
-            style={{ marginBottom: '16px' }}
+            style={{ marginBottom: "16px" }}
           />
         )}
 
@@ -252,7 +259,7 @@ const SystemStatus: React.FC = () => {
             tab={
               <span>
                 <MonitorOutlined />
-                {t('monitoring.overview')}
+                {t("monitoring.overview")}
               </span>
             }
             key="overview"
@@ -272,7 +279,7 @@ const SystemStatus: React.FC = () => {
             tab={
               <span>
                 <DesktopOutlined />
-                {t('monitoring.system_metrics')}
+                {t("monitoring.system_metrics")}
               </span>
             }
             key="metrics"
@@ -287,7 +294,7 @@ const SystemStatus: React.FC = () => {
             tab={
               <span>
                 <LineChartOutlined />
-                {t('monitoring.performance')}
+                {t("monitoring.performance")}
               </span>
             }
             key="performance"
@@ -305,10 +312,10 @@ const SystemStatus: React.FC = () => {
             tab={
               <span>
                 <WarningOutlined />
-                {t('monitoring.alerts')}
+                {t("monitoring.alerts")}
                 {alerts.length > 0 && (
                   <Tag color="red" style={{ marginLeft: 8 }}>
-                    {alerts.filter(a => !a.acknowledged).length}
+                    {alerts.filter((a) => !a.acknowledged).length}
                   </Tag>
                 )}
               </span>
@@ -327,7 +334,7 @@ const SystemStatus: React.FC = () => {
             tab={
               <span>
                 <SafetyOutlined />
-                {t('monitoring.service_health')}
+                {t("monitoring.service_health")}
               </span>
             }
             key="services"

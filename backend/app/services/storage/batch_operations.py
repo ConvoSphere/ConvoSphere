@@ -105,9 +105,9 @@ class RateLimiter:
             "burst_size": self.burst_size,
             "current_requests_per_minute": len(self._request_times),
             "current_requests_per_second": recent_requests,
-            "last_request_time": self._last_request_time.isoformat()
-            if self._last_request_time
-            else None,
+            "last_request_time": (
+                self._last_request_time.isoformat() if self._last_request_time else None
+            ),
         }
 
 

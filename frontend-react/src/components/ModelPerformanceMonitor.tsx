@@ -96,7 +96,7 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
 }) => {
   const { t } = useTranslation();
   const { models, selectedModel } = useAIModelsStore();
-  
+
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
@@ -130,7 +130,7 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    
+
     intervalRef.current = setInterval(() => {
       loadPerformanceData();
       checkAlerts();
@@ -142,7 +142,10 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
 
     try {
       setLoading(true);
-      const data = await aiModelsService.getModelPerformance(selectedModelId, timeRange);
+      const data = await aiModelsService.getModelPerformance(
+        selectedModelId,
+        timeRange,
+      );
       setPerformanceData(data);
     } catch (error) {
       console.error("Failed to load performance data:", error);
@@ -154,13 +157,16 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
   const checkAlerts = async () => {
     if (!selectedModelId) return;
 
-    const currentModel = models.find(m => m.id === selectedModelId);
+    const currentModel = models.find((m) => m.id === selectedModelId);
     if (!currentModel) return;
 
     const newAlerts: Alert[] = [];
 
     // Check response time
-    if (currentModel.performance.responseTime > alertSettings.responseTimeThreshold) {
+    if (
+      currentModel.performance.responseTime >
+      alertSettings.responseTimeThreshold
+    ) {
       newAlerts.push({
         id: `response-time-${Date.now()}`,
         type: "warning",
@@ -168,7 +174,11 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
         message: `Response time (${currentModel.performance.responseTime}ms) exceeds threshold (${alertSettings.responseTimeThreshold}ms)`,
         timestamp: new Date().toISOString(),
         modelId: selectedModelId,
-        severity: currentModel.performance.responseTime > alertSettings.responseTimeThreshold * 2 ? "high" : "medium",
+        severity:
+          currentModel.performance.responseTime >
+          alertSettings.responseTimeThreshold * 2
+            ? "high"
+            : "medium",
         acknowledged: false,
       });
     }
@@ -182,7 +192,11 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
         message: `Error rate (${currentModel.performance.errorRate}%) exceeds threshold (${alertSettings.errorRateThreshold}%)`,
         timestamp: new Date().toISOString(),
         modelId: selectedModelId,
-        severity: currentModel.performance.errorRate > alertSettings.errorRateThreshold * 2 ? "high" : "medium",
+        severity:
+          currentModel.performance.errorRate >
+          alertSettings.errorRateThreshold * 2
+            ? "high"
+            : "medium",
         acknowledged: false,
       });
     }
@@ -202,10 +216,10 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
     }
 
     if (newAlerts.length > 0) {
-      setAlerts(prev => [...newAlerts, ...prev]);
-      
+      setAlerts((prev) => [...newAlerts, ...prev]);
+
       // Show notification for high severity alerts
-      newAlerts.forEach(alert => {
+      newAlerts.forEach((alert) => {
         if (alert.severity === "high") {
           notification.error({
             message: alert.title,
@@ -218,9 +232,11 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
   };
 
   const acknowledgeAlert = (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ));
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId ? { ...alert, acknowledged: true } : alert,
+      ),
+    );
   };
 
   const getPerformanceColor = (value: number, threshold: number) => {
@@ -231,14 +247,18 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high": return colors.colorError;
-      case "medium": return colors.colorWarning;
-      case "low": return colors.colorInfo;
-      default: return colors.colorTextSecondary;
+      case "high":
+        return colors.colorError;
+      case "medium":
+        return colors.colorWarning;
+      case "low":
+        return colors.colorInfo;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
-  const chartData = performanceData.map(item => ({
+  const chartData = performanceData.map((item) => ({
     ...item,
     timestamp: new Date(item.timestamp).toLocaleTimeString(),
   }));
@@ -249,8 +269,14 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
       dataIndex: "type",
       key: "type",
       render: (type: string, record: Alert) => (
-        <Badge 
-          status={type === "error" ? "error" : type === "warning" ? "warning" : "processing"}
+        <Badge
+          status={
+            type === "error"
+              ? "error"
+              : type === "warning"
+                ? "warning"
+                : "processing"
+          }
           text={t(`performance.alerts.types.${type}`)}
         />
       ),
@@ -282,10 +308,7 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
       render: (record: Alert) => (
         <Space>
           {!record.acknowledged && (
-            <Button 
-              size="small" 
-              onClick={() => acknowledgeAlert(record.id)}
-            >
+            <Button size="small" onClick={() => acknowledgeAlert(record.id)}>
               {t("performance.alerts.acknowledge")}
             </Button>
           )}
@@ -297,7 +320,7 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
     },
   ];
 
-  const currentModel = models.find(m => m.id === selectedModelId);
+  const currentModel = models.find((m) => m.id === selectedModelId);
 
   return (
     <div>
@@ -311,7 +334,7 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
               placeholder={t("performance.select_model")}
               style={{ width: "100%" }}
             >
-              {models.map(model => (
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
@@ -340,8 +363,8 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
             />
           </Col>
           <Col span={4}>
-            <Button 
-              icon={<ReloadOutlined />} 
+            <Button
+              icon={<ReloadOutlined />}
               onClick={loadPerformanceData}
               loading={loading}
             >
@@ -350,17 +373,22 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
           </Col>
           <Col span={6}>
             <Space>
-              <Button 
+              <Button
                 icon={<SettingOutlined />}
-                onClick={() => {/* TODO: Open alert settings modal */}}
+                onClick={() => {
+                  /* TODO: Open alert settings modal */
+                }}
               >
                 {t("performance.alert_settings")}
               </Button>
-              <Button 
+              <Button
                 icon={<BellOutlined />}
-                onClick={() => {/* TODO: Open alerts modal */}}
+                onClick={() => {
+                  /* TODO: Open alerts modal */
+                }}
               >
-                {t("performance.alerts.title")} ({alerts.filter(a => !a.acknowledged).length})
+                {t("performance.alerts.title")} (
+                {alerts.filter((a) => !a.acknowledged).length})
               </Button>
             </Space>
           </Col>
@@ -377,19 +405,24 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                   title={t("performance.stats.response_time")}
                   value={currentModel.performance.responseTime}
                   suffix="ms"
-                  valueStyle={{ 
+                  valueStyle={{
                     color: getPerformanceColor(
-                      currentModel.performance.responseTime, 
-                      alertSettings.responseTimeThreshold
-                    )
+                      currentModel.performance.responseTime,
+                      alertSettings.responseTimeThreshold,
+                    ),
                   }}
                   prefix={<ClockCircleOutlined />}
                 />
-                <Progress 
-                  percent={Math.min((currentModel.performance.responseTime / alertSettings.responseTimeThreshold) * 100, 100)}
+                <Progress
+                  percent={Math.min(
+                    (currentModel.performance.responseTime /
+                      alertSettings.responseTimeThreshold) *
+                      100,
+                    100,
+                  )}
                   strokeColor={getPerformanceColor(
-                    currentModel.performance.responseTime, 
-                    alertSettings.responseTimeThreshold
+                    currentModel.performance.responseTime,
+                    alertSettings.responseTimeThreshold,
                   )}
                   size="small"
                   style={{ marginTop: 8 }}
@@ -402,19 +435,19 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                   title={t("performance.stats.success_rate")}
                   value={currentModel.performance.successRate}
                   suffix="%"
-                  valueStyle={{ 
+                  valueStyle={{
                     color: getPerformanceColor(
-                      100 - currentModel.performance.successRate, 
-                      alertSettings.errorRateThreshold
-                    )
+                      100 - currentModel.performance.successRate,
+                      alertSettings.errorRateThreshold,
+                    ),
                   }}
                   prefix={<CheckCircleOutlined />}
                 />
-                <Progress 
+                <Progress
                   percent={currentModel.performance.successRate}
                   strokeColor={getPerformanceColor(
-                    100 - currentModel.performance.successRate, 
-                    alertSettings.errorRateThreshold
+                    100 - currentModel.performance.successRate,
+                    alertSettings.errorRateThreshold,
                   )}
                   size="small"
                   style={{ marginTop: 8 }}
@@ -427,19 +460,24 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                   title={t("performance.stats.error_rate")}
                   value={currentModel.performance.errorRate}
                   suffix="%"
-                  valueStyle={{ 
+                  valueStyle={{
                     color: getPerformanceColor(
-                      currentModel.performance.errorRate, 
-                      alertSettings.errorRateThreshold
-                    )
+                      currentModel.performance.errorRate,
+                      alertSettings.errorRateThreshold,
+                    ),
                   }}
                   prefix={<ExclamationCircleOutlined />}
                 />
-                <Progress 
-                  percent={Math.min((currentModel.performance.errorRate / alertSettings.errorRateThreshold) * 100, 100)}
+                <Progress
+                  percent={Math.min(
+                    (currentModel.performance.errorRate /
+                      alertSettings.errorRateThreshold) *
+                      100,
+                    100,
+                  )}
                   strokeColor={getPerformanceColor(
-                    currentModel.performance.errorRate, 
-                    alertSettings.errorRateThreshold
+                    currentModel.performance.errorRate,
+                    alertSettings.errorRateThreshold,
                   )}
                   size="small"
                   style={{ marginTop: 8 }}
@@ -452,19 +490,24 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                   title={t("performance.stats.cost_per_1k")}
                   value={currentModel.costPer1kTokens}
                   precision={4}
-                  valueStyle={{ 
+                  valueStyle={{
                     color: getPerformanceColor(
-                      currentModel.costPer1kTokens, 
-                      alertSettings.costThreshold
-                    )
+                      currentModel.costPer1kTokens,
+                      alertSettings.costThreshold,
+                    ),
                   }}
                   prefix={<DollarOutlined />}
                 />
-                <Progress 
-                  percent={Math.min((currentModel.costPer1kTokens / alertSettings.costThreshold) * 100, 100)}
+                <Progress
+                  percent={Math.min(
+                    (currentModel.costPer1kTokens /
+                      alertSettings.costThreshold) *
+                      100,
+                    100,
+                  )}
                   strokeColor={getPerformanceColor(
-                    currentModel.costPer1kTokens, 
-                    alertSettings.costThreshold
+                    currentModel.costPer1kTokens,
+                    alertSettings.costThreshold,
                   )}
                   size="small"
                   style={{ marginTop: 8 }}
@@ -484,9 +527,9 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                       <XAxis dataKey="timestamp" />
                       <YAxis />
                       <RechartsTooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="responseTime" 
+                      <Line
+                        type="monotone"
+                        dataKey="responseTime"
                         stroke={colors.colorPrimary}
                         strokeWidth={2}
                       />
@@ -502,9 +545,9 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                       <XAxis dataKey="timestamp" />
                       <YAxis />
                       <RechartsTooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="successRate" 
+                      <Line
+                        type="monotone"
+                        dataKey="successRate"
                         stroke={colors.colorSuccess}
                         strokeWidth={2}
                       />
@@ -520,7 +563,10 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                       <XAxis dataKey="timestamp" />
                       <YAxis />
                       <RechartsTooltip />
-                      <Bar dataKey="requestsPerMinute" fill={colors.colorPrimary} />
+                      <Bar
+                        dataKey="requestsPerMinute"
+                        fill={colors.colorPrimary}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </Card>
@@ -533,9 +579,9 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
                       <XAxis dataKey="timestamp" />
                       <YAxis />
                       <RechartsTooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="costPerRequest" 
+                      <Line
+                        type="monotone"
+                        dataKey="costPerRequest"
                         stroke={colors.colorWarning}
                         strokeWidth={2}
                       />
@@ -548,12 +594,12 @@ const ModelPerformanceMonitor: React.FC<ModelPerformanceMonitorProps> = ({
 
           {/* Alerts */}
           {showAlerts && (
-            <Card 
+            <Card
               title={
                 <Space>
                   <BellOutlined />
                   {t("performance.alerts.title")}
-                  <Badge count={alerts.filter(a => !a.acknowledged).length} />
+                  <Badge count={alerts.filter((a) => !a.acknowledged).length} />
                 </Space>
               }
             >
