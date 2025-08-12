@@ -3,14 +3,11 @@
 import time
 from typing import Any, Dict, List, Optional
 
-from .provider_manager import ProviderManager
 from ..types.ai_types import (
-    ChatRequest,
     ChatResponse,
-    ChatStreamResponse,
-    EmbeddingRequest,
     EmbeddingResponse,
 )
+from .provider_manager import ProviderManager
 
 
 class ChatProcessor:
@@ -36,7 +33,7 @@ class ChatProcessor:
     ) -> ChatResponse:
         """Process a chat completion request."""
         start_time = time.time()
-        
+
         try:
             # Validate provider and model
             if not self.provider_manager.is_provider_available(provider):
@@ -46,11 +43,15 @@ class ChatProcessor:
             if not model:
                 model = self.provider_manager.get_default_model(provider)
                 if not model:
-                    raise ValueError(f"No default model available for provider '{provider}'")
+                    raise ValueError(
+                        f"No default model available for provider '{provider}'"
+                    )
 
             # Validate model
             if not self.provider_manager.validate_provider_and_model(provider, model):
-                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+                raise ValueError(
+                    f"Model '{model}' is not available for provider '{provider}'"
+                )
 
             # Build request
             request = self.request_builder.build_chat_request(
@@ -77,9 +78,10 @@ class ChatProcessor:
 
             # Convert messages to provider format
             provider_messages = self._convert_messages_to_provider_format(messages)
-            
+
             # Create provider request
             from ..providers.base import ChatCompletionRequest
+
             provider_request = ChatCompletionRequest(
                 messages=provider_messages,
                 model=model,
@@ -110,7 +112,9 @@ class ChatProcessor:
 
             # Log metrics
             processing_time = time.time() - start_time
-            self.response_handler.log_response_metrics(response, processing_time, provider)
+            self.response_handler.log_response_metrics(
+                response, processing_time, provider
+            )
 
             return response
 
@@ -118,8 +122,7 @@ class ChatProcessor:
             # Handle different types of errors
             if "validation" in str(e).lower():
                 raise self.response_handler.handle_validation_error(e)
-            else:
-                raise self.response_handler.handle_provider_error(e, provider)
+            raise self.response_handler.handle_provider_error(e, provider)
 
     async def process_chat_completion_stream(
         self,
@@ -136,7 +139,7 @@ class ChatProcessor:
     ):
         """Process a streaming chat completion request."""
         start_time = time.time()
-        
+
         try:
             # Validate provider and model
             if not self.provider_manager.is_provider_available(provider):
@@ -146,11 +149,15 @@ class ChatProcessor:
             if not model:
                 model = self.provider_manager.get_default_model(provider)
                 if not model:
-                    raise ValueError(f"No default model available for provider '{provider}'")
+                    raise ValueError(
+                        f"No default model available for provider '{provider}'"
+                    )
 
             # Validate model
             if not self.provider_manager.validate_provider_and_model(provider, model):
-                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+                raise ValueError(
+                    f"Model '{model}' is not available for provider '{provider}'"
+                )
 
             # Build request
             request = self.request_builder.build_chat_request(
@@ -177,9 +184,10 @@ class ChatProcessor:
 
             # Convert messages to provider format
             provider_messages = self._convert_messages_to_provider_format(messages)
-            
+
             # Create provider request
             from ..providers.base import ChatCompletionRequest
+
             provider_request = ChatCompletionRequest(
                 messages=provider_messages,
                 model=model,
@@ -196,7 +204,7 @@ class ChatProcessor:
                     model=model,
                     finish_reason=chunk.finish_reason,
                 )
-                
+
                 yield response
 
             # Log metrics
@@ -218,7 +226,7 @@ class ChatProcessor:
     ) -> EmbeddingResponse:
         """Process an embeddings request."""
         start_time = time.time()
-        
+
         try:
             # Validate provider and model
             if not self.provider_manager.is_provider_available(provider):
@@ -226,7 +234,9 @@ class ChatProcessor:
 
             # Validate model
             if not self.provider_manager.validate_provider_and_model(provider, model):
-                raise ValueError(f"Model '{model}' is not available for provider '{provider}'")
+                raise ValueError(
+                    f"Model '{model}' is not available for provider '{provider}'"
+                )
 
             # Build request
             request = self.request_builder.build_embedding_request(
@@ -256,7 +266,9 @@ class ChatProcessor:
 
             # Log metrics
             processing_time = time.time() - start_time
-            self.response_handler.log_embedding_metrics(response, processing_time, provider)
+            self.response_handler.log_embedding_metrics(
+                response, processing_time, provider
+            )
 
             return response
 
@@ -264,21 +276,24 @@ class ChatProcessor:
             # Handle different types of errors
             if "validation" in str(e).lower():
                 raise self.response_handler.handle_validation_error(e)
-            else:
-                raise self.response_handler.handle_provider_error(e, provider)
+            raise self.response_handler.handle_provider_error(e, provider)
 
-    def _convert_messages_to_provider_format(self, messages: List[Dict[str, str]]) -> List:
+    def _convert_messages_to_provider_format(
+        self, messages: List[Dict[str, str]]
+    ) -> List:
         """Convert messages to provider format."""
         from ..providers.base import ChatMessage
-        
+
         provider_messages = []
         for msg in messages:
-            provider_messages.append(ChatMessage(
-                role=msg["role"],
-                content=msg["content"],
-                name=msg.get("name"),
-            ))
-        
+            provider_messages.append(
+                ChatMessage(
+                    role=msg["role"],
+                    content=msg["content"],
+                    name=msg.get("name"),
+                )
+            )
+
         return provider_messages
 
     def get_available_providers(self) -> List[str]:

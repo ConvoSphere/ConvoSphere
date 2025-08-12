@@ -1,13 +1,5 @@
-import React from 'react';
-import {
-  Row,
-  Col,
-  Statistic,
-  Progress,
-  Card,
-  Space,
-  Button,
-} from 'antd';
+import React from "react";
+import { Row, Col, Statistic, Progress, Card, Space, Button } from "antd";
 import {
   UserOutlined,
   MessageOutlined,
@@ -15,11 +7,11 @@ import {
   ClockCircleOutlined,
   ReloadOutlined,
   DashboardOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { useSystemStats } from '../hooks/useSystemStats';
-import ModernCard from '../../../components/ModernCard';
-import ModernButton from '../../../components/ModernButton';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { useSystemStats } from "../hooks/useSystemStats";
+import ModernCard from "../../../components/ModernCard";
+import ModernButton from "../../../components/ModernButton";
 
 const SystemStats: React.FC = () => {
   const { t } = useTranslation();
@@ -36,22 +28,22 @@ const SystemStats: React.FC = () => {
   };
 
   const getUsageColor = (usage: number) => {
-    if (usage < 50) return '#52c41a';
-    if (usage < 80) return '#faad14';
-    return '#ff4d4f';
+    if (usage < 50) return "#52c41a";
+    if (usage < 80) return "#faad14";
+    return "#ff4d4f";
   };
 
   return (
     <div>
       <ModernCard
-        title={t('admin.stats.title')}
+        title={t("admin.stats.title")}
         extra={
           <ModernButton
             icon={<ReloadOutlined />}
             onClick={refreshStats}
             loading={loading}
           >
-            {t('common.refresh')}
+            {t("common.refresh")}
           </ModernButton>
         }
       >
@@ -60,10 +52,10 @@ const SystemStats: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small">
               <Statistic
-                title={t('admin.stats.total_users')}
+                title={t("admin.stats.total_users")}
                 value={systemStats.totalUsers}
                 prefix={<UserOutlined />}
-                valueStyle={{ color: '#1890ff' }}
+                valueStyle={{ color: "#1890ff" }}
               />
             </Card>
           </Col>
@@ -71,10 +63,10 @@ const SystemStats: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small">
               <Statistic
-                title={t('admin.stats.active_users')}
+                title={t("admin.stats.active_users")}
                 value={systemStats.activeUsers}
                 prefix={<UserOutlined />}
-                valueStyle={{ color: '#52c41a' }}
+                valueStyle={{ color: "#52c41a" }}
               />
             </Card>
           </Col>
@@ -82,10 +74,10 @@ const SystemStats: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small">
               <Statistic
-                title={t('admin.stats.total_conversations')}
+                title={t("admin.stats.total_conversations")}
                 value={systemStats.totalConversations}
                 prefix={<MessageOutlined />}
-                valueStyle={{ color: '#722ed1' }}
+                valueStyle={{ color: "#722ed1" }}
               />
             </Card>
           </Col>
@@ -93,21 +85,27 @@ const SystemStats: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small">
               <Statistic
-                title={t('admin.stats.total_messages')}
+                title={t("admin.stats.total_messages")}
                 value={systemStats.totalMessages}
                 prefix={<MessageOutlined />}
-                valueStyle={{ color: '#13c2c2' }}
+                valueStyle={{ color: "#13c2c2" }}
               />
             </Card>
           </Col>
 
           {/* System Resources */}
           <Col xs={24} lg={12}>
-            <Card title={t('admin.stats.system_resources')} size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
+            <Card title={t("admin.stats.system_resources")} size="small">
+              <Space direction="vertical" style={{ width: "100%" }}>
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span>{t('admin.stats.cpu_usage')}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span>{t("admin.stats.cpu_usage")}</span>
                     <span>{systemStats.cpuUsage.toFixed(1)}%</span>
                   </div>
                   <Progress
@@ -118,8 +116,14 @@ const SystemStats: React.FC = () => {
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span>{t('admin.stats.memory_usage')}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span>{t("admin.stats.memory_usage")}</span>
                     <span>{systemStats.memoryUsage.toFixed(1)}%</span>
                   </div>
                   <Progress
@@ -130,8 +134,14 @@ const SystemStats: React.FC = () => {
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span>{t('admin.stats.disk_usage')}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span>{t("admin.stats.disk_usage")}</span>
                     <span>{systemStats.diskUsage.toFixed(1)}%</span>
                   </div>
                   <Progress
@@ -146,25 +156,31 @@ const SystemStats: React.FC = () => {
 
           {/* System Information */}
           <Col xs={24} lg={12}>
-            <Card title={t('admin.stats.system_info')} size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{t('admin.stats.system_uptime')}</span>
-                  <span style={{ fontWeight: 'bold' }}>
+            <Card title={t("admin.stats.system_info")} size="small">
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span>{t("admin.stats.system_uptime")}</span>
+                  <span style={{ fontWeight: "bold" }}>
                     {formatUptime(systemStats.systemUptime)}
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{t('admin.stats.total_documents')}</span>
-                  <span style={{ fontWeight: 'bold' }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span>{t("admin.stats.total_documents")}</span>
+                  <span style={{ fontWeight: "bold" }}>
                     {systemStats.totalDocuments.toLocaleString()}
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{t('admin.stats.uptime_percentage')}</span>
-                  <span style={{ fontWeight: 'bold', color: '#52c41a' }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span>{t("admin.stats.uptime_percentage")}</span>
+                  <span style={{ fontWeight: "bold", color: "#52c41a" }}>
                     {systemStats.systemUptime.toFixed(2)}%
                   </span>
                 </div>

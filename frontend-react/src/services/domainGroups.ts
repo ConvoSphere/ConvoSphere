@@ -1,5 +1,5 @@
-import api from './api';
-import config from '../config';
+import api from "./api";
+import config from "../config";
 
 export interface DomainGroup {
   id: string;
@@ -36,7 +36,7 @@ export interface DomainGroupUpdate {
 export interface UserAssignment {
   userId: string;
   groupId: string;
-  role: 'member' | 'admin' | 'viewer';
+  role: "member" | "admin" | "viewer";
   assignedAt: string;
   assignedBy: string;
 }
@@ -44,7 +44,7 @@ export interface UserAssignment {
 export interface BulkUserAssignment {
   userIds: string[];
   groupId: string;
-  role: 'member' | 'admin' | 'viewer';
+  role: "member" | "admin" | "viewer";
 }
 
 export interface GroupPermissions {
@@ -81,25 +81,38 @@ export interface GroupPermissions {
 export const domainGroupsService = {
   // Get all domain groups
   getGroups: async (): Promise<DomainGroup[]> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups`,
+    );
     return response.data;
   },
 
   // Get domain group by ID
   getGroup: async (groupId: string): Promise<DomainGroup> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/${groupId}`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}`,
+    );
     return response.data;
   },
 
   // Create new domain group
   createGroup: async (groupData: DomainGroupCreate): Promise<DomainGroup> => {
-    const response = await api.post(`${config.apiEndpoints.domainGroups}/groups`, groupData);
+    const response = await api.post(
+      `${config.apiEndpoints.domainGroups}/groups`,
+      groupData,
+    );
     return response.data;
   },
 
   // Update domain group
-  updateGroup: async (groupId: string, groupData: DomainGroupUpdate): Promise<DomainGroup> => {
-    const response = await api.put(`${config.apiEndpoints.domainGroups}/groups/${groupId}`, groupData);
+  updateGroup: async (
+    groupId: string,
+    groupData: DomainGroupUpdate,
+  ): Promise<DomainGroup> => {
+    const response = await api.put(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}`,
+      groupData,
+    );
     return response.data;
   },
 
@@ -110,84 +123,130 @@ export const domainGroupsService = {
 
   // Get group hierarchy
   getGroupHierarchy: async (): Promise<DomainGroup[]> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/hierarchy`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/hierarchy`,
+    );
     return response.data;
   },
 
   // Get users in group
   getGroupUsers: async (groupId: string): Promise<UserAssignment[]> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/${groupId}/users`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/users`,
+    );
     return response.data;
   },
 
   // Assign user to group
-  assignUser: async (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer'): Promise<UserAssignment> => {
-    const response = await api.post(`${config.apiEndpoints.domainGroups}/groups/${groupId}/users`, {
-      userId,
-      role,
-    });
+  assignUser: async (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ): Promise<UserAssignment> => {
+    const response = await api.post(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/users`,
+      {
+        userId,
+        role,
+      },
+    );
     return response.data;
   },
 
   // Bulk assign users to group
-  bulkAssignUsers: async (assignment: BulkUserAssignment): Promise<UserAssignment[]> => {
-    const response = await api.post(`${config.apiEndpoints.domainGroups}/groups/bulk-assign`, assignment);
+  bulkAssignUsers: async (
+    assignment: BulkUserAssignment,
+  ): Promise<UserAssignment[]> => {
+    const response = await api.post(
+      `${config.apiEndpoints.domainGroups}/groups/bulk-assign`,
+      assignment,
+    );
     return response.data;
   },
 
   // Remove user from group
   removeUser: async (groupId: string, userId: string): Promise<void> => {
-    await api.delete(`${config.apiEndpoints.domainGroups}/groups/${groupId}/users/${userId}`);
+    await api.delete(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/users/${userId}`,
+    );
   },
 
   // Update user role in group
-  updateUserRole: async (groupId: string, userId: string, role: 'member' | 'admin' | 'viewer'): Promise<UserAssignment> => {
-    const response = await api.put(`${config.apiEndpoints.domainGroups}/groups/${groupId}/users/${userId}`, {
-      role,
-    });
+  updateUserRole: async (
+    groupId: string,
+    userId: string,
+    role: "member" | "admin" | "viewer",
+  ): Promise<UserAssignment> => {
+    const response = await api.put(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/users/${userId}`,
+      {
+        role,
+      },
+    );
     return response.data;
   },
 
   // Get group permissions
   getGroupPermissions: async (groupId: string): Promise<GroupPermissions> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/${groupId}/permissions`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/permissions`,
+    );
     return response.data;
   },
 
   // Update group permissions
-  updateGroupPermissions: async (groupId: string, permissions: GroupPermissions['permissions']): Promise<GroupPermissions> => {
-    const response = await api.put(`${config.apiEndpoints.domainGroups}/groups/${groupId}/permissions`, {
-      permissions,
-    });
+  updateGroupPermissions: async (
+    groupId: string,
+    permissions: GroupPermissions["permissions"],
+  ): Promise<GroupPermissions> => {
+    const response = await api.put(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/permissions`,
+      {
+        permissions,
+      },
+    );
     return response.data;
   },
 
   // Get user's groups
   getUserGroups: async (userId: string): Promise<DomainGroup[]> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/users/${userId}/groups`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/users/${userId}/groups`,
+    );
     return response.data;
   },
 
   // Search groups
   searchGroups: async (query: string): Promise<DomainGroup[]> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/search`, {
-      params: { q: query },
-    });
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/search`,
+      {
+        params: { q: query },
+      },
+    );
     return response.data;
   },
 
   // Get group statistics
   getGroupStats: async (groupId: string): Promise<any> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/${groupId}/stats`);
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/stats`,
+    );
     return response.data;
   },
 
   // Export group data
-  exportGroupData: async (groupId: string, format: 'csv' | 'json' = 'csv'): Promise<Blob> => {
-    const response = await api.get(`${config.apiEndpoints.domainGroups}/groups/${groupId}/export`, {
-      params: { format },
-      responseType: 'blob',
-    });
+  exportGroupData: async (
+    groupId: string,
+    format: "csv" | "json" = "csv",
+  ): Promise<Blob> => {
+    const response = await api.get(
+      `${config.apiEndpoints.domainGroups}/groups/${groupId}/export`,
+      {
+        params: { format },
+        responseType: "blob",
+      },
+    );
     return response.data;
   },
 };

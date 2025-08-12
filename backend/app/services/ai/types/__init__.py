@@ -4,7 +4,7 @@ from .ai_types import *
 
 __all__ = [
     "ChatRequest",
-    "ChatResponse", 
+    "ChatResponse",
     "ChatStreamResponse",
     "EmbeddingRequest",
     "EmbeddingResponse",

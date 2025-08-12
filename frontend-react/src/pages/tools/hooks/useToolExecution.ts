@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { message } from 'antd';
-import { runTool } from '../../../services/tools';
-import type { Tool, ToolExecution } from '../types/tools.types';
+import { useState } from "react";
+import { message } from "antd";
+import { runTool } from "../../../services/tools";
+import type { Tool, ToolExecution } from "../types/tools.types";
 
 export const useToolExecution = () => {
   const [executions, setExecutions] = useState<ToolExecution[]>([]);
@@ -11,7 +11,7 @@ export const useToolExecution = () => {
 
   const executeTool = async (tool: Tool, parameters: Record<string, any>) => {
     setRunning(true);
-    
+
     try {
       const result = await runTool(tool.id, parameters);
 
@@ -29,11 +29,12 @@ export const useToolExecution = () => {
       setExecutions((prev) => [newExecution, ...prev]);
       setVisible(false);
       setSelectedTool(null);
-      
-      message.success('Tool executed successfully');
+
+      message.success("Tool executed successfully");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+
       const failedExecution: ToolExecution = {
         id: Date.now().toString(),
         toolId: tool.id,
@@ -65,14 +66,15 @@ export const useToolExecution = () => {
 
   const clearExecutionHistory = () => {
     setExecutions([]);
-    message.success('Execution history cleared');
+    message.success("Execution history cleared");
   };
 
   const getExecutionStats = () => {
     const total = executions.length;
-    const successful = executions.filter(e => e.status === 'success').length;
-    const failed = executions.filter(e => e.status === 'error').length;
-    const successRate = total > 0 ? ((successful / total) * 100).toFixed(1) : '0';
+    const successful = executions.filter((e) => e.status === "success").length;
+    const failed = executions.filter((e) => e.status === "error").length;
+    const successRate =
+      total > 0 ? ((successful / total) * 100).toFixed(1) : "0";
 
     return {
       total,

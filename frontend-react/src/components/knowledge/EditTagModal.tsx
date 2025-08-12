@@ -48,7 +48,9 @@ const EditTagModal: React.FC<EditTagModalProps> = ({
           <ModernButton variant="primary" htmlType="submit">
             Update Tag
           </ModernButton>
-          <ModernButton variant="secondary" onClick={onCancel}>Cancel</ModernButton>
+          <ModernButton variant="secondary" onClick={onCancel}>
+            Cancel
+          </ModernButton>
         </Space>
       </Form.Item>
     </Form>

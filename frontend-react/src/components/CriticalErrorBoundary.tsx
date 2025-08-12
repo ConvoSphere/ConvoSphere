@@ -2,7 +2,12 @@ import React, { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { Result, Card, Typography, Space, Alert } from "antd";
 import ModernButton from "./ModernButton";
-import { ReloadOutlined, HomeOutlined, BugOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  HomeOutlined,
+  BugOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import { useThemeStore } from "../store/themeStore";
 import { useAuthStore } from "../store/authStore";
 
@@ -25,7 +30,10 @@ interface State {
   retryCount: number;
 }
 
-class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, State> {
+class CriticalErrorBoundaryClass extends Component<
+  Props & { colors: any },
+  State
+> {
   constructor(props: Props & { colors: any }) {
     super(props);
     this.state = {
@@ -50,7 +58,11 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
 
     // Log error to console in development
     if (process.env.NODE_ENV === "development") {
-      console.error(`CriticalErrorBoundary caught an error in ${this.props.componentName}:`, error, errorInfo);
+      console.error(
+        `CriticalErrorBoundary caught an error in ${this.props.componentName}:`,
+        error,
+        errorInfo,
+      );
     }
 
     // Call custom error handler
@@ -90,16 +102,16 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
       "jwt",
       "auth",
     ];
-    
+
     const errorMessage = error.message.toLowerCase();
-    return authErrorPatterns.some(pattern => errorMessage.includes(pattern));
+    return authErrorPatterns.some((pattern) => errorMessage.includes(pattern));
   };
 
   handleAuthError = () => {
     // Clear authentication state
     const { logout } = useAuthStore.getState();
     logout();
-    
+
     // Redirect to login
     setTimeout(() => {
       window.location.href = "/login";
@@ -136,16 +148,16 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
 
     // In production, send to error monitoring service
     if (process.env.NODE_ENV === "production") {
-      // Example: Sentry.captureException(error, { 
+      // Example: Sentry.captureException(error, {
       //   tags: { component: this.props.componentName, critical: this.props.critical },
-      //   extra: errorData 
+      //   extra: errorData
       // });
     }
   };
 
   handleReset = () => {
     const newRetryCount = this.state.retryCount + 1;
-    
+
     // Limit retry attempts for critical components
     if (this.props.critical && newRetryCount > 3) {
       this.handleAuthError();
@@ -219,11 +231,19 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
             >
               <Result
                 status="error"
-                icon={<ExclamationCircleOutlined style={{ color: colors.colorError, fontSize: "48px" }} />}
+                icon={
+                  <ExclamationCircleOutlined
+                    style={{ color: colors.colorError, fontSize: "48px" }}
+                  />
+                }
                 title="Critical System Error"
                 subTitle={`A critical error occurred in ${componentName}. The system may be unstable.`}
                 extra={
-                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                  <Space
+                    direction="vertical"
+                    size="large"
+                    style={{ width: "100%" }}
+                  >
                     <Alert
                       message="Critical Error"
                       description="This is a critical system error that may affect the application's stability. Please report this issue immediately."
@@ -231,7 +251,7 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
                       showIcon
                       style={{ marginBottom: "16px" }}
                     />
-                    
+
                     <Space>
                       <ModernButton
                         variant="error"
@@ -239,7 +259,9 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
                         onClick={this.handleReset}
                         disabled={this.state.retryCount >= 3}
                       >
-                        {this.state.retryCount >= 3 ? "Max Retries Reached" : "Try Again"}
+                        {this.state.retryCount >= 3
+                          ? "Max Retries Reached"
+                          : "Try Again"}
                       </ModernButton>
                       <ModernButton
                         variant="secondary"
@@ -257,59 +279,88 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
                       </ModernButton>
                     </Space>
 
-                    {process.env.NODE_ENV === "development" && this.state.error && (
-                      <div
-                        style={{
-                          marginTop: "20px",
-                          padding: "16px",
-                          backgroundColor: colors.colorBgElevated,
-                          border: `1px solid ${colors.colorBorder}`,
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                          fontFamily: "monospace",
-                          overflow: "auto",
-                          maxHeight: "300px",
-                        }}
-                      >
-                        <Text strong style={{ color: colors.colorError }}>
-                          Critical Error ID: {this.state.errorId}
-                        </Text>
-                        <br />
-                        <Text strong style={{ color: colors.colorTextSecondary }}>
-                          Component: {componentName}
-                        </Text>
-                        <br />
-                        <Text strong style={{ color: colors.colorTextSecondary }}>
-                          Retry Count: {this.state.retryCount}/3
-                        </Text>
-                        <Paragraph
+                    {process.env.NODE_ENV === "development" &&
+                      this.state.error && (
+                        <div
                           style={{
-                            margin: "8px 0",
-                            color: colors.colorTextSecondary,
+                            marginTop: "20px",
+                            padding: "16px",
+                            backgroundColor: colors.colorBgElevated,
+                            border: `1px solid ${colors.colorBorder}`,
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                            fontFamily: "monospace",
+                            overflow: "auto",
+                            maxHeight: "300px",
                           }}
                         >
-                          {this.state.error.message}
-                        </Paragraph>
-                        <details>
-                          <summary style={{ cursor: "pointer", color: colors.colorTextSecondary }}>
-                            Stack Trace
-                          </summary>
-                          <pre style={{ margin: "8px 0", color: colors.colorTextSecondary, whiteSpace: "pre-wrap" }}>
-                            {this.state.error.stack}
-                          </pre>
-                        </details>
-                        {this.state.errorInfo && (
+                          <Text strong style={{ color: colors.colorError }}>
+                            Critical Error ID: {this.state.errorId}
+                          </Text>
+                          <br />
+                          <Text
+                            strong
+                            style={{ color: colors.colorTextSecondary }}
+                          >
+                            Component: {componentName}
+                          </Text>
+                          <br />
+                          <Text
+                            strong
+                            style={{ color: colors.colorTextSecondary }}
+                          >
+                            Retry Count: {this.state.retryCount}/3
+                          </Text>
+                          <Paragraph
+                            style={{
+                              margin: "8px 0",
+                              color: colors.colorTextSecondary,
+                            }}
+                          >
+                            {this.state.error.message}
+                          </Paragraph>
                           <details>
-                            <summary style={{ cursor: "pointer", color: colors.colorTextSecondary }}>
-                              Component Stack
+                            <summary
+                              style={{
+                                cursor: "pointer",
+                                color: colors.colorTextSecondary,
+                              }}
+                            >
+                              Stack Trace
                             </summary>
-                            <pre style={{ margin: "8px 0", color: colors.colorTextSecondary, whiteSpace: "pre-wrap" }}>
-                              {this.state.errorInfo.componentStack}
+                            <pre
+                              style={{
+                                margin: "8px 0",
+                                color: colors.colorTextSecondary,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {this.state.error.stack}
                             </pre>
                           </details>
-                        )}
-                      </div>
-                    )}
+                          {this.state.errorInfo && (
+                            <details>
+                              <summary
+                                style={{
+                                  cursor: "pointer",
+                                  color: colors.colorTextSecondary,
+                                }}
+                              >
+                                Component Stack
+                              </summary>
+                              <pre
+                                style={{
+                                  margin: "8px 0",
+                                  color: colors.colorTextSecondary,
+                                  whiteSpace: "pre-wrap",
+                                }}
+                              >
+                                {this.state.errorInfo.componentStack}
+                              </pre>
+                            </details>
+                          )}
+                        </div>
+                      )}
                   </Space>
                 }
               />
@@ -345,7 +396,11 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
               title={`Error in ${componentName}`}
               subTitle="Something went wrong in this component. Please try again."
               extra={
-                <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <Space
+                  direction="vertical"
+                  size="middle"
+                  style={{ width: "100%" }}
+                >
                   <Space>
                     <ModernButton
                       variant="primary"
@@ -370,55 +425,81 @@ class CriticalErrorBoundaryClass extends Component<Props & { colors: any }, Stat
                     </ModernButton>
                   </Space>
 
-                  {process.env.NODE_ENV === "development" && this.state.error && (
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        padding: "16px",
-                        backgroundColor: colors.colorBgElevated,
-                        border: `1px solid ${colors.colorBorder}`,
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                        overflow: "auto",
-                        maxHeight: "200px",
-                      }}
-                    >
-                      <Text strong style={{ color: colors.colorError }}>
-                        Error ID: {this.state.errorId}
-                      </Text>
-                      <br />
-                      <Text strong style={{ color: colors.colorTextSecondary }}>
-                        Component: {componentName}
-                      </Text>
-                      <Paragraph
+                  {process.env.NODE_ENV === "development" &&
+                    this.state.error && (
+                      <div
                         style={{
-                          margin: "8px 0",
-                          color: colors.colorTextSecondary,
+                          marginTop: "20px",
+                          padding: "16px",
+                          backgroundColor: colors.colorBgElevated,
+                          border: `1px solid ${colors.colorBorder}`,
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          fontFamily: "monospace",
+                          overflow: "auto",
+                          maxHeight: "200px",
                         }}
                       >
-                        {this.state.error.message}
-                      </Paragraph>
-                      <details>
-                        <summary style={{ cursor: "pointer", color: colors.colorTextSecondary }}>
-                          Stack Trace
-                        </summary>
-                        <pre style={{ margin: "8px 0", color: colors.colorTextSecondary, whiteSpace: "pre-wrap" }}>
-                          {this.state.error.stack}
-                        </pre>
-                      </details>
-                      {this.state.errorInfo && (
+                        <Text strong style={{ color: colors.colorError }}>
+                          Error ID: {this.state.errorId}
+                        </Text>
+                        <br />
+                        <Text
+                          strong
+                          style={{ color: colors.colorTextSecondary }}
+                        >
+                          Component: {componentName}
+                        </Text>
+                        <Paragraph
+                          style={{
+                            margin: "8px 0",
+                            color: colors.colorTextSecondary,
+                          }}
+                        >
+                          {this.state.error.message}
+                        </Paragraph>
                         <details>
-                          <summary style={{ cursor: "pointer", color: colors.colorTextSecondary }}>
-                            Component Stack
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              color: colors.colorTextSecondary,
+                            }}
+                          >
+                            Stack Trace
                           </summary>
-                          <pre style={{ margin: "8px 0", color: colors.colorTextSecondary, whiteSpace: "pre-wrap" }}>
-                            {this.state.errorInfo.componentStack}
+                          <pre
+                            style={{
+                              margin: "8px 0",
+                              color: colors.colorTextSecondary,
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {this.state.error.stack}
                           </pre>
                         </details>
-                      )}
-                    </div>
-                  )}
+                        {this.state.errorInfo && (
+                          <details>
+                            <summary
+                              style={{
+                                cursor: "pointer",
+                                color: colors.colorTextSecondary,
+                              }}
+                            >
+                              Component Stack
+                            </summary>
+                            <pre
+                              style={{
+                                margin: "8px 0",
+                                color: colors.colorTextSecondary,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {this.state.errorInfo.componentStack}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    )}
                 </Space>
               }
             />

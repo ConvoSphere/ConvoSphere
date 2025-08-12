@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Space, Typography, Modal, Select, Form, InputNumber, Switch, Input } from "antd";
+import {
+  Space,
+  Typography,
+  Modal,
+  Select,
+  Form,
+  InputNumber,
+  Switch,
+  Input,
+} from "antd";
 import ModernButton from "../ModernButton";
 import {
   PlusOutlined,
@@ -42,7 +51,9 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [showAddWidget, setShowAddWidget] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(null);
+  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
 
   // Widget templates
@@ -169,15 +180,17 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
   };
 
   const updateWidget = (widgetId: string, updates: Partial<WidgetConfig>) => {
-    setWidgets(prevWidgets =>
-      prevWidgets.map(widget =>
-        widget.id === widgetId ? { ...widget, ...updates } : widget
-      )
+    setWidgets((prevWidgets) =>
+      prevWidgets.map((widget) =>
+        widget.id === widgetId ? { ...widget, ...updates } : widget,
+      ),
     );
   };
 
   const removeWidget = (widgetId: string) => {
-    setWidgets(prevWidgets => prevWidgets.filter(widget => widget.id !== widgetId));
+    setWidgets((prevWidgets) =>
+      prevWidgets.filter((widget) => widget.id !== widgetId),
+    );
   };
 
   const renderWidget = (widget: WidgetConfig) => {
@@ -221,7 +234,13 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
       footer={null}
       width={600}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: 16,
+        }}
+      >
         {widgetTemplates.map((template) => (
           <ModernCard
             key={template.type}
@@ -292,7 +311,10 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
               <Input
                 value={selectedWidget.title}
                 onChange={(e) =>
-                  setSelectedWidget({ ...selectedWidget, title: e.target.value })
+                  setSelectedWidget({
+                    ...selectedWidget,
+                    title: e.target.value,
+                  })
                 }
               />
             </Form.Item>
@@ -300,7 +322,10 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
               <Input.TextArea
                 value={selectedWidget.description}
                 onChange={(e) =>
-                  setSelectedWidget({ ...selectedWidget, description: e.target.value })
+                  setSelectedWidget({
+                    ...selectedWidget,
+                    description: e.target.value,
+                  })
                 }
                 rows={2}
               />
@@ -324,7 +349,10 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
                 onChange={(value) =>
                   setSelectedWidget({
                     ...selectedWidget,
-                    settings: { ...selectedWidget.settings, refreshInterval: value || 0 },
+                    settings: {
+                      ...selectedWidget.settings,
+                      refreshInterval: value || 0,
+                    },
                   })
                 }
                 min={0}
@@ -341,12 +369,14 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
   return (
     <div className={`dashboard-grid ${className || ""}`}>
       {/* Dashboard Header */}
-      <ModernCard
-        variant="outlined"
-        size="md"
-        style={{ marginBottom: 24 }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <ModernCard variant="outlined" size="md" style={{ marginBottom: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
             <Title level={3} style={{ margin: 0 }}>
               {t("dashboard.title")}
@@ -390,7 +420,10 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
         }}
       >
         {widgets.map((widget) => (
-          <div key={widget.id} style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            key={widget.id}
+            style={{ display: "flex", justifyContent: "center" }}
+          >
             {renderWidget(widget)}
           </div>
         ))}
@@ -407,7 +440,9 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({ className }) => {
             <Title level={4} style={{ color: colors.colorTextSecondary }}>
               {t("dashboard.no_widgets")}
             </Title>
-            <Text type="secondary">{t("dashboard.no_widgets_description")}</Text>
+            <Text type="secondary">
+              {t("dashboard.no_widgets_description")}
+            </Text>
           </div>
           <ModernButton
             variant="primary"

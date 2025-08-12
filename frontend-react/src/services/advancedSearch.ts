@@ -1,20 +1,20 @@
-import api from './api';
-import config from '../config';
+import api from "./api";
+import config from "../config";
 
 export interface SearchFilter {
   field: string;
-  operator: 'equals' | 'contains' | 'in' | 'range' | 'exists' | 'not_exists';
+  operator: "equals" | "contains" | "in" | "range" | "exists" | "not_exists";
   value: any;
 }
 
 export interface SearchQuery {
   query: string;
   filters?: SearchFilter[];
-  searchType?: 'keyword' | 'semantic' | 'hybrid' | 'vector';
+  searchType?: "keyword" | "semantic" | "hybrid" | "vector";
   limit?: number;
   offset?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   includeMetadata?: boolean;
   includeVectors?: boolean;
 }
@@ -23,7 +23,7 @@ export interface SearchResult {
   id: string;
   title: string;
   content: string;
-  type: 'document' | 'conversation' | 'knowledge' | 'assistant';
+  type: "document" | "conversation" | "knowledge" | "assistant";
   score: number;
   metadata: Record<string, any>;
   highlights?: string[];
@@ -74,12 +74,18 @@ export interface RAGConfig {
 export const advancedSearchService = {
   // Perform advanced search
   search: async (searchQuery: SearchQuery): Promise<SearchResponse> => {
-    const response = await api.post(`${config.apiEndpoints.search}/advanced`, searchQuery);
+    const response = await api.post(
+      `${config.apiEndpoints.search}/advanced`,
+      searchQuery,
+    );
     return response.data;
   },
 
   // Semantic search
-  semanticSearch: async (query: string, filters?: SearchFilter[]): Promise<SearchResponse> => {
+  semanticSearch: async (
+    query: string,
+    filters?: SearchFilter[],
+  ): Promise<SearchResponse> => {
     const response = await api.post(`${config.apiEndpoints.search}/semantic`, {
       query,
       filters,
@@ -88,7 +94,10 @@ export const advancedSearchService = {
   },
 
   // Vector search
-  vectorSearch: async (query: string, filters?: SearchFilter[]): Promise<SearchResponse> => {
+  vectorSearch: async (
+    query: string,
+    filters?: SearchFilter[],
+  ): Promise<SearchResponse> => {
     const response = await api.post(`${config.apiEndpoints.search}/vector`, {
       query,
       filters,
@@ -97,7 +106,10 @@ export const advancedSearchService = {
   },
 
   // Hybrid search (keyword + semantic)
-  hybridSearch: async (query: string, filters?: SearchFilter[]): Promise<SearchResponse> => {
+  hybridSearch: async (
+    query: string,
+    filters?: SearchFilter[],
+  ): Promise<SearchResponse> => {
     const response = await api.post(`${config.apiEndpoints.search}/hybrid`, {
       query,
       filters,
@@ -106,10 +118,16 @@ export const advancedSearchService = {
   },
 
   // Get search suggestions
-  getSuggestions: async (query: string, limit: number = 10): Promise<string[]> => {
-    const response = await api.get(`${config.apiEndpoints.search}/suggestions`, {
-      params: { q: query, limit },
-    });
+  getSuggestions: async (
+    query: string,
+    limit: number = 10,
+  ): Promise<string[]> => {
+    const response = await api.get(
+      `${config.apiEndpoints.search}/suggestions`,
+      {
+        params: { q: query, limit },
+      },
+    );
     return response.data;
   },
 
@@ -122,8 +140,13 @@ export const advancedSearchService = {
   },
 
   // Save search
-  saveSearch: async (savedSearch: Omit<SavedSearch, 'id' | 'createdAt' | 'updatedAt'>): Promise<SavedSearch> => {
-    const response = await api.post(`${config.apiEndpoints.search}/saved`, savedSearch);
+  saveSearch: async (
+    savedSearch: Omit<SavedSearch, "id" | "createdAt" | "updatedAt">,
+  ): Promise<SavedSearch> => {
+    const response = await api.post(
+      `${config.apiEndpoints.search}/saved`,
+      savedSearch,
+    );
     return response.data;
   },
 
@@ -134,8 +157,14 @@ export const advancedSearchService = {
   },
 
   // Update saved search
-  updateSavedSearch: async (id: string, updates: Partial<SavedSearch>): Promise<SavedSearch> => {
-    const response = await api.put(`${config.apiEndpoints.search}/saved/${id}`, updates);
+  updateSavedSearch: async (
+    id: string,
+    updates: Partial<SavedSearch>,
+  ): Promise<SavedSearch> => {
+    const response = await api.put(
+      `${config.apiEndpoints.search}/saved/${id}`,
+      updates,
+    );
     return response.data;
   },
 
@@ -169,7 +198,10 @@ export const advancedSearchService = {
   },
 
   // RAG Search
-  ragSearch: async (query: string, context?: string): Promise<SearchResponse> => {
+  ragSearch: async (
+    query: string,
+    context?: string,
+  ): Promise<SearchResponse> => {
     const response = await api.post(`${config.apiEndpoints.rag}/search`, {
       query,
       context,
@@ -187,9 +219,12 @@ export const advancedSearchService = {
 
   // Batch embeddings
   getBatchEmbeddings: async (texts: string[]): Promise<number[][]> => {
-    const response = await api.post(`${config.apiEndpoints.rag}/embeddings/batch`, {
-      texts,
-    });
+    const response = await api.post(
+      `${config.apiEndpoints.rag}/embeddings/batch`,
+      {
+        texts,
+      },
+    );
     return response.data;
   },
 
@@ -213,15 +248,24 @@ export const advancedSearchService = {
 
   // Index documents
   indexDocuments: async (documents: any[]): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.rag}/index/documents`, {
-      documents,
-    });
+    const response = await api.post(
+      `${config.apiEndpoints.rag}/index/documents`,
+      {
+        documents,
+      },
+    );
     return response.data;
   },
 
   // Search within specific index
-  searchIndex: async (indexName: string, query: SearchQuery): Promise<SearchResponse> => {
-    const response = await api.post(`${config.apiEndpoints.rag}/index/${indexName}/search`, query);
+  searchIndex: async (
+    indexName: string,
+    query: SearchQuery,
+  ): Promise<SearchResponse> => {
+    const response = await api.post(
+      `${config.apiEndpoints.rag}/index/${indexName}/search`,
+      query,
+    );
     return response.data;
   },
 
@@ -234,13 +278,20 @@ export const advancedSearchService = {
   },
 
   // Export search results
-  exportSearchResults: async (searchQuery: SearchQuery, format: 'csv' | 'json' = 'csv'): Promise<Blob> => {
-    const response = await api.post(`${config.apiEndpoints.search}/export`, {
-      ...searchQuery,
-      format,
-    }, {
-      responseType: 'blob',
-    });
+  exportSearchResults: async (
+    searchQuery: SearchQuery,
+    format: "csv" | "json" = "csv",
+  ): Promise<Blob> => {
+    const response = await api.post(
+      `${config.apiEndpoints.search}/export`,
+      {
+        ...searchQuery,
+        format,
+      },
+      {
+        responseType: "blob",
+      },
+    );
     return response.data;
   },
 };

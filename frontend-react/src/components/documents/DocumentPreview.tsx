@@ -59,7 +59,9 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   onEdit,
   onReprocess,
 }) => {
-  const [previewContent, setPreviewContent] = useState<PreviewContent | null>(null);
+  const [previewContent, setPreviewContent] = useState<PreviewContent | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("preview");
 
@@ -86,10 +88,12 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     }
   };
 
-  const generatePreviewContent = async (doc: Document): Promise<PreviewContent> => {
+  const generatePreviewContent = async (
+    doc: Document,
+  ): Promise<PreviewContent> => {
     // Determine content type based on file type
     const fileType = doc.file_type.toLowerCase();
-    
+
     if (FileValidator.isImage({ type: doc.mime_type || "" } as File)) {
       return {
         type: "image",
@@ -100,13 +104,17 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         type: "pdf",
         url: `/api/v1/knowledge/documents/${doc.id}/download`,
       };
-    } else if (FileValidator.isDocument({ type: doc.mime_type || "" } as File)) {
+    } else if (
+      FileValidator.isDocument({ type: doc.mime_type || "" } as File)
+    ) {
       // For text-based documents, we could fetch the content
       return {
         type: "text",
         content: "Document content preview not available for this file type.",
       };
-    } else if (FileValidator.isSpreadsheet({ type: doc.mime_type || "" } as File)) {
+    } else if (
+      FileValidator.isSpreadsheet({ type: doc.mime_type || "" } as File)
+    ) {
       return {
         type: "table",
         content: "Spreadsheet preview not available. Please download to view.",
@@ -345,9 +353,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           </div>
           <div>
             <Text strong>Status:</Text>{" "}
-            <Tag color={getStatusColor(document.status)}>
-              {document.status}
-            </Tag>
+            <Tag color={getStatusColor(document.status)}>{document.status}</Tag>
           </div>
           <div>
             <Text strong>Created:</Text>{" "}

@@ -47,8 +47,8 @@ export interface Alert {
   id: string;
   title: string;
   message: string;
-  type: 'critical' | 'error' | 'warning' | 'info';
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  type: "critical" | "error" | "warning" | "info";
+  severity: "critical" | "high" | "medium" | "low";
   source: string;
   timestamp: string;
   acknowledged: boolean;
@@ -56,7 +56,7 @@ export interface Alert {
 
 export interface ServiceHealth {
   service: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   responseTime: number;
   uptime: number;
   version: string;

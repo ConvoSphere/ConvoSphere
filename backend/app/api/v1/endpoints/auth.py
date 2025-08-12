@@ -11,15 +11,9 @@ from fastapi import APIRouter
 from .auth.authentication import router as auth_router
 from .auth.password import router as password_router
 from .auth.registration import router as registration_router
-from .auth.sso.account_management import (
-    router as sso_account_router,
-)
-from .auth.sso.authentication import (
-    router as sso_auth_router,
-)
-from .auth.sso.providers import (
-    router as sso_providers_router,
-)
+from .auth.sso.account_management import router as sso_account_router
+from .auth.sso.authentication import router as sso_auth_router
+from .auth.sso.providers import router as sso_providers_router
 
 router = APIRouter()
 

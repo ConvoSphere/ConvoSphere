@@ -1,10 +1,10 @@
 """Cost Middleware for AI Service."""
 
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from ..utils.cost_tracker import CostTracker
 from ..types.ai_types import CostInfo
+from ..utils.cost_tracker import CostTracker
 
 
 class CostMiddleware:
@@ -34,9 +34,9 @@ class CostMiddleware:
                 user_id=user_id,
                 conversation_id=conversation_id,
             )
-            
+
             self.cost_tracker.add_cost(cost_info)
-            
+
         except Exception as e:
             print(f"Failed to track cost: {str(e)}")
 
@@ -59,9 +59,9 @@ class CostMiddleware:
                 user_id=user_id,
                 conversation_id=conversation_id,
             )
-            
+
             self.cost_tracker.add_cost(cost_info)
-            
+
         except Exception as e:
             print(f"Failed to track streaming cost: {str(e)}")
 
@@ -78,12 +78,12 @@ class CostMiddleware:
             # For now, use default rates
             cost_per_1k_input = self._get_cost_rate(model, "input")
             cost_per_1k_output = self._get_cost_rate(model, "output")
-            
+
             input_cost = (input_tokens / 1000) * cost_per_1k_input
             output_cost = (output_tokens / 1000) * cost_per_1k_output
-            
+
             return input_cost + output_cost
-            
+
         except Exception as e:
             print(f"Failed to estimate cost: {str(e)}")
             return 0.0
@@ -93,42 +93,40 @@ class CostMiddleware:
         # Default cost rates (can be enhanced with provider-specific rates)
         if model.startswith("gpt-4"):
             return 0.03 if token_type == "input" else 0.06
-        elif model.startswith("gpt-3.5"):
+        if model.startswith("gpt-3.5"):
             return 0.0015 if token_type == "input" else 0.002
-        elif model.startswith("claude-3-opus"):
+        if model.startswith("claude-3-opus"):
             return 0.015 if token_type == "input" else 0.075
-        elif model.startswith("claude-3-sonnet"):
+        if model.startswith("claude-3-sonnet"):
             return 0.003 if token_type == "input" else 0.015
-        elif model.startswith("claude-3-haiku"):
+        if model.startswith("claude-3-haiku"):
             return 0.00025 if token_type == "input" else 0.00125
-        elif model.startswith("text-embedding"):
+        if model.startswith("text-embedding"):
             return 0.0001 if token_type == "input" else 0.0
-        else:
-            # Default rates
-            return 0.001 if token_type == "input" else 0.002
+        # Default rates
+        return 0.001 if token_type == "input" else 0.002
 
     def get_cost_summary(self, user_id: str, days: int = 30) -> Dict[str, float]:
         """Get cost summary for a user."""
         try:
             end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=days)
-            
+
             # Get costs from cost tracker
             costs = self.cost_tracker.get_costs_by_user(user_id)
-            
+
             # Filter by date range
             filtered_costs = [
-                cost for cost in costs
-                if start_date <= cost.timestamp <= end_date
+                cost for cost in costs if start_date <= cost.timestamp <= end_date
             ]
-            
+
             # Calculate summary
             total_cost = sum(cost.cost_usd for cost in filtered_costs)
             total_tokens = sum(cost.tokens_used for cost in filtered_costs)
-            
+
             # Calculate daily average
             daily_cost = total_cost / days if days > 0 else 0.0
-            
+
             return {
                 "total_cost": total_cost,
                 "total_tokens": total_tokens,
@@ -136,7 +134,7 @@ class CostMiddleware:
                 "monthly_cost": total_cost,
                 "requests_count": len(filtered_costs),
             }
-            
+
         except Exception as e:
             print(f"Failed to get cost summary: {str(e)}")
             return {
@@ -152,16 +150,15 @@ class CostMiddleware:
         try:
             end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=days)
-            
+
             # Get costs from cost tracker
             costs = self.cost_tracker.get_costs_by_user(user_id)
-            
+
             # Filter by date range
             filtered_costs = [
-                cost for cost in costs
-                if start_date <= cost.timestamp <= end_date
+                cost for cost in costs if start_date <= cost.timestamp <= end_date
             ]
-            
+
             # Group by date
             daily_costs = {}
             for cost in filtered_costs:
@@ -173,17 +170,17 @@ class CostMiddleware:
                         "tokens": 0,
                         "requests": 0,
                     }
-                
+
                 daily_costs[date_key]["cost"] += cost.cost_usd
                 daily_costs[date_key]["tokens"] += cost.tokens_used
                 daily_costs[date_key]["requests"] += 1
-            
+
             # Convert to list and sort by date
             result = list(daily_costs.values())
             result.sort(key=lambda x: x["date"])
-            
+
             return result
-            
+
         except Exception as e:
             print(f"Failed to get daily costs: {str(e)}")
             return []
@@ -195,16 +192,15 @@ class CostMiddleware:
         try:
             end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=days)
-            
+
             # Get costs from cost tracker
             costs = self.cost_tracker.get_costs_by_user(user_id)
-            
+
             # Filter by date range
             filtered_costs = [
-                cost for cost in costs
-                if start_date <= cost.timestamp <= end_date
+                cost for cost in costs if start_date <= cost.timestamp <= end_date
             ]
-            
+
             # Group by model
             model_stats = {}
             for cost in filtered_costs:
@@ -217,19 +213,23 @@ class CostMiddleware:
                         "avg_tokens_per_request": 0.0,
                         "avg_cost_per_request": 0.0,
                     }
-                
+
                 model_stats[model]["total_requests"] += 1
                 model_stats[model]["total_tokens"] += cost.tokens_used
                 model_stats[model]["total_cost"] += cost.cost_usd
-            
+
             # Calculate averages
             for model, stats in model_stats.items():
                 if stats["total_requests"] > 0:
-                    stats["avg_tokens_per_request"] = stats["total_tokens"] / stats["total_requests"]
-                    stats["avg_cost_per_request"] = stats["total_cost"] / stats["total_requests"]
-            
+                    stats["avg_tokens_per_request"] = (
+                        stats["total_tokens"] / stats["total_requests"]
+                    )
+                    stats["avg_cost_per_request"] = (
+                        stats["total_cost"] / stats["total_requests"]
+                    )
+
             return model_stats
-            
+
         except Exception as e:
             print(f"Failed to get model usage stats: {str(e)}")
             return {}
@@ -240,45 +240,53 @@ class CostMiddleware:
             # Get current month's cost
             cost_summary = self.get_cost_summary(user_id, days=30)
             current_cost = cost_summary.get("total_cost", 0.0)
-            
+
             return current_cost < cost_limit
-            
+
         except Exception as e:
             print(f"Failed to check cost limit: {str(e)}")
             return True  # Allow if check fails
 
-    def get_cost_alerts(self, user_id: str, threshold: float = 0.8) -> List[Dict[str, Any]]:
+    def get_cost_alerts(
+        self, user_id: str, threshold: float = 0.8
+    ) -> List[Dict[str, Any]]:
         """Get cost alerts for user."""
         try:
             # Get current month's cost
             cost_summary = self.get_cost_summary(user_id, days=30)
             current_cost = cost_summary.get("total_cost", 0.0)
-            
+
             alerts = []
-            
+
             # Check if approaching limit (assuming limit is 1.0 for now)
             if current_cost > threshold:
-                alerts.append({
-                    "type": "cost_warning",
-                    "message": f"Cost is approaching limit: ${current_cost:.2f}",
-                    "severity": "warning",
-                    "cost": current_cost,
-                })
-            
+                alerts.append(
+                    {
+                        "type": "cost_warning",
+                        "message": f"Cost is approaching limit: ${current_cost:.2f}",
+                        "severity": "warning",
+                        "cost": current_cost,
+                    }
+                )
+
             # Check for unusual spending patterns
             daily_costs = self.get_daily_costs(user_id, days=7)
             if daily_costs:
-                avg_daily_cost = sum(day["cost"] for day in daily_costs) / len(daily_costs)
+                avg_daily_cost = sum(day["cost"] for day in daily_costs) / len(
+                    daily_costs
+                )
                 if avg_daily_cost > 0.1:  # More than $0.10 per day
-                    alerts.append({
-                        "type": "high_usage",
-                        "message": f"High daily usage detected: ${avg_daily_cost:.2f}/day",
-                        "severity": "info",
-                        "avg_daily_cost": avg_daily_cost,
-                    })
-            
+                    alerts.append(
+                        {
+                            "type": "high_usage",
+                            "message": f"High daily usage detected: ${avg_daily_cost:.2f}/day",
+                            "severity": "info",
+                            "avg_daily_cost": avg_daily_cost,
+                        }
+                    )
+
             return alerts
-            
+
         except Exception as e:
             print(f"Failed to get cost alerts: {str(e)}")
             return []

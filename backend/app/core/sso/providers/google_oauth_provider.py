@@ -83,9 +83,9 @@ class GoogleOAuthProvider(OAuthProvider):
                     "email": user.email,
                     "full_name": user.full_name,
                     "provider": "google",
-                    "last_sync": user.last_login.isoformat()
-                    if user.last_login
-                    else None,
+                    "last_sync": (
+                        user.last_login.isoformat() if user.last_login else None
+                    ),
                 }
             except Exception as e:
                 logger.exception(f"Failed to get Google user info: {str(e)}")

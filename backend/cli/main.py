@@ -50,7 +50,8 @@ class AdminCLI:
     def show_help(self):
         """Show help information."""
         print_header("ChatAssistant Admin CLI")
-        print("""
+        print(
+            """
 Usage: python admin.py [COMMAND] [SUBCOMMAND] [OPTIONS]
 
 Commands:
@@ -103,7 +104,8 @@ Examples:
   python admin.py backup create
   python admin.py monitoring health
   python admin.py dev quality-check
-        """)
+        """
+        )
 
 
 def create_parser():

@@ -90,9 +90,9 @@ class MicrosoftOAuthProvider(OAuthProvider):
                     "full_name": user.full_name,
                     "provider": "microsoft",
                     "tenant_id": self.tenant_id,
-                    "last_sync": user.last_login.isoformat()
-                    if user.last_login
-                    else None,
+                    "last_sync": (
+                        user.last_login.isoformat() if user.last_login else None
+                    ),
                 }
             except Exception as e:
                 logger.exception(f"Failed to get Microsoft user info: {str(e)}")

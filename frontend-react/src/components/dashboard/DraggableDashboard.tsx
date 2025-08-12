@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Space, Typography, Modal, Select, Form, InputNumber, Switch, Alert, Input } from "antd";
+import {
+  Space,
+  Typography,
+  Modal,
+  Select,
+  Form,
+  InputNumber,
+  Switch,
+  Alert,
+  Input,
+} from "antd";
 import ModernButton from "../ModernButton";
 import {
   PlusOutlined,
@@ -45,7 +55,9 @@ interface GridPosition {
   height: number;
 }
 
-const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) => {
+const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
+  className,
+}) => {
   const { t } = useTranslation();
   const { token } = useAuthStore();
   const { getCurrentColors } = useThemeStore();
@@ -54,7 +66,9 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [showAddWidget, setShowAddWidget] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(null);
+  const [selectedWidget, setSelectedWidget] = useState<WidgetConfig | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [gridLayout, setGridLayout] = useState<GridPosition[]>([]);
@@ -105,7 +119,7 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
       setLoading(true);
       const savedWidgets = localStorage.getItem("dashboard-widgets");
       const savedLayout = localStorage.getItem("dashboard-layout");
-      
+
       if (savedWidgets) {
         setWidgets(JSON.parse(savedWidgets));
       } else {
@@ -174,38 +188,55 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
   };
 
   const updateWidget = (widgetId: string, updates: Partial<WidgetConfig>) => {
-    setWidgets(prevWidgets =>
-      prevWidgets.map(widget =>
-        widget.id === widgetId ? { ...widget, ...updates } : widget
-      )
+    setWidgets((prevWidgets) =>
+      prevWidgets.map((widget) =>
+        widget.id === widgetId ? { ...widget, ...updates } : widget,
+      ),
     );
   };
 
   const removeWidget = (widgetId: string) => {
-    setWidgets(prevWidgets => prevWidgets.filter(widget => widget.id !== widgetId));
-    setGridLayout(prevLayout => prevLayout.filter(pos => pos.x !== widgetId));
+    setWidgets((prevWidgets) =>
+      prevWidgets.filter((widget) => widget.id !== widgetId),
+    );
+    setGridLayout((prevLayout) =>
+      prevLayout.filter((pos) => pos.x !== widgetId),
+    );
   };
 
-  const handleWidgetMove = useCallback((widgetId: string, newPosition: { x: number; y: number }) => {
-    setWidgets(prevWidgets =>
-      prevWidgets.map(widget =>
-        widget.id === widgetId ? { ...widget, position: newPosition } : widget
-      )
-    );
-  }, []);
+  const handleWidgetMove = useCallback(
+    (widgetId: string, newPosition: { x: number; y: number }) => {
+      setWidgets((prevWidgets) =>
+        prevWidgets.map((widget) =>
+          widget.id === widgetId
+            ? { ...widget, position: newPosition }
+            : widget,
+        ),
+      );
+    },
+    [],
+  );
 
-  const handleWidgetResize = useCallback((widgetId: string, newSize: { width: number; height: number }) => {
-    setGridLayout(prevLayout => {
-      const existing = prevLayout.find(pos => pos.x === widgetId);
-      if (existing) {
-        return prevLayout.map(pos => 
-          pos.x === widgetId ? { ...pos, width: newSize.width, height: newSize.height } : pos
-        );
-      } else {
-        return [...prevLayout, { x: widgetId, y: 0, width: newSize.width, height: newSize.height }];
-      }
-    });
-  }, []);
+  const handleWidgetResize = useCallback(
+    (widgetId: string, newSize: { width: number; height: number }) => {
+      setGridLayout((prevLayout) => {
+        const existing = prevLayout.find((pos) => pos.x === widgetId);
+        if (existing) {
+          return prevLayout.map((pos) =>
+            pos.x === widgetId
+              ? { ...pos, width: newSize.width, height: newSize.height }
+              : pos,
+          );
+        } else {
+          return [
+            ...prevLayout,
+            { x: widgetId, y: 0, width: newSize.width, height: newSize.height },
+          ];
+        }
+      });
+    },
+    [],
+  );
 
   const renderWidget = (widget: WidgetConfig) => {
     const commonProps = {
@@ -246,7 +277,13 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
       footer={null}
       width={600}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: 16,
+        }}
+      >
         {widgetTemplates.map((template) => (
           <ModernCard
             key={template.type}
@@ -317,7 +354,10 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
               <Input
                 value={selectedWidget.title}
                 onChange={(e) =>
-                  setSelectedWidget({ ...selectedWidget, title: e.target.value })
+                  setSelectedWidget({
+                    ...selectedWidget,
+                    title: e.target.value,
+                  })
                 }
               />
             </Form.Item>
@@ -325,7 +365,10 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
               <Input.TextArea
                 value={selectedWidget.description}
                 onChange={(e) =>
-                  setSelectedWidget({ ...selectedWidget, description: e.target.value })
+                  setSelectedWidget({
+                    ...selectedWidget,
+                    description: e.target.value,
+                  })
                 }
                 rows={2}
               />
@@ -349,7 +392,10 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
                 onChange={(value) =>
                   setSelectedWidget({
                     ...selectedWidget,
-                    settings: { ...selectedWidget.settings, refreshInterval: value || 0 },
+                    settings: {
+                      ...selectedWidget.settings,
+                      refreshInterval: value || 0,
+                    },
                   })
                 }
                 min={0}
@@ -367,12 +413,14 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
     <DndProvider backend={HTML5Backend}>
       <div className={`draggable-dashboard ${className || ""}`}>
         {/* Dashboard Header */}
-        <ModernCard
-          variant="outlined"
-          size="md"
-          style={{ marginBottom: 24 }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <ModernCard variant="outlined" size="md" style={{ marginBottom: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div>
               <Title level={3} style={{ margin: 0 }}>
                 {t("dashboard.title")}
@@ -385,7 +433,9 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
                 icon={<DragOutlined />}
                 onClick={() => setEditMode(!editMode)}
               >
-                {editMode ? t("dashboard.exit_edit_mode") : t("dashboard.edit_mode")}
+                {editMode
+                  ? t("dashboard.exit_edit_mode")
+                  : t("dashboard.edit_mode")}
               </ModernButton>
               <ModernButton
                 variant="outlined"
@@ -445,7 +495,9 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({ className }) =>
               <Title level={4} style={{ color: colors.colorTextSecondary }}>
                 {t("dashboard.no_widgets")}
               </Title>
-              <Text type="secondary">{t("dashboard.no_widgets_description")}</Text>
+              <Text type="secondary">
+                {t("dashboard.no_widgets_description")}
+              </Text>
             </div>
             <ModernButton
               variant="primary"

@@ -1,7 +1,7 @@
 // Vollständiges Design-Schema für das Projekt
 // WCAG AA/AAA konforme Farbpalette mit harmonischen Übergängen
 
-import type { ThemeConfig } from 'antd';
+import type { ThemeConfig } from "antd";
 
 export const lightTheme: ThemeConfig = {
   token: {

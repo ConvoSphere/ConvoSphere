@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { message } from 'antd';
+import { useState, useEffect, useRef } from "react";
+import { message } from "antd";
 
 interface StatusData {
   system: {
@@ -27,20 +27,26 @@ export const useSystemStatus = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('/api/v1/system/status');
+
+      const response = await fetch("/api/v1/system/status");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const statusData: StatusData = await response.json();
       setData(statusData);
       setLastUpdate(new Date());
 
       // Update history
       const now = new Date().toLocaleTimeString();
-      cpuHistory.current.push({ time: now, cpu: statusData.system.cpu_percent });
-      ramHistory.current.push({ time: now, ram: statusData.system.ram.percent });
+      cpuHistory.current.push({
+        time: now,
+        cpu: statusData.system.cpu_percent,
+      });
+      ramHistory.current.push({
+        time: now,
+        ram: statusData.system.ram.percent,
+      });
 
       // Keep only last MAX_POINTS
       if (cpuHistory.current.length > MAX_POINTS) {
@@ -50,7 +56,8 @@ export const useSystemStatus = () => {
         ramHistory.current = ramHistory.current.slice(-MAX_POINTS);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(errorMessage);
       message.error(`Failed to fetch system status: ${errorMessage}`);
     } finally {
@@ -64,10 +71,10 @@ export const useSystemStatus = () => {
 
   useEffect(() => {
     fetchStatus();
-    
+
     // Set up interval for real-time updates
     const interval = setInterval(fetchStatus, 5000); // Update every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 

@@ -1,5 +1,11 @@
-import { create } from 'zustand';
-import { exportService, type ExportJob, type BackupJob, type ExportOptions, type BackupConfig } from '../services/export';
+import { create } from "zustand";
+import {
+  exportService,
+  type ExportJob,
+  type BackupJob,
+  type ExportOptions,
+  type BackupConfig,
+} from "../services/export";
 
 interface ExportState {
   // State
@@ -70,24 +76,24 @@ export const useExportStore = create<ExportState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       let job: ExportJob;
-      
+
       switch (type) {
-        case 'conversations':
+        case "conversations":
           job = await exportService.exportConversations(options);
           break;
-        case 'knowledge':
+        case "knowledge":
           job = await exportService.exportKnowledgeBase(options);
           break;
-        case 'analytics':
+        case "analytics":
           job = await exportService.exportAnalytics(options);
           break;
-        case 'system':
+        case "system":
           job = await exportService.exportSystemData(options);
           break;
-        case 'users':
+        case "users":
           job = await exportService.exportUsers(options);
           break;
-        case 'assistants':
+        case "assistants":
           job = await exportService.exportAssistants(options);
           break;
         default:
@@ -95,16 +101,16 @@ export const useExportStore = create<ExportState>((set, get) => ({
       }
 
       const { exportJobs } = get();
-      set({ 
+      set({
         exportJobs: [job, ...exportJobs],
-        loading: false 
+        loading: false,
       });
 
       return job;
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to create export job', 
-        loading: false 
+      set({
+        error: error.message || "Failed to create export job",
+        loading: false,
       });
       throw error;
     }
@@ -114,10 +120,10 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const job = await exportService.getExportJobStatus(jobId);
       const { exportJobs } = get();
-      const updatedJobs = exportJobs.map(j => j.id === jobId ? job : j);
+      const updatedJobs = exportJobs.map((j) => (j.id === jobId ? job : j));
       set({ exportJobs: updatedJobs });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to get export job status' });
+      set({ error: error.message || "Failed to get export job status" });
     }
   },
 
@@ -127,9 +133,9 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const jobs = await exportService.listExportJobs(filters);
       set({ exportJobs: jobs, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to list export jobs', 
-        loading: false 
+      set({
+        error: error.message || "Failed to list export jobs",
+        loading: false,
       });
     }
   },
@@ -138,12 +144,14 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       await exportService.cancelExportJob(jobId);
       const { exportJobs } = get();
-      const updatedJobs = exportJobs.map(j => 
-        j.id === jobId ? { ...j, status: 'failed', error: 'Cancelled by user' } : j
+      const updatedJobs = exportJobs.map((j) =>
+        j.id === jobId
+          ? { ...j, status: "failed", error: "Cancelled by user" }
+          : j,
       );
       set({ exportJobs: updatedJobs });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to cancel export job' });
+      set({ error: error.message || "Failed to cancel export job" });
     }
   },
 
@@ -151,7 +159,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const blob = await exportService.downloadExport(jobId);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `export-${jobId}.zip`;
       document.body.appendChild(a);
@@ -159,7 +167,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error: any) {
-      set({ error: error.message || 'Failed to download export' });
+      set({ error: error.message || "Failed to download export" });
     }
   },
 
@@ -168,14 +176,14 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const jobs = await exportService.bulkExport(types, options);
       const { exportJobs } = get();
-      set({ 
+      set({
         exportJobs: [...jobs, ...exportJobs],
-        loading: false 
+        loading: false,
       });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to create bulk export', 
-        loading: false 
+      set({
+        error: error.message || "Failed to create bulk export",
+        loading: false,
       });
     }
   },
@@ -186,9 +194,9 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const templates = await exportService.getExportTemplates();
       set({ exportTemplates: templates, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to get export templates', 
-        loading: false 
+      set({
+        error: error.message || "Failed to get export templates",
+        loading: false,
       });
     }
   },
@@ -199,7 +207,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const { exportTemplates } = get();
       set({ exportTemplates: [...exportTemplates, savedTemplate] });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to save export template' });
+      set({ error: error.message || "Failed to save export template" });
     }
   },
 
@@ -209,7 +217,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const { scheduledExports } = get();
       set({ scheduledExports: [...scheduledExports, scheduledExport] });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to schedule export' });
+      set({ error: error.message || "Failed to schedule export" });
     }
   },
 
@@ -219,23 +227,26 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const exports = await exportService.listScheduledExports();
       set({ scheduledExports: exports, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to list scheduled exports', 
-        loading: false 
+      set({
+        error: error.message || "Failed to list scheduled exports",
+        loading: false,
       });
     }
   },
 
   updateScheduledExport: async (scheduleId: string, updates: any) => {
     try {
-      const updatedExport = await exportService.updateScheduledExport(scheduleId, updates);
+      const updatedExport = await exportService.updateScheduledExport(
+        scheduleId,
+        updates,
+      );
       const { scheduledExports } = get();
-      const updatedExports = scheduledExports.map(e => 
-        e.id === scheduleId ? updatedExport : e
+      const updatedExports = scheduledExports.map((e) =>
+        e.id === scheduleId ? updatedExport : e,
       );
       set({ scheduledExports: updatedExports });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to update scheduled export' });
+      set({ error: error.message || "Failed to update scheduled export" });
     }
   },
 
@@ -243,10 +254,12 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       await exportService.deleteScheduledExport(scheduleId);
       const { scheduledExports } = get();
-      const updatedExports = scheduledExports.filter(e => e.id !== scheduleId);
+      const updatedExports = scheduledExports.filter(
+        (e) => e.id !== scheduleId,
+      );
       set({ scheduledExports: updatedExports });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to delete scheduled export' });
+      set({ error: error.message || "Failed to delete scheduled export" });
     }
   },
 
@@ -255,15 +268,15 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const backup = await exportService.createBackup(config);
       const { backupJobs } = get();
-      set({ 
+      set({
         backupJobs: [backup, ...backupJobs],
-        loading: false 
+        loading: false,
       });
       return backup;
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to create backup', 
-        loading: false 
+      set({
+        error: error.message || "Failed to create backup",
+        loading: false,
       });
       throw error;
     }
@@ -273,10 +286,12 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const backup = await exportService.getBackupStatus(backupId);
       const { backupJobs } = get();
-      const updatedJobs = backupJobs.map(b => b.id === backupId ? backup : b);
+      const updatedJobs = backupJobs.map((b) =>
+        b.id === backupId ? backup : b,
+      );
       set({ backupJobs: updatedJobs });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to get backup status' });
+      set({ error: error.message || "Failed to get backup status" });
     }
   },
 
@@ -286,9 +301,9 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const backups = await exportService.listBackups(filters);
       set({ backupJobs: backups, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to list backups', 
-        loading: false 
+      set({
+        error: error.message || "Failed to list backups",
+        loading: false,
       });
     }
   },
@@ -298,7 +313,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const result = await exportService.restoreBackup(backupId, options);
       return result;
     } catch (error: any) {
-      set({ error: error.message || 'Failed to restore backup' });
+      set({ error: error.message || "Failed to restore backup" });
       throw error;
     }
   },
@@ -307,10 +322,10 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       await exportService.deleteBackup(backupId);
       const { backupJobs } = get();
-      const updatedJobs = backupJobs.filter(b => b.id !== backupId);
+      const updatedJobs = backupJobs.filter((b) => b.id !== backupId);
       set({ backupJobs: updatedJobs });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to delete backup' });
+      set({ error: error.message || "Failed to delete backup" });
     }
   },
 
@@ -318,7 +333,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
     try {
       const blob = await exportService.downloadBackup(backupId);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `backup-${backupId}.zip`;
       document.body.appendChild(a);
@@ -326,7 +341,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error: any) {
-      set({ error: error.message || 'Failed to download backup' });
+      set({ error: error.message || "Failed to download backup" });
     }
   },
 
@@ -336,9 +351,9 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const config = await exportService.getBackupConfig();
       set({ backupConfig: config, loading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to get backup config', 
-        loading: false 
+      set({
+        error: error.message || "Failed to get backup config",
+        loading: false,
       });
     }
   },
@@ -348,7 +363,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const updatedConfig = await exportService.updateBackupConfig(config);
       set({ backupConfig: updatedConfig });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to update backup config' });
+      set({ error: error.message || "Failed to update backup config" });
     }
   },
 
@@ -357,7 +372,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const result = await exportService.testBackupConfig(config);
       return result;
     } catch (error: any) {
-      set({ error: error.message || 'Failed to test backup config' });
+      set({ error: error.message || "Failed to test backup config" });
       throw error;
     }
   },
@@ -367,7 +382,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const stats = await exportService.getExportStats(timeRange);
       return stats;
     } catch (error: any) {
-      set({ error: error.message || 'Failed to get export stats' });
+      set({ error: error.message || "Failed to get export stats" });
       throw error;
     }
   },
@@ -377,7 +392,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       const stats = await exportService.getBackupStats(timeRange);
       return stats;
     } catch (error: any) {
-      set({ error: error.message || 'Failed to get backup stats' });
+      set({ error: error.message || "Failed to get backup stats" });
       throw error;
     }
   },

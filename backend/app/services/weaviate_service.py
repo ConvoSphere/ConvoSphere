@@ -8,12 +8,12 @@ This module provides integration with Weaviate for:
 
 import logging
 import os
+import types
 from typing import Any
 
 from loguru import logger
 from weaviate import Client, WeaviateClient
 from weaviate.auth import AuthApiKey
-import types
 
 # Provide a minimal weaviate namespace for test patching compatibility
 weaviate = types.SimpleNamespace(Client=Client)

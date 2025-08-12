@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Space,
@@ -17,7 +17,7 @@ import {
   Tooltip,
   Tabs,
   Statistic,
-} from 'antd';
+} from "antd";
 import {
   TeamOutlined,
   PlusOutlined,
@@ -27,16 +27,20 @@ import {
   SettingOutlined,
   UserOutlined,
   LockOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { useDomainGroupsStore } from '../store/domainGroupsStore';
-import { useAuthStore } from '../store/authStore';
-import DomainGroupList from '../components/domain-groups/DomainGroupList';
-import ModernCard from '../components/ModernCard';
-import ModernButton from '../components/ModernButton';
-import ModernInput from '../components/ModernInput';
-import ModernSelect from '../components/ModernSelect';
-import type { DomainGroup, DomainGroupCreate, DomainGroupUpdate } from '../services/domainGroups';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { useDomainGroupsStore } from "../store/domainGroupsStore";
+import { useAuthStore } from "../store/authStore";
+import DomainGroupList from "../components/domain-groups/DomainGroupList";
+import ModernCard from "../components/ModernCard";
+import ModernButton from "../components/ModernButton";
+import ModernInput from "../components/ModernInput";
+import ModernSelect from "../components/ModernSelect";
+import type {
+  DomainGroup,
+  DomainGroupCreate,
+  DomainGroupUpdate,
+} from "../services/domainGroups";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -66,7 +70,7 @@ const DomainGroups: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingGroup, setEditingGroup] = useState<DomainGroup | null>(null);
   const [form] = Form.useForm();
-  const [activeTab, setActiveTab] = useState('groups');
+  const [activeTab, setActiveTab] = useState("groups");
 
   // Load initial data
   useEffect(() => {
@@ -111,7 +115,7 @@ const DomainGroups: React.FC = () => {
           isActive: values.isActive,
         };
         await updateGroup(editingGroup.id, updateData);
-        message.success(t('domain_groups.group_updated'));
+        message.success(t("domain_groups.group_updated"));
       } else {
         const createData: DomainGroupCreate = {
           name: values.name,
@@ -119,12 +123,12 @@ const DomainGroups: React.FC = () => {
           parentId: values.parentId,
         };
         await createGroup(createData);
-        message.success(t('domain_groups.group_created'));
+        message.success(t("domain_groups.group_created"));
       }
       setModalVisible(false);
       form.resetFields();
     } catch (error) {
-      message.error(t('domain_groups.save_error'));
+      message.error(t("domain_groups.save_error"));
     }
   };
 
@@ -132,83 +136,85 @@ const DomainGroups: React.FC = () => {
   const handleDeleteGroup = async (groupId: string) => {
     try {
       await deleteGroup(groupId);
-      message.success(t('domain_groups.group_deleted'));
+      message.success(t("domain_groups.group_deleted"));
     } catch (error) {
-      message.error(t('domain_groups.delete_error'));
+      message.error(t("domain_groups.delete_error"));
     }
   };
 
   // Handle view users
   const handleViewUsers = (groupId: string) => {
-    setSelectedGroup(groups.find(g => g.id === groupId) || null);
-    setActiveTab('users');
+    setSelectedGroup(groups.find((g) => g.id === groupId) || null);
+    setActiveTab("users");
   };
 
   // Handle manage permissions
   const handleManagePermissions = (groupId: string) => {
-    setSelectedGroup(groups.find(g => g.id === groupId) || null);
-    setActiveTab('permissions');
+    setSelectedGroup(groups.find((g) => g.id === groupId) || null);
+    setActiveTab("permissions");
   };
 
   // Handle export
   const handleExport = async (groupId: string) => {
     try {
       // This would be implemented in the service
-      message.success(t('domain_groups.export_success'));
+      message.success(t("domain_groups.export_success"));
     } catch (error) {
-      message.error(t('domain_groups.export_error'));
+      message.error(t("domain_groups.export_error"));
     }
   };
 
   // Handle assign users
   const handleAssignUsers = (groupId: string) => {
-    setSelectedGroup(groups.find(g => g.id === groupId) || null);
-    setActiveTab('users');
+    setSelectedGroup(groups.find((g) => g.id === groupId) || null);
+    setActiveTab("users");
   };
 
   // Refresh data
   const handleRefresh = () => {
     fetchGroups();
-    message.info(t('domain_groups.data_refreshed'));
+    message.info(t("domain_groups.data_refreshed"));
   };
 
   // Calculate statistics
   const totalGroups = groups.length;
-  const activeGroups = groups.filter(g => g.isActive).length;
+  const activeGroups = groups.filter((g) => g.isActive).length;
   const totalUsers = groups.reduce((sum, group) => sum + group.userCount, 0);
-  const rootGroups = groups.filter(g => g.level === 0).length;
+  const rootGroups = groups.filter((g) => g.level === 0).length;
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: "24px" }}>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+      <Row
+        justify="space-between"
+        align="middle"
+        style={{ marginBottom: "24px" }}
+      >
         <Col>
           <Title level={2} style={{ margin: 0 }}>
-            <TeamOutlined style={{ marginRight: '8px' }} />
-            {t('domain_groups.title')}
+            <TeamOutlined style={{ marginRight: "8px" }} />
+            {t("domain_groups.title")}
           </Title>
-          <Text type="secondary">
-            {t('domain_groups.description')}
-          </Text>
+          <Text type="secondary">{t("domain_groups.description")}</Text>
         </Col>
         <Col>
           <Space>
-            <Tooltip title={t('domain_groups.refresh_data')}>
+            <Tooltip title={t("domain_groups.refresh_data")}>
               <ModernButton
                 icon={<ReloadOutlined />}
                 onClick={handleRefresh}
                 loading={loading}
               >
-                {t('domain_groups.refresh')}
+                {t("domain_groups.refresh")}
               </ModernButton>
             </Tooltip>
-            <Tooltip title={t('domain_groups.create_group')}>
+            <Tooltip title={t("domain_groups.create_group")}>
               <ModernButton
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleCreateGroup}
               >
-                {t('domain_groups.create_group')}
+                {t("domain_groups.create_group")}
               </ModernButton>
             </Tooltip>
           </Space>
@@ -218,22 +224,22 @@ const DomainGroups: React.FC = () => {
       {/* Error Alert */}
       {error && (
         <Alert
-          message={t('domain_groups.error')}
+          message={t("domain_groups.error")}
           description={error}
           type="error"
           showIcon
           closable
           onClose={clearError}
-          style={{ marginBottom: '16px' }}
+          style={{ marginBottom: "16px" }}
         />
       )}
 
       {/* Statistics */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('domain_groups.total_groups')}
+              title={t("domain_groups.total_groups")}
               value={totalGroups}
               prefix={<TeamOutlined />}
             />
@@ -242,17 +248,17 @@ const DomainGroups: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('domain_groups.active_groups')}
+              title={t("domain_groups.active_groups")}
               value={activeGroups}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: "#52c41a" }}
             />
           </ModernCard>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('domain_groups.total_users')}
+              title={t("domain_groups.total_users")}
               value={totalUsers}
               prefix={<UserOutlined />}
             />
@@ -261,21 +267,21 @@ const DomainGroups: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('domain_groups.root_groups')}
+              title={t("domain_groups.root_groups")}
               value={rootGroups}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: "#1890ff" }}
             />
           </ModernCard>
         </Col>
       </Row>
 
       {/* Search */}
-      <ModernCard style={{ marginBottom: '24px' }}>
+      <ModernCard style={{ marginBottom: "24px" }}>
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={16}>
             <ModernInput
-              placeholder={t('domain_groups.search_placeholder')}
+              placeholder={t("domain_groups.search_placeholder")}
               prefix={<SearchOutlined />}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -285,7 +291,8 @@ const DomainGroups: React.FC = () => {
           <Col xs={24} sm={8}>
             <Space>
               <Text type="secondary">
-                {t('domain_groups.showing')} {groups.length} {t('domain_groups.groups')}
+                {t("domain_groups.showing")} {groups.length}{" "}
+                {t("domain_groups.groups")}
               </Text>
             </Space>
           </Col>
@@ -298,7 +305,7 @@ const DomainGroups: React.FC = () => {
           tab={
             <span>
               <TeamOutlined />
-              {t('domain_groups.groups')}
+              {t("domain_groups.groups")}
             </span>
           }
           key="groups"
@@ -321,7 +328,7 @@ const DomainGroups: React.FC = () => {
           tab={
             <span>
               <UserOutlined />
-              {t('domain_groups.users')}
+              {t("domain_groups.users")}
             </span>
           }
           key="users"
@@ -329,16 +336,16 @@ const DomainGroups: React.FC = () => {
           {selectedGroup ? (
             <div>
               <Title level={4}>
-                {t('domain_groups.users_in_group')}: {selectedGroup.name}
+                {t("domain_groups.users_in_group")}: {selectedGroup.name}
               </Title>
               <Text type="secondary">
-                {t('domain_groups.user_management_coming_soon')}
+                {t("domain_groups.user_management_coming_soon")}
               </Text>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ textAlign: "center", padding: "40px" }}>
               <Text type="secondary">
-                {t('domain_groups.select_group_to_view_users')}
+                {t("domain_groups.select_group_to_view_users")}
               </Text>
             </div>
           )}
@@ -348,7 +355,7 @@ const DomainGroups: React.FC = () => {
           tab={
             <span>
               <LockOutlined />
-              {t('domain_groups.permissions')}
+              {t("domain_groups.permissions")}
             </span>
           }
           key="permissions"
@@ -356,16 +363,16 @@ const DomainGroups: React.FC = () => {
           {selectedGroup ? (
             <div>
               <Title level={4}>
-                {t('domain_groups.permissions_for_group')}: {selectedGroup.name}
+                {t("domain_groups.permissions_for_group")}: {selectedGroup.name}
               </Title>
               <Text type="secondary">
-                {t('domain_groups.permission_management_coming_soon')}
+                {t("domain_groups.permission_management_coming_soon")}
               </Text>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ textAlign: "center", padding: "40px" }}>
               <Text type="secondary">
-                {t('domain_groups.select_group_to_manage_permissions')}
+                {t("domain_groups.select_group_to_manage_permissions")}
               </Text>
             </div>
           )}
@@ -375,9 +382,9 @@ const DomainGroups: React.FC = () => {
       {/* Create/Edit Group Modal */}
       <Modal
         title={
-          editingGroup 
-            ? t('domain_groups.edit_group') 
-            : t('domain_groups.create_group')
+          editingGroup
+            ? t("domain_groups.edit_group")
+            : t("domain_groups.create_group")
         }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -394,34 +401,28 @@ const DomainGroups: React.FC = () => {
         >
           <Form.Item
             name="name"
-            label={t('domain_groups.name')}
+            label={t("domain_groups.name")}
             rules={[
-              { required: true, message: t('domain_groups.name_required') },
-              { min: 2, message: t('domain_groups.name_min_length') },
+              { required: true, message: t("domain_groups.name_required") },
+              { min: 2, message: t("domain_groups.name_min_length") },
             ]}
           >
-            <ModernInput placeholder={t('domain_groups.enter_group_name')} />
+            <ModernInput placeholder={t("domain_groups.enter_group_name")} />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label={t('domain_groups.description')}
-          >
-            <ModernInput.TextArea 
-              placeholder={t('domain_groups.enter_group_description')}
+          <Form.Item name="description" label={t("domain_groups.description")}>
+            <ModernInput.TextArea
+              placeholder={t("domain_groups.enter_group_description")}
               rows={3}
             />
           </Form.Item>
 
-          <Form.Item
-            name="parentId"
-            label={t('domain_groups.parent_group')}
-          >
+          <Form.Item name="parentId" label={t("domain_groups.parent_group")}>
             <ModernSelect
-              placeholder={t('domain_groups.select_parent_group')}
+              placeholder={t("domain_groups.select_parent_group")}
               allowClear
             >
-              {groups.map(group => (
+              {groups.map((group) => (
                 <Option key={group.id} value={group.id}>
                   {group.name}
                 </Option>
@@ -431,22 +432,24 @@ const DomainGroups: React.FC = () => {
 
           <Form.Item
             name="isActive"
-            label={t('domain_groups.status')}
+            label={t("domain_groups.status")}
             valuePropName="checked"
           >
-            <Switch 
-              checkedChildren={t('domain_groups.active')}
-              unCheckedChildren={t('domain_groups.inactive')}
+            <Switch
+              checkedChildren={t("domain_groups.active")}
+              unCheckedChildren={t("domain_groups.inactive")}
             />
           </Form.Item>
 
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit" loading={loading}>
-                {editingGroup ? t('domain_groups.update') : t('domain_groups.create')}
+                {editingGroup
+                  ? t("domain_groups.update")
+                  : t("domain_groups.create")}
               </ModernButton>
               <ModernButton onClick={() => setModalVisible(false)}>
-                {t('domain_groups.cancel')}
+                {t("domain_groups.cancel")}
               </ModernButton>
             </Space>
           </Form.Item>

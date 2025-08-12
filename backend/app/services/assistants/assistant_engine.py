@@ -291,18 +291,22 @@ class AssistantEngine:
             "request": {
                 "user_id": request.user_id,
                 "conversation_id": request.conversation_id,
-                "message": request.message[:100] + "..."
-                if len(request.message) > 100
-                else request.message,
+                "message": (
+                    request.message[:100] + "..."
+                    if len(request.message) > 100
+                    else request.message
+                ),
                 "assistant_id": request.assistant_id,
             },
-            "result": {
-                "success": result.success if result else None,
-                "processing_time": result.processing_time if result else None,
-                "error_message": result.error_message if result else None,
-            }
-            if result
-            else None,
+            "result": (
+                {
+                    "success": result.success if result else None,
+                    "processing_time": result.processing_time if result else None,
+                    "error_message": result.error_message if result else None,
+                }
+                if result
+                else None
+            ),
         }
 
     def get_stats(self) -> dict[str, Any]:
@@ -331,9 +335,9 @@ class AssistantEngine:
             "total_processed": total_results,
             "successful_requests": successful_results,
             "failed_requests": failed_results,
-            "success_rate": (successful_results / total_results * 100)
-            if total_results > 0
-            else 0,
+            "success_rate": (
+                (successful_results / total_results * 100) if total_results > 0 else 0
+            ),
             "average_processing_time": round(avg_processing_time, 3),
             "max_concurrent_requests": self.max_concurrent_requests,
             "default_model": self.default_model,

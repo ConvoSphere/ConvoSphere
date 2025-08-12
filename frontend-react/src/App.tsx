@@ -13,7 +13,10 @@ import PerformanceMonitor from "./components/PerformanceMonitor";
 import performanceMonitor from "./utils/performance";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { useAuthStore } from "./store/authStore";
-import { detectLanguage, saveLanguagePreference } from "./utils/languageDetection";
+import {
+  detectLanguage,
+  saveLanguagePreference,
+} from "./utils/languageDetection";
 import ProtectedLayoutRoute from "./components/ProtectedLayoutRoute";
 import { protectedRoutes } from "./routes/routesConfig";
 
@@ -111,7 +114,12 @@ const ErrorFallback: React.FC<{
         <h1 style={{ color: "#e74c3c", marginBottom: "16px" }}>
           {t("common.error_something_wrong")}
         </h1>
-        <p style={{ marginBottom: "16px", color: simpleTheme.token.colorTextSecondary }}>
+        <p
+          style={{
+            marginBottom: "16px",
+            color: simpleTheme.token.colorTextSecondary,
+          }}
+        >
           {t("common.error_unexpected")}
         </p>
         <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
@@ -124,7 +132,12 @@ const ErrorFallback: React.FC<{
         </div>
         {import.meta.env.DEV && (
           <details style={{ marginTop: "16px", textAlign: "left" }}>
-            <summary style={{ cursor: "pointer", color: simpleTheme.token.colorTextSecondary }}>
+            <summary
+              style={{
+                cursor: "pointer",
+                color: simpleTheme.token.colorTextSecondary,
+              }}
+            >
               {t("common.error_details")}
             </summary>
             <pre
@@ -162,7 +175,7 @@ const App: React.FC = () => {
           await i18n.changeLanguage(detectedLanguage);
           saveLanguagePreference(detectedLanguage);
         }
-      
+
         // Ensure document language attribute stays in sync
         document.documentElement.lang = i18n.language;
 
@@ -253,66 +266,66 @@ const App: React.FC = () => {
               token: simpleTheme.token,
             }}
           >
-          <Router basename={import.meta.env.BASE_URL}>
-            <ErrorBoundary
-              onError={(error, errorInfo) => {
-                if (import.meta.env.DEV) {
-                  console.error("Router Error:", error, errorInfo);
-                }
-                performanceMonitor.logError("Router Error", {
-                  error: error.message,
-                  errorInfo,
-                });
-              }}
-            >
-              <Routes>
-                {/* auth routes */}
-                <Route
-                  path="/login"
-                  element={
-                    <ErrorBoundary>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Login />
-                      </Suspense>
-                    </ErrorBoundary>
+            <Router basename={import.meta.env.BASE_URL}>
+              <ErrorBoundary
+                onError={(error, errorInfo) => {
+                  if (import.meta.env.DEV) {
+                    console.error("Router Error:", error, errorInfo);
                   }
-                />
-                <Route
-                  path="/register"
-                  element={
-                    <ErrorBoundary>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Register />
-                      </Suspense>
-                    </ErrorBoundary>
-                  }
-                />
-                <Route
-                  path="/forgot-password"
-                  element={
-                    <ErrorBoundary>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <ForgotPassword />
-                      </Suspense>
-                    </ErrorBoundary>
-                  }
-                />
-                <Route
-                  path="/reset-password"
-                  element={
-                    <ErrorBoundary>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <ResetPassword />
-                      </Suspense>
-                    </ErrorBoundary>
-                  }
-                />
-                {protectedRoutes.map(({ path, element }) => (
-                  <Route key={path} path={path} element={element} />
-                ))}
-              </Routes>
-            </ErrorBoundary>
-          </Router>
+                  performanceMonitor.logError("Router Error", {
+                    error: error.message,
+                    errorInfo,
+                  });
+                }}
+              >
+                <Routes>
+                  {/* auth routes */}
+                  <Route
+                    path="/login"
+                    element={
+                      <ErrorBoundary>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Login />
+                        </Suspense>
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path="/register"
+                    element={
+                      <ErrorBoundary>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Register />
+                        </Suspense>
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path="/forgot-password"
+                    element={
+                      <ErrorBoundary>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <ForgotPassword />
+                        </Suspense>
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path="/reset-password"
+                    element={
+                      <ErrorBoundary>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <ResetPassword />
+                        </Suspense>
+                      </ErrorBoundary>
+                    }
+                  />
+                  {protectedRoutes.map(({ path, element }) => (
+                    <Route key={path} path={path} element={element} />
+                  ))}
+                </Routes>
+              </ErrorBoundary>
+            </Router>
           </ConfigProvider>
         </AccessibilityProvider>
       </I18nextProvider>

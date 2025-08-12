@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Frontend Performance Monitoring Utility
- * 
+ *
  * This module provides comprehensive performance monitoring for the React application,
  * including bundle analysis, runtime performance tracking, and user experience metrics.
  */
@@ -12,23 +12,23 @@ export interface PerformanceMetrics {
   navigationStart: number;
   loadEventEnd: number;
   domContentLoadedEventEnd: number;
-  
+
   // Resource loading
   resourceCount: number;
   resourceLoadTime: number;
-  
+
   // React performance
   componentRenderTime: number;
   bundleSize: number;
-  
+
   // User experience
   firstContentfulPaint: number;
   largestContentfulPaint: number;
   cumulativeLayoutShift: number;
-  
+
   // Memory usage
   memoryUsage: number;
-  
+
   // Custom metrics
   customMetrics: Record<string, number>;
 }
@@ -52,8 +52,10 @@ class PerformanceMonitor {
   }
 
   private initializeMetrics(): PerformanceMetrics {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
+    const navigation = performance.getEntriesByType(
+      "navigation",
+    )[0] as PerformanceNavigationTiming;
+
     return {
       navigationStart: navigation?.startTime || 0,
       loadEventEnd: navigation?.loadEventEnd || 0,
@@ -75,13 +77,13 @@ class PerformanceMonitor {
    */
   start(): void {
     if (this.isMonitoring) return;
-    
+
     this.isMonitoring = true;
     this.setupObservers();
     this.trackBundleSize();
     this.trackMemoryUsage();
-    
-    console.log('Performance monitoring started');
+
+    console.log("Performance monitoring started");
   }
 
   /**
@@ -89,11 +91,11 @@ class PerformanceMonitor {
    */
   stop(): void {
     if (!this.isMonitoring) return;
-    
+
     this.isMonitoring = false;
     this.disconnectObservers();
-    
-    console.log('Performance monitoring stopped');
+
+    console.log("Performance monitoring stopped");
   }
 
   /**
@@ -141,7 +143,7 @@ class PerformanceMonitor {
    */
   private setupObservers(): void {
     // Navigation timing
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       // Resource timing
       this.resourceObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -154,33 +156,44 @@ class PerformanceMonitor {
           resourceLoadTime: this.metrics.resourceLoadTime,
         });
       });
-      this.resourceObserver.observe({ entryTypes: ['resource'] });
+      this.resourceObserver.observe({ entryTypes: ["resource"] });
 
       // Paint timing
       this.paintObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (entry.name === 'first-contentful-paint') {
+          if (entry.name === "first-contentful-paint") {
             this.metrics.firstContentfulPaint = entry.startTime;
-            this.notifyObservers({ firstContentfulPaint: this.metrics.firstContentfulPaint });
+            this.notifyObservers({
+              firstContentfulPaint: this.metrics.firstContentfulPaint,
+            });
           }
-          if (entry.name === 'largest-contentful-paint') {
+          if (entry.name === "largest-contentful-paint") {
             this.metrics.largestContentfulPaint = entry.startTime;
-            this.notifyObservers({ largestContentfulPaint: this.metrics.largestContentfulPaint });
+            this.notifyObservers({
+              largestContentfulPaint: this.metrics.largestContentfulPaint,
+            });
           }
         });
       });
-      this.paintObserver.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
+      this.paintObserver.observe({
+        entryTypes: ["paint", "largest-contentful-paint"],
+      });
 
       // Layout shift
       this.layoutShiftObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        this.metrics.cumulativeLayoutShift = entries.reduce((total, entry: any) => {
-          return total + (entry.value || 0);
-        }, 0);
-        this.notifyObservers({ cumulativeLayoutShift: this.metrics.cumulativeLayoutShift });
+        this.metrics.cumulativeLayoutShift = entries.reduce(
+          (total, entry: any) => {
+            return total + (entry.value || 0);
+          },
+          0,
+        );
+        this.notifyObservers({
+          cumulativeLayoutShift: this.metrics.cumulativeLayoutShift,
+        });
       });
-      this.layoutShiftObserver.observe({ entryTypes: ['layout-shift'] });
+      this.layoutShiftObserver.observe({ entryTypes: ["layout-shift"] });
     }
   }
 
@@ -207,15 +220,15 @@ class PerformanceMonitor {
    */
   private trackBundleSize(): void {
     // Estimate bundle size from performance entries
-    const resources = performance.getEntriesByType('resource');
-    const scriptResources = resources.filter(entry => 
-      entry.name.includes('.js') || entry.name.includes('chunk')
+    const resources = performance.getEntriesByType("resource");
+    const scriptResources = resources.filter(
+      (entry) => entry.name.includes(".js") || entry.name.includes("chunk"),
     );
-    
+
     this.metrics.bundleSize = scriptResources.reduce((total, entry) => {
       return total + (entry.transferSize || 0);
     }, 0);
-    
+
     this.notifyObservers({ bundleSize: this.metrics.bundleSize });
   }
 
@@ -223,7 +236,7 @@ class PerformanceMonitor {
    * Track memory usage
    */
   private trackMemoryUsage(): void {
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       const memory = (performance as any).memory;
       this.metrics.memoryUsage = memory.usedJSHeapSize;
       this.notifyObservers({ memoryUsage: this.metrics.memoryUsage });
@@ -234,7 +247,7 @@ class PerformanceMonitor {
    * Notify all observers
    */
   private notifyObservers(metrics: Partial<PerformanceMetrics>): void {
-    this.observers.forEach(observer => {
+    this.observers.forEach((observer) => {
       try {
         observer.onMetricUpdate(metrics);
       } catch (error) {
@@ -253,7 +266,7 @@ class PerformanceMonitor {
       metrics,
       recommendations: this.generateRecommendations(metrics),
     };
-    
+
     return JSON.stringify(report, null, 2);
   }
 
@@ -262,23 +275,30 @@ class PerformanceMonitor {
    */
   private generateRecommendations(metrics: PerformanceMetrics): string[] {
     const recommendations: string[] = [];
-    
-    if (metrics.bundleSize > 500000) { // 500KB
-      recommendations.push('Consider code splitting to reduce bundle size');
+
+    if (metrics.bundleSize > 500000) {
+      // 500KB
+      recommendations.push("Consider code splitting to reduce bundle size");
     }
-    
-    if (metrics.largestContentfulPaint > 2500) { // 2.5s
-      recommendations.push('Optimize Largest Contentful Paint for better user experience');
+
+    if (metrics.largestContentfulPaint > 2500) {
+      // 2.5s
+      recommendations.push(
+        "Optimize Largest Contentful Paint for better user experience",
+      );
     }
-    
+
     if (metrics.cumulativeLayoutShift > 0.1) {
-      recommendations.push('Reduce Cumulative Layout Shift by fixing layout shifts');
+      recommendations.push(
+        "Reduce Cumulative Layout Shift by fixing layout shifts",
+      );
     }
-    
-    if (metrics.memoryUsage > 50000000) { // 50MB
-      recommendations.push('Monitor memory usage and optimize memory leaks');
+
+    if (metrics.memoryUsage > 50000000) {
+      // 50MB
+      recommendations.push("Monitor memory usage and optimize memory leaks");
     }
-    
+
     return recommendations;
   }
 }
@@ -287,7 +307,7 @@ class PerformanceMonitor {
 const performanceMonitor = new PerformanceMonitor();
 
 // Auto-start monitoring in development
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   performanceMonitor.start();
 }
 
@@ -296,7 +316,7 @@ export default performanceMonitor;
 // React performance hooks
 export const usePerformanceTracking = (componentName: string) => {
   const startTime = React.useRef(performance.now());
-  
+
   React.useEffect(() => {
     const endTime = performance.now();
     const renderTime = endTime - startTime.current;
@@ -307,15 +327,19 @@ export const usePerformanceTracking = (componentName: string) => {
 // Performance decorator for class components
 export const withPerformanceTracking = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  componentName?: string
+  componentName?: string,
 ) => {
-  const displayName = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
-  
+  const displayName =
+    componentName ||
+    WrappedComponent.displayName ||
+    WrappedComponent.name ||
+    "Component";
+
   const WithPerformanceTracking = React.forwardRef<any, P>((props, ref) => {
     usePerformanceTracking(displayName);
     return React.createElement(WrappedComponent, { ...props, ref });
   });
-  
+
   WithPerformanceTracking.displayName = `withPerformanceTracking(${displayName})`;
   return WithPerformanceTracking;
 };

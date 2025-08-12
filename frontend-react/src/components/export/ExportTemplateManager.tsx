@@ -75,7 +75,9 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
 
   const [form] = Form.useForm();
   const [templates, setTemplates] = useState<ExportTemplate[]>([]);
-  const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | null>(
+    null,
+  );
   const [previewMode, setPreviewMode] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -96,7 +98,8 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
     {
       id: "business-report",
       name: "Business Report",
-      description: "Professional business report template with corporate styling",
+      description:
+        "Professional business report template with corporate styling",
       format: "html",
       category: "business",
       template: `
@@ -266,7 +269,7 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
   const handleSaveTemplate = async () => {
     try {
       const values = await form.validateFields();
-      
+
       const template: ExportTemplate = {
         id: editingTemplate?.id || `template-${Date.now()}`,
         name: values.name,
@@ -281,12 +284,12 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
       };
 
       const updatedTemplates = editingTemplate
-        ? templates.map(t => t.id === editingTemplate.id ? template : t)
+        ? templates.map((t) => (t.id === editingTemplate.id ? template : t))
         : [...templates, template];
 
       setTemplates(updatedTemplates);
       localStorage.setItem("exportTemplates", JSON.stringify(updatedTemplates));
-      
+
       message.success(t("export.template.saved", "Template gespeichert"));
       setEditingTemplate(null);
       form.resetFields();
@@ -297,7 +300,7 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
   };
 
   const handleDeleteTemplate = (templateId: string) => {
-    const updatedTemplates = templates.filter(t => t.id !== templateId);
+    const updatedTemplates = templates.filter((t) => t.id !== templateId);
     setTemplates(updatedTemplates);
     localStorage.setItem("exportTemplates", JSON.stringify(updatedTemplates));
     message.success(t("export.template.deleted", "Template gelöscht"));
@@ -319,8 +322,9 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
     message.success(t("export.template.duplicated", "Template dupliziert"));
   };
 
-  const filteredTemplates = templates.filter(template => 
-    selectedCategory === "all" || template.category === selectedCategory
+  const filteredTemplates = templates.filter(
+    (template) =>
+      selectedCategory === "all" || template.category === selectedCategory,
   );
 
   const categories = [
@@ -338,18 +342,37 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
       size="md"
       style={{ marginBottom: 16 }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <Title level={5} style={{ margin: 0 }}>{template.name}</Title>
-            {template.isDefault && (
-              <Tag color="blue">Standard</Tag>
-            )}
-            <Tag color={categories.find(c => c.value === template.category)?.color}>
-              {categories.find(c => c.value === template.category)?.label}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 8,
+            }}
+          >
+            <Title level={5} style={{ margin: 0 }}>
+              {template.name}
+            </Title>
+            {template.isDefault && <Tag color="blue">Standard</Tag>}
+            <Tag
+              color={
+                categories.find((c) => c.value === template.category)?.color
+              }
+            >
+              {categories.find((c) => c.value === template.category)?.label}
             </Tag>
           </div>
-          <Paragraph style={{ color: colors.colorTextSecondary, marginBottom: 12 }}>
+          <Paragraph
+            style={{ color: colors.colorTextSecondary, marginBottom: 12 }}
+          >
             {template.description}
           </Paragraph>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -357,7 +380,7 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
             <Tag>{template.variables.length} Variablen</Tag>
           </div>
         </div>
-        
+
         <div style={{ display: "flex", gap: 8 }}>
           <ModernButton
             variant="ghost"
@@ -382,7 +405,10 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
           />
           {!template.isDefault && (
             <Popconfirm
-              title={t("export.template.delete_confirm", "Template wirklich löschen?")}
+              title={t(
+                "export.template.delete_confirm",
+                "Template wirklich löschen?",
+              )}
               onConfirm={() => handleDeleteTemplate(template.id)}
               okText={t("common.yes", "Ja")}
               cancelText={t("common.no", "Nein")}
@@ -417,12 +443,21 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
       destroyOnClose
     >
       <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
           <div style={{ display: "flex", gap: 8 }}>
-            {categories.map(category => (
+            {categories.map((category) => (
               <ModernButton
                 key={category.value}
-                variant={selectedCategory === category.value ? "primary" : "ghost"}
+                variant={
+                  selectedCategory === category.value ? "primary" : "ghost"
+                }
                 size="sm"
                 onClick={() => setSelectedCategory(category.value)}
               >
@@ -430,7 +465,7 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
               </ModernButton>
             ))}
           </div>
-          
+
           <ModernButton
             variant="primary"
             icon={<PlusOutlined />}
@@ -445,7 +480,10 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
 
         {filteredTemplates.length === 0 ? (
           <Empty
-            description={t("export.template.no_templates", "Keine Templates gefunden")}
+            description={t(
+              "export.template.no_templates",
+              "Keine Templates gefunden",
+            )}
             style={{ margin: "40px 0" }}
           />
         ) : (
@@ -461,7 +499,9 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
           <Space>
             <EditOutlined />
             <Title level={4} style={{ margin: 0 }}>
-              {editingTemplate ? t("export.template.edit", "Template bearbeiten") : t("export.template.create", "Neues Template")}
+              {editingTemplate
+                ? t("export.template.edit", "Template bearbeiten")
+                : t("export.template.create", "Neues Template")}
             </Title>
           </Space>
         }
@@ -488,9 +528,22 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
               <Form.Item
                 name="name"
                 label={t("export.template.name", "Name")}
-                rules={[{ required: true, message: t("export.template.name_required", "Name ist erforderlich") }]}
+                rules={[
+                  {
+                    required: true,
+                    message: t(
+                      "export.template.name_required",
+                      "Name ist erforderlich",
+                    ),
+                  },
+                ]}
               >
-                <Input placeholder={t("export.template.name_placeholder", "Template Name")} />
+                <Input
+                  placeholder={t(
+                    "export.template.name_placeholder",
+                    "Template Name",
+                  )}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -515,7 +568,10 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
           >
             <TextArea
               rows={2}
-              placeholder={t("export.template.description_placeholder", "Template Beschreibung")}
+              placeholder={t(
+                "export.template.description_placeholder",
+                "Template Beschreibung",
+              )}
             />
           </Form.Item>
 
@@ -534,11 +590,22 @@ const ExportTemplateManager: React.FC<ExportTemplateManagerProps> = ({
           <Form.Item
             name="template"
             label={t("export.template.template", "Template Code")}
-            rules={[{ required: true, message: t("export.template.template_required", "Template Code ist erforderlich") }]}
+            rules={[
+              {
+                required: true,
+                message: t(
+                  "export.template.template_required",
+                  "Template Code ist erforderlich",
+                ),
+              },
+            ]}
           >
             <TextArea
               rows={12}
-              placeholder={t("export.template.template_placeholder", "Template Code hier eingeben...")}
+              placeholder={t(
+                "export.template.template_placeholder",
+                "Template Code hier eingeben...",
+              )}
               style={{ fontFamily: "monospace" }}
             />
           </Form.Item>

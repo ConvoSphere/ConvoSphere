@@ -8,6 +8,6 @@ from .response_handler import ResponseHandler
 __all__ = [
     "ChatProcessor",
     "ProviderManager",
-    "RequestBuilder", 
+    "RequestBuilder",
     "ResponseHandler",
 ]

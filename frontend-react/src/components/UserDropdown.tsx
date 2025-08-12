@@ -1,7 +1,14 @@
 import React from "react";
 import { Dropdown, Avatar, Typography, Space, Divider } from "antd";
 import ModernButton from "./ModernButton";
-import { UserOutlined, SettingOutlined, LogoutOutlined, DashboardOutlined, TeamOutlined, ProfileOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  SettingOutlined,
+  LogoutOutlined,
+  DashboardOutlined,
+  TeamOutlined,
+  ProfileOutlined,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
@@ -16,8 +23,9 @@ const UserDropdown: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
-  
-  const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
+
+  const isAdmin =
+    user && (user.role === "admin" || user.role === "super_admin");
 
   const userMenuItems = [
     {
@@ -34,10 +42,22 @@ const UserDropdown: React.FC = () => {
               }}
             />
             <div style={{ flex: 1 }}>
-              <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#ffffff", display: "block" }}>
+              <Text
+                strong
+                style={{
+                  fontSize: "14px",
+                  color: colors?.colorTextBase || "#ffffff",
+                  display: "block",
+                }}
+              >
                 {user?.username || t("navigation.user")}
               </Text>
-                              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#cccccc" }}>
+              <Text
+                style={{
+                  fontSize: "12px",
+                  color: colors?.colorTextSecondary || "#cccccc",
+                }}
+              >
                 {user?.email || "user@example.com"}
               </Text>
             </div>
@@ -60,23 +80,25 @@ const UserDropdown: React.FC = () => {
       label: t("settings.title", "Settings"),
       onClick: () => navigate("/settings"),
     },
-    ...(isAdmin ? [
-      {
-        type: "divider" as const,
-      },
-      {
-        key: "admin",
-        icon: <TeamOutlined />,
-        label: t("admin.title", "Admin Panel"),
-        onClick: () => navigate("/admin"),
-      },
-      {
-        key: "system-status",
-        icon: <DashboardOutlined />,
-        label: t("admin.system_status", "System Status"),
-        onClick: () => navigate("/admin/system-status"),
-      },
-    ] : []),
+    ...(isAdmin
+      ? [
+          {
+            type: "divider" as const,
+          },
+          {
+            key: "admin",
+            icon: <TeamOutlined />,
+            label: t("admin.title", "Admin Panel"),
+            onClick: () => navigate("/admin"),
+          },
+          {
+            key: "system-status",
+            icon: <DashboardOutlined />,
+            label: t("admin.system_status", "System Status"),
+            onClick: () => navigate("/admin/system-status"),
+          },
+        ]
+      : []),
     {
       type: "divider" as const,
     },
@@ -87,7 +109,9 @@ const UserDropdown: React.FC = () => {
       danger: true,
       onClick: () => {
         // The LogoutButton component will handle the actual logout
-        const logoutButton = document.querySelector('[data-testid="logout-button"]') as HTMLElement;
+        const logoutButton = document.querySelector(
+          '[data-testid="logout-button"]',
+        ) as HTMLElement;
         if (logoutButton) {
           logoutButton.click();
         }
@@ -135,7 +159,7 @@ const UserDropdown: React.FC = () => {
             style={{
               fontSize: "14px",
               fontWeight: 500,
-                              color: colors?.colorTextBase || "#ffffff",
+              color: colors?.colorTextBase || "#ffffff",
               display: "block",
             }}
           >
@@ -144,7 +168,7 @@ const UserDropdown: React.FC = () => {
           <Text
             style={{
               fontSize: "12px",
-                              color: colors?.colorTextSecondary || "#cccccc",
+              color: colors?.colorTextSecondary || "#cccccc",
             }}
           >
             {user?.role || t("navigation.user")}
@@ -155,4 +179,4 @@ const UserDropdown: React.FC = () => {
   );
 };
 
-export default UserDropdown; 
+export default UserDropdown;

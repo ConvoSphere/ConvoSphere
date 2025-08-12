@@ -42,7 +42,6 @@ const ModernInput = forwardRef<HTMLInputElement, ModernInputProps>(
     },
     ref,
   ) => {
-    
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [hasValue, setHasValue] = useState(!!value);

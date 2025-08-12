@@ -39,7 +39,7 @@ const ModernForm: React.FC<ModernFormProps> = ({
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
   const [internalForm] = AntForm.useForm();
-  
+
   // Use external form if provided, otherwise use internal form
   const form = externalForm || internalForm;
 

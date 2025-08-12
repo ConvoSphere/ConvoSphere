@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { login as apiLogin, register as apiRegister, logout as apiLogout, isTokenExpired } from "../services/auth";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  logout as apiLogout,
+  isTokenExpired,
+} from "../services/auth";
 import { getProfile, updateProfile } from "../services/user";
 
 export interface UserProfile {
@@ -45,7 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const token = await apiLogin(username, password);
       set({ token, isAuthenticated: true, isLoading: false });
-      
+
       await get().fetchProfile();
     } catch (error) {
       set({ isLoading: false });
@@ -71,12 +76,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ token, isAuthenticated: true });
         }
       }
-      
+
       if (!token) {
         console.warn("No token available for profile fetch");
         return;
       }
-      
+
       const user = await getProfile(token);
       set({ user });
     } catch (error) {
@@ -91,7 +96,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   validateToken: () => {
     const token = localStorage.getItem("token");
     if (!token) return false;
-    
+
     // Don't use isTokenExpired() here as it has a buffer
     // Just check if token exists and is not empty
     return !!token && token.length > 0;

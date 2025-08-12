@@ -89,12 +89,16 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const filteredTemplates = templates.filter((template) => {
-    const matchesSearch = searchQuery === "" || 
+    const matchesSearch =
+      searchQuery === "" ||
       template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      template.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
 
-    const matchesCategory = selectedCategory === "all" || template.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "all" || template.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -111,14 +115,14 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const renderTemplateCard = (template: AssistantTemplate) => {
-    const category = categories.find(c => c.id === template.category);
-    
+    const category = categories.find((c) => c.id === template.category);
+
     return (
       <ModernCard
         key={template.id}
         variant="interactive"
         size="md"
-        style={{ 
+        style={{
           cursor: "pointer",
           transition: "all 0.3s ease",
           border: `1px solid ${colors.colorBorder}`,
@@ -144,11 +148,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <Text strong style={{ fontSize: "12px" }}>
             {t("assistants.personality")}:
           </Text>
-          <Paragraph 
-            style={{ 
-              fontSize: "12px", 
+          <Paragraph
+            style={{
+              fontSize: "12px",
               marginBottom: 8,
-              color: colors.colorTextSecondary 
+              color: colors.colorTextSecondary,
             }}
             ellipsis={{ rows: 2 }}
           >
@@ -160,7 +164,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <Text strong style={{ fontSize: "12px" }}>
             {t("assistants.tools")}:
           </Text>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+          <div
+            style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}
+          >
             {template.tools.slice(0, 3).map((tool, index) => (
               <Tag key={index} size="small" style={{ fontSize: "10px" }}>
                 {tool}
@@ -180,7 +186,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </Text>
           <div style={{ marginTop: 4 }}>
             {template.examples.slice(0, 1).map((example, index) => (
-              <div key={index} style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
+              <div
+                key={index}
+                style={{ fontSize: "11px", color: colors.colorTextSecondary }}
+              >
                 <Text strong>Q:</Text> {example.user.substring(0, 50)}...
               </div>
             ))}
@@ -189,7 +198,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         <Divider style={{ margin: "8px 0" }} />
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div style={{ display: "flex", gap: 4 }}>
             {template.tags.slice(0, 2).map((tag, index) => (
               <Tag key={index} size="small" style={{ fontSize: "10px" }}>
@@ -197,7 +212,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </Tag>
             ))}
           </div>
-          
+
           <Space>
             <Tooltip title={t("assistants.preview_template")}>
               <Button
@@ -230,16 +245,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const renderCategoryTab = (category: TemplateCategory) => {
-    const categoryTemplates = filteredTemplates.filter(t => t.category === category.id);
-    
+    const categoryTemplates = filteredTemplates.filter(
+      (t) => t.category === category.id,
+    );
+
     return (
       <TabPane
         tab={
           <span>
             <span style={{ marginRight: 8 }}>{category.icon}</span>
             {category.name}
-            <Badge 
-              count={categoryTemplates.length} 
+            <Badge
+              count={categoryTemplates.length}
               style={{ marginLeft: 8 }}
               size="small"
             />
@@ -255,11 +272,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </Text>
             </div>
           ) : (
-            <div style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: 16 
-            }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                gap: 16,
+              }}
+            >
               {categoryTemplates.map(renderTemplateCard)}
             </div>
           )}
@@ -321,8 +340,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             tab={
               <span>
                 📋 {t("assistants.all_templates")}
-                <Badge 
-                  count={filteredTemplates.length} 
+                <Badge
+                  count={filteredTemplates.length}
                   style={{ marginLeft: 8 }}
                   size="small"
                 />
@@ -338,33 +357,35 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   </Text>
                 </div>
               ) : (
-                <div style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                  gap: 16 
-                }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(300px, 1fr))",
+                    gap: 16,
+                  }}
+                >
                   {filteredTemplates.map(renderTemplateCard)}
                 </div>
               )}
             </div>
           </TabPane>
-          
+
           {categories.map(renderCategoryTab)}
         </Tabs>
       )}
 
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "flex-end", 
-        gap: 12, 
-        marginTop: 24,
-        paddingTop: 16,
-        borderTop: `1px solid ${colors.colorBorder}`
-      }}>
-        <ModernButton
-          variant="outlined"
-          onClick={onClose}
-        >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 12,
+          marginTop: 24,
+          paddingTop: 16,
+          borderTop: `1px solid ${colors.colorBorder}`,
+        }}
+      >
+        <ModernButton variant="outlined" onClick={onClose}>
           {t("common.cancel")}
         </ModernButton>
         <ModernButton

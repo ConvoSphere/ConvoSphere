@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { message } from 'antd';
-import { SystemStats } from '../types/admin.types';
+import { useState, useCallback, useEffect } from "react";
+import { message } from "antd";
+import { SystemStats } from "../types/admin.types";
 
 export const useSystemStats = () => {
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
@@ -23,7 +23,7 @@ export const useSystemStats = () => {
       };
       setSystemStats(mockStats);
     } catch (error) {
-      message.error('Failed to load system statistics');
+      message.error("Failed to load system statistics");
     } finally {
       setLoading(false);
     }
@@ -31,15 +31,15 @@ export const useSystemStats = () => {
 
   const refreshStats = useCallback(async () => {
     await loadSystemStats();
-    message.success('Statistics refreshed');
+    message.success("Statistics refreshed");
   }, [loadSystemStats]);
 
   useEffect(() => {
     loadSystemStats();
-    
+
     // Auto-refresh every 30 seconds
     const interval = setInterval(loadSystemStats, 30000);
-    
+
     return () => clearInterval(interval);
   }, [loadSystemStats]);
 

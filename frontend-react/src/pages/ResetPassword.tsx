@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  Form,
-  message,
-  Typography,
-  Space,
-  Alert,
-  Spin,
-} from "antd";
+import { Form, message, Typography, Space, Alert, Spin } from "antd";
 import { LockOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 import { resetPassword, validateResetToken } from "../services/auth";
@@ -55,7 +48,10 @@ const ResetPassword: React.FC = () => {
     }
   };
 
-  const onFinish = async (values: { password: string; confirmPassword: string }) => {
+  const onFinish = async (values: {
+    password: string;
+    confirmPassword: string;
+  }) => {
     if (values.password !== values.confirmPassword) {
       message.error(t("auth.passwordMismatch"));
       return;
@@ -67,10 +63,10 @@ const ResetPassword: React.FC = () => {
     }
 
     setLoading(true);
-    
+
     try {
       const result = await resetPassword(token, values.password);
-      
+
       if (result.success) {
         setPasswordReset(true);
         message.success(t("auth.passwordResetSuccess"));
@@ -150,15 +146,17 @@ const ResetPassword: React.FC = () => {
             <div style={{ fontSize: "64px", color: "#52c41a" }}>
               <CheckCircleOutlined />
             </div>
-            
+
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.passwordResetSuccess")}
             </Title>
-            
-            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
+
+            <Text
+              style={{ fontSize: "16px", color: colors.colorTextSecondary }}
+            >
               {t("auth.passwordResetSuccessDescription")}
             </Text>
-            
+
             <ModernButton
               type="primary"
               size="large"
@@ -198,7 +196,7 @@ const ResetPassword: React.FC = () => {
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.invalidToken")}
             </Title>
-            
+
             <Alert
               message={t("auth.tokenExpiredOrInvalid")}
               description={t("auth.tokenExpiredOrInvalidDescription")}
@@ -206,7 +204,7 @@ const ResetPassword: React.FC = () => {
               showIcon
               style={{ textAlign: "left" }}
             />
-            
+
             <Space direction="vertical" style={{ width: "100%" }}>
               <ModernButton
                 type="primary"
@@ -216,7 +214,7 @@ const ResetPassword: React.FC = () => {
               >
                 {t("auth.requestNewToken")}
               </ModernButton>
-              
+
               <ModernButton
                 type="link"
                 onClick={handleBackToLogin}
@@ -255,7 +253,9 @@ const ResetPassword: React.FC = () => {
             <Title level={2} style={{ margin: 0, color: colors.colorTextBase }}>
               {t("auth.resetPassword")}
             </Title>
-            <Text style={{ fontSize: "16px", color: colors.colorTextSecondary }}>
+            <Text
+              style={{ fontSize: "16px", color: colors.colorTextSecondary }}
+            >
               {t("auth.resetPasswordDescription")}
             </Text>
           </div>
@@ -273,13 +273,16 @@ const ResetPassword: React.FC = () => {
                 { required: true, message: t("auth.passwordRequired") },
                 { min: 8, message: t("auth.passwordMinLength") },
                 {
-                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+                  pattern:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
                   message: t("auth.passwordRequirements"),
                 },
               ]}
             >
               <ModernInput.Password
-                prefix={<LockOutlined style={{ color: colors.colorTextSecondary }} />}
+                prefix={
+                  <LockOutlined style={{ color: colors.colorTextSecondary }} />
+                }
                 placeholder={t("auth.newPasswordPlaceholder")}
                 variant="filled"
                 size="lg"
@@ -297,13 +300,17 @@ const ResetPassword: React.FC = () => {
                     if (!value || getFieldValue("password") === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error(t("auth.passwordMismatch")));
+                    return Promise.reject(
+                      new Error(t("auth.passwordMismatch")),
+                    );
                   },
                 }),
               ]}
             >
               <ModernInput.Password
-                prefix={<LockOutlined style={{ color: colors.colorTextSecondary }} />}
+                prefix={
+                  <LockOutlined style={{ color: colors.colorTextSecondary }} />
+                }
                 placeholder={t("auth.confirmPasswordPlaceholder")}
                 variant="filled"
                 size="lg"

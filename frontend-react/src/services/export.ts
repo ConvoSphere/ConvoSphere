@@ -1,8 +1,8 @@
-import api from './api';
-import config from '../config';
+import api from "./api";
+import config from "../config";
 
 export interface ExportOptions {
-  format: 'csv' | 'json' | 'xlsx' | 'pdf';
+  format: "csv" | "json" | "xlsx" | "pdf";
   dateRange?: {
     start: string;
     end: string;
@@ -15,8 +15,14 @@ export interface ExportOptions {
 
 export interface ExportJob {
   id: string;
-  type: 'conversations' | 'knowledge' | 'analytics' | 'system' | 'users' | 'assistants';
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  type:
+    | "conversations"
+    | "knowledge"
+    | "analytics"
+    | "system"
+    | "users"
+    | "assistants";
+  status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   createdAt: string;
   completedAt?: string;
@@ -29,19 +35,19 @@ export interface ExportJob {
 
 export interface BackupConfig {
   autoBackup: boolean;
-  backupInterval: 'daily' | 'weekly' | 'monthly';
+  backupInterval: "daily" | "weekly" | "monthly";
   retentionDays: number;
   includeFiles: boolean;
   includeDatabase: boolean;
   includeConfig: boolean;
-  backupLocation: 'local' | 's3' | 'gcs';
+  backupLocation: "local" | "s3" | "gcs";
   credentials?: Record<string, any>;
 }
 
 export interface BackupJob {
   id: string;
-  type: 'manual' | 'scheduled';
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  type: "manual" | "scheduled";
+  status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   createdAt: string;
   completedAt?: string;
@@ -54,43 +60,63 @@ export interface BackupJob {
 export const exportService = {
   // Export conversations
   exportConversations: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/conversations`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/conversations`,
+      options,
+    );
     return response.data;
   },
 
   // Export knowledge base
   exportKnowledgeBase: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/knowledge`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/knowledge`,
+      options,
+    );
     return response.data;
   },
 
   // Export analytics data
   exportAnalytics: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/analytics`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/analytics`,
+      options,
+    );
     return response.data;
   },
 
   // Export system data
   exportSystemData: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/system`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/system`,
+      options,
+    );
     return response.data;
   },
 
   // Export users
   exportUsers: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/users`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/users`,
+      options,
+    );
     return response.data;
   },
 
   // Export assistants
   exportAssistants: async (options: ExportOptions): Promise<ExportJob> => {
-    const response = await api.post(`${config.apiEndpoints.export}/assistants`, options);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/assistants`,
+      options,
+    );
     return response.data;
   },
 
   // Get export job status
   getExportJobStatus: async (jobId: string): Promise<ExportJob> => {
-    const response = await api.get(`${config.apiEndpoints.export}/jobs/${jobId}`);
+    const response = await api.get(
+      `${config.apiEndpoints.export}/jobs/${jobId}`,
+    );
     return response.data;
   },
 
@@ -113,14 +139,20 @@ export const exportService = {
 
   // Download export file
   downloadExport: async (jobId: string): Promise<Blob> => {
-    const response = await api.get(`${config.apiEndpoints.export}/jobs/${jobId}/download`, {
-      responseType: 'blob',
-    });
+    const response = await api.get(
+      `${config.apiEndpoints.export}/jobs/${jobId}/download`,
+      {
+        responseType: "blob",
+      },
+    );
     return response.data;
   },
 
   // Bulk export
-  bulkExport: async (types: string[], options: ExportOptions): Promise<ExportJob[]> => {
+  bulkExport: async (
+    types: string[],
+    options: ExportOptions,
+  ): Promise<ExportJob[]> => {
     const response = await api.post(`${config.apiEndpoints.export}/bulk`, {
       types,
       options,
@@ -136,19 +168,27 @@ export const exportService = {
 
   // Save export template
   saveExportTemplate: async (template: any): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.export}/templates`, template);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/templates`,
+      template,
+    );
     return response.data;
   },
 
   // Backup Management
   createBackup: async (config: Partial<BackupConfig>): Promise<BackupJob> => {
-    const response = await api.post(`${config.apiEndpoints.backup}/create`, config);
+    const response = await api.post(
+      `${config.apiEndpoints.backup}/create`,
+      config,
+    );
     return response.data;
   },
 
   // Get backup status
   getBackupStatus: async (backupId: string): Promise<BackupJob> => {
-    const response = await api.get(`${config.apiEndpoints.backup}/jobs/${backupId}`);
+    const response = await api.get(
+      `${config.apiEndpoints.backup}/jobs/${backupId}`,
+    );
     return response.data;
   },
 
@@ -165,12 +205,18 @@ export const exportService = {
   },
 
   // Restore from backup
-  restoreBackup: async (backupId: string, options?: {
-    restoreFiles?: boolean;
-    restoreDatabase?: boolean;
-    restoreConfig?: boolean;
-  }): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.backup}/jobs/${backupId}/restore`, options);
+  restoreBackup: async (
+    backupId: string,
+    options?: {
+      restoreFiles?: boolean;
+      restoreDatabase?: boolean;
+      restoreConfig?: boolean;
+    },
+  ): Promise<any> => {
+    const response = await api.post(
+      `${config.apiEndpoints.backup}/jobs/${backupId}/restore`,
+      options,
+    );
     return response.data;
   },
 
@@ -181,9 +227,12 @@ export const exportService = {
 
   // Download backup
   downloadBackup: async (backupId: string): Promise<Blob> => {
-    const response = await api.get(`${config.apiEndpoints.backup}/jobs/${backupId}/download`, {
-      responseType: 'blob',
-    });
+    const response = await api.get(
+      `${config.apiEndpoints.backup}/jobs/${backupId}/download`,
+      {
+        responseType: "blob",
+      },
+    );
     return response.data;
   },
 
@@ -194,14 +243,22 @@ export const exportService = {
   },
 
   // Update backup configuration
-  updateBackupConfig: async (config: Partial<BackupConfig>): Promise<BackupConfig> => {
-    const response = await api.put(`${config.apiEndpoints.backup}/config`, config);
+  updateBackupConfig: async (
+    config: Partial<BackupConfig>,
+  ): Promise<BackupConfig> => {
+    const response = await api.put(
+      `${config.apiEndpoints.backup}/config`,
+      config,
+    );
     return response.data;
   },
 
   // Test backup configuration
   testBackupConfig: async (config: Partial<BackupConfig>): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.backup}/config/test`, config);
+    const response = await api.post(
+      `${config.apiEndpoints.backup}/config/test`,
+      config,
+    );
     return response.data;
   },
 
@@ -228,7 +285,10 @@ export const exportService = {
     cronExpression: string;
     enabled: boolean;
   }): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.export}/schedule`, schedule);
+    const response = await api.post(
+      `${config.apiEndpoints.export}/schedule`,
+      schedule,
+    );
     return response.data;
   },
 
@@ -239,8 +299,14 @@ export const exportService = {
   },
 
   // Update scheduled export
-  updateScheduledExport: async (scheduleId: string, updates: any): Promise<any> => {
-    const response = await api.put(`${config.apiEndpoints.export}/schedule/${scheduleId}`, updates);
+  updateScheduledExport: async (
+    scheduleId: string,
+    updates: any,
+  ): Promise<any> => {
+    const response = await api.put(
+      `${config.apiEndpoints.export}/schedule/${scheduleId}`,
+      updates,
+    );
     return response.data;
   },
 

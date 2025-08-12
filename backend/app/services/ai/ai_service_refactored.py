@@ -8,7 +8,6 @@ from .core import ChatProcessor, RequestBuilder, ResponseHandler
 from .middleware import RAGMiddleware, ToolMiddleware
 from .types.ai_types import (
     ChatResponse,
-    ChatStreamResponse,
     EmbeddingResponse,
 )
 
@@ -18,12 +17,12 @@ class AIService:
 
     def __init__(self, db: Session):
         self.db = db
-        
+
         # Initialize core components
         self.request_builder = RequestBuilder()
         self.response_handler = ResponseHandler()
         self.chat_processor = ChatProcessor(self.request_builder, self.response_handler)
-        
+
         # Initialize middleware
         self.rag_middleware = RAGMiddleware()
         self.tool_middleware = ToolMiddleware()
@@ -48,7 +47,7 @@ class AIService:
             processed_messages = await self._apply_middleware(
                 messages, user_id, use_knowledge_base, use_tools, max_context_chunks
             )
-            
+
             # Use chat processor for core logic
             response = await self.chat_processor.process_chat_completion(
                 messages=processed_messages,
@@ -62,7 +61,7 @@ class AIService:
                 max_context_chunks=max_context_chunks,
                 **kwargs,
             )
-            
+
             return response
 
         except Exception as e:
@@ -87,7 +86,7 @@ class AIService:
             processed_messages = await self._apply_middleware(
                 messages, user_id, use_knowledge_base, use_tools, max_context_chunks
             )
-            
+
             # Use chat processor for core logic
             async for response in self.chat_processor.process_chat_completion_stream(
                 messages=processed_messages,
@@ -119,7 +118,7 @@ class AIService:
                 provider=provider,
                 model=model,
             )
-            
+
             return response
 
         except Exception as e:
@@ -129,7 +128,9 @@ class AIService:
         self, ai_response: str, user_id: str
     ) -> List[Dict[str, Any]]:
         """Execute tools based on AI response."""
-        return await self.tool_middleware.execute_tools_from_response(ai_response, user_id)
+        return await self.tool_middleware.execute_tools_from_response(
+            ai_response, user_id
+        )
 
     def get_available_providers(self) -> List[str]:
         """Get list of available providers."""

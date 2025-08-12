@@ -344,8 +344,14 @@ const HybridModeConfig: React.FC<HybridModeConfigProps> = ({
       </div>
 
       <div className="config-actions">
-        <ModernButton variant="secondary" onClick={onClose}>{t("common.cancel")}</ModernButton>
-        <ModernButton variant="primary" onClick={handleConfigUpdate} loading={loading}>
+        <ModernButton variant="secondary" onClick={onClose}>
+          {t("common.cancel")}
+        </ModernButton>
+        <ModernButton
+          variant="primary"
+          onClick={handleConfigUpdate}
+          loading={loading}
+        >
           {t("common.save")}
         </ModernButton>
       </div>

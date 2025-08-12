@@ -1,16 +1,16 @@
-import React from 'react';
-import { Tabs } from 'antd';
+import React from "react";
+import { Tabs } from "antd";
 import {
   UserOutlined,
   SettingOutlined,
   DashboardOutlined,
   SafetyOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import UserManagement from './components/UserManagement';
-import SystemConfig from './components/SystemConfig';
-import SystemStats from './components/SystemStats';
-import AuditLogs from './components/AuditLogs';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import UserManagement from "./components/UserManagement";
+import SystemConfig from "./components/SystemConfig";
+import SystemStats from "./components/SystemStats";
+import AuditLogs from "./components/AuditLogs";
 
 const { TabPane } = Tabs;
 
@@ -19,41 +19,41 @@ const Admin: React.FC = () => {
 
   const tabs = [
     {
-      key: 'users',
+      key: "users",
       label: (
         <span>
           <UserOutlined />
-          {t('admin.tabs.users')}
+          {t("admin.tabs.users")}
         </span>
       ),
       children: <UserManagement />,
     },
     {
-      key: 'stats',
+      key: "stats",
       label: (
         <span>
           <DashboardOutlined />
-          {t('admin.tabs.statistics')}
+          {t("admin.tabs.statistics")}
         </span>
       ),
       children: <SystemStats />,
     },
     {
-      key: 'config',
+      key: "config",
       label: (
         <span>
           <SettingOutlined />
-          {t('admin.tabs.configuration')}
+          {t("admin.tabs.configuration")}
         </span>
       ),
       children: <SystemConfig />,
     },
     {
-      key: 'audit',
+      key: "audit",
       label: (
         <span>
           <SafetyOutlined />
-          {t('admin.tabs.audit_logs')}
+          {t("admin.tabs.audit_logs")}
         </span>
       ),
       children: <AuditLogs />,
@@ -61,13 +61,13 @@ const Admin: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: "24px" }}>
       <Tabs
         defaultActiveKey="users"
         type="card"
         size="large"
         items={tabs}
-        style={{ minHeight: 'calc(100vh - 200px)' }}
+        style={{ minHeight: "calc(100vh - 200px)" }}
       />
     </div>
   );

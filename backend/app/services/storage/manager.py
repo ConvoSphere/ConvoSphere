@@ -243,9 +243,11 @@ class StorageManager:
                 {
                     "provider_name": self.provider.get_provider_name(),
                     "config_provider": self.config.provider,
-                    "health_check_time": self._health_check_time.isoformat()
-                    if self._health_check_time
-                    else None,
+                    "health_check_time": (
+                        self._health_check_time.isoformat()
+                        if self._health_check_time
+                        else None
+                    ),
                 }
             )
             return info
@@ -439,9 +441,11 @@ class StorageManager:
                 "connection_pool": pool_metrics,
                 "batch_processor": batch_status,
                 "rate_limiter": rate_limiter_status,
-                "health_check_time": self._health_check_time.isoformat()
-                if self._health_check_time
-                else None,
+                "health_check_time": (
+                    self._health_check_time.isoformat()
+                    if self._health_check_time
+                    else None
+                ),
             }
 
         except Exception as e:

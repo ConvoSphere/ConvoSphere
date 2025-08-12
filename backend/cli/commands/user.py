@@ -15,6 +15,7 @@ from cli.utils.validation import (
 
 # App imports
 
+
 class UserCommands:
     """User management commands."""
 

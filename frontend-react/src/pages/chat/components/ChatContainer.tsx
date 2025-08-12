@@ -1,11 +1,11 @@
-import React, { useRef, useEffect } from 'react';
-import { Layout, Spin, Empty, Alert } from 'antd';
-import { useTranslation } from 'react-i18next';
-import { ChatMessage as ChatMessageType } from '../types/chat.types';
-import ChatMessage from './ChatMessage';
-import ChatInput from './ChatInput';
-import ChatToolbar from './ChatToolbar';
-import { useChat } from '../hooks/useChat';
+import React, { useRef, useEffect } from "react";
+import { Layout, Spin, Empty, Alert } from "antd";
+import { useTranslation } from "react-i18next";
+import { ChatMessage as ChatMessageType } from "../types/chat.types";
+import ChatMessage from "./ChatMessage";
+import ChatInput from "./ChatInput";
+import ChatToolbar from "./ChatToolbar";
+import { useChat } from "../hooks/useChat";
 
 const { Content } = Layout;
 
@@ -30,7 +30,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const { t } = useTranslation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     messages,
     thread,
@@ -61,7 +61,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = async (formData: any) => {
@@ -102,10 +102,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleRetryMessage = (id: string) => {
     // Find the message and retry
-    const messageIndex = messages.findIndex(m => m.id === id);
+    const messageIndex = messages.findIndex((m) => m.id === id);
     if (messageIndex > 0) {
       const previousMessage = messages[messageIndex - 1];
-      if (previousMessage.role === 'user') {
+      if (previousMessage.role === "user") {
         sendMessage({ message: previousMessage.content });
       }
     }
@@ -114,7 +114,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const renderMessages = () => {
     if (isLoading && messages.length === 0) {
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
+        >
           <Spin size="large" />
         </div>
       );
@@ -122,9 +129,16 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     if (messages.length === 0) {
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
+        >
           <Empty
-            description={t('chat.no_messages')}
+            description={t("chat.no_messages")}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </div>
@@ -135,7 +149,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const displayMessages = messages.slice(-maxMessages);
 
     return (
-      <div style={{ padding: '16px 0' }}>
+      <div style={{ padding: "16px 0" }}>
         {displayMessages.map((message) => (
           <ChatMessage
             key={message.id}
@@ -156,7 +170,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     return (
       <Alert
-        message={t('chat.error')}
+        message={t("chat.error")}
         description={error.message}
         type="error"
         showIcon
@@ -170,17 +184,26 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     if (messages.length > 0 || isLoading) return null;
 
     return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '40px 20px',
-        color: '#666',
-        maxWidth: 600,
-        margin: '0 auto'
-      }}>
-        <h2>{t('chat.welcome_title')}</h2>
-        <p>{t('chat.welcome_message')}</p>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "40px 20px",
+          color: "#666",
+          maxWidth: 600,
+          margin: "0 auto",
+        }}
+      >
+        <h2>{t("chat.welcome_title")}</h2>
+        <p>{t("chat.welcome_message")}</p>
         {assistant && (
-          <div style={{ marginTop: 20, padding: 16, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
+          <div
+            style={{
+              marginTop: 20,
+              padding: 16,
+              backgroundColor: "#f5f5f5",
+              borderRadius: 8,
+            }}
+          >
             <h4>{assistant.name}</h4>
             <p>{assistant.description}</p>
           </div>
@@ -190,7 +213,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Layout
+      style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+    >
       {/* Toolbar */}
       {showToolbar && (
         <ChatToolbar
@@ -212,10 +237,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       <Content
         style={{
           flex: 1,
-          overflow: 'auto',
-          backgroundColor: '#fff',
-          display: 'flex',
-          flexDirection: 'column',
+          overflow: "auto",
+          backgroundColor: "#fff",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {renderWelcomeMessage()}
@@ -232,7 +257,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         isStreaming={isStreaming}
         disabled={false}
         allowAttachments={allowAttachments}
-        placeholder={t('chat.type_message_placeholder')}
+        placeholder={t("chat.type_message_placeholder")}
       />
     </Layout>
   );

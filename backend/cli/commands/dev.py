@@ -6,7 +6,6 @@ import sys
 from datetime import datetime
 
 import requests
-
 from cli.utils.output import print_error, print_info, print_success, print_warning
 
 # Constants

@@ -18,12 +18,14 @@ let isLoopDetected = false;
 // Request interceptor - simplified to prevent loops
 api.interceptors.request.use(async (config: any) => {
   // Skip token handling only for auth endpoints that don't need authentication
-  if (config.url?.includes('/auth/') && 
-      !config.url?.includes('/auth/me') && 
-      !config.url?.includes('/auth/sso/link') &&
-      !config.url?.includes('/auth/sso/unlink') &&
-      !config.url?.includes('/auth/sso/provisioning') &&
-      !config.url?.includes('/auth/sso/bulk-sync')) {
+  if (
+    config.url?.includes("/auth/") &&
+    !config.url?.includes("/auth/me") &&
+    !config.url?.includes("/auth/sso/link") &&
+    !config.url?.includes("/auth/sso/unlink") &&
+    !config.url?.includes("/auth/sso/provisioning") &&
+    !config.url?.includes("/auth/sso/bulk-sync")
+  ) {
     return config;
   }
 
@@ -39,7 +41,7 @@ api.interceptors.request.use(async (config: any) => {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("token_expiry");
     isLoopDetected = true;
-    if (!window.location.pathname.includes('/login')) {
+    if (!window.location.pathname.includes("/login")) {
       window.location.href = "/login";
     }
     return config;
@@ -71,21 +73,23 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       // Skip auth endpoints that don't need authentication
-      if (originalRequest.url?.includes('/auth/') && 
-          !originalRequest.url?.includes('/auth/me') && 
-          !originalRequest.url?.includes('/auth/sso/link') &&
-          !originalRequest.url?.includes('/auth/sso/unlink') &&
-          !originalRequest.url?.includes('/auth/sso/provisioning') &&
-          !originalRequest.url?.includes('/auth/sso/bulk-sync')) {
+      if (
+        originalRequest.url?.includes("/auth/") &&
+        !originalRequest.url?.includes("/auth/me") &&
+        !originalRequest.url?.includes("/auth/sso/link") &&
+        !originalRequest.url?.includes("/auth/sso/unlink") &&
+        !originalRequest.url?.includes("/auth/sso/provisioning") &&
+        !originalRequest.url?.includes("/auth/sso/bulk-sync")
+      ) {
         return Promise.reject(error);
       }
 
       const now = Date.now();
-      
+
       // Check cooldown
       if (now - lastRefreshTime < REFRESH_COOLDOWN) {
         console.warn("Refresh cooldown active, redirecting to login");
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(error);
@@ -94,7 +98,7 @@ api.interceptors.response.use(
       // Check if already refreshing
       if (isRefreshing) {
         console.warn("Already refreshing, redirecting to login");
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(error);
@@ -115,14 +119,14 @@ api.interceptors.response.use(
         } else {
           // Refresh failed
           console.warn("Token refresh failed");
-          if (!window.location.pathname.includes('/login')) {
+          if (!window.location.pathname.includes("/login")) {
             window.location.href = "/login";
           }
           return Promise.reject(error);
         }
       } catch (refreshError) {
         console.error("Token refresh error:", refreshError);
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
@@ -134,13 +138,13 @@ api.interceptors.response.use(
     // Handle rate limiting
     if (error.response?.status === 429) {
       console.warn("Rate limit exceeded, redirecting to login");
-      if (!window.location.pathname.includes('/login')) {
+      if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -10,9 +10,9 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from loguru import logger
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import OperationalError
 from sqlalchemy import func
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
 from backend.app.core.database import get_db
@@ -31,12 +31,12 @@ router = APIRouter()
 
 
 from backend.app.api.v1.endpoints.auth.models import (
+    PasswordResetConfirm,
+    PasswordResetRequest,
     RefreshTokenRequest,
     TokenResponse,
     UserLogin,
     UserResponse,
-    PasswordResetRequest,
-    PasswordResetConfirm,
 )
 
 
@@ -294,11 +294,13 @@ async def get_current_user_info(
 
 
 @router.post("/forgot-password")
-async def forgot_password(request_data: PasswordResetRequest, db: Session = Depends(get_db)):
+async def forgot_password(
+    request_data: PasswordResetRequest, db: Session = Depends(get_db)
+):
     """Initiate password reset flow; always return success message."""
+    from backend.app.core.security_hardening import SSOSecurityValidator
     from backend.app.services.email_service import email_service
     from backend.app.services.token_service import token_service
-    from backend.app.core.security_hardening import SSOSecurityValidator
 
     validator = SSOSecurityValidator()
 
@@ -324,7 +326,10 @@ async def forgot_password(request_data: PasswordResetRequest, db: Session = Depe
             reset_url = f"{get_settings().backend_url}/reset-password?token={token}"
             try:
                 email_service.send_password_reset_email(
-                    user.email, token, reset_url, language=get_settings().default_language
+                    user.email,
+                    token,
+                    reset_url,
+                    language=get_settings().default_language,
                 )
             except Exception:
                 pass
@@ -344,7 +349,9 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
     from backend.app.services.token_service import token_service
 
     try:
-        user = token_service.validate_password_reset_token(data.token, db, return_user=True)
+        user = token_service.validate_password_reset_token(
+            data.token, db, return_user=True
+        )
     except OperationalError:
         user = None
 

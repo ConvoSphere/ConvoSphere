@@ -64,9 +64,9 @@ class AssistantMemoryManager:
                 content={
                     "user_message": request.message,
                     "assistant_response": ai_response.content,
-                    "tools_used": ai_response.tool_calls
-                    if ai_response.tool_calls
-                    else [],
+                    "tools_used": (
+                        ai_response.tool_calls if ai_response.tool_calls else []
+                    ),
                     "model_used": ai_response.metadata.get("model_used"),
                     "processing_time": ai_response.metadata.get("processing_time"),
                 },
@@ -202,9 +202,9 @@ class AssistantMemoryManager:
                 "conversation_id": conversation_id,
                 "total_memories": len(all_memories),
                 "memory_types": memory_types,
-                "average_importance": total_importance / len(all_memories)
-                if all_memories
-                else 0.0,
+                "average_importance": (
+                    total_importance / len(all_memories) if all_memories else 0.0
+                ),
                 "recent_memories": [
                     {
                         "type": memory.memory_type,

@@ -82,16 +82,20 @@ interface FavoriteCategory {
 const ModelFavorites: React.FC = () => {
   const { t } = useTranslation();
   const { models, selectedModel, setSelectedModel } = useAIModelsStore();
-  
+
   const [favorites, setFavorites] = useState<ModelFavorite[]>([]);
   const [categories, setCategories] = useState<FavoriteCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingFavorite, setEditingFavorite] = useState<ModelFavorite | null>(null);
+  const [editingFavorite, setEditingFavorite] = useState<ModelFavorite | null>(
+    null,
+  );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState<"name" | "priority" | "usage" | "lastUsed">("priority");
-  
+  const [sortBy, setSortBy] = useState<
+    "name" | "priority" | "usage" | "lastUsed"
+  >("priority");
+
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -212,7 +216,7 @@ const ModelFavorites: React.FC = () => {
 
   const addToFavorites = async (modelId: string) => {
     try {
-      const model = models.find(m => m.id === modelId);
+      const model = models.find((m) => m.id === modelId);
       if (!model) return;
 
       const newFavorite: ModelFavorite = {
@@ -237,7 +241,7 @@ const ModelFavorites: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      setFavorites(prev => [...prev, newFavorite]);
+      setFavorites((prev) => [...prev, newFavorite]);
       message.success(t("favorites.added_success"));
     } catch (error) {
       message.error(t("favorites.add_failed"));
@@ -246,7 +250,7 @@ const ModelFavorites: React.FC = () => {
 
   const removeFromFavorites = async (favoriteId: string) => {
     try {
-      setFavorites(prev => prev.filter(f => f.id !== favoriteId));
+      setFavorites((prev) => prev.filter((f) => f.id !== favoriteId));
       message.success(t("favorites.removed_success"));
     } catch (error) {
       message.error(t("favorites.remove_failed"));
@@ -257,7 +261,9 @@ const ModelFavorites: React.FC = () => {
     try {
       if (editingFavorite) {
         const updatedFavorite = { ...editingFavorite, ...values };
-        setFavorites(prev => prev.map(f => f.id === editingFavorite.id ? updatedFavorite : f));
+        setFavorites((prev) =>
+          prev.map((f) => (f.id === editingFavorite.id ? updatedFavorite : f)),
+        );
         message.success(t("favorites.updated_success"));
       } else {
         const newFavorite: ModelFavorite = {
@@ -269,10 +275,10 @@ const ModelFavorites: React.FC = () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        setFavorites(prev => [...prev, newFavorite]);
+        setFavorites((prev) => [...prev, newFavorite]);
         message.success(t("favorites.created_success"));
       }
-      
+
       setModalVisible(false);
       form.resetFields();
       setEditingFavorite(null);
@@ -282,28 +288,36 @@ const ModelFavorites: React.FC = () => {
   };
 
   const useFavorite = (favorite: ModelFavorite) => {
-    setSelectedModel(models.find(m => m.id === favorite.modelId) || null);
-    
+    setSelectedModel(models.find((m) => m.id === favorite.modelId) || null);
+
     // Update usage count
-    setFavorites(prev => prev.map(f => 
-      f.id === favorite.id 
-        ? { ...f, usageCount: f.usageCount + 1, lastUsed: new Date().toISOString() }
-        : f
-    ));
-    
+    setFavorites((prev) =>
+      prev.map((f) =>
+        f.id === favorite.id
+          ? {
+              ...f,
+              usageCount: f.usageCount + 1,
+              lastUsed: new Date().toISOString(),
+            }
+          : f,
+      ),
+    );
+
     message.success(t("favorites.model_selected"));
   };
 
   const getModelName = (modelId: string) => {
-    return models.find(m => m.id === modelId)?.displayName || modelId;
+    return models.find((m) => m.id === modelId)?.displayName || modelId;
   };
 
   const getCategoryInfo = (categoryId: string) => {
-    return categories.find(c => c.id === categoryId) || categories[0];
+    return categories.find((c) => c.id === categoryId) || categories[0];
   };
 
   const filteredFavorites = favorites
-    .filter(f => selectedCategory === "all" || f.category === selectedCategory)
+    .filter(
+      (f) => selectedCategory === "all" || f.category === selectedCategory,
+    )
     .sort((a, b) => {
       switch (sortBy) {
         case "name":
@@ -313,16 +327,18 @@ const ModelFavorites: React.FC = () => {
         case "usage":
           return b.usageCount - a.usageCount;
         case "lastUsed":
-          return new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime();
+          return (
+            new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
+          );
         default:
           return 0;
       }
     });
 
   const renderFavoriteCard = (favorite: ModelFavorite) => {
-    const model = models.find(m => m.id === favorite.modelId);
+    const model = models.find((m) => m.id === favorite.modelId);
     const category = getCategoryInfo(favorite.category);
-    
+
     return (
       <Card
         key={favorite.id}
@@ -330,15 +346,15 @@ const ModelFavorites: React.FC = () => {
         style={{ marginBottom: 16 }}
         actions={[
           <Tooltip title={t("favorites.use_model")}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={<RocketOutlined />}
               onClick={() => useFavorite(favorite)}
             />
           </Tooltip>,
           <Tooltip title={t("favorites.edit")}>
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={<EditOutlined />}
               onClick={() => {
                 setEditingFavorite(favorite);
@@ -352,47 +368,66 @@ const ModelFavorites: React.FC = () => {
               title={t("favorites.remove_confirm")}
               onConfirm={() => removeFromFavorites(favorite.id)}
             >
-              <Button 
-                type="text" 
-                danger
-                icon={<DeleteOutlined />}
-              />
+              <Button type="text" danger icon={<DeleteOutlined />} />
             </Popconfirm>
           </Tooltip>,
         ]}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
           <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+            <div
+              style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
+            >
               <Text strong style={{ fontSize: 16, marginRight: 8 }}>
                 {favorite.name}
               </Text>
-              <Badge count={favorite.priority} style={{ backgroundColor: category.color }} />
+              <Badge
+                count={favorite.priority}
+                style={{ backgroundColor: category.color }}
+              />
             </div>
-            
-            <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+
+            <Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 8 }}
+            >
               {favorite.description}
             </Text>
-            
+
             <div style={{ marginBottom: 8 }}>
               <Tag color={category.color} icon={<span>{category.icon}</span>}>
                 {category.name}
               </Tag>
-              {favorite.tags.map(tag => (
-                <Tag key={tag} size="small">{tag}</Tag>
+              {favorite.tags.map((tag) => (
+                <Tag key={tag} size="small">
+                  {tag}
+                </Tag>
               ))}
             </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <Space>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  <ClockCircleOutlined /> {favorite.usageCount} {t("favorites.uses")}
+                  <ClockCircleOutlined /> {favorite.usageCount}{" "}
+                  {t("favorites.uses")}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   <DollarOutlined /> {model?.costPer1kTokens?.toFixed(4)}/1k
                 </Text>
               </Space>
-              
+
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {new Date(favorite.lastUsed).toLocaleDateString()}
               </Text>
@@ -404,22 +439,22 @@ const ModelFavorites: React.FC = () => {
   };
 
   const renderFavoriteList = (favorite: ModelFavorite) => {
-    const model = models.find(m => m.id === favorite.modelId);
+    const model = models.find((m) => m.id === favorite.modelId);
     const category = getCategoryInfo(favorite.category);
-    
+
     return (
       <List.Item
         key={favorite.id}
         actions={[
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="small"
             icon={<RocketOutlined />}
             onClick={() => useFavorite(favorite)}
           >
             {t("favorites.use")}
           </Button>,
-          <Button 
+          <Button
             size="small"
             icon={<EditOutlined />}
             onClick={() => {
@@ -434,11 +469,7 @@ const ModelFavorites: React.FC = () => {
             title={t("favorites.remove_confirm")}
             onConfirm={() => removeFromFavorites(favorite.id)}
           >
-            <Button 
-              size="small" 
-              danger
-              icon={<DeleteOutlined />}
-            >
+            <Button size="small" danger icon={<DeleteOutlined />}>
               {t("favorites.remove")}
             </Button>
           </Popconfirm>,
@@ -446,23 +477,28 @@ const ModelFavorites: React.FC = () => {
       >
         <List.Item.Meta
           avatar={
-            <div style={{ 
-              width: 40, 
-              height: 40, 
-              borderRadius: "50%", 
-              backgroundColor: category.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 16,
-            }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                backgroundColor: category.color,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16,
+              }}
+            >
               {category.icon}
             </div>
           }
           title={
             <Space>
               <Text strong>{favorite.name}</Text>
-              <Badge count={favorite.priority} style={{ backgroundColor: category.color }} />
+              <Badge
+                count={favorite.priority}
+                style={{ backgroundColor: category.color }}
+              />
               <Tag color={category.color}>{category.name}</Tag>
             </Space>
           }
@@ -472,7 +508,8 @@ const ModelFavorites: React.FC = () => {
               <br />
               <Space>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  <ClockCircleOutlined /> {favorite.usageCount} {t("favorites.uses")}
+                  <ClockCircleOutlined /> {favorite.usageCount}{" "}
+                  {t("favorites.uses")}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   <DollarOutlined /> {model?.costPer1kTokens?.toFixed(4)}/1k
@@ -483,8 +520,10 @@ const ModelFavorites: React.FC = () => {
               </Space>
               <br />
               <Space>
-                {favorite.tags.map(tag => (
-                  <Tag key={tag} size="small">{tag}</Tag>
+                {favorite.tags.map((tag) => (
+                  <Tag key={tag} size="small">
+                    {tag}
+                  </Tag>
                 ))}
               </Space>
             </div>
@@ -511,7 +550,7 @@ const ModelFavorites: React.FC = () => {
               style={{ width: "100%" }}
             >
               <Option value="all">{t("favorites.all_categories")}</Option>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <Option key={category.id} value={category.id}>
                   <Space>
                     <span>{category.icon}</span>
@@ -571,8 +610,8 @@ const ModelFavorites: React.FC = () => {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={t("favorites.no_favorites")}
           >
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
                 setEditingFavorite(null);
@@ -586,7 +625,7 @@ const ModelFavorites: React.FC = () => {
         </Card>
       ) : viewMode === "grid" ? (
         <Row gutter={[16, 16]}>
-          {filteredFavorites.map(favorite => (
+          {filteredFavorites.map((favorite) => (
             <Col xs={24} sm={12} md={8} lg={6} key={favorite.id}>
               {renderFavoriteCard(favorite)}
             </Col>
@@ -602,7 +641,11 @@ const ModelFavorites: React.FC = () => {
 
       {/* Add/Edit Favorite Modal */}
       <Modal
-        title={editingFavorite ? t("favorites.edit_favorite") : t("favorites.add_favorite")}
+        title={
+          editingFavorite
+            ? t("favorites.edit_favorite")
+            : t("favorites.add_favorite")
+        }
         open={modalVisible}
         onOk={() => form.submit()}
         onCancel={() => {
@@ -619,14 +662,14 @@ const ModelFavorites: React.FC = () => {
             rules={[{ required: true }]}
           >
             <Select placeholder={t("favorites.form.select_model")}>
-              {models.map(model => (
+              {models.map((model) => (
                 <Option key={model.id} value={model.id}>
                   {model.displayName}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             name="name"
             label={t("favorites.form.name")}
@@ -634,21 +677,18 @@ const ModelFavorites: React.FC = () => {
           >
             <Input placeholder={t("favorites.form.name_placeholder")} />
           </Form.Item>
-          
-          <Form.Item
-            name="description"
-            label={t("favorites.form.description")}
-          >
+
+          <Form.Item name="description" label={t("favorites.form.description")}>
             <Input placeholder={t("favorites.form.description_placeholder")} />
           </Form.Item>
-          
+
           <Form.Item
             name="category"
             label={t("favorites.form.category")}
             rules={[{ required: true }]}
           >
             <Select placeholder={t("favorites.form.select_category")}>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <Option key={category.id} value={category.id}>
                   <Space>
                     <span>{category.icon}</span>
@@ -658,28 +698,24 @@ const ModelFavorites: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
-          
+
           <Form.Item
             name="priority"
             label={t("favorites.form.priority")}
             rules={[{ required: true }]}
           >
-            <InputNumber 
-              min={1} 
-              max={100} 
-              style={{ width: "100%" }}
+            <InputNumber min={1} max={100} style={{ width: "100%" }} />
+          </Form.Item>
+
+          <Form.Item name="tags" label={t("favorites.form.tags")}>
+            <Select
+              mode="tags"
+              placeholder={t("favorites.form.tags_placeholder")}
             />
           </Form.Item>
-          
-          <Form.Item
-            name="tags"
-            label={t("favorites.form.tags")}
-          >
-            <Select mode="tags" placeholder={t("favorites.form.tags_placeholder")} />
-          </Form.Item>
-          
+
           <Divider>{t("favorites.form.custom_settings")}</Divider>
-          
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item

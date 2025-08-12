@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Button, Card, Alert, Spinner, Badge, Switch, Modal } from "./ui";
 import { getSSOProviders } from "../services/auth";
 
-
 interface SSOProvider {
   id: string;
   name: string;
@@ -30,8 +29,6 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
   const [success, setSuccess] = useState<string | null>(null);
   const [showConfigModal, setShowConfigModal] = useState<string | null>(null);
   const [configData, setConfigData] = useState<any>(null);
-
-
 
   useEffect(() => {
     loadSSOProviders();
@@ -75,12 +72,15 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
   const handleViewConfig = async (providerId: string) => {
     try {
-      const response = await fetch(`/api/v1/auth/sso/providers/${providerId}/config`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/v1/auth/sso/providers/${providerId}/config`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (response.ok) {
         const config = await response.json();

@@ -43,7 +43,9 @@ interface McpServerManagerProps {
   onServerChange: () => void;
 }
 
-const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) => {
+const McpServerManager: React.FC<McpServerManagerProps> = ({
+  onServerChange,
+}) => {
   const { t } = useTranslation();
   const [servers, setServers] = useState<McpServer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       // TODO: Implement API call to get MCP servers
       // const response = await api.get('/mcp/servers');
       // setServers(response.data);
-      
+
       // Mock data for now
       setServers([
         {
@@ -91,7 +93,7 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
     try {
       // TODO: Implement API call to add MCP server
       // await api.post('/mcp/servers', values);
-      
+
       message.success(t("mcp.server_added", "MCP server added successfully"));
       setShowAddModal(false);
       form.resetFields();
@@ -106,12 +108,16 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
     try {
       // TODO: Implement API call to remove MCP server
       // await api.delete(`/mcp/servers/${serverId}`);
-      
-      message.success(t("mcp.server_removed", "MCP server removed successfully"));
+
+      message.success(
+        t("mcp.server_removed", "MCP server removed successfully"),
+      );
       loadServers();
       onServerChange();
     } catch (error) {
-      message.error(t("mcp.remove_server_failed", "Failed to remove MCP server"));
+      message.error(
+        t("mcp.remove_server_failed", "Failed to remove MCP server"),
+      );
     }
   };
 
@@ -122,7 +128,9 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       key: "server_name",
       render: (name: string, record: McpServer) => (
         <Space>
-          <ServerOutlined style={{ color: record.is_connected ? "#52c41a" : "#ff4d4f" }} />
+          <ServerOutlined
+            style={{ color: record.is_connected ? "#52c41a" : "#ff4d4f" }}
+          />
           <Text strong>{name}</Text>
         </Space>
       ),
@@ -142,8 +150,15 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       dataIndex: "is_connected",
       key: "is_connected",
       render: (connected: boolean) => (
-        <Tag color={connected ? "green" : "red"} icon={connected ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />}>
-          {connected ? t("mcp.connected", "Connected") : t("mcp.disconnected", "Disconnected")}
+        <Tag
+          color={connected ? "green" : "red"}
+          icon={
+            connected ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />
+          }
+        >
+          {connected
+            ? t("mcp.connected", "Connected")
+            : t("mcp.disconnected", "Disconnected")}
         </Tag>
       ),
     },
@@ -151,17 +166,13 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       title: t("mcp.tools", "Tools"),
       dataIndex: "tool_count",
       key: "tool_count",
-      render: (count: number) => (
-        <Tag color="blue">{count}</Tag>
-      ),
+      render: (count: number) => <Tag color="blue">{count}</Tag>,
     },
     {
       title: t("mcp.resources", "Resources"),
       dataIndex: "resource_count",
       key: "resource_count",
-      render: (count: number) => (
-        <Tag color="purple">{count}</Tag>
-      ),
+      render: (count: number) => <Tag color="purple">{count}</Tag>,
     },
     {
       title: t("common.actions", "Actions"),
@@ -177,7 +188,10 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
             {t("common.refresh", "Refresh")}
           </ModernButton>
           <Popconfirm
-            title={t("mcp.remove_server_confirm", "Are you sure you want to remove this server?")}
+            title={t(
+              "mcp.remove_server_confirm",
+              "Are you sure you want to remove this server?",
+            )}
             onConfirm={() => handleRemoveServer(record.server_id)}
             okText={t("common.yes", "Yes")}
             cancelText={t("common.no", "No")}
@@ -201,7 +215,13 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       variant="elevated"
       size="lg"
       header={
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Title level={4} style={{ margin: 0 }}>
             {t("mcp.server_management", "MCP Server Management")}
           </Title>
@@ -232,7 +252,10 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
       ) : servers.length === 0 ? (
         <Alert
           message={t("mcp.no_servers", "No MCP servers configured")}
-          description={t("mcp.no_servers_desc", "Add an MCP server to get started")}
+          description={t(
+            "mcp.no_servers_desc",
+            "Add an MCP server to get started",
+          )}
           type="info"
           showIcon
           action={
@@ -282,28 +305,63 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
           <ModernFormItem
             name="server_id"
             label={t("mcp.server_id", "Server ID")}
-            rules={[{ required: true, message: t("mcp.server_id_required", "Server ID is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t("mcp.server_id_required", "Server ID is required"),
+              },
+            ]}
           >
-            <ModernInput placeholder={t("mcp.server_id_placeholder", "Enter unique server ID")} />
+            <ModernInput
+              placeholder={t(
+                "mcp.server_id_placeholder",
+                "Enter unique server ID",
+              )}
+            />
           </ModernFormItem>
 
           <ModernFormItem
             name="server_name"
             label={t("mcp.server_name", "Server Name")}
-            rules={[{ required: true, message: t("mcp.server_name_required", "Server name is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t(
+                  "mcp.server_name_required",
+                  "Server name is required",
+                ),
+              },
+            ]}
           >
-            <ModernInput placeholder={t("mcp.server_name_placeholder", "Enter server name")} />
+            <ModernInput
+              placeholder={t(
+                "mcp.server_name_placeholder",
+                "Enter server name",
+              )}
+            />
           </ModernFormItem>
 
           <ModernFormItem
             name="server_url"
             label={t("mcp.server_url", "Server URL")}
-            rules={[{ required: true, message: t("mcp.server_url_required", "Server URL is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t("mcp.server_url_required", "Server URL is required"),
+              },
+            ]}
           >
             <ModernInput placeholder="mcp://localhost:3000" />
           </ModernFormItem>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 12,
+              marginTop: 24,
+            }}
+          >
             <ModernButton
               variant="outlined"
               onClick={() => {
@@ -313,10 +371,7 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({ onServerChange }) =
             >
               {t("common.cancel", "Cancel")}
             </ModernButton>
-            <ModernButton
-              variant="primary"
-              htmlType="submit"
-            >
+            <ModernButton variant="primary" htmlType="submit">
               {t("mcp.add_server", "Add Server")}
             </ModernButton>
           </div>

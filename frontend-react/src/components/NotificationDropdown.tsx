@@ -1,7 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Badge, Dropdown, Avatar, List, Typography, Space, Tag, Tooltip, Divider } from "antd";
+import {
+  Badge,
+  Dropdown,
+  Avatar,
+  List,
+  Typography,
+  Space,
+  Tag,
+  Tooltip,
+  Divider,
+} from "antd";
 import ModernButton from "./ModernButton";
-import { BellOutlined, CheckOutlined, DeleteOutlined, SettingOutlined, InfoCircleOutlined, ExclamationCircleOutlined, CheckCircleOutlined, WarningOutlined } from "@ant-design/icons";
+import {
+  BellOutlined,
+  CheckOutlined,
+  DeleteOutlined,
+  SettingOutlined,
+  InfoCircleOutlined,
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+  WarningOutlined,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";
@@ -83,7 +102,7 @@ const NotificationDropdown: React.FC = () => {
     try {
       setLoading(true);
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       setNotifications(mockNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -93,51 +112,63 @@ const NotificationDropdown: React.FC = () => {
   };
 
   const markAsRead = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
+    setNotifications((prev) =>
+      prev.map((notification) =>
         notification.id === notificationId
           ? { ...notification, isRead: true }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, isRead: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, isRead: true })),
     );
   };
 
   const deleteNotification = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.filter(notification => notification.id !== notificationId)
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== notificationId),
     );
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "info": return <InfoCircleOutlined />;
-      case "success": return <CheckCircleOutlined />;
-      case "warning": return <WarningOutlined />;
-      case "error": return <ExclamationCircleOutlined />;
-      default: return <BellOutlined />;
+      case "info":
+        return <InfoCircleOutlined />;
+      case "success":
+        return <CheckCircleOutlined />;
+      case "warning":
+        return <WarningOutlined />;
+      case "error":
+        return <ExclamationCircleOutlined />;
+      default:
+        return <BellOutlined />;
     }
   };
 
   const getNotificationColor = (type: string) => {
     if (!colors) return "#8c8c8c";
     switch (type) {
-      case "info": return colors.colorPrimary;
-      case "success": return colors.colorSuccess;
-      case "warning": return colors.colorWarning;
-      case "error": return colors.colorError;
-      default: return colors.colorTextSecondary;
+      case "info":
+        return colors.colorPrimary;
+      case "success":
+        return colors.colorSuccess;
+      case "warning":
+        return colors.colorWarning;
+      case "error":
+        return colors.colorError;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - timestamp.getTime()) / (1000 * 60),
+    );
 
     if (diffInMinutes < 1) {
       return "Just now";
@@ -152,15 +183,29 @@ const NotificationDropdown: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const notificationItems = [
     {
       key: "header",
       label: (
-        <div style={{ padding: "8px 16px", borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Title level={5} style={{ margin: 0, color: colors?.colorTextBase || "#ffffff" }}>
+        <div
+          style={{
+            padding: "8px 16px",
+            borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}`,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Title
+              level={5}
+              style={{ margin: 0, color: colors?.colorTextBase || "#ffffff" }}
+            >
               {t("notifications.title", "Notifications")}
             </Title>
             <Space>
@@ -190,7 +235,7 @@ const NotificationDropdown: React.FC = () => {
         </div>
       ),
     },
-    ...notifications.slice(0, 5).map(notification => ({
+    ...notifications.slice(0, 5).map((notification) => ({
       key: notification.id,
       label: (
         <div
@@ -198,10 +243,14 @@ const NotificationDropdown: React.FC = () => {
             padding: "12px 16px",
             opacity: notification.isRead ? 0.7 : 1,
             borderBottom: `1px solid ${colors?.colorBorder || "#d9d9d9"}`,
-            backgroundColor: notification.isRead ? "transparent" : colors?.colorBgElevated || "#fafafa",
+            backgroundColor: notification.isRead
+              ? "transparent"
+              : colors?.colorBgElevated || "#fafafa",
           }}
         >
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+          <div
+            style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}
+          >
             <Avatar
               icon={getNotificationIcon(notification.type)}
               size="small"
@@ -212,8 +261,21 @@ const NotificationDropdown: React.FC = () => {
               }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <Text strong style={{ fontSize: "14px", color: colors?.colorTextBase || "#ffffff" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <Text
+                  strong
+                  style={{
+                    fontSize: "14px",
+                    color: colors?.colorTextBase || "#ffffff",
+                  }}
+                >
                   {notification.title}
                 </Text>
                 {notification.isImportant && (
@@ -222,16 +284,36 @@ const NotificationDropdown: React.FC = () => {
                   </Tag>
                 )}
               </div>
-              <Text style={{ fontSize: "12px", color: colors?.colorTextSecondary || "#cccccc", display: "block", marginBottom: 4 }}>
+              <Text
+                style={{
+                  fontSize: "12px",
+                  color: colors?.colorTextSecondary || "#cccccc",
+                  display: "block",
+                  marginBottom: 4,
+                }}
+              >
                 {notification.message}
               </Text>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ fontSize: "11px", color: colors?.colorTextSecondary || "#cccccc" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: "11px",
+                    color: colors?.colorTextSecondary || "#cccccc",
+                  }}
+                >
                   {formatTimestamp(notification.timestamp)}
                 </Text>
                 <Space size="small">
                   {!notification.isRead && (
-                    <Tooltip title={t("notifications.mark_as_read", "Mark as read")}>
+                    <Tooltip
+                      title={t("notifications.mark_as_read", "Mark as read")}
+                    >
                       <ModernButton
                         variant="ghost"
                         size="sm"
@@ -240,7 +322,10 @@ const NotificationDropdown: React.FC = () => {
                           e.stopPropagation();
                           markAsRead(notification.id);
                         }}
-                        style={{ color: colors?.colorSuccess || "#52c41a", fontSize: "12px" }}
+                        style={{
+                          color: colors?.colorSuccess || "#52c41a",
+                          fontSize: "12px",
+                        }}
                       />
                     </Tooltip>
                   )}
@@ -253,7 +338,10 @@ const NotificationDropdown: React.FC = () => {
                         e.stopPropagation();
                         deleteNotification(notification.id);
                       }}
-                      style={{ color: colors?.colorError || "#ff4d4f", fontSize: "12px" }}
+                      style={{
+                        color: colors?.colorError || "#ff4d4f",
+                        fontSize: "12px",
+                      }}
                     />
                   </Tooltip>
                 </Space>
@@ -315,4 +403,4 @@ const NotificationDropdown: React.FC = () => {
   );
 };
 
-export default NotificationDropdown; 
+export default NotificationDropdown;

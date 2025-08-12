@@ -66,7 +66,9 @@ interface RecoveryStats {
 const BackupManager: React.FC = () => {
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [stats, setStats] = useState<BackupStats | null>(null);
-  const [recoveryStats, setRecoveryStats] = useState<RecoveryStats | null>(null);
+  const [recoveryStats, setRecoveryStats] = useState<RecoveryStats | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [restoreModalVisible, setRestoreModalVisible] = useState(false);
@@ -139,11 +141,14 @@ const BackupManager: React.FC = () => {
     if (!selectedBackup) return;
 
     try {
-      const response = await fetch(`/api/v1/knowledge/backups/${selectedBackup.backup_id}/restore`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        `/api/v1/knowledge/backups/${selectedBackup.backup_id}/restore`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        },
+      );
 
       if (response.ok) {
         message.success("Backup restored successfully");
@@ -319,7 +324,9 @@ const BackupManager: React.FC = () => {
           <Card>
             <Statistic
               title="Success Rate"
-              value={stats?.success_rate ? (stats.success_rate * 100).toFixed(1) : 0}
+              value={
+                stats?.success_rate ? (stats.success_rate * 100).toFixed(1) : 0
+              }
               suffix="%"
               prefix={<SafetyOutlined />}
             />
@@ -329,7 +336,11 @@ const BackupManager: React.FC = () => {
           <Card>
             <Statistic
               title="Total Size"
-              value={stats?.total_size_bytes ? formatFileSize(stats.total_size_bytes) : "0 B"}
+              value={
+                stats?.total_size_bytes
+                  ? formatFileSize(stats.total_size_bytes)
+                  : "0 B"
+              }
               prefix={<CloudUploadOutlined />}
             />
           </Card>
@@ -338,7 +349,11 @@ const BackupManager: React.FC = () => {
           <Card>
             <Statistic
               title="Recovery Success"
-              value={recoveryStats?.overall_success_rate ? (recoveryStats.overall_success_rate * 100).toFixed(1) : 0}
+              value={
+                recoveryStats?.overall_success_rate
+                  ? (recoveryStats.overall_success_rate * 100).toFixed(1)
+                  : 0
+              }
               suffix="%"
               prefix={<ExclamationCircleOutlined />}
             />
@@ -369,9 +384,7 @@ const BackupManager: React.FC = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button icon={<DeleteOutlined />}>
-              Cleanup Expired
-            </Button>
+            <Button icon={<DeleteOutlined />}>Cleanup Expired</Button>
           </Popconfirm>
         </Space>
       </Card>
@@ -400,21 +413,23 @@ const BackupManager: React.FC = () => {
               />
             </Col>
           </Row>
-          
+
           <div style={{ marginTop: 16 }}>
             <Text strong>Strategy Statistics:</Text>
             <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
-              {Object.entries(recoveryStats.strategy_statistics).map(([strategy, stats]) => (
-                <Col span={6} key={strategy}>
-                  <Card size="small">
-                    <Statistic
-                      title={strategy}
-                      value={stats.attempts}
-                      suffix={`(${(stats.success_rate * 100).toFixed(1)}%)`}
-                    />
-                  </Card>
-                </Col>
-              ))}
+              {Object.entries(recoveryStats.strategy_statistics).map(
+                ([strategy, stats]) => (
+                  <Col span={6} key={strategy}>
+                    <Card size="small">
+                      <Statistic
+                        title={strategy}
+                        value={stats.attempts}
+                        suffix={`(${(stats.success_rate * 100).toFixed(1)}%)`}
+                      />
+                    </Card>
+                  </Col>
+                ),
+              )}
             </Row>
           </div>
         </Card>

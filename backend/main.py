@@ -230,12 +230,16 @@ def create_application() -> FastAPI:
         # Create standardized error response
         # For 4xx, return a simple detail payload for compatibility with tests
         if 400 <= exc.status_code < 500:
-            return JSONResponse(status_code=exc.status_code, content={"detail": translated_detail})
+            return JSONResponse(
+                status_code=exc.status_code, content={"detail": translated_detail}
+            )
         error_response = CommonErrors.internal_server_error(
             message=translated_detail,
         )
         payload = (
-            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+            error_response.model_dump()
+            if hasattr(error_response, "model_dump")
+            else error_response.dict()
         )
         try:
             if "timestamp" in payload:
@@ -261,7 +265,9 @@ def create_application() -> FastAPI:
             details=details,
         )
         payload = (
-            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+            error_response.model_dump()
+            if hasattr(error_response, "model_dump")
+            else error_response.dict()
         )
         try:
             if "timestamp" in payload:
@@ -282,7 +288,9 @@ def create_application() -> FastAPI:
         )
         # Ensure JSON serializable
         payload = (
-            error_response.model_dump() if hasattr(error_response, "model_dump") else error_response.dict()
+            error_response.model_dump()
+            if hasattr(error_response, "model_dump")
+            else error_response.dict()
         )
         if hasattr(error_response, "timestamp"):
             try:

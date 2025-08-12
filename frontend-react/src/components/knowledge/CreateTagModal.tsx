@@ -56,7 +56,9 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
           <ModernButton variant="primary" htmlType="submit">
             Create Tag
           </ModernButton>
-          <ModernButton variant="secondary" onClick={onCancel}>Cancel</ModernButton>
+          <ModernButton variant="secondary" onClick={onCancel}>
+            Cancel
+          </ModernButton>
         </Space>
       </Form.Item>
     </Form>

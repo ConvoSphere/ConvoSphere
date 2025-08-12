@@ -2,7 +2,17 @@ import React, { useState, useEffect, useMemo } from "react";
 import Calendar from "react-calendar";
 import { format, isSameDay, isToday, isYesterday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
-import { List, Tag, Typography, Space, Modal, Form, Input, DatePicker, Select } from "antd";
+import {
+  List,
+  Tag,
+  Typography,
+  Space,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+} from "antd";
 import ModernButton from "../ModernButton";
 import {
   CalendarOutlined,
@@ -112,8 +122,14 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
   }, [token]);
 
   useEffect(() => {
-    if (config.settings.refreshInterval && config.settings.refreshInterval > 0) {
-      const interval = setInterval(loadEvents, config.settings.refreshInterval * 1000);
+    if (
+      config.settings.refreshInterval &&
+      config.settings.refreshInterval > 0
+    ) {
+      const interval = setInterval(
+        loadEvents,
+        config.settings.refreshInterval * 1000,
+      );
       return () => clearInterval(interval);
     }
   }, [config.settings.refreshInterval]);
@@ -122,9 +138,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
     try {
       setLocalLoading(true);
       setLocalError(null);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setEvents(mockEvents);
     } catch (error) {
       console.error("Error loading events:", error);
@@ -135,7 +151,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
   };
 
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => isSameDay(event.date, date));
+    return events.filter((event) => isSameDay(event.date, date));
   };
 
   const getEventsForToday = () => {
@@ -145,27 +161,36 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
   const getUpcomingEvents = () => {
     const today = new Date();
     return events
-      .filter(event => event.date >= today && !event.isCompleted)
+      .filter((event) => event.date >= today && !event.isCompleted)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
       .slice(0, 5);
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return colors.colorError;
-      case "medium": return colors.colorWarning;
-      case "low": return colors.colorSuccess;
-      default: return colors.colorTextSecondary;
+      case "high":
+        return colors.colorError;
+      case "medium":
+        return colors.colorWarning;
+      case "low":
+        return colors.colorSuccess;
+      default:
+        return colors.colorTextSecondary;
     }
   };
 
   const getEventTypeIcon = (type: string) => {
     switch (type) {
-      case "meeting": return <UserOutlined />;
-      case "reminder": return <BellOutlined />;
-      case "deadline": return <ClockCircleOutlined />;
-      case "event": return <CalendarOutlined />;
-      default: return <CalendarOutlined />;
+      case "meeting":
+        return <UserOutlined />;
+      case "reminder":
+        return <BellOutlined />;
+      case "deadline":
+        return <ClockCircleOutlined />;
+      case "event":
+        return <CalendarOutlined />;
+      default:
+        return <CalendarOutlined />;
     }
   };
 
@@ -201,9 +226,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
   };
 
   const renderEventList = () => {
-    const displayEvents = config.settings.showCompleted 
-      ? events 
-      : events.filter(event => !event.isCompleted);
+    const displayEvents = config.settings.showCompleted
+      ? events
+      : events.filter((event) => !event.isCompleted);
 
     return (
       <List
@@ -223,10 +248,12 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
               }
               title={
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Text 
-                    strong 
-                    style={{ 
-                      textDecoration: event.isCompleted ? "line-through" : "none" 
+                  <Text
+                    strong
+                    style={{
+                      textDecoration: event.isCompleted
+                        ? "line-through"
+                        : "none",
                     }}
                   >
                     {event.title}
@@ -238,7 +265,12 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
               }
               description={
                 <div>
-                  <div style={{ fontSize: "12px", color: colors.colorTextSecondary }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: colors.colorTextSecondary,
+                    }}
+                  >
                     {formatEventDate(event.date)}
                     {event.time && ` • ${event.time}`}
                   </div>
@@ -248,7 +280,13 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
                     </div>
                   )}
                   {event.attendees && event.attendees.length > 0 && (
-                    <div style={{ fontSize: "11px", color: colors.colorTextSecondary, marginTop: 4 }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: colors.colorTextSecondary,
+                        marginTop: 4,
+                      }}
+                    >
                       {event.attendees.join(", ")}
                     </div>
                   )}
@@ -271,7 +309,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
         locale={de}
         className="custom-calendar"
       />
-      
+
       {/* Events for selected date */}
       <div style={{ marginTop: 16 }}>
         <Title level={5}>
@@ -308,26 +346,74 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
 
   const renderQuickStats = () => (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorPrimary }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorPrimary,
+            }}
+          >
             {getEventsForToday().length}
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
             {t("widgets.calendar.today")}
           </div>
         </div>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorWarning }}>
-            {events.filter(e => e.priority === "high" && !e.isCompleted).length}
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorWarning,
+            }}
+          >
+            {
+              events.filter((e) => e.priority === "high" && !e.isCompleted)
+                .length
+            }
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
             {t("widgets.calendar.high_priority")}
           </div>
         </div>
-        <div style={{ textAlign: "center", padding: "8px", background: colors.colorBgContainer, borderRadius: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: colors.colorSuccess }}>
-            {events.filter(e => e.isCompleted).length}
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px",
+            background: colors.colorBgContainer,
+            borderRadius: "4px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: colors.colorSuccess,
+            }}
+          >
+            {events.filter((e) => e.isCompleted).length}
           </div>
           <div style={{ fontSize: "11px", color: colors.colorTextSecondary }}>
             {t("widgets.calendar.completed")}
@@ -349,26 +435,36 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
     return (
       <div>
         {renderQuickStats()}
-        
+
         <div style={{ marginBottom: 16 }}>
           <Space>
             <ModernButton
-              variant={config.settings.defaultView === "calendar" ? "primary" : "outlined"}
+              variant={
+                config.settings.defaultView === "calendar"
+                  ? "primary"
+                  : "outlined"
+              }
               size="small"
-              onClick={() => onConfigChange({
-                ...config,
-                settings: { ...config.settings, defaultView: "calendar" }
-              })}
+              onClick={() =>
+                onConfigChange({
+                  ...config,
+                  settings: { ...config.settings, defaultView: "calendar" },
+                })
+              }
             >
               {t("widgets.calendar.calendar_view")}
             </ModernButton>
             <ModernButton
-              variant={config.settings.defaultView === "list" ? "primary" : "outlined"}
+              variant={
+                config.settings.defaultView === "list" ? "primary" : "outlined"
+              }
               size="small"
-              onClick={() => onConfigChange({
-                ...config,
-                settings: { ...config.settings, defaultView: "list" }
-              })}
+              onClick={() =>
+                onConfigChange({
+                  ...config,
+                  settings: { ...config.settings, defaultView: "list" },
+                })
+              }
             >
               {t("widgets.calendar.list_view")}
             </ModernButton>
@@ -383,7 +479,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({
           </Space>
         </div>
 
-        {config.settings.defaultView === "calendar" ? renderCalendar() : renderEventList()}
+        {config.settings.defaultView === "calendar"
+          ? renderCalendar()
+          : renderEventList()}
       </div>
     );
   };

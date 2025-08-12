@@ -42,12 +42,15 @@ class StatisticsService {
 
   async getOverviewStats(token: string): Promise<OverviewStats> {
     try {
-      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/overview`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${this.baseUrl}${config.apiEndpoints.statistics}/overview`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -63,12 +66,15 @@ class StatisticsService {
 
   async getSystemHealth(token: string): Promise<SystemStats> {
     try {
-      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/system-health`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${this.baseUrl}${config.apiEndpoints.statistics}/system-health`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -81,7 +87,10 @@ class StatisticsService {
     }
   }
 
-  async getRecentActivity(token: string, limit: number = 10): Promise<ActivityItem[]> {
+  async getRecentActivity(
+    token: string,
+    limit: number = 10,
+  ): Promise<ActivityItem[]> {
     try {
       const response = await fetch(
         `${this.baseUrl}${config.apiEndpoints.statistics}/recent-activity?limit=${limit}`,
@@ -90,7 +99,7 @@ class StatisticsService {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -106,12 +115,15 @@ class StatisticsService {
 
   async getUserStats(token: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}${config.apiEndpoints.statistics}/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${this.baseUrl}${config.apiEndpoints.statistics}/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -184,7 +196,7 @@ class StatisticsService {
         id: "4",
         type: "tool",
         title: "Tool aktiviert",
-        description: 'API Connector wurde erfolgreich aktiviert',
+        description: "API Connector wurde erfolgreich aktiviert",
         timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
         user: "Admin",
         metadata: { toolType: "api_connector", endpoints: 3 },

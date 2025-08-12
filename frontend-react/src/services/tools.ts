@@ -39,11 +39,14 @@ export interface ToolCreate {
   tool_metadata: any;
 }
 
-export async function getTools(category?: string, search?: string): Promise<Tool[]> {
+export async function getTools(
+  category?: string,
+  search?: string,
+): Promise<Tool[]> {
   const params = new URLSearchParams();
   if (category) params.append("category", category);
   if (search) params.append("search", search);
-  
+
   const response = await api.get(`/tools?${params.toString()}`);
   return response.data.tools || response.data;
 }
@@ -58,7 +61,10 @@ export async function createTool(toolData: ToolCreate): Promise<Tool> {
   return response.data;
 }
 
-export async function updateTool(id: string, toolData: Partial<ToolCreate>): Promise<Tool> {
+export async function updateTool(
+  id: string,
+  toolData: Partial<ToolCreate>,
+): Promise<Tool> {
   const response = await api.put(`/tools/${id}`, toolData);
   return response.data;
 }

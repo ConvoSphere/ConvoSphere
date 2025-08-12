@@ -151,7 +151,7 @@ export async function getDocuments(
       ErrorCodes.API_ERROR,
       undefined,
       "/knowledge/documents",
-      "fetch_documents"
+      "fetch_documents",
     );
   }
 }
@@ -173,7 +173,7 @@ export async function uploadDocument(
         ErrorCodes.VALIDATION_ERROR,
         undefined,
         undefined,
-        "upload_document"
+        "upload_document",
       );
     }
 
@@ -185,7 +185,7 @@ export async function uploadDocument(
         ErrorCodes.FILE_TOO_LARGE,
         `File size: ${(file.size / 1024 / 1024).toFixed(2)}MB, Max: 50MB`,
         undefined,
-        "upload_document"
+        "upload_document",
       );
     }
 
@@ -214,7 +214,7 @@ export async function uploadDocument(
       ErrorCodes.UPLOAD_FAILED,
       undefined,
       "/knowledge/documents",
-      "upload_document"
+      "upload_document",
     );
   }
 }

@@ -1,16 +1,16 @@
-import React from 'react';
-import { Row, Col, Statistic, Card, Progress, Typography, Space } from 'antd';
-import { 
-  MessageOutlined, 
-  UserOutlined, 
-  ClockCircleOutlined, 
+import React from "react";
+import { Row, Col, Statistic, Card, Progress, Typography, Space } from "antd";
+import {
+  MessageOutlined,
+  UserOutlined,
+  ClockCircleOutlined,
   SmileOutlined,
-  RiseOutlined 
-} from '@ant-design/icons';
-import { Line, Bar } from '@ant-design/plots';
-import { useTranslation } from 'react-i18next';
-import type { ConversationAnalytics } from '../../services/conversationIntelligence';
-import ModernCard from '../ModernCard';
+  RiseOutlined,
+} from "@ant-design/icons";
+import { Line, Bar } from "@ant-design/plots";
+import { useTranslation } from "react-i18next";
+import type { ConversationAnalytics } from "../../services/conversationIntelligence";
+import ModernCard from "../ModernCard";
 
 const { Title, Text } = Typography;
 
@@ -19,41 +19,41 @@ interface ConversationAnalyticsProps {
   loading?: boolean;
 }
 
-const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({ 
-  data, 
-  loading = false 
+const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
+  data,
+  loading = false,
 }) => {
   const { t } = useTranslation();
 
   if (!data) {
     return (
       <ModernCard>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Text type="secondary">{t('intelligence.no_data_available')}</Text>
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <Text type="secondary">{t("intelligence.no_data_available")}</Text>
         </div>
       </ModernCard>
     );
   }
 
-  const satisfactionTrendData = data.satisfactionTrend.map(item => ({
+  const satisfactionTrendData = data.satisfactionTrend.map((item) => ({
     date: item.date,
     score: item.score,
   }));
 
-  const topicData = data.topTopics.map(topic => ({
+  const topicData = data.topTopics.map((topic) => ({
     topic: topic.name,
     frequency: topic.frequency,
     sentiment: topic.sentiment,
   }));
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space direction="vertical" size="large" style={{ width: "100%" }}>
       {/* Key Metrics */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('intelligence.total_conversations')}
+              title={t("intelligence.total_conversations")}
               value={data.totalConversations}
               prefix={<MessageOutlined />}
               loading={loading}
@@ -63,7 +63,7 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('intelligence.total_messages')}
+              title={t("intelligence.total_messages")}
               value={data.totalMessages}
               prefix={<UserOutlined />}
               loading={loading}
@@ -73,10 +73,10 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('intelligence.avg_conversation_length')}
+              title={t("intelligence.avg_conversation_length")}
               value={data.avgConversationLength}
               prefix={<ClockCircleOutlined />}
-              suffix={t('intelligence.messages')}
+              suffix={t("intelligence.messages")}
               loading={loading}
             />
           </ModernCard>
@@ -84,10 +84,10 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
         <Col xs={24} sm={12} lg={6}>
           <ModernCard>
             <Statistic
-              title={t('intelligence.avg_response_time')}
+              title={t("intelligence.avg_response_time")}
               value={data.avgResponseTime}
               prefix={<TrendingUpOutlined />}
-              suffix={t('intelligence.seconds')}
+              suffix={t("intelligence.seconds")}
               loading={loading}
             />
           </ModernCard>
@@ -95,7 +95,7 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
       </Row>
 
       {/* Satisfaction Trend Chart */}
-      <ModernCard title={t('intelligence.satisfaction_trend')}>
+      <ModernCard title={t("intelligence.satisfaction_trend")}>
         <Line
           data={satisfactionTrendData}
           xField="date"
@@ -103,25 +103,25 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
           smooth
           point={{
             size: 4,
-            shape: 'circle',
+            shape: "circle",
           }}
           color="#1890ff"
           yAxis={{
             min: 0,
             max: 5,
             title: {
-              text: t('intelligence.satisfaction_score'),
+              text: t("intelligence.satisfaction_score"),
             },
           }}
           xAxis={{
             title: {
-              text: t('intelligence.date'),
+              text: t("intelligence.date"),
             },
           }}
           tooltip={{
             formatter: (datum) => {
               return {
-                name: t('intelligence.satisfaction_score'),
+                name: t("intelligence.satisfaction_score"),
                 value: datum.score.toFixed(2),
               };
             },
@@ -130,7 +130,7 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
       </ModernCard>
 
       {/* Top Topics Chart */}
-      <ModernCard title={t('intelligence.top_topics')}>
+      <ModernCard title={t("intelligence.top_topics")}>
         <Bar
           data={topicData}
           xField="frequency"
@@ -140,25 +140,25 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
           columnStyle={{
             radius: [4, 4, 0, 0],
           }}
-          color={['#52c41a', '#faad14', '#ff4d4f']}
+          color={["#52c41a", "#faad14", "#ff4d4f"]}
           legend={{
-            position: 'top',
+            position: "top",
           }}
           xAxis={{
             title: {
-              text: t('intelligence.frequency'),
+              text: t("intelligence.frequency"),
             },
           }}
           yAxis={{
             title: {
-              text: t('intelligence.topics'),
+              text: t("intelligence.topics"),
             },
           }}
         />
       </ModernCard>
 
       {/* User Engagement Summary */}
-      <ModernCard title={t('intelligence.user_engagement_summary')}>
+      <ModernCard title={t("intelligence.user_engagement_summary")}>
         <Row gutter={[16, 16]}>
           {data.userEngagement.slice(0, 4).map((user, index) => (
             <Col xs={24} sm={12} lg={6} key={user.userId}>
@@ -173,10 +173,16 @@ const ConversationAnalytics: React.FC<ConversationAnalyticsProps> = ({
                 <Progress
                   percent={user.satisfactionScore * 20}
                   size="small"
-                  status={user.satisfactionScore >= 4 ? 'success' : user.satisfactionScore >= 3 ? 'normal' : 'exception'}
+                  status={
+                    user.satisfactionScore >= 4
+                      ? "success"
+                      : user.satisfactionScore >= 3
+                        ? "normal"
+                        : "exception"
+                  }
                 />
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {t('intelligence.conversations')}: {user.totalConversations}
+                <Text type="secondary" style={{ fontSize: "12px" }}>
+                  {t("intelligence.conversations")}: {user.totalConversations}
                 </Text>
               </Card>
             </Col>

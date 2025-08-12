@@ -7,8 +7,14 @@ import DraggableWidget from "./DraggableWidget";
 
 interface DroppableGridProps {
   widgets: WidgetConfig[];
-  onWidgetMove: (widgetId: string, newPosition: { x: number; y: number }) => void;
-  onWidgetResize: (widgetId: string, newSize: { width: number; height: number }) => void;
+  onWidgetMove: (
+    widgetId: string,
+    newPosition: { x: number; y: number },
+  ) => void;
+  onWidgetResize: (
+    widgetId: string,
+    newSize: { width: number; height: number },
+  ) => void;
   editMode: boolean;
   renderWidget: (widget: WidgetConfig) => React.ReactNode;
 }
@@ -35,7 +41,7 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
         // Widget was dropped on the grid, not on another widget
         const gridRect = gridRef.current?.getBoundingClientRect();
         const dropOffset = monitor.getClientOffset();
-        
+
         if (gridRect && dropOffset) {
           const x = Math.floor((dropOffset.x - gridRect.left) / 50); // 50px grid size
           const y = Math.floor((dropOffset.y - gridRect.top) / 50);
@@ -59,16 +65,17 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
       `,
       backgroundSize: "50px 50px",
     }),
-    ...(isOver && editMode && {
-      backgroundColor: `${colors.colorPrimary}05`,
-      border: `2px dashed ${colors.colorPrimary}`,
-      borderRadius: "8px",
-    }),
+    ...(isOver &&
+      editMode && {
+        backgroundColor: `${colors.colorPrimary}05`,
+        border: `2px dashed ${colors.colorPrimary}`,
+        borderRadius: "8px",
+      }),
   };
 
   const renderGridCell = (widget: WidgetConfig) => {
     const position = widget.position || { x: 0, y: 0 };
-    
+
     return (
       <div
         key={widget.id}
@@ -113,7 +120,9 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
         }}
       >
         <div style={{ textAlign: "center", color: colors.colorTextSecondary }}>
-          {editMode ? t("dashboard.drop_widgets_here") : t("dashboard.no_widgets")}
+          {editMode
+            ? t("dashboard.drop_widgets_here")
+            : t("dashboard.no_widgets")}
         </div>
       </div>
     );

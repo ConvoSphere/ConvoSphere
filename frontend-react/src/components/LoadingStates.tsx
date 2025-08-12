@@ -32,7 +32,12 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     >
       <Spin
         size={size}
-        indicator={<LoadingOutlined style={{ fontSize: 24, color: colors.colorPrimary }} spin />}
+        indicator={
+          <LoadingOutlined
+            style={{ fontSize: 24, color: colors.colorPrimary }}
+            spin
+          />
+        }
         tip={tip}
       />
       {text && (
@@ -138,7 +143,11 @@ export const LoadingTable: React.FC<LoadingTableProps> = ({
           }}
         >
           {Array.from({ length: columns }).map((_, colIndex) => (
-            <Skeleton.Input key={colIndex} size="small" style={{ height: 16 }} />
+            <Skeleton.Input
+              key={colIndex}
+              size="small"
+              style={{ height: 16 }}
+            />
           ))}
         </div>
       ))}
@@ -162,7 +171,14 @@ export const LoadingList: React.FC<LoadingListProps> = ({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} style={{ padding: "16px", border: "1px solid #f0f0f0", borderRadius: 8 }}>
+        <div
+          key={index}
+          style={{
+            padding: "16px",
+            border: "1px solid #f0f0f0",
+            borderRadius: 8,
+          }}
+        >
           <Skeleton
             active
             avatar={avatar}
@@ -214,7 +230,12 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         <div style={{ textAlign: "center" }}>
           <Spin
             size="large"
-            indicator={<LoadingOutlined style={{ fontSize: 32, color: colors.colorPrimary }} spin />}
+            indicator={
+              <LoadingOutlined
+                style={{ fontSize: 32, color: colors.colorPrimary }}
+                spin
+              />
+            }
           />
           <div style={{ marginTop: 16 }}>
             <Text type="secondary">{text}</Text>
@@ -249,7 +270,12 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
       onClick={onClick}
       disabled={disabled || loading}
       style={{
-        padding: size === "large" ? "12px 24px" : size === "small" ? "6px 12px" : "8px 16px",
+        padding:
+          size === "large"
+            ? "12px 24px"
+            : size === "small"
+              ? "6px 12px"
+              : "8px 16px",
         border: type === "primary" ? "none" : "1px solid #d9d9d9",
         borderRadius: 6,
         backgroundColor: type === "primary" ? "#1890ff" : "#fff",
@@ -262,11 +288,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
         fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
       }}
     >
-      {loading ? (
-        <LoadingOutlined style={{ fontSize: 14 }} />
-      ) : (
-        icon
-      )}
+      {loading ? <LoadingOutlined style={{ fontSize: 14 }} /> : icon}
       {children}
     </button>
   );
@@ -376,12 +398,16 @@ export const withLoading = <P extends object>(
     loadingKey: keyof P;
     errorKey?: keyof P;
     emptyKey?: keyof P;
-  }
+  },
 ) => {
   return React.forwardRef<any, P>((props, ref) => {
     const loading = props[loadingProps.loadingKey] as boolean;
-    const error = loadingProps.errorKey ? (props[loadingProps.errorKey] as string) : null;
-    const empty = loadingProps.emptyKey ? (props[loadingProps.emptyKey] as boolean) : false;
+    const error = loadingProps.errorKey
+      ? (props[loadingProps.errorKey] as string)
+      : null;
+    const empty = loadingProps.emptyKey
+      ? (props[loadingProps.emptyKey] as boolean)
+      : false;
 
     return (
       <LoadingState loading={loading} error={error} empty={empty}>

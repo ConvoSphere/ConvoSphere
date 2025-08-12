@@ -1,12 +1,12 @@
 import React from "react";
 import { Badge, Card, List, Progress, Space, Typography, Tooltip } from "antd";
 import ModernButton from "./ModernButton";
-import { 
-  WifiOutlined, 
-  WifiOffOutlined, 
-  SyncOutlined, 
+import {
+  WifiOutlined,
+  WifiOffOutlined,
+  SyncOutlined,
   CloudSyncOutlined,
-  ClearOutlined 
+  ClearOutlined,
 } from "@ant-design/icons";
 import { useOfflineStatus, offlineService } from "../services/offlineService";
 import { useThemeStore } from "../store/themeStore";
@@ -17,9 +17,11 @@ const OfflineStatus: React.FC = () => {
   const isOnline = useOfflineStatus();
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
-  
+
   const [stats, setStats] = React.useState(offlineService.getOfflineStats());
-  const [queuedActions, setQueuedActions] = React.useState(offlineService.getQueuedActions());
+  const [queuedActions, setQueuedActions] = React.useState(
+    offlineService.getQueuedActions(),
+  );
 
   // Update stats periodically
   React.useEffect(() => {
@@ -82,8 +84,8 @@ const OfflineStatus: React.FC = () => {
           <Text strong style={{ color: colors.colorTextBase }}>
             Connection Status: {getStatusText()}
           </Text>
-          <Badge 
-            status={isOnline ? "success" : "error"} 
+          <Badge
+            status={isOnline ? "success" : "error"}
             text={isOnline ? "Connected" : "Disconnected"}
           />
         </Space>
@@ -105,9 +107,7 @@ const OfflineStatus: React.FC = () => {
           {stats.syncInProgress && (
             <Space>
               <SyncOutlined spin style={{ color: colors.colorPrimary }} />
-              <Text style={{ color: colors.colorPrimary }}>
-                Syncing...
-              </Text>
+              <Text style={{ color: colors.colorPrimary }}>Syncing...</Text>
             </Space>
           )}
         </Space>
@@ -115,7 +115,10 @@ const OfflineStatus: React.FC = () => {
         {/* Queued Actions */}
         {queuedActions.length > 0 && (
           <div>
-            <Title level={5} style={{ color: colors.colorTextBase, margin: "8px 0" }}>
+            <Title
+              level={5}
+              style={{ color: colors.colorTextBase, margin: "8px 0" }}
+            >
               Queued Actions ({queuedActions.length})
             </Title>
             <List
@@ -128,13 +131,17 @@ const OfflineStatus: React.FC = () => {
                     borderBottom: `1px solid ${colors.colorBorder}`,
                   }}
                 >
-                  <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
                     <Space>
                       <Text strong style={{ color: colors.colorTextBase }}>
-                        {action.method} {action.endpoint.split('/').pop()}
+                        {action.method} {action.endpoint.split("/").pop()}
                       </Text>
-                      <Badge 
-                        count={action.retryCount} 
+                      <Badge
+                        count={action.retryCount}
                         style={{ backgroundColor: colors.colorWarning }}
                       />
                     </Space>

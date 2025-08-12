@@ -22,13 +22,17 @@ export interface FileValidationError {
 const MIME_TYPE_MAP: Record<string, string[]> = {
   pdf: ["application/pdf"],
   doc: ["application/msword"],
-  docx: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  docx: [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
   txt: ["text/plain"],
   md: ["text/markdown", "text/plain"],
   xls: ["application/vnd.ms-excel"],
   xlsx: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
   ppt: ["application/vnd.ms-powerpoint"],
-  pptx: ["application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+  pptx: [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
   jpg: ["image/jpeg"],
   jpeg: ["image/jpeg"],
   png: ["image/png"],
@@ -58,7 +62,9 @@ export class FileValidator {
 
     // Check file size
     if (file.size > this.config.maxFileSize) {
-      errors.push(`File size exceeds ${this.formatFileSize(this.config.maxFileSize)}`);
+      errors.push(
+        `File size exceeds ${this.formatFileSize(this.config.maxFileSize)}`,
+      );
     }
 
     // Check file type by extension
@@ -86,7 +92,8 @@ export class FileValidator {
     }
 
     // Check for very large files (warning)
-    if (file.size > 50 * 1024 * 1024) { // 50MB
+    if (file.size > 50 * 1024 * 1024) {
+      // 50MB
       warnings.push("Large file detected - upload may take longer");
     }
 
@@ -111,12 +118,14 @@ export class FileValidator {
 
     // Check max files limit
     if (this.config.maxFiles && files.length > this.config.maxFiles) {
-      warnings.push(`Only ${this.config.maxFiles} files can be uploaded at once`);
+      warnings.push(
+        `Only ${this.config.maxFiles} files can be uploaded at once`,
+      );
     }
 
     files.forEach((file) => {
       const result = this.validateFile(file);
-      
+
       if (result.isValid) {
         validFiles.push(file);
       } else {
@@ -150,7 +159,7 @@ export class FileValidator {
       /\.(exe|bat|cmd|com|pif|scr|vbs|js|jar|msi|dmg|app)$/i, // Executable files
     ];
 
-    return suspiciousPatterns.some(pattern => pattern.test(filename));
+    return suspiciousPatterns.some((pattern) => pattern.test(filename));
   }
 
   /**
@@ -158,11 +167,11 @@ export class FileValidator {
    */
   private formatFileSize(bytes: number): string {
     if (bytes === 0) return "0 Bytes";
-    
+
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   }
 
@@ -184,9 +193,13 @@ export class FileValidator {
    * Check if file is a document
    */
   static isDocument(file: File): boolean {
-    const docTypes = ["application/pdf", "application/msword", 
-                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                     "text/plain", "text/markdown"];
+    const docTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "text/markdown",
+    ];
     return docTypes.includes(file.type);
   }
 
@@ -194,8 +207,10 @@ export class FileValidator {
    * Check if file is a spreadsheet
    */
   static isSpreadsheet(file: File): boolean {
-    const spreadsheetTypes = ["application/vnd.ms-excel",
-                             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+    const spreadsheetTypes = [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
     return spreadsheetTypes.includes(file.type);
   }
 }
@@ -206,11 +221,26 @@ export class FileValidator {
 export const DEFAULT_FILE_VALIDATION_CONFIG: FileValidationConfig = {
   maxFileSize: 100 * 1024 * 1024, // 100MB
   allowedTypes: [
-    "pdf", "doc", "docx", "txt", "md", 
-    "xls", "xlsx", "ppt", "pptx",
-    "jpg", "jpeg", "png", "gif",
-    "mp3", "wav", "mp4", "avi",
-    "zip", "rar", "7z"
+    "pdf",
+    "doc",
+    "docx",
+    "txt",
+    "md",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "mp3",
+    "wav",
+    "mp4",
+    "avi",
+    "zip",
+    "rar",
+    "7z",
   ],
   maxFiles: 10,
   allowedMimeTypes: [
@@ -232,14 +262,16 @@ export const DEFAULT_FILE_VALIDATION_CONFIG: FileValidationConfig = {
     "video/x-msvideo",
     "application/zip",
     "application/x-rar-compressed",
-    "application/x-7z-compressed"
-  ]
+    "application/x-7z-compressed",
+  ],
 };
 
 /**
  * Create a file validator with default configuration
  */
-export const createFileValidator = (config?: Partial<FileValidationConfig>): FileValidator => {
+export const createFileValidator = (
+  config?: Partial<FileValidationConfig>,
+): FileValidator => {
   const finalConfig = { ...DEFAULT_FILE_VALIDATION_CONFIG, ...config };
   return new FileValidator(finalConfig);
 };
@@ -250,13 +282,13 @@ export const createFileValidator = (config?: Partial<FileValidationConfig>): Fil
 export const showValidationErrors = (errors: FileValidationError[]): void => {
   if (errors.length === 0) return;
 
-  const errorMessages = errors.map(err => `${err.fileName}: ${err.error}`);
-  
+  const errorMessages = errors.map((err) => `${err.fileName}: ${err.error}`);
+
   if (errors.length === 1) {
     message.error(errorMessages[0]);
   } else {
     message.error(
-      `Multiple files have validation errors:\n${errorMessages.join('\n')}`
+      `Multiple files have validation errors:\n${errorMessages.join("\n")}`,
     );
   }
 };
@@ -268,12 +300,10 @@ export const showValidationWarnings = (warnings: string[]): void => {
   if (warnings.length === 0) return;
 
   const uniqueWarnings = [...new Set(warnings)];
-  
+
   if (uniqueWarnings.length === 1) {
     message.warning(uniqueWarnings[0]);
   } else {
-    message.warning(
-      `Upload warnings:\n${uniqueWarnings.join('\n')}`
-    );
+    message.warning(`Upload warnings:\n${uniqueWarnings.join("\n")}`);
   }
 };

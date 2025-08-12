@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   Input,
   Button,
@@ -7,16 +7,16 @@ import {
   Tooltip,
   Popconfirm,
   message,
-} from 'antd';
+} from "antd";
 import {
   SendOutlined,
   PaperClipOutlined,
   StopOutlined,
   ClearOutlined,
   SettingOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { ChatFormData } from '../types/chat.types';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { ChatFormData } from "../types/chat.types";
 
 const { TextArea } = Input;
 
@@ -48,7 +48,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   maxAttachments = 5,
 }) => {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const textAreaRef = useRef<any>(null);
 
@@ -61,19 +61,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
     };
 
     onSend(formData);
-    setInputValue('');
+    setInputValue("");
     setAttachments([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
   const handleClear = () => {
-    setInputValue('');
+    setInputValue("");
     setAttachments([]);
     if (onClear) {
       onClear();
@@ -88,30 +88,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleFileUpload = (file: File) => {
     if (attachments.length >= maxAttachments) {
-      message.error(t('chat.max_attachments_reached', { max: maxAttachments }));
+      message.error(t("chat.max_attachments_reached", { max: maxAttachments }));
       return false;
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      message.error(t('chat.file_too_large', { maxSize: '10MB' }));
+      message.error(t("chat.file_too_large", { maxSize: "10MB" }));
       return false;
     }
 
-    setAttachments(prev => [...prev, file]);
+    setAttachments((prev) => [...prev, file]);
     return false; // Prevent default upload behavior
   };
 
   const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getSendButtonIcon = () => {
@@ -123,13 +123,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const getSendButtonText = () => {
     if (isStreaming) {
-      return t('chat.stop');
+      return t("chat.stop");
     }
-    return t('chat.send');
+    return t("chat.send");
   };
 
   const isSendDisabled = () => {
-    return disabled || isLoading || (!inputValue.trim() && attachments.length === 0);
+    return (
+      disabled || isLoading || (!inputValue.trim() && attachments.length === 0)
+    );
   };
 
   // Auto-resize textarea
@@ -140,7 +142,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, []);
 
   return (
-    <div style={{ padding: 16, borderTop: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+    <div
+      style={{
+        padding: 16,
+        borderTop: "1px solid #f0f0f0",
+        backgroundColor: "#fff",
+      }}
+    >
       {/* Attachments */}
       {attachments.length > 0 && (
         <div style={{ marginBottom: 12 }}>
@@ -149,17 +157,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
               <div
                 key={index}
                 style={{
-                  padding: '4px 8px',
-                  backgroundColor: '#f5f5f5',
+                  padding: "4px 8px",
+                  backgroundColor: "#f5f5f5",
                   borderRadius: 4,
                   fontSize: 12,
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 4,
                 }}
               >
                 <span>{file.name}</span>
-                <span style={{ color: '#999' }}>
+                <span style={{ color: "#999" }}>
                   ({formatFileSize(file.size)})
                 </span>
                 <Button
@@ -167,7 +175,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   size="small"
                   danger
                   onClick={() => removeAttachment(index)}
-                  style={{ padding: 0, height: 'auto' }}
+                  style={{ padding: 0, height: "auto" }}
                 >
                   ×
                 </Button>
@@ -178,20 +186,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
       )}
 
       {/* Input Area */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
         <div style={{ flex: 1 }}>
           <TextArea
             ref={textAreaRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={placeholder || t('chat.type_message')}
+            placeholder={placeholder || t("chat.type_message")}
             autoSize={{ minRows: 1, maxRows: 6 }}
             maxLength={maxLength}
             disabled={disabled || isLoading}
-            style={{ resize: 'none' }}
+            style={{ resize: "none" }}
           />
-          <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: "#999", marginTop: 4 }}>
             {inputValue.length}/{maxLength}
           </div>
         </div>
@@ -215,7 +223,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 showUploadList={false}
                 disabled={disabled || isLoading}
               >
-                <Tooltip title={t('chat.attach_file')}>
+                <Tooltip title={t("chat.attach_file")}>
                   <Button
                     type="text"
                     icon={<PaperClipOutlined />}
@@ -227,7 +235,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             )}
 
             {onSettings && (
-              <Tooltip title={t('chat.settings')}>
+              <Tooltip title={t("chat.settings")}>
                 <Button
                   type="text"
                   icon={<SettingOutlined />}
@@ -240,12 +248,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
             {onClear && (
               <Popconfirm
-                title={t('chat.clear_confirm')}
+                title={t("chat.clear_confirm")}
                 onConfirm={handleClear}
-                okText={t('common.yes')}
-                cancelText={t('common.no')}
+                okText={t("common.yes")}
+                cancelText={t("common.no")}
               >
-                <Tooltip title={t('chat.clear')}>
+                <Tooltip title={t("chat.clear")}>
                   <Button
                     type="text"
                     icon={<ClearOutlined />}
@@ -260,8 +268,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Keyboard Shortcuts Info */}
-      <div style={{ fontSize: 12, color: '#999', marginTop: 8 }}>
-        {t('chat.shortcuts_info')}
+      <div style={{ fontSize: 12, color: "#999", marginTop: 8 }}>
+        {t("chat.shortcuts_info")}
       </div>
     </div>
   );

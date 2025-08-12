@@ -56,7 +56,10 @@ import ModernInput from "../components/ModernInput";
 import ModernSelect from "../components/ModernSelect";
 import KnowledgeBaseSettings from "../components/knowledge/KnowledgeBaseSettings";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getDocuments, updateDocument as apiUpdateDocument } from "../services/knowledge";
+import {
+  getDocuments,
+  updateDocument as apiUpdateDocument,
+} from "../services/knowledge";
 
 const { Title, Text } = Typography;
 
@@ -86,7 +89,7 @@ const KnowledgeBase: React.FC = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("documents");
-  
+
   // New states for enhanced features
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -105,9 +108,12 @@ const KnowledgeBase: React.FC = () => {
   });
 
   const updateDocMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Document> }) => apiUpdateDocument(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Document> }) =>
+      apiUpdateDocument(id, updates),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["knowledge-documents"],
+      });
     },
   });
 
@@ -156,11 +162,13 @@ const KnowledgeBase: React.FC = () => {
     try {
       // Use bulk update function
       await bulkUpdateDocuments(selectedRowKeys, updates);
-      
+
       message.success(`Updated ${selectedRowKeys.length} documents`);
       setShowBulkEdit(false);
       setSelectedRowKeys([]);
-      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["knowledge-documents"],
+      });
     } catch (error) {
       message.error("Failed to update documents");
     }
@@ -175,7 +183,9 @@ const KnowledgeBase: React.FC = () => {
           await deleteDocument(documentId);
           message.success("Dokument erfolgreich gelöscht");
           refreshDocuments();
-          await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+          await queryClient.invalidateQueries({
+            queryKey: ["knowledge-documents"],
+          });
         } catch (error) {
           message.error("Fehler beim Löschen des Dokuments");
         }
@@ -196,7 +206,9 @@ const KnowledgeBase: React.FC = () => {
     try {
       message.success("Document reprocessing started");
       refreshDocuments();
-      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["knowledge-documents"],
+      });
     } catch (_error) {
       message.error("Failed to reprocess document");
     }
@@ -207,13 +219,13 @@ const KnowledgeBase: React.FC = () => {
       message.success(`${documentIds.length} documents deleted successfully`);
       setSelectedRowKeys([]);
       refreshDocuments();
-      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["knowledge-documents"],
+      });
     } catch (_error) {
       message.error("Failed to delete documents");
     }
   };
-
-
 
   const handleBulkReprocess = async (documentIds: string[]) => {
     try {
@@ -221,7 +233,9 @@ const KnowledgeBase: React.FC = () => {
         `${documentIds.length} documents queued for reprocessing`,
       );
       refreshDocuments();
-      await queryClient.invalidateQueries({ queryKey: ["knowledge-documents"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["knowledge-documents"],
+      });
     } catch (_error) {
       message.error("Failed to queue documents for reprocessing");
     }
@@ -240,10 +254,11 @@ const KnowledgeBase: React.FC = () => {
     setSearchLoading(true);
     try {
       // Simulate advanced search - in real implementation, call API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const results = documents.filter(doc => 
-        doc.title?.toLowerCase().includes(filters.query.toLowerCase()) ||
-        doc.description?.toLowerCase().includes(filters.query.toLowerCase())
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const results = documents.filter(
+        (doc) =>
+          doc.title?.toLowerCase().includes(filters.query.toLowerCase()) ||
+          doc.description?.toLowerCase().includes(filters.query.toLowerCase()),
       );
       setSearchResults(results);
     } catch (error) {
@@ -279,7 +294,9 @@ const KnowledgeBase: React.FC = () => {
       message.success(t("bulk.moved", "Dokumente erfolgreich verschoben"));
       refreshDocuments();
     } catch (error) {
-      message.error(t("bulk.move_error", "Fehler beim Verschieben der Dokumente"));
+      message.error(
+        t("bulk.move_error", "Fehler beim Verschieben der Dokumente"),
+      );
     }
   };
 
@@ -494,20 +511,20 @@ const KnowledgeBase: React.FC = () => {
                 <Text type="secondary">
                   {selectedRowKeys.length} {t("common.selected")}
                 </Text>
-                            <ModernButton
-              variant="secondary"
-              icon={<EditOutlined />}
-              onClick={handleBulkEdit}
-            >
-              {t("knowledge.actions.bulk_edit")}
-            </ModernButton>
-            <ModernButton
-              variant="secondary"
-              icon={<ReloadOutlined />}
-              onClick={() => setShowBulkActions(true)}
-            >
-              {t("knowledge.actions.bulk_actions")}
-            </ModernButton>
+                <ModernButton
+                  variant="secondary"
+                  icon={<EditOutlined />}
+                  onClick={handleBulkEdit}
+                >
+                  {t("knowledge.actions.bulk_edit")}
+                </ModernButton>
+                <ModernButton
+                  variant="secondary"
+                  icon={<ReloadOutlined />}
+                  onClick={() => setShowBulkActions(true)}
+                >
+                  {t("knowledge.actions.bulk_actions")}
+                </ModernButton>
               </>
             )}
           </Space>
@@ -897,7 +914,7 @@ const KnowledgeBase: React.FC = () => {
       {/* Bulk Edit Modal */}
       <BulkEditModal
         visible={showBulkEdit}
-        documents={documents.filter(doc => selectedRowKeys.includes(doc.id))}
+        documents={documents.filter((doc) => selectedRowKeys.includes(doc.id))}
         tags={[]} // TODO: Get tags from store
         onClose={() => setShowBulkEdit(false)}
         onSave={handleBulkEditSave}

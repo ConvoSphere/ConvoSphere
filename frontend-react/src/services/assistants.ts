@@ -19,14 +19,19 @@ export async function deleteAssistant(id: number) {
 }
 
 export async function getDefaultAssistantId() {
-  const response = await api.get(`${config.apiEndpoints.assistants}/default/id`);
+  const response = await api.get(
+    `${config.apiEndpoints.assistants}/default/id`,
+  );
   return response.data;
 }
 
 export async function setDefaultAssistant(assistantId: string) {
-  const response = await api.post(`${config.apiEndpoints.assistants}/default/set`, {
-    assistant_id: assistantId,
-  });
+  const response = await api.post(
+    `${config.apiEndpoints.assistants}/default/set`,
+    {
+      assistant_id: assistantId,
+    },
+  );
   return response.data;
 }
 

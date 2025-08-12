@@ -1,5 +1,5 @@
-import React from 'react';
-import { Typography, Space, Statistic, Divider, Badge } from 'antd';
+import React from "react";
+import { Typography, Space, Statistic, Divider, Badge } from "antd";
 import {
   ToolOutlined,
   ThunderboltOutlined,
@@ -9,12 +9,12 @@ import {
   UploadOutlined,
   DownloadOutlined,
   ReloadOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import ModernCard from '../../components/ModernCard';
-import ModernButton from '../../components/ModernButton';
-import { useThemeStore } from '../../store/themeStore';
-import type { Tool } from './types/tools.types';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import ModernCard from "../../components/ModernCard";
+import ModernButton from "../../components/ModernButton";
+import { useThemeStore } from "../../store/themeStore";
+import type { Tool } from "./types/tools.types";
 
 const { Title, Text } = Typography;
 
@@ -118,7 +118,9 @@ const ToolStats: React.FC<ToolStatsProps> = ({
           <Statistic
             title={t("tools.stats.active_tools", "Aktive Tools")}
             value={stats.active}
-            prefix={<ThunderboltOutlined style={{ color: colors.colorSecondary }} />}
+            prefix={
+              <ThunderboltOutlined style={{ color: colors.colorSecondary }} />
+            }
             valueStyle={{
               color: colors.colorSecondary,
               fontSize: "1.2rem",
@@ -128,7 +130,9 @@ const ToolStats: React.FC<ToolStatsProps> = ({
           <Statistic
             title={t("tools.stats.total_executions", "Ausführungen")}
             value={stats.totalExecutions}
-            prefix={<PlayCircleOutlined style={{ color: colors.colorAccent }} />}
+            prefix={
+              <PlayCircleOutlined style={{ color: colors.colorAccent }} />
+            }
             valueStyle={{
               color: colors.colorAccent,
               fontSize: "1.2rem",
@@ -202,7 +206,9 @@ const ToolStats: React.FC<ToolStatsProps> = ({
 
         <Space direction="vertical" size="small" style={{ width: "100%" }}>
           {categories.map((category) => {
-            const count = tools.filter((t) => t.category === category.value).length;
+            const count = tools.filter(
+              (t) => t.category === category.value,
+            ).length;
             return (
               <div
                 key={category.value}

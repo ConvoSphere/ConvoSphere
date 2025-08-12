@@ -12,13 +12,16 @@ export async function getProfile(token?: string) {
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  
+
   const response = await api.get(`${config.apiEndpoints.auth}/me`, { headers });
   return response.data;
 }
 
 export async function updateProfile(data: UserProfileUpdate) {
-  const response = await api.put(`${config.apiEndpoints.auth}/me/profile`, data);
+  const response = await api.put(
+    `${config.apiEndpoints.auth}/me/profile`,
+    data,
+  );
   return response.data;
 }
 

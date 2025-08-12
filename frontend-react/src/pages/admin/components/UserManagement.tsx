@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Table,
   Button,
@@ -13,7 +13,7 @@ import {
   Popconfirm,
   Tooltip,
   message,
-} from 'antd';
+} from "antd";
 import {
   UserOutlined,
   PlusOutlined,
@@ -23,12 +23,12 @@ import {
   CrownOutlined,
   SafetyOutlined,
   MailOutlined,
-} from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
-import { useUserManagement } from '../hooks/useUserManagement';
-import { User, UserFormData } from '../types/admin.types';
-import ModernCard from '../../../components/ModernCard';
-import ModernButton from '../../../components/ModernButton';
+} from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import { useUserManagement } from "../hooks/useUserManagement";
+import { User, UserFormData } from "../types/admin.types";
+import ModernCard from "../../../components/ModernCard";
+import ModernButton from "../../../components/ModernButton";
 
 const { Option } = Select;
 
@@ -52,38 +52,38 @@ const UserManagement: React.FC = () => {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return <CrownOutlined style={{ color: '#ff4d4f' }} />;
-      case 'admin':
-        return <SafetyOutlined style={{ color: '#1890ff' }} />;
+      case "super_admin":
+        return <CrownOutlined style={{ color: "#ff4d4f" }} />;
+      case "admin":
+        return <SafetyOutlined style={{ color: "#1890ff" }} />;
       default:
-        return <UserOutlined style={{ color: '#52c41a' }} />;
+        return <UserOutlined style={{ color: "#52c41a" }} />;
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return 'red';
-      case 'admin':
-        return 'blue';
-      case 'moderator':
-        return 'orange';
+      case "super_admin":
+        return "red";
+      case "admin":
+        return "blue";
+      case "moderator":
+        return "orange";
       default:
-        return 'green';
+        return "green";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'green';
-      case 'inactive':
-        return 'orange';
-      case 'suspended':
-        return 'red';
+      case "active":
+        return "green";
+      case "inactive":
+        return "orange";
+      case "suspended":
+        return "red";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -95,8 +95,8 @@ const UserManagement: React.FC = () => {
     form.setFieldsValue({
       email: user.email,
       username: user.username,
-      first_name: user.first_name || '',
-      last_name: user.last_name || '',
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
       role: user.role,
       status: user.status,
     });
@@ -115,84 +115,79 @@ const UserManagement: React.FC = () => {
 
   const columns = [
     {
-      title: t('admin.users.avatar'),
-      key: 'avatar',
+      title: t("admin.users.avatar"),
+      key: "avatar",
       width: 60,
       render: (user: User) => (
-        <Avatar
-          icon={getRoleIcon(user.role)}
-          src={user.avatar}
-          size="small"
-        />
+        <Avatar icon={getRoleIcon(user.role)} src={user.avatar} size="small" />
       ),
     },
     {
-      title: t('admin.users.username'),
-      dataIndex: 'username',
-      key: 'username',
+      title: t("admin.users.username"),
+      dataIndex: "username",
+      key: "username",
       render: (text: string, user: User) => (
         <Space>
           <span>{text}</span>
-          {user.email_verified && (
-            <MailOutlined style={{ color: '#52c41a' }} />
-          )}
+          {user.email_verified && <MailOutlined style={{ color: "#52c41a" }} />}
         </Space>
       ),
     },
     {
-      title: t('admin.users.email'),
-      dataIndex: 'email',
-      key: 'email',
+      title: t("admin.users.email"),
+      dataIndex: "email",
+      key: "email",
     },
     {
-      title: t('admin.users.role'),
-      dataIndex: 'role',
-      key: 'role',
+      title: t("admin.users.role"),
+      dataIndex: "role",
+      key: "role",
       render: (role: string, user: User) => (
         <Select
           value={role}
           style={{ width: 120 }}
           onChange={(value) => handleUserRoleChange(user.id, value)}
         >
-          <Option value="user">{t('admin.roles.user')}</Option>
-          <Option value="moderator">{t('admin.roles.moderator')}</Option>
-          <Option value="admin">{t('admin.roles.admin')}</Option>
-          <Option value="super_admin">{t('admin.roles.super_admin')}</Option>
+          <Option value="user">{t("admin.roles.user")}</Option>
+          <Option value="moderator">{t("admin.roles.moderator")}</Option>
+          <Option value="admin">{t("admin.roles.admin")}</Option>
+          <Option value="super_admin">{t("admin.roles.super_admin")}</Option>
         </Select>
       ),
     },
     {
-      title: t('admin.users.status'),
-      dataIndex: 'status',
-      key: 'status',
+      title: t("admin.users.status"),
+      dataIndex: "status",
+      key: "status",
       render: (status: string, user: User) => (
         <Switch
-          checked={status === 'active'}
+          checked={status === "active"}
           onChange={(checked) =>
-            handleUserStatusChange(user.id, checked ? 'active' : 'inactive')
+            handleUserStatusChange(user.id, checked ? "active" : "inactive")
           }
         />
       ),
     },
     {
-      title: t('admin.users.created'),
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: t("admin.users.created"),
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (date: string) => formatDate(date),
     },
     {
-      title: t('admin.users.last_login'),
-      dataIndex: 'lastLogin',
-      key: 'lastLogin',
-      render: (date: string) => date ? formatDate(date) : t('admin.users.never'),
+      title: t("admin.users.last_login"),
+      dataIndex: "lastLogin",
+      key: "lastLogin",
+      render: (date: string) =>
+        date ? formatDate(date) : t("admin.users.never"),
     },
     {
-      title: t('admin.users.actions'),
-      key: 'actions',
+      title: t("admin.users.actions"),
+      key: "actions",
       width: 120,
       render: (user: User) => (
         <Space size="small">
-          <Tooltip title={t('admin.users.view')}>
+          <Tooltip title={t("admin.users.view")}>
             <Button
               type="text"
               icon={<EyeOutlined />}
@@ -200,7 +195,7 @@ const UserManagement: React.FC = () => {
               onClick={() => handleEditUser(user)}
             />
           </Tooltip>
-          <Tooltip title={t('admin.users.edit')}>
+          <Tooltip title={t("admin.users.edit")}>
             <Button
               type="text"
               icon={<EditOutlined />}
@@ -209,12 +204,12 @@ const UserManagement: React.FC = () => {
             />
           </Tooltip>
           <Popconfirm
-            title={t('admin.users.delete_confirm')}
+            title={t("admin.users.delete_confirm")}
             onConfirm={() => handleUserDelete(user.id)}
-            okText={t('common.yes')}
-            cancelText={t('common.no')}
+            okText={t("common.yes")}
+            cancelText={t("common.no")}
           >
-            <Tooltip title={t('admin.users.delete')}>
+            <Tooltip title={t("admin.users.delete")}>
               <Button
                 type="text"
                 danger
@@ -231,14 +226,14 @@ const UserManagement: React.FC = () => {
   return (
     <div>
       <ModernCard
-        title={t('admin.users.title')}
+        title={t("admin.users.title")}
         extra={
           <ModernButton
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleCreateUser}
           >
-            {t('admin.users.create')}
+            {t("admin.users.create")}
           </ModernButton>
         }
       >
@@ -260,8 +255,8 @@ const UserManagement: React.FC = () => {
       <Modal
         title={
           selectedUser
-            ? t('admin.users.edit_user')
-            : t('admin.users.create_user')
+            ? t("admin.users.edit_user")
+            : t("admin.users.create_user")
         }
         open={userModalVisible}
         onCancel={closeUserModal}
@@ -276,10 +271,10 @@ const UserManagement: React.FC = () => {
         >
           <Form.Item
             name="email"
-            label={t('admin.users.email')}
+            label={t("admin.users.email")}
             rules={[
-              { required: true, message: t('admin.users.email_required') },
-              { type: 'email', message: t('admin.users.email_invalid') },
+              { required: true, message: t("admin.users.email_required") },
+              { type: "email", message: t("admin.users.email_invalid") },
             ]}
           >
             <Input prefix={<MailOutlined />} />
@@ -287,9 +282,9 @@ const UserManagement: React.FC = () => {
 
           <Form.Item
             name="username"
-            label={t('admin.users.username')}
+            label={t("admin.users.username")}
             rules={[
-              { required: true, message: t('admin.users.username_required') },
+              { required: true, message: t("admin.users.username_required") },
             ]}
           >
             <Input prefix={<UserOutlined />} />
@@ -298,55 +293,61 @@ const UserManagement: React.FC = () => {
           {!selectedUser && (
             <Form.Item
               name="password"
-              label={t('admin.users.password')}
+              label={t("admin.users.password")}
               rules={[
-                { required: true, message: t('admin.users.password_required') },
-                { min: 8, message: t('admin.users.password_min_length') },
+                { required: true, message: t("admin.users.password_required") },
+                { min: 8, message: t("admin.users.password_min_length") },
               ]}
             >
               <Input.Password />
             </Form.Item>
           )}
 
-          <Form.Item name="first_name" label={t('admin.users.first_name')}>
+          <Form.Item name="first_name" label={t("admin.users.first_name")}>
             <Input />
           </Form.Item>
 
-          <Form.Item name="last_name" label={t('admin.users.last_name')}>
+          <Form.Item name="last_name" label={t("admin.users.last_name")}>
             <Input />
           </Form.Item>
 
           <Form.Item
             name="role"
-            label={t('admin.users.role')}
-            rules={[{ required: true, message: t('admin.users.role_required') }]}
+            label={t("admin.users.role")}
+            rules={[
+              { required: true, message: t("admin.users.role_required") },
+            ]}
           >
             <Select>
-              <Option value="user">{t('admin.roles.user')}</Option>
-              <Option value="moderator">{t('admin.roles.moderator')}</Option>
-              <Option value="admin">{t('admin.roles.admin')}</Option>
-              <Option value="super_admin">{t('admin.roles.super_admin')}</Option>
+              <Option value="user">{t("admin.roles.user")}</Option>
+              <Option value="moderator">{t("admin.roles.moderator")}</Option>
+              <Option value="admin">{t("admin.roles.admin")}</Option>
+              <Option value="super_admin">
+                {t("admin.roles.super_admin")}
+              </Option>
             </Select>
           </Form.Item>
 
           <Form.Item
             name="status"
-            label={t('admin.users.status')}
-            rules={[{ required: true, message: t('admin.users.status_required') }]}
+            label={t("admin.users.status")}
+            rules={[
+              { required: true, message: t("admin.users.status_required") },
+            ]}
           >
             <Select>
-              <Option value="active">{t('admin.status.active')}</Option>
-              <Option value="inactive">{t('admin.status.inactive')}</Option>
-              <Option value="suspended">{t('admin.status.suspended')}</Option>
+              <Option value="active">{t("admin.status.active")}</Option>
+              <Option value="inactive">{t("admin.status.inactive")}</Option>
+              <Option value="suspended">{t("admin.status.suspended")}</Option>
             </Select>
           </Form.Item>
 
           <Form.Item>
             <Space>
               <ModernButton type="primary" htmlType="submit">
-                {selectedUser ? t('common.update') : t('common.create')}
+                {selectedUser ? t("common.update") : t("common.create")}
               </ModernButton>
-              <Button onClick={closeUserModal}>{t('common.cancel')}</Button>
+              <Button onClick={closeUserModal}>{t("common.cancel")}</Button>
             </Space>
           </Form.Item>
         </Form>

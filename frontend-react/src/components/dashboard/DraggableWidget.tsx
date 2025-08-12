@@ -10,7 +10,10 @@ interface DraggableWidgetProps {
   widget: WidgetConfig;
   children: React.ReactNode;
   onMove: (widgetId: string, newPosition: { x: number; y: number }) => void;
-  onResize: (widgetId: string, newSize: { width: number; height: number }) => void;
+  onResize: (
+    widgetId: string,
+    newSize: { width: number; height: number },
+  ) => void;
   editMode: boolean;
   position: { x: number; y: number };
 }
@@ -50,7 +53,10 @@ const DraggableWidget: React.FC<DraggableWidgetProps> = ({
     },
   });
 
-  const handleResize = (event: any, { size }: { size: { width: number; height: number } }) => {
+  const handleResize = (
+    event: any,
+    { size }: { size: { width: number; height: number } },
+  ) => {
     onResize(widget.id, size);
   };
 
@@ -78,10 +84,11 @@ const DraggableWidget: React.FC<DraggableWidgetProps> = ({
     border: editMode ? `2px dashed ${colors.colorPrimary}` : "none",
     borderRadius: "8px",
     transition: "all 0.3s ease",
-    ...(isOver && editMode && {
-      border: `2px solid ${colors.colorPrimary}`,
-      backgroundColor: `${colors.colorPrimary}10`,
-    }),
+    ...(isOver &&
+      editMode && {
+        border: `2px solid ${colors.colorPrimary}`,
+        backgroundColor: `${colors.colorPrimary}10`,
+      }),
   };
 
   const dragHandleStyle: React.CSSProperties = {
@@ -114,7 +121,7 @@ const DraggableWidget: React.FC<DraggableWidgetProps> = ({
           <DragOutlined />
         </div>
       )}
-      
+
       <ResizableBox
         width={sizeStyles.width}
         height={sizeStyles.height}
@@ -124,9 +131,7 @@ const DraggableWidget: React.FC<DraggableWidgetProps> = ({
         resizeHandles={editMode ? ["se"] : []}
         handle={<div style={{ display: editMode ? "block" : "none" }} />}
       >
-        <div style={{ width: "100%", height: "100%" }}>
-          {children}
-        </div>
+        <div style={{ width: "100%", height: "100%" }}>{children}</div>
       </ResizableBox>
     </div>
   );

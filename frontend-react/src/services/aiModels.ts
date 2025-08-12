@@ -1,5 +1,10 @@
-import { config } from '../config';
-import type { AIModel, ModelCreate, ModelUpdate, ModelTest } from '../store/aiModelsStore';
+import { config } from "../config";
+import type {
+  AIModel,
+  ModelCreate,
+  ModelUpdate,
+  ModelTest,
+} from "../store/aiModelsStore";
 
 class AIModelsService {
   private baseUrl = config.apiUrl;
@@ -9,12 +14,14 @@ class AIModelsService {
    * Fetch all AI models
    */
   async getModels(): Promise<AIModel[]> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models`);
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch models');
+      throw new Error("Failed to fetch models");
     }
-    
+
     return response.json();
   }
 
@@ -22,12 +29,14 @@ class AIModelsService {
    * Get a specific model by ID
    */
   async getModel(modelId: string): Promise<AIModel> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`);
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch model');
+      throw new Error("Failed to fetch model");
     }
-    
+
     return response.json();
   }
 
@@ -35,16 +44,19 @@ class AIModelsService {
    * Create a new AI model
    */
   async createModel(modelData: ModelCreate): Promise<AIModel> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(modelData),
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(modelData),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to create model');
+      throw new Error("Failed to create model");
     }
-    
+
     return response.json();
   }
 
@@ -52,16 +64,19 @@ class AIModelsService {
    * Update an existing AI model
    */
   async updateModel(modelId: string, modelData: ModelUpdate): Promise<AIModel> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(modelData),
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(modelData),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to update model');
+      throw new Error("Failed to update model");
     }
-    
+
     return response.json();
   }
 
@@ -69,29 +84,38 @@ class AIModelsService {
    * Delete an AI model
    */
   async deleteModel(modelId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`, {
-      method: 'DELETE',
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}`,
+      {
+        method: "DELETE",
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to delete model');
+      throw new Error("Failed to delete model");
     }
   }
 
   /**
    * Toggle model active status
    */
-  async toggleModelActive(modelId: string, isActive: boolean): Promise<AIModel> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/toggle`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive }),
-    });
-    
+  async toggleModelActive(
+    modelId: string,
+    isActive: boolean,
+  ): Promise<AIModel> {
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/toggle`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive }),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to toggle model status');
+      throw new Error("Failed to toggle model status");
     }
-    
+
     return response.json();
   }
 
@@ -99,15 +123,18 @@ class AIModelsService {
    * Set model as default
    */
   async setDefaultModel(modelId: string): Promise<AIModel> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/default`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/default`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to set default model');
+      throw new Error("Failed to set default model");
     }
-    
+
     return response.json();
   }
 
@@ -115,16 +142,19 @@ class AIModelsService {
    * Test a model with a prompt
    */
   async testModel(modelId: string, prompt: string): Promise<ModelTest> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/test`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/test`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to test model');
+      throw new Error("Failed to test model");
     }
-    
+
     return response.json();
   }
 
@@ -132,13 +162,15 @@ class AIModelsService {
    * Get model performance statistics
    */
   async getModelPerformance(modelId: string, timeRange?: string): Promise<any> {
-    const params = timeRange ? `?timeRange=${timeRange}` : '';
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/performance${params}`);
-    
+    const params = timeRange ? `?timeRange=${timeRange}` : "";
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/performance${params}`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch model performance');
+      throw new Error("Failed to fetch model performance");
     }
-    
+
     return response.json();
   }
 
@@ -146,13 +178,15 @@ class AIModelsService {
    * Get model usage statistics
    */
   async getModelUsage(modelId: string, timeRange?: string): Promise<any> {
-    const params = timeRange ? `?timeRange=${timeRange}` : '';
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/usage${params}`);
-    
+    const params = timeRange ? `?timeRange=${timeRange}` : "";
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/usage${params}`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch model usage');
+      throw new Error("Failed to fetch model usage");
     }
-    
+
     return response.json();
   }
 
@@ -160,13 +194,15 @@ class AIModelsService {
    * Get model cost statistics
    */
   async getModelCosts(modelId: string, timeRange?: string): Promise<any> {
-    const params = timeRange ? `?timeRange=${timeRange}` : '';
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/costs${params}`);
-    
+    const params = timeRange ? `?timeRange=${timeRange}` : "";
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/${modelId}/costs${params}`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch model costs');
+      throw new Error("Failed to fetch model costs");
     }
-    
+
     return response.json();
   }
 
@@ -174,12 +210,14 @@ class AIModelsService {
    * Get available providers
    */
   async getProviders(): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/providers`);
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/providers`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch providers');
+      throw new Error("Failed to fetch providers");
     }
-    
+
     return response.json();
   }
 
@@ -187,29 +225,36 @@ class AIModelsService {
    * Get provider models
    */
   async getProviderModels(provider: string): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/providers/${provider}/models`);
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/providers/${provider}/models`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch provider models');
+      throw new Error("Failed to fetch provider models");
     }
-    
+
     return response.json();
   }
 
   /**
    * Validate model configuration
    */
-  async validateModel(modelData: ModelCreate): Promise<{ valid: boolean; errors?: string[] }> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(modelData),
-    });
-    
+  async validateModel(
+    modelData: ModelCreate,
+  ): Promise<{ valid: boolean; errors?: string[] }> {
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/validate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(modelData),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to validate model');
+      throw new Error("Failed to validate model");
     }
-    
+
     return response.json();
   }
 
@@ -217,33 +262,42 @@ class AIModelsService {
    * Get model comparison data
    */
   async compareModels(modelIds: string[]): Promise<any> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/compare`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ modelIds }),
-    });
-    
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/compare`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modelIds }),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to compare models');
+      throw new Error("Failed to compare models");
     }
-    
+
     return response.json();
   }
 
   /**
    * Get model recommendations based on use case
    */
-  async getModelRecommendations(useCase: string, requirements?: any): Promise<AIModel[]> {
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/recommendations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ useCase, requirements }),
-    });
-    
+  async getModelRecommendations(
+    useCase: string,
+    requirements?: any,
+  ): Promise<AIModel[]> {
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/recommendations`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ useCase, requirements }),
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to get model recommendations');
+      throw new Error("Failed to get model recommendations");
     }
-    
+
     return response.json();
   }
 
@@ -252,15 +306,17 @@ class AIModelsService {
    */
   async getModelAnalytics(timeRange?: string, filters?: any): Promise<any> {
     const params = new URLSearchParams();
-    if (timeRange) params.append('timeRange', timeRange);
-    if (filters) params.append('filters', JSON.stringify(filters));
-    
-    const response = await fetch(`${this.baseUrl}${this.endpoints.assistants}/models/analytics?${params}`);
-    
+    if (timeRange) params.append("timeRange", timeRange);
+    if (filters) params.append("filters", JSON.stringify(filters));
+
+    const response = await fetch(
+      `${this.baseUrl}${this.endpoints.assistants}/models/analytics?${params}`,
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch model analytics');
+      throw new Error("Failed to fetch model analytics");
     }
-    
+
     return response.json();
   }
 }

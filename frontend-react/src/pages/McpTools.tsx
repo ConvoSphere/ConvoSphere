@@ -64,7 +64,7 @@ interface ThemeColors {
 const McpTools: React.FC = () => {
   const { t } = useTranslation();
   const { getCurrentColors } = useThemeStore();
-  const colors = getCurrentColors() as ThemeColors ?? {};
+  const colors = (getCurrentColors() as ThemeColors) ?? {};
   const [tools, setTools] = useState<McpTool[]>([]);
   const [selected, setSelected] = useState<McpTool | null>(null);
   const [visible, setVisible] = useState(false);
@@ -291,7 +291,13 @@ const McpTools: React.FC = () => {
                           size="md"
                           style={{ marginBottom: 24 }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 16,
+                            }}
+                          >
                             <ModernInput
                               placeholder={t("mcp_tools.search_placeholder")}
                               value={searchQuery}
@@ -306,7 +312,9 @@ const McpTools: React.FC = () => {
                                 setLoading(true);
                                 getMcpTools()
                                   .then(setTools)
-                                  .catch(() => message.error(t("mcp_tools.load_failed")))
+                                  .catch(() =>
+                                    message.error(t("mcp_tools.load_failed")),
+                                  )
                                   .finally(() => setLoading(false));
                               }}
                             >
@@ -352,7 +360,11 @@ const McpTools: React.FC = () => {
                           />
                         ) : (
                           <div
-                            style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 16,
+                            }}
                           >
                             {filteredTools.map(renderToolCard)}
                           </div>

@@ -1,11 +1,11 @@
-import api from './api';
-import config from '../config';
+import api from "./api";
+import config from "../config";
 
 export interface SystemConfig {
   general: {
     appName: string;
     appVersion: string;
-    environment: 'development' | 'staging' | 'production';
+    environment: "development" | "staging" | "production";
     debugMode: boolean;
     maintenanceMode: boolean;
     maintenanceMessage?: string;
@@ -57,7 +57,7 @@ export interface SystemConfig {
     };
     email: {
       enabled: boolean;
-      provider: 'smtp' | 'sendgrid' | 'mailgun';
+      provider: "smtp" | "sendgrid" | "mailgun";
       host?: string;
       port?: number;
       username?: string;
@@ -66,7 +66,7 @@ export interface SystemConfig {
       fromName?: string;
     };
     storage: {
-      provider: 'local' | 's3' | 'gcs' | 'azure';
+      provider: "local" | "s3" | "gcs" | "azure";
       bucket?: string;
       region?: string;
       accessKey?: string;
@@ -74,7 +74,7 @@ export interface SystemConfig {
     };
   };
   ui: {
-    theme: 'light' | 'dark' | 'auto';
+    theme: "light" | "dark" | "auto";
     language: string;
     timezone: string;
     dateFormat: string;
@@ -92,7 +92,7 @@ export interface SystemConfig {
     gzipLevel: number;
   };
   logging: {
-    level: 'debug' | 'info' | 'warn' | 'error';
+    level: "debug" | "info" | "warn" | "error";
     fileEnabled: boolean;
     filePath?: string;
     maxFileSize: number;
@@ -107,7 +107,7 @@ export interface SystemConfig {
 export interface UserPreferences {
   id: string;
   userId: string;
-  theme: 'light' | 'dark' | 'auto';
+  theme: "light" | "dark" | "auto";
   language: string;
   timezone: string;
   dateFormat: string;
@@ -154,51 +154,81 @@ export const configurationService = {
     return response.data;
   },
 
-  updateSystemConfig: async (config: Partial<SystemConfig>): Promise<SystemConfig> => {
-    const response = await api.put(`${config.apiEndpoints.config}/system`, config);
+  updateSystemConfig: async (
+    config: Partial<SystemConfig>,
+  ): Promise<SystemConfig> => {
+    const response = await api.put(
+      `${config.apiEndpoints.config}/system`,
+      config,
+    );
     return response.data;
   },
 
-  validateSystemConfig: async (config: Partial<SystemConfig>): Promise<ConfigValidation> => {
-    const response = await api.post(`${config.apiEndpoints.config}/system/validate`, config);
+  validateSystemConfig: async (
+    config: Partial<SystemConfig>,
+  ): Promise<ConfigValidation> => {
+    const response = await api.post(
+      `${config.apiEndpoints.config}/system/validate`,
+      config,
+    );
     return response.data;
   },
 
   resetSystemConfig: async (): Promise<SystemConfig> => {
-    const response = await api.post(`${config.apiEndpoints.config}/system/reset`);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/system/reset`,
+    );
     return response.data;
   },
 
-  exportSystemConfig: async (format: 'json' | 'yaml' = 'json'): Promise<Blob> => {
-    const response = await api.get(`${config.apiEndpoints.config}/system/export`, {
-      params: { format },
-      responseType: 'blob',
-    });
+  exportSystemConfig: async (
+    format: "json" | "yaml" = "json",
+  ): Promise<Blob> => {
+    const response = await api.get(
+      `${config.apiEndpoints.config}/system/export`,
+      {
+        params: { format },
+        responseType: "blob",
+      },
+    );
     return response.data;
   },
 
   importSystemConfig: async (file: File): Promise<SystemConfig> => {
     const formData = new FormData();
-    formData.append('config', file);
-    const response = await api.post(`${config.apiEndpoints.config}/system/import`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    formData.append("config", file);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/system/import`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     return response.data;
   },
 
   // User Preferences
   getUserPreferences: async (userId?: string): Promise<UserPreferences> => {
-    const response = await api.get(`${config.apiEndpoints.config}/preferences${userId ? `/${userId}` : ''}`);
+    const response = await api.get(
+      `${config.apiEndpoints.config}/preferences${userId ? `/${userId}` : ""}`,
+    );
     return response.data;
   },
 
-  updateUserPreferences: async (preferences: Partial<UserPreferences>): Promise<UserPreferences> => {
-    const response = await api.put(`${config.apiEndpoints.config}/preferences`, preferences);
+  updateUserPreferences: async (
+    preferences: Partial<UserPreferences>,
+  ): Promise<UserPreferences> => {
+    const response = await api.put(
+      `${config.apiEndpoints.config}/preferences`,
+      preferences,
+    );
     return response.data;
   },
 
   resetUserPreferences: async (): Promise<UserPreferences> => {
-    const response = await api.post(`${config.apiEndpoints.config}/preferences/reset`);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/preferences/reset`,
+    );
     return response.data;
   },
 
@@ -209,12 +239,21 @@ export const configurationService = {
   },
 
   saveConfigTemplate: async (template: any): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.config}/templates`, template);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/templates`,
+      template,
+    );
     return response.data;
   },
 
-  updateConfigTemplate: async (templateId: string, template: any): Promise<any> => {
-    const response = await api.put(`${config.apiEndpoints.config}/templates/${templateId}`, template);
+  updateConfigTemplate: async (
+    templateId: string,
+    template: any,
+  ): Promise<any> => {
+    const response = await api.put(
+      `${config.apiEndpoints.config}/templates/${templateId}`,
+      template,
+    );
     return response.data;
   },
 
@@ -223,23 +262,35 @@ export const configurationService = {
   },
 
   applyConfigTemplate: async (templateId: string): Promise<SystemConfig> => {
-    const response = await api.post(`${config.apiEndpoints.config}/templates/${templateId}/apply`);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/templates/${templateId}/apply`,
+    );
     return response.data;
   },
 
   // Environment Management
   getEnvironmentConfig: async (environment: string): Promise<SystemConfig> => {
-    const response = await api.get(`${config.apiEndpoints.config}/environments/${environment}`);
+    const response = await api.get(
+      `${config.apiEndpoints.config}/environments/${environment}`,
+    );
     return response.data;
   },
 
-  updateEnvironmentConfig: async (environment: string, config: Partial<SystemConfig>): Promise<SystemConfig> => {
-    const response = await api.put(`${config.apiEndpoints.config}/environments/${environment}`, config);
+  updateEnvironmentConfig: async (
+    environment: string,
+    config: Partial<SystemConfig>,
+  ): Promise<SystemConfig> => {
+    const response = await api.put(
+      `${config.apiEndpoints.config}/environments/${environment}`,
+      config,
+    );
     return response.data;
   },
 
   listEnvironments: async (): Promise<string[]> => {
-    const response = await api.get(`${config.apiEndpoints.config}/environments`);
+    const response = await api.get(
+      `${config.apiEndpoints.config}/environments`,
+    );
     return response.data;
   },
 
@@ -252,36 +303,48 @@ export const configurationService = {
   },
 
   revertConfig: async (versionId: string): Promise<SystemConfig> => {
-    const response = await api.post(`${config.apiEndpoints.config}/history/${versionId}/revert`);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/history/${versionId}/revert`,
+    );
     return response.data;
   },
 
   // Configuration Backup
   backupConfig: async (): Promise<Blob> => {
     const response = await api.get(`${config.apiEndpoints.config}/backup`, {
-      responseType: 'blob',
+      responseType: "blob",
     });
     return response.data;
   },
 
   restoreConfig: async (file: File): Promise<SystemConfig> => {
     const formData = new FormData();
-    formData.append('backup', file);
-    const response = await api.post(`${config.apiEndpoints.config}/restore`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    formData.append("backup", file);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/restore`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     return response.data;
   },
 
   // Configuration Validation
   validateConfig: async (config: any): Promise<ConfigValidation> => {
-    const response = await api.post(`${config.apiEndpoints.config}/validate`, config);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/validate`,
+      config,
+    );
     return response.data;
   },
 
   // Configuration Testing
   testConfig: async (config: Partial<SystemConfig>): Promise<any> => {
-    const response = await api.post(`${config.apiEndpoints.config}/test`, config);
+    const response = await api.post(
+      `${config.apiEndpoints.config}/test`,
+      config,
+    );
     return response.data;
   },
 
@@ -292,7 +355,10 @@ export const configurationService = {
   },
 
   // Configuration Migration
-  migrateConfig: async (fromVersion: string, toVersion: string): Promise<SystemConfig> => {
+  migrateConfig: async (
+    fromVersion: string,
+    toVersion: string,
+  ): Promise<SystemConfig> => {
     const response = await api.post(`${config.apiEndpoints.config}/migrate`, {
       fromVersion,
       toVersion,

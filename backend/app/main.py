@@ -2,4 +2,3 @@
 
 This re-exports the application instance from the root-level backend/main.py.
 """
-from ..main import app  # type: ignore

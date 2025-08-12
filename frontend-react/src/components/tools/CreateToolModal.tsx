@@ -103,7 +103,11 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
     setParameters(parameters.filter((_, i) => i !== index));
   };
 
-  const handleParameterChange = (index: number, field: keyof ToolParameter, value: any) => {
+  const handleParameterChange = (
+    index: number,
+    field: keyof ToolParameter,
+    value: any,
+  ) => {
     const updatedParameters = [...parameters];
     updatedParameters[index] = { ...updatedParameters[index], [field]: value };
     setParameters(updatedParameters);
@@ -130,7 +134,7 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
       };
 
       await createTool(toolData);
-      
+
       message.success(t("tools.create_success", "Tool created successfully"));
       form.resetFields();
       setParameters([]);
@@ -170,21 +174,37 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
         onFinish={handleSubmit}
         style={{ marginTop: 16 }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+        >
           <ModernFormItem
             name="name"
             label={t("tools.name", "Tool Name")}
-            rules={[{ required: true, message: t("tools.name_required", "Tool name is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t("tools.name_required", "Tool name is required"),
+              },
+            ]}
           >
-            <ModernInput placeholder={t("tools.name_placeholder", "Enter tool name")} />
+            <ModernInput
+              placeholder={t("tools.name_placeholder", "Enter tool name")}
+            />
           </ModernFormItem>
 
           <ModernFormItem
             name="category"
             label={t("tools.category", "Category")}
-            rules={[{ required: true, message: t("tools.category_required", "Category is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t("tools.category_required", "Category is required"),
+              },
+            ]}
           >
-            <ModernSelect placeholder={t("tools.category_placeholder", "Select category")}>
+            <ModernSelect
+              placeholder={t("tools.category_placeholder", "Select category")}
+            >
               {categories.map((category) => (
                 <Option key={category.value} value={category.value}>
                   <Space>
@@ -203,17 +223,35 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
         >
           <TextArea
             rows={3}
-            placeholder={t("tools.description_placeholder", "Enter tool description")}
+            placeholder={t(
+              "tools.description_placeholder",
+              "Enter tool description",
+            )}
           />
         </ModernFormItem>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+        >
           <ModernFormItem
             name="function_name"
             label={t("tools.function_name", "Function Name")}
-            rules={[{ required: true, message: t("tools.function_name_required", "Function name is required") }]}
+            rules={[
+              {
+                required: true,
+                message: t(
+                  "tools.function_name_required",
+                  "Function name is required",
+                ),
+              },
+            ]}
           >
-            <ModernInput placeholder={t("tools.function_name_placeholder", "Enter function name")} />
+            <ModernInput
+              placeholder={t(
+                "tools.function_name_placeholder",
+                "Enter function name",
+              )}
+            />
           </ModernFormItem>
 
           <ModernFormItem
@@ -229,7 +267,12 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
           name="implementation_path"
           label={t("tools.implementation_path", "Implementation Path")}
         >
-          <ModernInput placeholder={t("tools.implementation_path_placeholder", "Path to implementation file")} />
+          <ModernInput
+            placeholder={t(
+              "tools.implementation_path_placeholder",
+              "Path to implementation file",
+            )}
+          />
         </ModernFormItem>
 
         <Divider>
@@ -249,16 +292,27 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
               marginBottom: 16,
             }}
           >
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 16, alignItems: "end" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr auto",
+                gap: 16,
+                alignItems: "end",
+              }}
+            >
               <ModernInput
                 placeholder={t("tools.parameter_name", "Parameter name")}
                 value={param.name}
-                onChange={(e) => handleParameterChange(index, "name", e.target.value)}
+                onChange={(e) =>
+                  handleParameterChange(index, "name", e.target.value)
+                }
               />
-              
+
               <ModernSelect
                 value={param.type}
-                onChange={(value) => handleParameterChange(index, "type", value)}
+                onChange={(value) =>
+                  handleParameterChange(index, "type", value)
+                }
               >
                 {parameterTypes.map((type) => (
                   <Option key={type.value} value={type.value}>
@@ -269,7 +323,9 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
 
               <Switch
                 checked={param.required}
-                onChange={(checked) => handleParameterChange(index, "required", checked)}
+                onChange={(checked) =>
+                  handleParameterChange(index, "required", checked)
+                }
                 checkedChildren={t("tools.required", "Required")}
                 unCheckedChildren={t("tools.optional", "Optional")}
               />
@@ -284,9 +340,14 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
 
             <div style={{ marginTop: 12 }}>
               <TextArea
-                placeholder={t("tools.parameter_description", "Parameter description")}
+                placeholder={t(
+                  "tools.parameter_description",
+                  "Parameter description",
+                )}
                 value={param.description}
-                onChange={(e) => handleParameterChange(index, "description", e.target.value)}
+                onChange={(e) =>
+                  handleParameterChange(index, "description", e.target.value)
+                }
                 rows={2}
               />
             </div>
@@ -309,7 +370,9 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
           </Space>
         </Divider>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+        >
           <ModernFormItem
             name="is_enabled"
             label={t("tools.enabled", "Enabled")}
@@ -334,17 +397,21 @@ const CreateToolModal: React.FC<CreateToolModalProps> = ({
           <ModernInput placeholder="100/hour" />
         </ModernFormItem>
 
-        <ModernFormItem
-          name="tags"
-          label={t("tools.tags", "Tags")}
-        >
+        <ModernFormItem name="tags" label={t("tools.tags", "Tags")}>
           <ModernSelect
             mode="tags"
             placeholder={t("tools.tags_placeholder", "Add tags")}
           />
         </ModernFormItem>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 12,
+            marginTop: 24,
+          }}
+        >
           <ModernButton variant="outlined" onClick={handleCancel}>
             {t("common.cancel", "Cancel")}
           </ModernButton>
