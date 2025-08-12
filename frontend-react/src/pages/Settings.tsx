@@ -14,6 +14,7 @@ import {
   Switch,
   Input,
   Divider,
+  Form,
 } from "antd";
 import {
   GlobalOutlined,
@@ -32,6 +33,7 @@ import ModernButton from "../components/ModernButton";
 import ModernSelect from "../components/ModernSelect";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 interface SettingsState {
   language: string;

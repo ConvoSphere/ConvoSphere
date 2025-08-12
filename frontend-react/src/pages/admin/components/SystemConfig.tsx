@@ -11,6 +11,7 @@ import {
   Col,
   Divider,
   message,
+  Modal,
 } from "antd";
 import {
   SettingOutlined,
@@ -19,7 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useSystemConfig } from "../hooks/useSystemConfig";
-import { SystemConfigFormData } from "../types/admin.types";
+import { SystemConfig, SystemConfigFormData } from "../types/admin.types";
 import ModernCard from "../../../components/ModernCard";
 import ModernButton from "../../../components/ModernButton";
 

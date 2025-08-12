@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface Tool {
   id: number;
   name: string;
@@ -38,7 +40,7 @@ export interface ToolExecution {
 export interface ToolCategory {
   value: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 export interface ToolStats {

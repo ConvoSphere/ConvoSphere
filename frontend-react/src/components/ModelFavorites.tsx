@@ -287,7 +287,7 @@ const ModelFavorites: React.FC = () => {
     }
   };
 
-  const useFavorite = (favorite: ModelFavorite) => {
+  const selectFavorite = (favorite: ModelFavorite) => {
     setSelectedModel(models.find((m) => m.id === favorite.modelId) || null);
 
     // Update usage count
@@ -349,8 +349,8 @@ const ModelFavorites: React.FC = () => {
             <Button
               type="text"
               icon={<RocketOutlined />}
-              onClick={() => useFavorite(favorite)}
-            />
+              onClick={() => selectFavorite(favorite)}
+             />
           </Tooltip>,
           <Tooltip title={t("favorites.edit")}>
             <Button
@@ -450,7 +450,7 @@ const ModelFavorites: React.FC = () => {
             type="primary"
             size="small"
             icon={<RocketOutlined />}
-            onClick={() => useFavorite(favorite)}
+            onClick={() => selectFavorite(favorite)}
           >
             {t("favorites.use")}
           </Button>,

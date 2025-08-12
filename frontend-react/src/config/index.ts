@@ -6,7 +6,9 @@ const getEnvVar = (key: keyof ImportMetaEnv, defaultValue: string): string => {
       const value = import.meta.env[key] as unknown as string | undefined;
       if (value != null && value !== "") return value;
     }
-  } catch {}
+  } catch {
+    // Ignore: accessing import.meta may throw in non-Vite contexts
+  }
   return defaultValue;
 };
 

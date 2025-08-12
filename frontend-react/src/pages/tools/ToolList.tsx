@@ -22,6 +22,7 @@ import {
   CheckCircleOutlined,
   StarOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import ModernCard from "../../components/ModernCard";
