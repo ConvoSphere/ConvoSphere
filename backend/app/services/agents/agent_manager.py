@@ -8,6 +8,7 @@ all agent-related functionality using the modular services.
 from typing import Any
 
 from loguru import logger
+import uuid
 
 from backend.app.core.exceptions import ConversationError
 from backend.app.schemas.agent import (
@@ -64,7 +65,7 @@ class AgentManager:
         """
         try:
             # Generate agent ID
-            agent_id = f"custom_{len(self.registry.agents) + 1}"  # TODO: replace with UUID if persisted
+            agent_id = str(uuid.uuid4())
 
             # Add to registry
             entry = self.registry.add_agent(agent_id, agent_data.config)
