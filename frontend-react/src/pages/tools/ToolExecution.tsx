@@ -249,8 +249,21 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
       <ModernFormItem name="safe_mode" label={t("tools.websearch.safe_mode", "Safe mode")}> 
         <Switch defaultChecked />
       </ModernFormItem>
-      <ModernFormItem name="sources" label={t("tools.websearch.sources", "Sources (comma-separated)")}> 
-        <ModernInput placeholder="google,bing,ddg" />
+      <ModernFormItem name="sources" label={t("tools.websearch.sources", "Sources")}> 
+        <ModernSelect mode="tags" placeholder="google,bing,ddg">
+          {[
+            "google",
+            "bing",
+            "ddg",
+            "yahoo",
+            "startpage",
+            "duckduckgo",
+          ].map((src) => (
+            <ModernSelect.Option key={src} value={src}>
+              {src}
+            </ModernSelect.Option>
+          ))}
+        </ModernSelect>
       </ModernFormItem>
     </>
   ) : null;
