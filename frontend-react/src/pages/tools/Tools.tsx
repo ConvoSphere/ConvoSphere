@@ -5,6 +5,7 @@ import { useThemeStore } from "../../store/themeStore";
 
 import ModernCard from "../../components/ModernCard";
 import CreateToolModal from "../../components/tools/CreateToolModal";
+import McpServerManager from "../../components/mcp/McpServerManager";
 
 // Import modular components
 import ToolList from "./ToolList";
@@ -211,6 +212,10 @@ const Tools: React.FC = () => {
                 onRefresh={loadTools}
                 onCategoryClick={handleCategoryClick}
               />
+
+              <div style={{ marginTop: 24 }}>
+                <McpServerManager onServerChange={loadTools} />
+              </div>
             </Col>
           </Row>
         </div>
