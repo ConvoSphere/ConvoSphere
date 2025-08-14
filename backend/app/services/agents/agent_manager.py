@@ -25,6 +25,7 @@ from .agent_performance import agent_performance_service
 from .agent_registry import agent_registry
 from .agent_state import agent_state_manager
 from .agent_runner import AssistantAgentAdapter
+from .agent_planner import agent_planner
 
 
 class AgentManager:
@@ -336,15 +337,35 @@ class AgentManager:
             self.registry.record_usage(target_agent)
 
             # Generate response using adapter runner
-            runner = AssistantAgentAdapter()
-            run_result = await runner.process_message(
-                conversation_id=conversation_id,
-                user_id=user_id,
-                message=user_message,
-                model=agent_entry.config.model,
-                temperature=agent_entry.config.temperature,
-                use_tools=True,
-            )
+            run_result: dict[str, Any]
+            strategy = getattr(agent_entry.config, "planning_strategy", "none")
+            if strategy and strategy != "none":
+                plan = await agent_planner.run(
+                    strategy=strategy,  # type: ignore[arg-type]
+                    config=agent_entry.config,
+                    conversation_id=conversation_id,
+                    user_id=user_id,
+                    user_goal=user_message,
+                )
+                run_result = {
+                    "success": plan.success,
+                    "content": plan.final_output,
+                    "tool_calls": [],
+                    "metadata": {"planning": {"strategy": strategy, "steps": [s.__dict__ for s in plan.steps]}},
+                    "model_used": agent_entry.config.model,
+                    "tokens_used": 0,
+                    "processing_time": 0.0,
+                }
+            else:
+                runner = AssistantAgentAdapter()
+                run_result = await runner.process_message(
+                    conversation_id=conversation_id,
+                    user_id=user_id,
+                    message=user_message,
+                    model=agent_entry.config.model,
+                    temperature=agent_entry.config.temperature,
+                    use_tools=True,
+                )
 
             response_content = run_result.get("content", "")
             model_used = run_result.get("model_used", agent_entry.config.model)
