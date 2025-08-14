@@ -189,6 +189,9 @@ class AgentRegistry:
                     "model": entry.config.model,
                     "temperature": entry.config.temperature,
                     "tools": entry.config.tools,
+                    "planning_strategy": getattr(entry.config, "planning_strategy", "none"),
+                    "max_planning_steps": getattr(entry.config, "max_planning_steps", 10),
+                    "abort_criteria": getattr(entry.config, "abort_criteria", None).model_dump() if getattr(entry.config, "abort_criteria", None) else None,
                     "is_active": entry.is_active,
                     "usage_count": entry.usage_count,
                     "last_used": (

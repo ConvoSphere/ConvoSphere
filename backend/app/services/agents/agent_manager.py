@@ -64,7 +64,7 @@ class AgentManager:
         """
         try:
             # Generate agent ID
-            agent_id = f"custom_{len(self.registry.agents) + 1}"
+            agent_id = f"custom_{len(self.registry.agents) + 1}"  # TODO: replace with UUID if persisted
 
             # Add to registry
             entry = self.registry.add_agent(agent_id, agent_data.config)
@@ -112,6 +112,14 @@ class AgentManager:
             for field, value in update_data.items():
                 if hasattr(entry.config, field):
                     setattr(entry.config, field, value)
+                # Nested structure handling for abort_criteria
+                if field == "abort_criteria" and value is not None:
+                    try:
+                        from backend.app.schemas.agent import AgentAbortCriteria
+
+                        entry.config.abort_criteria = AgentAbortCriteria(**value)
+                    except Exception:
+                        pass
 
             # Update in registry
             self.registry.update_agent(agent_id, entry.config)

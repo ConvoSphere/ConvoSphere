@@ -226,6 +226,35 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
     }
   };
 
+  const webSearchPresets = selectedTool?.name === "web_search" ? (
+    <>
+      <ModernFormItem name="top_k" label={t("tools.websearch.top_k", "Top K")}> 
+        <ModernInput type="number" defaultValue={5} min={1} max={20} />
+      </ModernFormItem>
+      <ModernFormItem name="time_range" label={t("tools.websearch.time_range", "Time range")}> 
+        <ModernSelect defaultValue="any">
+          <ModernSelect.Option value="any">any</ModernSelect.Option>
+          <ModernSelect.Option value="day">day</ModernSelect.Option>
+          <ModernSelect.Option value="week">week</ModernSelect.Option>
+          <ModernSelect.Option value="month">month</ModernSelect.Option>
+          <ModernSelect.Option value="year">year</ModernSelect.Option>
+        </ModernSelect>
+      </ModernFormItem>
+      <ModernFormItem name="lang" label={t("tools.websearch.lang", "Language")}> 
+        <ModernInput defaultValue="en" />
+      </ModernFormItem>
+      <ModernFormItem name="site" label={t("tools.websearch.site", "Site filter")}> 
+        <ModernInput placeholder="example.com" />
+      </ModernFormItem>
+      <ModernFormItem name="safe_mode" label={t("tools.websearch.safe_mode", "Safe mode")}> 
+        <Switch defaultChecked />
+      </ModernFormItem>
+      <ModernFormItem name="sources" label={t("tools.websearch.sources", "Sources (comma-separated)")}> 
+        <ModernInput placeholder="google,bing,ddg" />
+      </ModernFormItem>
+    </>
+  ) : null;
+
   return (
     <>
       {/* Execution History */}
@@ -315,50 +344,39 @@ const ToolExecution: React.FC<ToolExecutionProps> = ({
           </div>
         )}
 
-        <ModernForm form={form} layout="vertical" onFinish={handleRunTool}>
-          {selectedTool?.parameters.map((param) => (
+        <ModernForm form={form} layout="vertical">
+          <ModernFormItem
+            name="query"
+            label={t("tools.parameter", "Parameter")}
+            rules={[{ required: true }]}
+          >
+            <ModernInput placeholder={t("tools.enter_parameters", "Parameter eingeben")}/>
+          </ModernFormItem>
+
+          {webSearchPresets}
+
+          {selectedTool.parameters?.map((param) => (
             <ModernFormItem
               key={param.name}
               name={param.name}
-              label={param.name}
-              rules={[
-                ...(param.required
-                  ? [
-                      {
-                        required: true,
-                        message: t(
-                          "tools.parameter_required",
-                          "Parameter ist erforderlich",
-                        ),
-                      },
-                    ]
-                  : []),
-              ]}
-              extra={param.description}
+              label={`${param.name} (${param.type})`}
+              rules={param.required ? [{ required: true }] : []}
             >
               {renderParameterInput(param)}
             </ModernFormItem>
           ))}
 
-          <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+          <div style={{ display: "flex", gap: 12 }}>
             <ModernButton
               variant="primary"
-              size="lg"
               icon={<PlayCircleOutlined />}
-              htmlType="submit"
+              onClick={handleRunTool}
               loading={running}
-              style={{ flex: 1 }}
             >
               {t("tools.run", "Ausführen")}
             </ModernButton>
-
-            <ModernButton
-              variant="outlined"
-              size="lg"
-              onClick={handleClose}
-              style={{ flex: 1 }}
-            >
-              {t("tools.cancel", "Abbrechen")}
+            <ModernButton onClick={handleClose}>
+              {t("common.cancel", "Abbrechen")}
             </ModernButton>
           </div>
         </ModernForm>
