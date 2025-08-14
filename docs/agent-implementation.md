@@ -1,327 +1,163 @@
-# Agent-Implementierung: Vollständige Integration
+# Agent Implementation: End-to-end Integration
 
-## Übersicht
+## Overview
 
-Die Agenten-Implementierung wurde erfolgreich vervollständigt und integriert. Das System bietet nun eine vollständige Multi-Agent-Architektur mit automatischen Handoffs, Kollaboration und Memory-Management.
+The agent implementation provides a modular multi-agent architecture with handoffs, collaboration, state, performance tracking, and MCP-first tool integration. Assistants can also operate as agents via a unified runner/adapter, while agents additionally support LLM-driven planning strategies (ReAct, Plan-Execute, Tree-of-Thought) configurable per agent with abort criteria.
 
-## Implementierte Komponenten
+## Components
 
-### 1. Backend-Services
+### 1. Backend Services
 
-#### AgentService (`backend/app/services/agent_service.py`)
-- **Funktionalität**: Zentrale Verwaltung von AI-Agenten
-- **Features**:
-  - Agent-Erstellung und -Verwaltung
-  - Agent-Handoffs zwischen verschiedenen Spezialisten
-  - Multi-Agent-Kollaboration
-  - Performance-Monitoring
-  - Agent-State-Management
+- AgentService (`backend/app/services/agent_service.py`)
+  - Agent CRUD facade over the modular `AgentManager`
+  - Handoff, collaboration, performance, and state retrieval
+- AgentManager (`backend/app/services/agents/agent_manager.py`)
+  - Registry, State, Handoff, Collaboration, Performance services
+  - Integrates the Agent Planner and the AssistantAgentAdapter runner
+- Agent Planner (`backend/app/services/agents/agent_planner.py`)
+  - LLM-guided strategies: `react`, `plan_execute`, `tree_of_thought`
+  - Configurable per agent (`planning_strategy`, `max_planning_steps`, `abort_criteria`)
+- Assistant Engine (`backend/app/services/assistants/assistant_engine.py`)
+  - Hybrid mode support (chat/agent), RAG integration, tool execution, memory
+  - Exposed to agents via `AssistantAgentAdapter` (`agent_runner.py`)
+- Tooling
+  - Enhanced executor (`tool_executor_v2`) with typed request/result and caching
+  - MCP client/manager (`backend/app/tools/mcp_tool.py`)
+  - WebSearch (SearxNG preferred) tool (`backend/app/tools/search_tools.py`)
 
-#### Erweiterte AssistantEngine (`backend/app/services/assistant_engine.py`)
-- **Memory-Integration**: Vollständige Implementierung des Memory-Systems
-- **Multi-Agent-Integration**: Automatische Agent-Handoffs basierend auf Komplexitätsanalyse
-- **Intelligente Modus-Entscheidung**: Erweiterte Logik für Agent-Auswahl
+### 2. API Endpoints
 
-### 2. API-Endpoints
+- Agents (`backend/app/api/v1/endpoints/agents.py`)
+  - `GET /api/v1/agents/` — list agents (includes planning fields)
+  - `POST /api/v1/agents/` — create agent
+  - `PUT /api/v1/agents/{agent_id}` — update agent (supports nested `abort_criteria`)
+  - `DELETE /api/v1/agents/{agent_id}` — delete agent
+  - `POST /api/v1/agents/handoff` — handoff
+  - `POST /api/v1/agents/collaborate` — collaboration
+  - `GET /api/v1/agents/{id}/performance` — performance metrics
+  - `GET /api/v1/agents/{id}/state` — state
+- MCP (`backend/app/api/v1/endpoints/mcp.py`)
+  - Manage MCP servers, list tools, execute tools
 
-#### Agent-API (`backend/app/api/v1/endpoints/agents.py`)
-```http
-GET    /api/v1/agents/                    # Verfügbare Agenten abrufen
-POST   /api/v1/agents/                    # Neuen Agenten erstellen
-PUT    /api/v1/agents/{agent_id}          # Agenten aktualisieren
-DELETE /api/v1/agents/{agent_id}          # Agenten löschen
-POST   /api/v1/agents/handoff             # Agent-Handoff durchführen
-POST   /api/v1/agents/collaborate         # Kollaboration starten
-GET    /api/v1/agents/{agent_id}/performance  # Performance-Metriken
-GET    /api/v1/agents/{agent_id}/state    # Agent-State abrufen
-GET    /api/v1/agents/conversation/{id}/state  # Konversations-State
-GET    /api/v1/agents/stats               # Service-Statistiken
-```
+### 3. Schemas & Validation
 
-### 3. Schemas und Validierung
+- `backend/app/schemas/agent.py`
+  - `AgentConfig` extended with `planning_strategy`, `max_planning_steps`, `abort_criteria`
+  - `AgentAbortCriteria`: max_time_seconds, max_steps, stop_on_tool_error, no_progress_iterations, confidence_threshold
+  - `AgentState` string IDs and extended statuses
 
-#### Erweiterte Agent-Schemas (`backend/app/schemas/agent.py`)
-- `AgentHandoffRequest`: Handoff-Anfragen
-- `AgentCollaborationRequest`: Kollaborations-Anfragen
-- `AgentPerformanceMetrics`: Performance-Metriken
-- Vollständige Pydantic v2 Validierung
+### 4. Frontend
 
-### 4. Frontend-Komponenten
+- Agent Management (`frontend-react/src/components/agents/AgentManagement.tsx`)
+  - Create/Edit form includes planning strategy, max steps, abort criteria
+  - Planning strategy visible in table
+- Tools UI
+  - MCP Server Manager (`components/mcp/McpServerManager.tsx`) integrated in `pages/tools/Tools.tsx`
+  - Tool Execution (`pages/tools/ToolExecution.tsx`) exposes WebSearch params (top_k, time_range, lang, site, safe_mode, sources)
 
-#### AgentManagement (`frontend-react/src/components/agents/AgentManagement.tsx`)
-- **Agent-Verwaltung**: CRUD-Operationen für Agenten
-- **Kollaborations-UI**: Multi-Agent-Kollaboration starten
-- **Performance-Dashboard**: Agent-Performance anzeigen
-- **Responsive Design**: Moderne Ant Design UI
+### 5. Persistence
 
-### 5. Tests
+- New model: `backend/app/models/agent.py` (optional DB persistence of agent configs)
+- Alembic migration: `backend/alembic/versions/2025_08_14_add_agents_table.py`
 
-#### Unit-Tests (`tests/unit/backend/test_agent_service.py`)
-- Vollständige Test-Coverage für AgentService
-- Mock-basierte Tests für alle Funktionen
-- Error-Handling-Tests
+## Assistants vs Agents
 
-#### Integration-Tests (`tests/integration/backend/test_agent_api.py`)
-- API-Endpoint-Tests
-- End-to-End-Workflow-Tests
-- Error-Szenarien-Tests
+### Primary Difference
+- Assistant: produces a direct answer using RAG and optional tool calls; no explicit multi-step planning.
+- Agent: plans steps to achieve a goal (LLM-guided), executes and corrects steps, orchestrates tools, and produces a final result after execution.
 
-## Architektur-Details
+### Detailed Comparison
+- Scope
+  - Assistant: a response-generation pipeline (hybrid chat/agent mode)
+  - Agent: an operational, governable entity with identity, lifecycle, and metrics
+- Planning & Execution
+  - Assistant: no explicit planning loop
+  - Agent: LLM planning strategies (ReAct, Plan-Execute, ToT) with abort criteria and iteration control
+- Tooling
+  - Assistant: dynamic tool suggestion and execution via assistant pipeline
+  - Agent: curated toolset in `AgentConfig`; planning loop orchestrates tools across steps; MCP-first integration
+- State & Memory
+  - Assistant: assistant-managed memory and context
+  - Agent: explicit `agent_state` per conversation, status transitions, histories, memory transfer across handoffs
+- Orchestration
+  - Assistant: single pipeline
+  - Agent: multi-agent workflows: handoff, collaboration (parallel/sequential/hierarchical)
+- Observability & Governance
+  - Assistant: engine-level runtime stats
+  - Agent: detailed performance metrics (`agent_performance`), usage counters, policies (planned)
 
-### Multi-Agent-Management
+### Similarities
+- Both use the same underlying AI services and model providers
+- Both can execute tools; both benefit from RAG and knowledge context
+- Assistants can operate as Agents via `AssistantAgentAdapter` (shared runner interface)
 
-```python
-# Automatische Agent-Auswahl basierend auf Komplexität
-async def _check_agent_handoff_needed(self, request, mode_decision):
-    if mode_decision.complexity_score > 0.8:
-        if "code" in request.message.lower():
-            return True, "code_expert"
-        elif "data" in request.message.lower():
-            return True, "data_analyst"
-        elif "creative" in request.message.lower():
-            return True, "creative_writer"
-    return False, None
-```
+## Planning Strategies
+- `none`: direct assistant response via `AssistantAgentAdapter`
+- `react`: iterative “think-act-observe” with tool calls when needed
+- `plan_execute`: produce a plan, then execute steps
+- `tree_of_thought`: explore alternatives briefly, then choose best path
 
-### Memory-System
+Each strategy is configurable per agent via:
+- `planning_strategy`: none|react|plan_execute|tree_of_thought
+- `max_planning_steps`: maximum planning iterations
+- `abort_criteria`: timing, max steps, error/quality thresholds
 
-```python
-# Intelligente Memory-Verwaltung
-async def _update_agent_memory(self, request, mode_decision, ai_response):
-    importance = 0.5  # Default
-    if mode_decision.recommended_mode == ConversationMode.AGENT:
-        importance = 0.8
-    if mode_decision.complexity_score > 0.7:
-        importance = 0.9
-    
-    memory = memory_manager.add_memory(
-        conversation_id=request.conversation_id,
-        user_id=request.user_id,
-        memory_type="conversation_context",
-        content=memory_content,
-        importance=importance
-    )
-    return [memory]
-```
+## MCP-first Tooling
+- SearxNG WebSearch (`web_search`) with params: query, top_k, time_range, lang, site, safe_mode, sources
+- MCP server management API and UI; local tools remain as fallback
 
-### Agent-Handoff-Workflow
+## Usage Examples
 
-1. **Komplexitätsanalyse**: System analysiert Benutzeranfrage
-2. **Tool-Relevanz**: Prüfung verfügbarer Tools
-3. **Agent-Auswahl**: Automatische Auswahl des besten Agenten
-4. **Handoff-Durchführung**: Nahtloser Übergang
-5. **Memory-Transfer**: Kontext wird übertragen
-
-## Verwendung
-
-### Agent erstellen
-
+### Creating an Agent with Planning
 ```python
 from backend.app.services.agent_service import AgentService
-from backend.app.schemas.agent import AgentCreate, AgentConfig
+from backend.app.schemas.agent import AgentCreate, AgentConfig, AgentAbortCriteria
 
 agent_config = AgentConfig(
-    name="Code Expert",
-    description="Specialized in programming",
-    system_prompt="You are a programming expert...",
-    tools=["code_analyzer", "file_reader"],
+    name="Research Agent",
+    description="Plans and executes web research",
+    system_prompt="You are a rigorous research planner.",
+    tools=["web_search"],
     model="gpt-4",
-    temperature=0.3
+    temperature=0.3,
+    planning_strategy="react",
+    max_planning_steps=8,
+    abort_criteria=AgentAbortCriteria(max_time_seconds=180, max_steps=8, no_progress_iterations=2),
 )
 
 agent_create = AgentCreate(
     config=agent_config,
     user_id=user_id,
-    is_public=False
+    is_public=False,
 )
 
 service = AgentService()
 agent = await service.create_agent(agent_create)
 ```
 
-### Agent-Handoff durchführen
-
+### Running a Multi-Agent Collaboration
 ```python
-handoff_request = AgentHandoffRequest(
-    from_agent_id="general_assistant",
-    to_agent_id="code_expert",
-    conversation_id=conversation_id,
-    user_id=user_id,
-    reason="Query requires code analysis",
-    context={"complexity_score": 0.85}
-)
+from backend.app.schemas.agent import AgentCollaborationRequest
 
-result = await service.handoff_agent(handoff_request)
-```
-
-### Kollaboration starten
-
-```python
-collaboration_request = AgentCollaborationRequest(
-    agent_ids=["code_expert", "data_analyst"],
+req = AgentCollaborationRequest(
+    agent_ids=["research_agent", "code_expert"],
     conversation_id=conversation_id,
     user_id=user_id,
     collaboration_type="parallel",
-    coordination_strategy="expertise"
+    coordination_strategy="expertise",
 )
-
-result = await service.start_collaboration(collaboration_request)
+result = await service.start_collaboration(req)
 ```
 
-## Frontend-Integration
+## Monitoring & Performance
+- Per-agent metrics: response time, success rate, tokens, errors, satisfaction
+- Conversation-level summary and trends
 
-### AgentManagement-Komponente verwenden
+## Security & Validation
+- Pydantic v2 schemas and validators
+- RBAC-ready, input sanitization, structured error handling
 
-```typescript
-import AgentManagement from './components/agents/AgentManagement';
-
-function App() {
-  const handleAgentSelect = (agentId: string) => {
-    console.log('Selected agent:', agentId);
-  };
-
-  const handleCollaborationStart = (agentIds: string[]) => {
-    console.log('Starting collaboration with:', agentIds);
-  };
-
-  return (
-    <AgentManagement
-      onAgentSelect={handleAgentSelect}
-      onCollaborationStart={handleCollaborationStart}
-    />
-  );
-}
-```
-
-## Konfiguration
-
-### Hybrid Mode Konfiguration
-
-```python
-config = HybridModeConfig(
-    auto_mode_enabled=True,
-    complexity_threshold=0.7,
-    confidence_threshold=0.8,
-    context_window_size=10,
-    memory_retention_hours=24,
-    reasoning_steps_max=5,
-    tool_relevance_threshold=0.6
-)
-```
-
-### Agent-Registry
-
-Das System kommt mit vorkonfigurierten Agenten:
-
-- **General Assistant**: Allgemeine Anfragen
-- **Code Expert**: Programmierung und Code-Analyse
-- **Data Analyst**: Datenanalyse und Visualisierung
-- **Creative Writer**: Kreatives Schreiben
-
-## Monitoring und Performance
-
-### Performance-Metriken
-
-```python
-metrics = await service.get_agent_performance(agent_id)
-# Returns:
-# - response_time: Durchschnittliche Antwortzeit
-# - success_rate: Erfolgsrate in Prozent
-# - user_satisfaction: Benutzerzufriedenheit (0-5)
-# - tool_usage_count: Anzahl verwendeter Tools
-# - tokens_used: Verwendete Tokens
-# - error_count: Anzahl Fehler
-```
-
-### Service-Statistiken
-
-```python
-stats = service.get_stats()
-# Returns:
-# - active_conversations: Aktive Konversationen
-# - registered_agents: Registrierte Agenten
-# - total_handoffs: Gesamte Handoffs
-# - total_collaborations: Gesamte Kollaborationen
-```
-
-## Sicherheit und Validierung
-
-### Eingabevalidierung
-
-- **Pydantic v2**: Vollständige Schema-Validierung
-- **Field-Validatoren**: Benutzerdefinierte Validierungsregeln
-- **Type Safety**: Vollständige Typisierung
-
-### Sicherheitsmaßnahmen
-
-- **RBAC-Integration**: Rollenbasierte Zugriffskontrolle
-- **Input-Sanitization**: Eingabebereinigung
-- **Error-Handling**: Umfassende Fehlerbehandlung
-
-## Deployment und Skalierung
-
-### Docker-Integration
-
-Die Agent-Services sind vollständig in das bestehende Docker-Setup integriert:
-
-```yaml
-# docker-compose.yml
-services:
-  backend:
-    build: ./backend
-    environment:
-      - AGENT_MEMORY_RETENTION_HOURS=24
-      - AGENT_MAX_CONCURRENT_REQUESTS=5
-```
-
-### Skalierung
-
-- **Horizontal Scaling**: Mehrere Backend-Instanzen möglich
-- **Memory-Persistierung**: Redis-basierte Memory-Speicherung
-- **Load Balancing**: Automatische Lastverteilung
-
-## Nächste Schritte
-
-### Geplante Erweiterungen
-
-1. **Agent-Learning**: Kontinuierliche Verbesserung basierend auf Feedback
-2. **Advanced Collaboration**: Komplexere Kollaborations-Modi
-3. **Agent-Marketplace**: Öffentlicher Agent-Marktplatz
-4. **Custom Tools**: Benutzerdefinierte Tool-Integration
-5. **Performance-Optimization**: Erweiterte Performance-Metriken
-
-### Monitoring und Analytics
-
-- **Real-time Dashboard**: Live-Performance-Überwachung
-- **Agent-Analytics**: Detaillierte Nutzungsanalysen
-- **A/B Testing**: Agent-Performance-Vergleiche
-
-## Troubleshooting
-
-### Häufige Probleme
-
-1. **Agent nicht gefunden**: Prüfen Sie die Agent-Registry
-2. **Handoff fehlgeschlagen**: Überprüfen Sie die Konversations-ID
-3. **Memory-Fehler**: Prüfen Sie die Memory-Konfiguration
-
-### Debugging
-
-```python
-# Debug-Logging aktivieren
-import logging
-logging.getLogger('backend.app.services.agent_service').setLevel(logging.DEBUG)
-```
-
-## Fazit
-
-Die Agenten-Implementierung ist vollständig funktionsfähig und bietet:
-
-✅ **Vollständige Multi-Agent-Architektur**  
-✅ **Automatische Agent-Handoffs**  
-✅ **Intelligentes Memory-Management**  
-✅ **Umfassende API-Endpoints**  
-✅ **Moderne Frontend-UI**  
-✅ **Vollständige Test-Coverage**  
-✅ **Produktionsreife Implementierung**  
-
-Das System ist bereit für den produktiven Einsatz und kann nahtlos in bestehende Anwendungen integriert werden.
+## Next Steps
+- Persist agent CRUD fully via DB model (optional), retire in-memory registry
+- Policy-driven routing and richer self-correction/critic loops
+- MCP tool discovery prioritization and typed schema propagation to UI
