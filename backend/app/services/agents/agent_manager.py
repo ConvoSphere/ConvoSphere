@@ -24,6 +24,7 @@ from .agent_handoff import agent_handoff_service
 from .agent_performance import agent_performance_service
 from .agent_registry import agent_registry
 from .agent_state import agent_state_manager
+from .agent_runner import AssistantAgentAdapter
 
 
 class AgentManager:
@@ -334,10 +335,21 @@ class AgentManager:
             # Record usage
             self.registry.record_usage(target_agent)
 
-            # Generate response (simplified - in real implementation, this would call AI service)
-            response_content = (
-                f"Response from {agent_entry.config.name}: {user_message}"
+            # Generate response using adapter runner
+            runner = AssistantAgentAdapter()
+            run_result = await runner.process_message(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                message=user_message,
+                model=agent_entry.config.model,
+                temperature=agent_entry.config.temperature,
+                use_tools=True,
             )
+
+            response_content = run_result.get("content", "")
+            model_used = run_result.get("model_used", agent_entry.config.model)
+            tokens_used = int(run_result.get("tokens_used", 0) or 0)
+            processing_time = float(run_result.get("processing_time", 0.0) or 0.0)
 
             # Update agent state back to active
             self.state_manager.set_agent_status(conversation_id, target_agent, "active")
@@ -346,17 +358,17 @@ class AgentManager:
             metrics = AgentPerformanceMetrics(
                 agent_id=target_agent,
                 conversation_id=conversation_id,
-                response_time=1.0,  # Simplified
-                success_rate=100.0,
-                tokens_used=len(response_content.split()),
-                error_count=0,
+                response_time=processing_time or 0.0,
+                success_rate=100.0 if run_result.get("success", True) else 0.0,
+                tokens_used=tokens_used,
+                error_count=0 if run_result.get("success", True) else 1,
             )
             self.performance_service.record_performance(metrics)
 
             return {
                 "agent_id": target_agent,
                 "response": response_content,
-                "model_used": agent_entry.config.model,
+                "model_used": model_used,
                 "tokens_used": metrics.tokens_used,
                 "processing_time": metrics.response_time,
             }

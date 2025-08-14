@@ -261,13 +261,13 @@ class AgentResponseSchema(BaseModel):
 class AgentState(BaseModel):
     """AI agent state schema."""
 
-    agent_id: UUID = Field(..., description="Agent ID")
-    conversation_id: UUID = Field(..., description="Conversation ID")
+    agent_id: str = Field(..., description="Agent ID")
+    conversation_id: str = Field(..., description="Conversation ID")
     current_step: int = Field(..., ge=0, description="Current processing step")
     total_steps: int = Field(..., ge=1, description="Total processing steps")
     status: str = Field(
         default="idle",
-        pattern="^(idle|processing|waiting_for_tool|completed|failed)$",
+        pattern="^(idle|active|processing|waiting_for_tool|collaborating|completed|failed)$",
         description="Agent status",
     )
     context: dict[str, Any] = Field(

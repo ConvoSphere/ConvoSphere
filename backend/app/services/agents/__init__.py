@@ -12,6 +12,11 @@ from .agent_performance import AgentPerformanceService
 from .agent_registry import AgentRegistry
 from .agent_state import AgentStateManager
 
+
+
+
+agent_manager = AgentManager()
+
 __all__ = [
     "AgentRegistry",
     "AgentManager",
