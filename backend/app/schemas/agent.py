@@ -67,6 +67,44 @@ class ToolCall(BaseModel):
     )
 
 
+class AgentAbortCriteria(BaseModel):
+    """Abort criteria for agent planning/execution."""
+
+    max_time_seconds: int | None = Field(
+        default=300,
+        ge=1,
+        le=36000,
+        description="Maximum wall-clock time for planning/execution",
+    )
+    max_steps: int | None = Field(
+        default=10,
+        ge=1,
+        le=200,
+        description="Maximum number of planning/execution steps",
+    )
+    stop_on_tool_error: bool = Field(
+        default=False, description="Abort if a tool execution fails"
+    )
+    no_progress_iterations: int | None = Field(
+        default=3,
+        ge=0,
+        le=50,
+        description="Abort after this many iterations without progress",
+    )
+    confidence_threshold: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Optional confidence threshold to stop early or abort",
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        extra="forbid",
+    )
+
+
 class AgentConfig(BaseModel):
     """AI agent configuration schema."""
 
@@ -125,6 +163,21 @@ class AgentConfig(BaseModel):
     metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Additional metadata",
+    )
+    planning_strategy: str = Field(
+        default="none",
+        pattern="^(none|react|plan_execute|tree_of_thought)$",
+        description="LLM-guided planning pattern",
+    )
+    max_planning_steps: int = Field(
+        default=10,
+        ge=1,
+        le=200,
+        description="Maximum number of planning iterations",
+    )
+    abort_criteria: AgentAbortCriteria | None = Field(
+        default_factory=AgentAbortCriteria,
+        description="Abort criteria for planning/execution",
     )
 
     @field_validator("name")
@@ -261,13 +314,13 @@ class AgentResponseSchema(BaseModel):
 class AgentState(BaseModel):
     """AI agent state schema."""
 
-    agent_id: UUID = Field(..., description="Agent ID")
-    conversation_id: UUID = Field(..., description="Conversation ID")
+    agent_id: str = Field(..., description="Agent ID")
+    conversation_id: str = Field(..., description="Conversation ID")
     current_step: int = Field(..., ge=0, description="Current processing step")
     total_steps: int = Field(..., ge=1, description="Total processing steps")
     status: str = Field(
         default="idle",
-        pattern="^(idle|processing|waiting_for_tool|completed|failed)$",
+        pattern="^(idle|active|processing|waiting_for_tool|collaborating|completed|failed)$",
         description="Agent status",
     )
     context: dict[str, Any] = Field(
@@ -391,6 +444,21 @@ class AgentUpdate(BaseModel):
     is_public: bool | None = Field(None, description="Public visibility")
     is_template: bool | None = Field(None, description="Template flag")
     metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
+    planning_strategy: str | None = Field(
+        default=None,
+        pattern="^(none|react|plan_execute|tree_of_thought)$",
+        description="LLM-guided planning pattern",
+    )
+    max_planning_steps: int | None = Field(
+        default=None,
+        ge=1,
+        le=200,
+        description="Maximum number of planning iterations",
+    )
+    abort_criteria: AgentAbortCriteria | None = Field(
+        default=None,
+        description="Abort criteria for planning/execution",
+    )
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -38,6 +38,15 @@ interface Agent {
   tools: string[];
   is_public: boolean;
   is_template: boolean;
+  planning_strategy?: "none" | "react" | "plan_execute" | "tree_of_thought";
+  max_planning_steps?: number;
+  abort_criteria?: {
+    max_time_seconds?: number;
+    max_steps?: number;
+    stop_on_tool_error?: boolean;
+    no_progress_iterations?: number;
+    confidence_threshold?: number;
+  };
 }
 
 interface AgentManagementProps {
@@ -96,6 +105,15 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
       tools: agent.tools,
       is_public: agent.is_public,
       is_template: agent.is_template,
+      planning_strategy: agent.planning_strategy || "none",
+      max_planning_steps: agent.max_planning_steps || 10,
+      abort_criteria: agent.abort_criteria || {
+        max_time_seconds: 300,
+        max_steps: 10,
+        stop_on_tool_error: false,
+        no_progress_iterations: 3,
+        confidence_threshold: undefined,
+      },
     });
     setModalVisible(true);
   };
@@ -242,6 +260,18 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
       ),
     },
     {
+      title: t("agents.planning", "Planning"),
+      dataIndex: "planning_strategy",
+      key: "planning_strategy",
+      render: (strategy: Agent["planning_strategy"]) => (
+        strategy && strategy !== "none" ? (
+          <Tag color="purple">{strategy}</Tag>
+        ) : (
+          <Tag>{t("agents.none", "none")}</Tag>
+        )
+      ),
+    },
+    {
       title: t("agents.actions"),
       key: "actions",
       render: (text: string, record: Agent) => (
@@ -375,6 +405,39 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
               <Option value="data_analyzer">Data Analyzer</Option>
             </Select>
           </Form.Item>
+
+          <Form.Item name="planning_strategy" label={t("agents.planningStrategy", "Planning Strategy")}>
+            <Select>
+              <Option value="none">{t("agents.none", "none")}</Option>
+              <Option value="react">ReAct</Option>
+              <Option value="plan_execute">Plan-Execute</Option>
+              <Option value="tree_of_thought">Tree-of-Thought</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="max_planning_steps" label={t("agents.maxPlanningSteps", "Max planning steps")}>
+            <Input type="number" min={1} max={200} step={1} />
+          </Form.Item>
+
+          <Card size="small" title={t("agents.abortCriteria", "Abort Criteria")} style={{ marginBottom: 16 }}>
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Form.Item name={["abort_criteria", "max_time_seconds"]} label={t("agents.maxTimeSeconds", "Max time (s)")}>
+                <Input type="number" min={1} max={36000} step={1} />
+              </Form.Item>
+              <Form.Item name={["abort_criteria", "max_steps"]} label={t("agents.maxSteps", "Max steps")}>
+                <Input type="number" min={1} max={200} step={1} />
+              </Form.Item>
+              <Form.Item name={["abort_criteria", "no_progress_iterations"]} label={t("agents.noProgressIterations", "No-progress iterations")}>
+                <Input type="number" min={0} max={50} step={1} />
+              </Form.Item>
+              <Form.Item name={["abort_criteria", "confidence_threshold"]} label={t("agents.confidenceThreshold", "Confidence threshold (0-1)")}>
+                <Input type="number" min={0} max={1} step={0.01} />
+              </Form.Item>
+              <Form.Item name={["abort_criteria", "stop_on_tool_error"]} label={t("agents.stopOnToolError", "Stop on tool error")} valuePropName="checked">
+                <Switch />
+              </Form.Item>
+            </Space>
+          </Card>
 
           <Form.Item
             name="is_public"

@@ -89,6 +89,7 @@ docker-compose up --build
 - **[Export Features](development/EXTENDED_EXPORT_FEATURES.md)** - Advanced export functionality
 - **[Service Architecture](ai-service-architecture.md)** - AI service architecture
 - **[Agent Implementation](agent-implementation.md)** - AI agent implementation
+- **[Assistants vs Agents](assistants-vs-agents.md)** - Key differences and similarities
 
 ## 🏗️ Architecture Overview
 

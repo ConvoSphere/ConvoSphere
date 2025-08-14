@@ -11,6 +11,7 @@ from loguru import logger
 
 from backend.app.services.tool_executor_v2 import (
     enhanced_tool_executor as tool_executor,
+    ToolExecutionRequest,
 )
 from backend.app.services.tool_service import tool_service
 
@@ -135,13 +136,15 @@ class AssistantToolsManager:
         return relevant_tools
 
     async def execute_tools(
-        self, tool_calls: list[dict[str, Any]]
+        self, tool_calls: list[dict[str, Any]], user_id: str | None = None, conversation_id: str | None = None
     ) -> list[dict[str, Any]]:
         """
         Execute tool calls.
 
         Args:
             tool_calls: List of tool calls to execute
+            user_id: User ID for RBAC and auditing
+            conversation_id: Conversation ID for context
 
         Returns:
             List[dict]: Tool execution results
@@ -157,21 +160,27 @@ class AssistantToolsManager:
                 logger.debug(f"Executing tool: {tool_name} with arguments: {arguments}")
 
                 try:
-                    # Execute tool
-                    result = await self.tool_executor.execute_tool(
+                    # Build validated execution request
+                    exec_request = ToolExecutionRequest(
                         tool_name=tool_name,
                         arguments=arguments,
-                        user_id=None,  # Will be set by tool executor
+                        user_id=user_id or "anonymous",
+                        conversation_id=conversation_id or "unknown",
                     )
+
+                    # Execute tool via enhanced executor
+                    result = await self.tool_executor.execute_tool(exec_request)
 
                     # Format result
                     formatted_result = {
                         "tool_id": tool_id,
                         "tool_name": tool_name,
-                        "success": result.get("success", False),
-                        "result": result.get("result"),
-                        "error": result.get("error"),
-                        "execution_time": result.get("execution_time", 0.0),
+                        "success": result.status == "completed",
+                        "result": result.result,
+                        "error": result.error,
+                        "execution_time": result.execution_time or 0.0,
+                        "execution_id": result.execution_id,
+                        "cache_hit": result.cache_hit,
                     }
 
                     results.append(formatted_result)
@@ -179,20 +188,18 @@ class AssistantToolsManager:
                     logger.debug(f"Tool {tool_name} executed successfully")
 
                 except Exception as e:
-                    logger.error(f"Error executing tool {tool_name}: {e}")
+                    logger.error(f"Tool {tool_name} execution failed: {e}")
                     results.append(
                         {
                             "tool_id": tool_id,
                             "tool_name": tool_name,
                             "success": False,
+                            "result": None,
                             "error": str(e),
                             "execution_time": 0.0,
                         }
                     )
 
-            logger.info(
-                f"Executed {len(tool_calls)} tools, {len([r for r in results if r['success']])} successful"
-            )
             return results
 
         except Exception as e:

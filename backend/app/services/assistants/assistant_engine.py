@@ -214,7 +214,9 @@ class AssistantEngine:
             # Execute tools if needed
             if ai_response.tool_calls:
                 tool_results = await self.tools_manager.execute_tools(
-                    ai_response.tool_calls
+                    ai_response.tool_calls,
+                    user_id=request.user_id,
+                    conversation_id=request.conversation_id,
                 )
                 # Update response with tool results
                 ai_response.metadata = ai_response.metadata or {}
