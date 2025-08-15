@@ -29,7 +29,7 @@ def init_weaviate() -> weaviate.Client:
 
     try:
         # Create Weaviate client with proper configuration
-        weaviate_url = get_settings().weaviate_url
+        weaviate_url = get_settings().weaviate.weaviate_url
         # Parse URL properly
         if weaviate_url.startswith("http://"):
             host = weaviate_url[7:]  # Remove "http://"
@@ -42,12 +42,12 @@ def init_weaviate() -> weaviate.Client:
         if ":" in host:
             host = host.split(":")[0]
 
-        if get_settings().weaviate_api_key:
+        if get_settings().weaviate.weaviate_api_key:
             # Use v4 API with API key authentication
             weaviate_client = weaviate.connect_to_local(
                 host=host,
                 port=8080,
-                auth_credentials=Auth.api_key(get_settings().weaviate_api_key),
+                auth_credentials=Auth.api_key(get_settings().weaviate.weaviate_api_key),
             )
         else:
             # For local Weaviate without authentication

@@ -37,8 +37,8 @@ async def init_redis() -> redis.Redis | None:
 
         # Create connection pool with robust configuration
         redis_connection_pool = redis.ConnectionPool.from_url(
-            settings.redis_url,
-            db=settings.redis_db,
+            settings.redis.redis_url,
+            db=settings.redis.redis_db,
             encoding="utf-8",
             decode_responses=True,
             socket_connect_timeout=10,
@@ -119,8 +119,8 @@ async def check_redis_connection() -> bool:
         # Try to create a direct connection for health check
         settings = get_settings()
         test_client = redis.from_url(
-            settings.redis_url,
-            db=settings.redis_db,
+            settings.redis.redis_url,
+            db=settings.redis.redis_db,
             encoding="utf-8",
             decode_responses=True,
             socket_connect_timeout=2,
