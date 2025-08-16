@@ -2,6 +2,13 @@
 import "@testing-library/jest-dom";
 import { TextEncoder, TextDecoder } from "util";
 
+// Vitest compatibility: map jest API to vi when running under Vitest
+// eslint-disable-next-line no-undef
+if (typeof vi !== "undefined") {
+  // eslint-disable-next-line no-undef
+  globalThis.jest = vi;
+}
+
 // Add TextEncoder and TextDecoder to global scope
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
@@ -9,46 +16,46 @@ global.TextDecoder = TextDecoder;
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation((query) => ({
+  value: (globalThis.jest || { fn: () => () }).fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: (globalThis.jest || { fn: () => () }).fn(), // deprecated
+    removeListener: (globalThis.jest || { fn: () => () }).fn(), // deprecated
+    addEventListener: (globalThis.jest || { fn: () => () }).fn(),
+    removeEventListener: (globalThis.jest || { fn: () => () }).fn(),
+    dispatchEvent: (globalThis.jest || { fn: () => () }).fn(),
   })),
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.ResizeObserver = (globalThis.jest || { fn: () => () }).fn().mockImplementation(() => ({
+  observe: (globalThis.jest || { fn: () => () }).fn(),
+  unobserve: (globalThis.jest || { fn: () => () }).fn(),
+  disconnect: (globalThis.jest || { fn: () => () }).fn(),
 }));
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.IntersectionObserver = (globalThis.jest || { fn: () => () }).fn().mockImplementation(() => ({
+  observe: (globalThis.jest || { fn: () => () }).fn(),
+  unobserve: (globalThis.jest || { fn: () => () }).fn(),
+  disconnect: (globalThis.jest || { fn: () => () }).fn(),
 }));
 
 // Mock WebSocket
-global.WebSocket = jest.fn().mockImplementation(() => ({
-  send: jest.fn(),
-  close: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
+global.WebSocket = (globalThis.jest || { fn: () => () }).fn().mockImplementation(() => ({
+  send: (globalThis.jest || { fn: () => () }).fn(),
+  close: (globalThis.jest || { fn: () => () }).fn(),
+  addEventListener: (globalThis.jest || { fn: () => () }).fn(),
+  removeEventListener: (globalThis.jest || { fn: () => () }).fn(),
 }));
 
 // Mock console methods to reduce noise in tests
 global.console = {
   ...console,
-  log: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
+  log: (globalThis.jest || { fn: () => () }).fn(),
+  debug: (globalThis.jest || { fn: () => () }).fn(),
+  info: (globalThis.jest || { fn: () => () }).fn(),
+  warn: (globalThis.jest || { fn: () => () }).fn(),
+  error: (globalThis.jest || { fn: () => () }).fn(),
 };

@@ -21,8 +21,8 @@ class CSRFProtection:
         self.settings = get_settings()
         self.token_cache = {}
         self.token_length = 32
-        self.token_expire_minutes = self.settings.csrf_token_expire_minutes
-        self.enabled = self.settings.csrf_protection_enabled
+        self.token_expire_minutes = getattr(self.settings.security_features, "csrf_token_expire_minutes", 30)
+        self.enabled = getattr(self.settings.security_features, "csrf_protection_enabled", True)
 
     def generate_csrf_token(self, session_id: str = None) -> str:
         """
