@@ -78,6 +78,8 @@ interface AIModelsState {
   clearError: () => void;
 }
 
+const base = `${config.apiUrl}/api/v1/ai-models`;
+
 export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   models: [],
   selectedModel: null,
@@ -88,20 +90,13 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   fetchModels: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch models");
-      }
-
+      const response = await fetch(`${base}/`);
+      if (!response.ok) throw new Error("Failed to fetch models");
       const models = await response.json();
       set({ models, loading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch models",
+        error: error instanceof Error ? error.message : "Failed to fetch models",
         loading: false,
       });
     }
@@ -110,30 +105,18 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   createModel: async (modelData: ModelCreate) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(modelData),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to create model");
-      }
-
+      const response = await fetch(`${base}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(modelData),
+      });
+      if (!response.ok) throw new Error("Failed to create model");
       const newModel = await response.json();
-      set((state) => ({
-        models: [...state.models, newModel],
-        loading: false,
-      }));
-
+      set((state) => ({ models: [...state.models, newModel], loading: false }));
       return newModel;
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to create model",
+        error: error instanceof Error ? error.message : "Failed to create model",
         loading: false,
       });
       throw error;
@@ -143,32 +126,21 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   updateModel: async (modelId: string, modelData: ModelUpdate) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models/${modelId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(modelData),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update model");
-      }
-
+      const response = await fetch(`${base}/${modelId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(modelData),
+      });
+      if (!response.ok) throw new Error("Failed to update model");
       const updatedModel = await response.json();
       set((state) => ({
-        models: state.models.map((model) =>
-          model.id === modelId ? updatedModel : model,
-        ),
+        models: state.models.map((model) => (model.id === modelId ? updatedModel : model)),
         loading: false,
       }));
-
       return updatedModel;
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to update model",
+        error: error instanceof Error ? error.message : "Failed to update model",
         loading: false,
       });
       throw error;
@@ -178,25 +150,15 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   deleteModel: async (modelId: string) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models/${modelId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete model");
-      }
-
+      const response = await fetch(`${base}/${modelId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete model");
       set((state) => ({
         models: state.models.filter((model) => model.id !== modelId),
         loading: false,
       }));
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to delete model",
+        error: error instanceof Error ? error.message : "Failed to delete model",
         loading: false,
       });
       throw error;
@@ -207,36 +169,21 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
     try {
       set({ loading: true, error: null });
       const currentModel = get().models.find((model) => model.id === modelId);
-      if (!currentModel) {
-        throw new Error("Model not found");
-      }
-
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models/${modelId}/toggle`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ isActive: !currentModel.isActive }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to toggle model status");
-      }
-
+      if (!currentModel) throw new Error("Model not found");
+      const response = await fetch(`${base}/${modelId}/toggle`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !currentModel.isActive }),
+      });
+      if (!response.ok) throw new Error("Failed to toggle model status");
       const updatedModel = await response.json();
       set((state) => ({
-        models: state.models.map((model) =>
-          model.id === modelId ? updatedModel : model,
-        ),
+        models: state.models.map((model) => (model.id === modelId ? updatedModel : model)),
         loading: false,
       }));
     } catch (error) {
       set({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to toggle model status",
+        error: error instanceof Error ? error.message : "Failed to toggle model status",
         loading: false,
       });
       throw error;
@@ -246,31 +193,17 @@ export const useAIModelsStore = create<AIModelsState>((set, get) => ({
   testModel: async (modelId: string, prompt: string) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(
-        `${config.apiUrl}${config.apiEndpoints.assistants}/models/${modelId}/test`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to test model");
-      }
-
+      const response = await fetch(`${base}/${modelId}/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!response.ok) throw new Error("Failed to test model");
       const testResult = await response.json();
-      set((state) => ({
-        testResults: [testResult, ...state.testResults],
-        loading: false,
-      }));
-
+      set((state) => ({ testResults: [testResult, ...state.testResults], loading: false }));
       return testResult;
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to test model",
-        loading: false,
-      });
+      set({ error: error instanceof Error ? error.message : "Failed to test model", loading: false });
       throw error;
     }
   },
