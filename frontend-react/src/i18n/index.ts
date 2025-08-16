@@ -4,12 +4,13 @@ import en from "./en.json";
 import de from "./de.json";
 import fr from "./fr.json";
 import es from "./es.json";
+import errorMessages from "./error-messages-multilingual.json";
 
 const resources = {
-  en: { translation: en },
-  de: { translation: de },
-  fr: { translation: fr },
-  es: { translation: es },
+  en: { translation: { ...en, ...errorMessages.en } },
+  de: { translation: { ...de, ...errorMessages.de } },
+  fr: { translation: { ...fr, ...errorMessages.fr } },
+  es: { translation: { ...es, ...errorMessages.es } },
 };
 
 i18n.use(initReactI18next).init({
