@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
 from backend.app.core.security import get_current_user
+from backend.app.core.database import get_db
 from backend.app.models.user import User
+from backend.app.services.knowledge_settings_service import KnowledgeSettingsService
 
 router = APIRouter()
 
@@ -29,46 +32,23 @@ class KnowledgeBaseSettingsModel(BaseModel):
 	cacheExpiry: int = Field(default=3600, ge=60, le=24 * 3600)
 
 
-# In-memory fallback storage; replace by DB persistence later
-_IN_MEMORY_SETTINGS: KnowledgeBaseSettingsModel | None = None
-
-
-def _get_current_settings() -> KnowledgeBaseSettingsModel:
-	global _IN_MEMORY_SETTINGS
-	if _IN_MEMORY_SETTINGS is not None:
-		return _IN_MEMORY_SETTINGS
-	s = get_settings().knowledge_base
-	return KnowledgeBaseSettingsModel(
-		chunkSize=getattr(s, "chunk_size", 500),
-		chunkOverlap=getattr(s, "chunk_overlap", 50),
-		embeddingModel=getattr(s, "default_embedding_model", "text-embedding-ada-002"),
-		indexType="hybrid",
-		metadataExtraction=True,
-		autoTagging=True,
-		searchAlgorithm="hybrid",
-		maxFileSize=getattr(s, "max_file_size", 10 * 1024 * 1024),
-		supportedFileTypes=getattr(s, "supported_file_types", []),
-		processingTimeout=300,
-		batchSize=10,
-		enableCache=True,
-		cacheExpiry=3600,
-	)
-
-
 @router.get("/settings")
-async def get_knowledge_settings(current_user: User = Depends(get_current_user)) -> KnowledgeBaseSettingsModel:
-	return _get_current_settings()
+async def get_knowledge_settings(
+	current_user: User = Depends(get_current_user),
+	db: Session = Depends(get_db),
+) -> KnowledgeBaseSettingsModel:
+	service = KnowledgeSettingsService(db)
+	return service.get_settings()
 
 
 @router.put("/settings")
 async def update_knowledge_settings(
 	payload: KnowledgeBaseSettingsModel,
 	current_user: User = Depends(get_current_user),
+	db: Session = Depends(get_db),
 ) -> KnowledgeBaseSettingsModel:
-	# Basic validation beyond Pydantic constraints if needed
 	try:
-		global _IN_MEMORY_SETTINGS
-		_IN_MEMORY_SETTINGS = payload
-		return _IN_MEMORY_SETTINGS
+		service = KnowledgeSettingsService(db)
+		return service.update_settings(payload)
 	except Exception as e:
 		raise HTTPException(status_code=400, detail=f"Invalid settings: {e}")
