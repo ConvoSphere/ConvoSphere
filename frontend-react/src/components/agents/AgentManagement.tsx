@@ -25,6 +25,7 @@ import {
   BarChartOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { useAuthStore } from "../../store/authStore";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -52,13 +53,16 @@ interface Agent {
 interface AgentManagementProps {
   onAgentSelect?: (agentId: string) => void;
   onCollaborationStart?: (agentIds: string[]) => void;
+  conversationId?: string;
 }
 
 const AgentManagement: React.FC<AgentManagementProps> = ({
   onAgentSelect,
   onCollaborationStart,
+  conversationId,
 }) => {
   const { t } = useTranslation();
+  const user = useAuthStore((s) => s.user);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -100,6 +104,7 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
     form.setFieldsValue({
       name: agent.name,
       description: agent.description,
+      system_prompt: "",
       model: agent.model,
       temperature: agent.temperature,
       tools: agent.tools,
@@ -142,12 +147,49 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
 
       const method = editingAgent ? "PUT" : "POST";
 
+      // Backend erwartet AgentCreate mit verschachteltem config und user_id
+      const payload = editingAgent
+        ? {
+            // AgentUpdate ist flach: wir geben nur gesetzte Felder weiter
+            ...(values.name ? { name: values.name } : {}),
+            ...(values.description ? { description: values.description } : {}),
+            ...(values.system_prompt ? { system_prompt: values.system_prompt } : {}),
+            ...(values.model ? { model: values.model } : {}),
+            ...(values.temperature !== undefined
+              ? { temperature: Number(values.temperature) }
+              : {}),
+            ...(values.tools ? { tools: values.tools } : {}),
+            ...(values.is_public !== undefined ? { is_public: !!values.is_public } : {}),
+            ...(values.is_template !== undefined ? { is_template: !!values.is_template } : {}),
+            ...(values.planning_strategy ? { planning_strategy: values.planning_strategy } : {}),
+            ...(values.max_planning_steps !== undefined
+              ? { max_planning_steps: Number(values.max_planning_steps) }
+              : {}),
+            ...(values.abort_criteria ? { abort_criteria: values.abort_criteria } : {}),
+          }
+        : {
+            config: {
+              name: values.name,
+              description: values.description,
+              system_prompt: values.system_prompt,
+              model: values.model,
+              temperature: Number(values.temperature),
+              tools: values.tools || [],
+              planning_strategy: values.planning_strategy || "none",
+              max_planning_steps: Number(values.max_planning_steps || 10),
+              abort_criteria: values.abort_criteria || undefined,
+            },
+            user_id: user?.id,
+            is_public: !!values.is_public,
+            is_template: !!values.is_template,
+          };
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -178,7 +220,11 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
 
   const handleCollaborationSubmit = async (values: any) => {
     try {
-      const response = await fetch("/api/v1/agents/collaborate", {
+      if (!conversationId) {
+        message.error(t("agents.conversationRequired", "Conversation ID erforderlich"));
+        return;
+      }
+      const response = await fetch(`/api/v1/agents/collaborate?conversation_id=${encodeURIComponent(conversationId)}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,6 +272,13 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
       dataIndex: "description",
       key: "description",
       ellipsis: true,
+    },
+    {
+      title: t("agents.systemPrompt", "System Prompt"),
+      dataIndex: "system_prompt",
+      key: "system_prompt",
+      ellipsis: true,
+      render: (_: any, record: Agent) => null,
     },
     {
       title: t("agents.model"),
@@ -371,6 +424,14 @@ const AgentManagement: React.FC<AgentManagementProps> = ({
             rules={[
               { required: true, message: t("agents.descriptionRequired") },
             ]}
+          >
+            <TextArea rows={3} />
+          </Form.Item>
+
+          <Form.Item
+            name="system_prompt"
+            label={t("agents.systemPrompt", "System Prompt")}
+            rules={[{ required: true, message: t("agents.systemPromptRequired", "System Prompt ist erforderlich") }]}
           >
             <TextArea rows={3} />
           </Form.Item>

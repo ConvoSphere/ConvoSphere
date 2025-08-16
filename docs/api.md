@@ -16,7 +16,7 @@ The API is organized into the following main categories:
 - **Authentication** (`/auth`) - User authentication and SSO
 - **User Management** (`/users`) - User profiles and administration
 - **Assistant Management** (`/assistants`) - AI assistant configuration
-- **Agent Management** (`/agents`) - Agent operations
+- **Agent Management** (`/agents`) - Agent operations (CRUD, handoff, collaboration, performance, state)
 - **Conversations** (`/conversations`) - Conversation management
 - **Chat** (`/chat`) - Real-time messaging
 - **WebSocket** (`/ws`) - Real-time communication
@@ -129,6 +129,55 @@ Delete user (admin only).
 #### GET /assistants
 List all assistants.
 
+### Agents
+
+#### GET /agents
+List all available agents (from registry). Includes planning fields.
+
+#### POST /agents
+Create a new agent.
+
+Request:
+```json
+{
+  "config": {
+    "name": "Research Agent",
+    "description": "Plans and executes web research",
+    "system_prompt": "You are a rigorous research planner.",
+    "tools": ["web_search"],
+    "model": "gpt-4",
+    "temperature": 0.3,
+    "planning_strategy": "react",
+    "max_planning_steps": 8,
+    "abort_criteria": {"max_time_seconds": 180, "max_steps": 8}
+  },
+  "user_id": "<uuid>",
+  "is_public": false,
+  "is_template": false
+}
+```
+
+#### PUT /agents/{agent_id}
+Update an agent (flat fields as per schema `AgentUpdate`).
+
+#### DELETE /agents/{agent_id}
+Delete an agent.
+
+#### POST /agents/handoff?conversation_id={id}
+Handoff between agents in a conversation.
+
+#### POST /agents/collaborate?conversation_id={id}
+Start a collaboration session among agents.
+
+#### GET /agents/{id}/performance
+Get agent performance metrics.
+
+#### GET /agents/{id}/state?conversation_id={id}
+Get agent state in a conversation.
+
+#### GET /agents/conversation/{conversation_id}/state
+Get multi-agent conversation state.
+
 Query parameters:
 - `page`: Page number (default: 1)
 - `size`: Page size (default: 20)
@@ -180,6 +229,21 @@ Update assistant.
 
 #### DELETE /assistants/{assistant_id}
 Delete assistant.
+
+#### GET /assistants/public
+List public assistants (optional filters: category, tags, limit).
+
+#### GET /assistants/default
+Get the system default assistant.
+
+#### GET /assistants/default/id
+Get the current user's default assistant id.
+
+#### POST /assistants/default/set
+Set the current user's default assistant:
+```json
+{ "assistant_id": "<uuid>" }
+```
 
 ### Conversations
 
