@@ -14,6 +14,15 @@ from cli.utils.validation import (
 )
 
 # App imports
+import sys
+import os
+sys.path.append('/app/backend')
+
+from app.core.database import get_db
+from app.models.user import User, UserRole, UserStatus
+from app.core.auth import get_password_hash
+import string
+import secrets
 
 
 class UserCommands:

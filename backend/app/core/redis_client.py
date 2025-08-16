@@ -146,8 +146,8 @@ async def get_redis_info() -> dict[str, Any]:
         # Try to create a direct connection for info
         settings = get_settings()
         test_client = redis.from_url(
-            settings.redis_url,
-            db=settings.redis_db,
+            settings.redis.redis_url,
+            db=settings.redis.redis_db,
             encoding="utf-8",
             decode_responses=True,
             socket_connect_timeout=5,

@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
-from backend.app.core.config import get_settings
+from ..core.config import get_settings
 
 # Create declarative base
 Base = declarative_base()

@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "add_password_reset_fields"
-down_revision = "c02ce5c4f07b"
+down_revision = "2024_01_01_enhance_knowledge_base"
 branch_labels = None
 depends_on = None
 

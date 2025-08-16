@@ -20,7 +20,7 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  ServerOutlined,
+  CloudServerOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import ModernCard from "../ModernCard";
@@ -128,7 +128,7 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({
       key: "server_name",
       render: (name: string, record: McpServer) => (
         <Space>
-          <ServerOutlined
+          <CloudServerOutlined
             style={{ color: record.is_connected ? "#52c41a" : "#ff4d4f" }}
           />
           <Text strong>{name}</Text>
@@ -282,7 +282,7 @@ const McpServerManager: React.FC<McpServerManagerProps> = ({
       <Modal
         title={
           <Space>
-            <ServerOutlined style={{ color: "#1890ff" }} />
+            <CloudServerOutlined style={{ color: "#1890ff" }} />
             <Title level={4} style={{ margin: 0 }}>
               {t("mcp.add_server", "Add MCP Server")}
             </Title>

@@ -14,7 +14,7 @@ from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
 
-from backend.app.core.config import get_settings
+from .config import get_settings
 
 # Password hashing context with optimized bcrypt settings
 pwd_context = CryptContext(

@@ -204,18 +204,14 @@ const App: React.FC = () => {
 
   // Initialize performance monitoring - MUST be before conditional return
   useEffect(() => {
-    performanceMonitor.init();
+    performanceMonitor.start();
 
-    // Mark app initialization
-    performanceMonitor.mark("app-init-start");
+    // Track app initialization
+    performanceMonitor.addCustomMetric("app-init-start", Date.now());
 
     return () => {
-      performanceMonitor.mark("app-init-end");
-      performanceMonitor.measure(
-        "App Initialization",
-        "app-init-start",
-        "app-init-end",
-      );
+      performanceMonitor.addCustomMetric("app-init-end", Date.now());
+      performanceMonitor.addCustomMetric("app-total-init-time", Date.now() - performanceMonitor.getMetrics().customMetrics["app-init-start"]);
     };
   }, []);
 
