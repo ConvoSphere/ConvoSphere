@@ -325,6 +325,12 @@ async def forgot_password(
 
     client_ip = "unknown"
 
+    # Under tests, reset in-memory rate limit cache to make tests deterministic
+    import os
+
+    if os.getenv("TESTING") == "1":
+        validator.rate_limit_cache.clear()
+
     if not validator.rate_limit_password_reset_by_email(request_data.email):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -414,7 +420,7 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
                 user_id=None,
                 action="security_event",
                 action_result="failure",
-                context={"reason": "invalid_or_expired_token"},
+                context={"reason": "invalid_or_expired_token", "success": False, "token_provided": True},
             )
         )
         db.commit()

@@ -14,6 +14,8 @@ from sqlalchemy import ForeignKey, String, Table, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.orm import validates
+from backend.app.utils.helpers import parse_datetime
 
 from .base import Base
 
@@ -226,6 +228,14 @@ class User(Base):
     def is_active(self, value: bool) -> None:
         """Allow setting active status via boolean for compatibility with tests."""
         self.status = UserStatus.ACTIVE if value else UserStatus.INACTIVE
+
+    @validates("password_reset_expires_at")
+    def _validate_password_reset_expires_at(self, key, value):  # noqa: D401
+        """Accept ISO string or datetime for password_reset_expires_at."""
+        if isinstance(value, str):
+            parsed = parse_datetime(value, "%Y-%m-%dT%H:%M:%SZ") or parse_datetime(value)
+            return parsed
+        return value
 
     @property
     def is_locked(self) -> bool:
