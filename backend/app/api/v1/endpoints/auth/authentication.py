@@ -62,7 +62,11 @@ async def get_csrf_token(request: Request) -> dict[str, str | int]:
     return {"csrf_token": token, "expires_in": expires_in, "session_id": session_id}
 
 
+from backend.app.core.rate_limiting import rate_limit_auth
+
+
 @router.post("/login", response_model=TokenResponse)
+@rate_limit_auth
 async def login(
     user_credentials: UserLogin,
     request: Request,
@@ -182,7 +186,11 @@ async def login(
     )
 
 
+from backend.app.core.rate_limiting import rate_limit_auth
+
+
 @router.post("/refresh", response_model=TokenResponse)
+@rate_limit_auth
 async def refresh_token(
     refresh_token_data: RefreshTokenRequest,
     db: Session = Depends(get_db),
@@ -242,6 +250,7 @@ async def refresh_token(
 
 
 @router.post("/logout")
+@rate_limit_auth
 async def logout(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     settings=Depends(get_settings),
@@ -316,6 +325,7 @@ async def get_current_user_info(
 
 
 @router.post("/forgot-password")
+@rate_limit_auth
 async def forgot_password(
     request_data: PasswordResetRequest, request: Request, db: Session = Depends(get_db)
 ):
@@ -403,6 +413,7 @@ async def forgot_password(
 
 
 @router.post("/reset-password")
+@rate_limit_auth
 async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_db)):
     """Reset password given a valid token."""
     from backend.app.services.token_service import token_service
@@ -461,6 +472,7 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
 
 
 @router.post("/validate-reset-token")
+@rate_limit_auth
 async def validate_reset_token(payload: dict, db: Session = Depends(get_db)):
     """Validate reset token and return validity info."""
     from backend.app.services.token_service import token_service
