@@ -110,4 +110,11 @@ export default defineConfig(({ mode }) => ({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./jest.setup.js"],
+    css: true,
+    restoreMocks: true,
+  },
 }));

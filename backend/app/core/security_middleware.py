@@ -44,6 +44,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
         response.headers["X-Download-Options"] = "noopen"
         response.headers["X-DNS-Prefetch-Control"] = "off"
+        # Legacy XSS protection header for compatibility with older clients/tests
+        response.headers.setdefault("X-XSS-Protection", "1; mode=block")
 
         # Optional modern isolation headers (safe defaults)
         response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")

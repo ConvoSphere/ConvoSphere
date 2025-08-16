@@ -36,13 +36,16 @@ class DatabaseMonitor:
         """Setup SQLAlchemy event listeners for query monitoring."""
         try:
 
-            @event.listens_for(self.db, "before_cursor_execute")
+            engine = getattr(self.db, "bind", None)
+            engine = getattr(engine, "engine", engine)  # support Session or Connection
+
+            @event.listens_for(engine, "before_cursor_execute")
             def before_cursor_execute(
                 conn, cursor, statement, parameters, context, executemany
             ):
                 context._query_start_time = time.time()
 
-            @event.listens_for(self.db, "after_cursor_execute")
+            @event.listens_for(engine, "after_cursor_execute")
             def after_cursor_execute(
                 conn, cursor, statement, parameters, context, executemany
             ):

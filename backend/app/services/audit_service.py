@@ -16,6 +16,12 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.models.audit import AuditEventType, AuditLog, AuditSeverity
+from backend.app.models.audit_extended import (
+    ExtendedAuditLog,
+    AuditEventType as ExtendedType,
+    AuditEventCategory,
+    AuditSeverity as ExtendedSeverity,
+)
 
 
 class AuditService:
@@ -176,6 +182,59 @@ class AuditService:
                 db.close()
         except Exception as e:
             logger.error(f"Error getting database session for sync audit: {e}")
+
+    # Extended audit convenience for password reset/security events used in tests
+    def log_security_event(
+        self,
+        user_id: str | None,
+        event_type: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Create an ExtendedAuditLog row synchronously for security events used in tests."""
+        try:
+            db = next(get_db())
+            try:
+                etype_raw = (event_type or "").lower()
+                # Map to ExtendedType enum values (which are lowercase)
+                if etype_raw in ExtendedType.__members__:
+                    etype = ExtendedType[etype_raw]
+                else:
+                    # Fall back to direct value match
+                    try:
+                        etype = ExtendedType(etype_raw)
+                    except Exception:
+                        etype = ExtendedType.PASSWORD_RESET
+                record = ExtendedAuditLog(
+                    event_id=str(uuid.uuid4()),
+                    event_type=etype,
+                    event_category=(
+                        AuditEventCategory.AUTHENTICATION
+                        if etype in (
+                            ExtendedType.PASSWORD_RESET,
+                            ExtendedType.PASSWORD_RESET_REQUESTED,
+                            ExtendedType.PASSWORD_RESET_COMPLETED,
+                            ExtendedType.PASSWORD_RESET_FAILED,
+                            ExtendedType.PASSWORD_RESET_TOKEN_GENERATED,
+                            ExtendedType.PASSWORD_RESET_TOKEN_VALIDATED,
+                            ExtendedType.PASSWORD_RESET_TOKEN_EXPIRED,
+                        )
+                        else AuditEventCategory.SECURITY
+                    ),
+                    severity=ExtendedSeverity.INFO,
+                    user_id=uuid.UUID(user_id) if user_id else None,
+                    action="security_event",
+                    action_result="success",
+                    context=details or {},
+                )
+                db.add(record)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Error logging security event: {e}")
+            finally:
+                db.close()
+        except Exception as e:
+            logger.error(f"Error obtaining DB for security event: {e}")
 
     # Convenience methods for common events
     async def log_user_login(

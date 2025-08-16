@@ -2,3 +2,5 @@
 
 This re-exports the application instance from the root-level backend/main.py.
 """
+
+from backend.main import app  # noqa: F401
