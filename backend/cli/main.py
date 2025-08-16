@@ -31,7 +31,9 @@ class AdminCLI:
         subcommand = args.subcommand
 
         if command in self.commands:
-            handler = getattr(self.commands[command], subcommand, None)
+            # Convert hyphenated subcommands to underscore format for method names
+            method_name = subcommand.replace('-', '_')
+            handler = getattr(self.commands[command], method_name, None)
             if handler:
                 # Extract arguments for the handler
                 handler_args = {}

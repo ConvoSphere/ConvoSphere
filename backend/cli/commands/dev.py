@@ -3,10 +3,16 @@
 import random
 import subprocess
 import sys
+import string
 from datetime import datetime
 
 import requests
 from cli.utils.output import print_error, print_info, print_success, print_warning
+
+# App imports
+from app.core.database import get_db
+from app.models.user import User, UserRole, UserStatus
+from app.core.auth import get_password_hash
 
 # Constants
 HTTP_OK = 200
@@ -148,7 +154,7 @@ class DevCommands:
                     last_name="User",
                     role=UserRole.USER,
                     status=UserStatus.ACTIVE,
-                    email_verified=True,
+                    email_verified_at=datetime.utcnow(),
                     created_at=datetime.utcnow(),
                 )
 

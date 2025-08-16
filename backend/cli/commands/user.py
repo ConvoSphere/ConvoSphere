@@ -81,7 +81,7 @@ class UserCommands:
                 last_name=last_name,
                 role=UserRole.SUPER_ADMIN,
                 status=UserStatus.ACTIVE,
-                email_verified=True,
+                email_verified_at=datetime.utcnow(),
                 created_at=datetime.utcnow(),
             )
 
@@ -119,7 +119,7 @@ class UserCommands:
                 hashed_password=hashed_password,
                 role=UserRole.USER,
                 status=UserStatus.ACTIVE,
-                email_verified=True,
+                email_verified_at=datetime.utcnow(),
                 created_at=datetime.utcnow(),
             )
 
@@ -158,7 +158,7 @@ class UserCommands:
 
             for user in users:
                 print(
-                    f"{user.id:<10} {user.username:<15} {user.email:<25} {user.role.value:<12} {user.status.value:<10}"
+                    f"{str(user.id)[:8]:<10} {user.username:<15} {user.email:<25} {user.role.value:<12} {user.status.value:<10}"
                 )
 
             db.close()
@@ -173,15 +173,22 @@ class UserCommands:
             db = next(get_db())
 
             # Try to find user by ID, email, or username
-            user = (
-                db.query(User)
-                .filter(
-                    (User.id == identifier)
-                    | (User.email == identifier)
-                    | (User.username == identifier)
+            # First check if identifier is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(identifier)
+                # It's a valid UUID, search by ID
+                user = db.query(User).filter(User.id == identifier).first()
+            except ValueError:
+                # Not a UUID, search by email or username
+                user = (
+                    db.query(User)
+                    .filter(
+                        (User.email == identifier)
+                        | (User.username == identifier)
+                    )
+                    .first()
                 )
-                .first()
-            )
 
             if not user:
                 print_error(f"User not found: {identifier}")
@@ -196,7 +203,7 @@ class UserCommands:
             print(f"  Last Name: {user.last_name or 'N/A'}")
             print(f"  Role: {user.role.value}")
             print(f"  Status: {user.status.value}")
-            print(f"  Email Verified: {user.email_verified}")
+            print(f"  Email Verified: {user.email_verified_at is not None}")
             print(f"  Created At: {user.created_at}")
             print(f"  Last Login: {user.last_login or 'Never'}")
 
@@ -264,7 +271,7 @@ class UserCommands:
                 last_name=last_name,
                 role=UserRole(role),
                 status=UserStatus(status),
-                email_verified=False,
+                email_verified_at=None,
                 created_at=datetime.utcnow(),
             )
 
@@ -285,15 +292,22 @@ class UserCommands:
             db = next(get_db())
 
             # Find user
-            user = (
-                db.query(User)
-                .filter(
-                    (User.id == identifier)
-                    | (User.email == identifier)
-                    | (User.username == identifier)
+            # First check if identifier is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(identifier)
+                # It's a valid UUID, search by ID
+                user = db.query(User).filter(User.id == identifier).first()
+            except ValueError:
+                # Not a UUID, search by email or username
+                user = (
+                    db.query(User)
+                    .filter(
+                        (User.email == identifier)
+                        | (User.username == identifier)
+                    )
+                    .first()
                 )
-                .first()
-            )
 
             if not user:
                 print_error(f"User not found: {identifier}")
@@ -335,10 +349,13 @@ class UserCommands:
             if "last_name" in kwargs:
                 user.last_name = kwargs["last_name"]
 
+            # Save username before commit to avoid detached instance error
+            username = user.username
+            
             db.commit()
             db.close()
 
-            print_success(f"User '{user.username}' updated successfully")
+            print_success(f"User '{username}' updated successfully")
 
         except (OSError, ValueError, TypeError) as e:
             print_error(f"Failed to update user: {str(e)}")
@@ -357,15 +374,22 @@ class UserCommands:
             db = next(get_db())
 
             # Find user
-            user = (
-                db.query(User)
-                .filter(
-                    (User.id == identifier)
-                    | (User.email == identifier)
-                    | (User.username == identifier)
+            # First check if identifier is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(identifier)
+                # It's a valid UUID, search by ID
+                user = db.query(User).filter(User.id == identifier).first()
+            except ValueError:
+                # Not a UUID, search by email or username
+                user = (
+                    db.query(User)
+                    .filter(
+                        (User.email == identifier)
+                        | (User.username == identifier)
+                    )
+                    .first()
                 )
-                .first()
-            )
 
             if not user:
                 print_error(f"User not found: {identifier}")
@@ -393,15 +417,22 @@ class UserCommands:
             db = next(get_db())
 
             # Find user
-            user = (
-                db.query(User)
-                .filter(
-                    (User.id == identifier)
-                    | (User.email == identifier)
-                    | (User.username == identifier)
+            # First check if identifier is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(identifier)
+                # It's a valid UUID, search by ID
+                user = db.query(User).filter(User.id == identifier).first()
+            except ValueError:
+                # Not a UUID, search by email or username
+                user = (
+                    db.query(User)
+                    .filter(
+                        (User.email == identifier)
+                        | (User.username == identifier)
+                    )
+                    .first()
                 )
-                .first()
-            )
 
             if not user:
                 print_error(f"User not found: {identifier}")
@@ -414,10 +445,14 @@ class UserCommands:
 
             # Update password
             user.hashed_password = get_password_hash(new_password)
+            
+            # Save username before commit to avoid detached instance error
+            username = user.username
+            
             db.commit()
             db.close()
 
-            print_success(f"Password reset for user '{user.username}'")
+            print_success(f"Password reset for user '{username}'")
             print_info(f"New password: {new_password}")
             print_warning("Please save this password securely!")
 

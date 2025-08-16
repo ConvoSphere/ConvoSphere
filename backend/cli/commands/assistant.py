@@ -5,6 +5,11 @@ import sys
 from cli.utils.helpers import confirm_action
 from cli.utils.output import print_error, print_info, print_success
 
+# App imports
+from app.core.database import get_db
+from app.models.user import User, UserRole
+from app.models.assistant import AssistantStatus
+
 
 class AssistantCommands:
     """Assistant management commands."""
@@ -38,7 +43,7 @@ class AssistantCommands:
                     else "Unknown"
                 )
                 print(
-                    f"{assistant.id:<10} {assistant.name:<20} {assistant.model:<15} {status:<10} {created:<20}"
+                    f"{str(assistant.id)[:8]:<10} {assistant.name:<20} {assistant.model:<15} {status:<10} {created:<20}"
                 )
 
             db.close()
@@ -56,13 +61,15 @@ class AssistantCommands:
             db = next(get_db())
 
             # Try to find assistant by ID or name
-            assistant = (
-                db.query(Assistant)
-                .filter(
-                    (Assistant.id == assistant_id) | (Assistant.name == assistant_id)
-                )
-                .first()
-            )
+            # First check if assistant_id is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(assistant_id)
+                # It's a valid UUID, search by ID
+                assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+            except ValueError:
+                # Not a UUID, search by name
+                assistant = db.query(Assistant).filter(Assistant.name == assistant_id).first()
 
             if not assistant:
                 print_error(f"Assistant not found: {assistant_id}")
@@ -118,12 +125,18 @@ class AssistantCommands:
                 sys.exit(1)
 
             # Create new assistant
+            # Get the first admin user as creator
+            admin_user = db.query(User).filter(User.role == UserRole.ADMIN).first()
+            if not admin_user:
+                admin_user = db.query(User).first()  # Fallback to first user
+            
             new_assistant = Assistant(
                 name=name,
                 description=description,
                 model=model,
                 instructions=instructions,
-                is_active=True,
+                system_prompt="",  # Required field
+                creator_id=admin_user.id if admin_user else None,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
             )
@@ -155,13 +168,15 @@ class AssistantCommands:
             db = next(get_db())
 
             # Find assistant
-            assistant = (
-                db.query(Assistant)
-                .filter(
-                    (Assistant.id == assistant_id) | (Assistant.name == assistant_id)
-                )
-                .first()
-            )
+            # First check if assistant_id is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(assistant_id)
+                # It's a valid UUID, search by ID
+                assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+            except ValueError:
+                # Not a UUID, search by name
+                assistant = db.query(Assistant).filter(Assistant.name == assistant_id).first()
 
             if not assistant:
                 print_error(f"Assistant not found: {assistant_id}")
@@ -190,30 +205,36 @@ class AssistantCommands:
             db = next(get_db())
 
             # Find assistant
-            assistant = (
-                db.query(Assistant)
-                .filter(
-                    (Assistant.id == assistant_id) | (Assistant.name == assistant_id)
-                )
-                .first()
-            )
+            # First check if assistant_id is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(assistant_id)
+                # It's a valid UUID, search by ID
+                assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+            except ValueError:
+                # Not a UUID, search by name
+                assistant = db.query(Assistant).filter(Assistant.name == assistant_id).first()
 
             if not assistant:
                 print_error(f"Assistant not found: {assistant_id}")
                 db.close()
                 sys.exit(1)
 
-            if assistant.is_active:
+            if assistant.status.value == "ACTIVE":
                 print_info(f"Assistant '{assistant.name}' is already active")
                 db.close()
                 return
 
-            assistant.is_active = True
+            assistant.status = AssistantStatus.ACTIVE
             assistant.updated_at = datetime.utcnow()
+            
+            # Save name before commit to avoid detached instance error
+            name = assistant.name
+            
             db.commit()
             db.close()
 
-            print_success(f"Assistant '{assistant.name}' activated successfully")
+            print_success(f"Assistant '{name}' activated successfully")
 
         except Exception as e:
             print_error(f"Failed to activate assistant: {str(e)}")
@@ -230,30 +251,36 @@ class AssistantCommands:
             db = next(get_db())
 
             # Find assistant
-            assistant = (
-                db.query(Assistant)
-                .filter(
-                    (Assistant.id == assistant_id) | (Assistant.name == assistant_id)
-                )
-                .first()
-            )
+            # First check if assistant_id is a valid UUID
+            try:
+                import uuid
+                uuid.UUID(assistant_id)
+                # It's a valid UUID, search by ID
+                assistant = db.query(Assistant).filter(Assistant.id == assistant_id).first()
+            except ValueError:
+                # Not a UUID, search by name
+                assistant = db.query(Assistant).filter(Assistant.name == assistant_id).first()
 
             if not assistant:
                 print_error(f"Assistant not found: {assistant_id}")
                 db.close()
                 sys.exit(1)
 
-            if not assistant.is_active:
+            if assistant.status.value == "DRAFT":
                 print_info(f"Assistant '{assistant.name}' is already inactive")
                 db.close()
                 return
 
-            assistant.is_active = False
+            assistant.status = AssistantStatus.DRAFT
             assistant.updated_at = datetime.utcnow()
+            
+            # Save name before commit to avoid detached instance error
+            name = assistant.name
+            
             db.commit()
             db.close()
 
-            print_success(f"Assistant '{assistant.name}' deactivated successfully")
+            print_success(f"Assistant '{name}' deactivated successfully")
 
         except Exception as e:
             print_error(f"Failed to deactivate assistant: {str(e)}")
