@@ -30,6 +30,7 @@ from backend.app.api.v1.endpoints import (
 	websocket,
 	config,
 	backup_endpoints,
+	ai_models,
 )
 from backend.app.api.v1.endpoints.audit import router as audit_router
 
@@ -54,6 +55,7 @@ api_router.include_router(
 api_router.include_router(tools.router, prefix="/tools", tags=["Tools"])
 api_router.include_router(mcp.router, prefix="/mcp", tags=["MCP Tools"])
 api_router.include_router(ai.router, prefix="/ai", tags=["AI"])
+api_router.include_router(ai_models.router, prefix="/ai-models", tags=["AI Models"])
 api_router.include_router(rag.router, prefix="/rag", tags=["RAG"])
 api_router.include_router(search.router, prefix="/search", tags=["Search"])
 api_router.include_router(
