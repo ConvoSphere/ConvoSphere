@@ -1,0 +1,142 @@
+{
+  "widgets": {
+    "add_widget": "Add Widget",
+    "active_users": "Active Users",
+    "activity_widget": "Activity Widget",
+    "activity_widget_description": "Shows recent activity",
+    "assistants": "Assistants",
+    "chart": {
+      "24h": "24h",
+      "7d": "7d",
+      "30d": "30d",
+      "90d": "90d",
+      "bar": "Bar Chart",
+      "line": "Line Chart",
+      "pie": "Pie Chart"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "password": "Password must be at least 8 characters long",
+    "confirm_password": "Passwords do not match"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "user": "User",
+    "mcp_tools": "MCP Tools"
+  },
+  "ai_models": {
+    "title": "AI Models",
+    "add_model": "Add Model",
+    "add_failed": "Failed to add model",
+    "added_success": "Model added successfully",
+    "delete_failed": "Failed to delete model",
+    "deleted_success": "Model deleted successfully",
+    "edit_model": "Edit Model",
+    "analytics": "Analytics",
+    "analytics_coming_soon": "Analytics coming soon",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "performance": "Performance",
+      "cost": "Cost",
+      "usage": "Usage",
+      "actions": "Actions"
+    },
+    "actions": {
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "edit": "Edit",
+      "delete": "Delete",
+      "test": "Test"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "cost_analysis": "Cost Analysis",
+    "detailed_usage": "Detailed Usage",
+    "export": "Export",
+    "export_csv": "Export as CSV",
+    "export_excel": "Export as Excel",
+    "export_data": "Export Data",
+    "charts": {
+      "cost_trend": "Cost Trend",
+      "model_distribution": "Model Distribution",
+      "performance_comparison": "Performance Comparison",
+      "requests_trend": "Requests Trend"
+    }
+  },
+  "configuration": {
+    "title": "Configuration",
+    "default": "Default",
+    "fallback_created": "Fallback configuration created",
+    "fallback_updated": "Fallback configuration updated",
+    "categories": {
+      "general": "General",
+      "creative": "Creative",
+      "analysis": "Analysis",
+      "programming": "Programming"
+    },
+    "complexity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  },
+  "favorites": {
+    "title": "Favorites",
+    "add_favorite": "Add to Favorites",
+    "add_first": "Add your first favorite",
+    "add_failed": "Failed to add to favorites",
+    "added_success": "Added to favorites successfully",
+    "all_categories": "All Categories",
+    "categories": {
+      "analysis": "Analysis",
+      "analysis_desc": "Data analysis and insights",
+      "creative": "Creative",
+      "creative_desc": "Creative content generation",
+      "efficiency": "Efficiency",
+      "efficiency_desc": "Workflow optimization"
+    }
+  },
+  "model_selector": {
+    "title": "Model Selector",
+    "compare": "Compare",
+    "compare_models": "Compare Models",
+    "comparison": {
+      "model": "Model",
+      "capabilities": "Capabilities",
+      "performance": "Performance",
+      "cost": "Cost",
+      "cost_per_1k": "Cost per 1K tokens",
+      "max_tokens": "Max Tokens",
+      "response_time": "Response Time",
+      "last_used": "Last Used"
+    }
+  },
+  "test": {
+    "title": "Testing",
+    "create_suite": "Create Test Suite",
+    "edit_suite": "Edit Test Suite",
+    "delete_suite": "Delete Test Suite",
+    "clear_results": "Clear Results",
+    "ab_test": "A/B Test",
+    "ab_test_success": "A/B test completed successfully",
+    "ab_test_failed": "A/B test failed",
+    "ab_test.models": "Test Models",
+    "ab_test.quality": "Quality Assessment",
+    "ab_test.response_time": "Response Time",
+    "ab_test.cost": "Cost Analysis"
+  },
+  "sso": {
+    "title": "Single Sign-On",
+    "help": {
+      "configure_env": "Configure Environment Variables",
+      "enable_disable": "Enable/Disable SSO",
+      "test_login": "Test SSO Login",
+      "view_config": "View Configuration"
+    }
+  }
+}

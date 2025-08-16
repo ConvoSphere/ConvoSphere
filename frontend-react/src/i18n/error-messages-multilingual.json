@@ -1,0 +1,302 @@
+{
+  "en": {
+    "errors": {
+      "general": {
+        "unknown": "An unknown error occurred",
+        "network_error": "Network error. Please check your connection",
+        "timeout": "Timeout. Please try again",
+        "connection_error": "Connection error. Please try again",
+        "server_error": "Server error. Please try again later",
+        "service_unavailable": "Service temporarily unavailable"
+      },
+      "auth": {
+        "unauthorized": "You are not authorized to perform this action",
+        "forbidden": "Access denied",
+        "token_expired": "Your session has expired. Please log in again",
+        "invalid_credentials": "Invalid credentials",
+        "login_required": "Login required"
+      },
+      "api": {
+        "bad_request": "Invalid request",
+        "not_found": "Resource not found",
+        "conflict": "Resource conflict",
+        "validation_error": "Validation error",
+        "rate_limit": "Too many requests. Please try again later"
+      },
+      "files": {
+        "file_too_large": "File is too large",
+        "invalid_file_type": "Invalid file type",
+        "upload_failed": "Upload failed",
+        "download_failed": "Download failed",
+        "file_not_found": "File not found"
+      },
+      "documents": {
+        "fetch_failed": "Failed to load documents",
+        "upload_failed": "Document upload failed",
+        "delete_failed": "Failed to delete document",
+        "update_failed": "Failed to update document",
+        "download_failed": "Document download failed",
+        "reprocess_failed": "Document reprocessing failed"
+      },
+      "tools": {
+        "fetch_failed": "Failed to load tools",
+        "create_failed": "Failed to create tool",
+        "update_failed": "Failed to update tool",
+        "delete_failed": "Failed to delete tool",
+        "run_failed": "Tool execution failed"
+      },
+      "mcp": {
+        "server_connection_failed": "MCP server connection failed",
+        "tool_execution_failed": "MCP tool execution failed",
+        "server_not_found": "MCP server not found"
+      },
+      "validation": {
+        "required_field": "This field is required",
+        "invalid_email": "Invalid email address",
+        "invalid_url": "Invalid URL",
+        "min_length": "Minimum length not reached",
+        "max_length": "Maximum length exceeded",
+        "invalid_format": "Invalid format"
+      }
+    },
+    "recovery": {
+      "login": "Login",
+      "login_desc": "Please log in again",
+      "retry": "Retry",
+      "retry_desc": "Please try again in a moment",
+      "wait": "Wait",
+      "wait_desc": "Please wait a few minutes before trying again",
+      "check_connection": "Check connection",
+      "check_connection_desc": "Check your internet connection and try again",
+      "contact_admin": "Contact admin",
+      "contact_admin_desc": "Contact your administrator for access",
+      "refresh": "Refresh",
+      "refresh_desc": "Reload the page"
+    }
+  },
+  "de": {
+    "errors": {
+      "general": {
+        "unknown": "Ein unbekannter Fehler ist aufgetreten",
+        "network_error": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung",
+        "timeout": "Zeitüberschreitung. Bitte versuchen Sie es erneut",
+        "connection_error": "Verbindungsfehler. Bitte versuchen Sie es erneut",
+        "server_error": "Serverfehler. Bitte versuchen Sie es später erneut",
+        "service_unavailable": "Dienst vorübergehend nicht verfügbar"
+      },
+      "auth": {
+        "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszuführen",
+        "forbidden": "Zugriff verweigert",
+        "token_expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an",
+        "invalid_credentials": "Ungültige Anmeldedaten",
+        "login_required": "Anmeldung erforderlich"
+      },
+      "api": {
+        "bad_request": "Ungültige Anfrage",
+        "not_found": "Ressource nicht gefunden",
+        "conflict": "Ressourcenkonflikt",
+        "validation_error": "Validierungsfehler",
+        "rate_limit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut"
+      },
+      "files": {
+        "file_too_large": "Datei ist zu groß",
+        "invalid_file_type": "Ungültiger Dateityp",
+        "upload_failed": "Upload fehlgeschlagen",
+        "download_failed": "Download fehlgeschlagen",
+        "file_not_found": "Datei nicht gefunden"
+      },
+      "documents": {
+        "fetch_failed": "Dokumente konnten nicht geladen werden",
+        "upload_failed": "Dokument-Upload fehlgeschlagen",
+        "delete_failed": "Dokument konnte nicht gelöscht werden",
+        "update_failed": "Dokument konnte nicht aktualisiert werden",
+        "download_failed": "Dokument-Download fehlgeschlagen",
+        "reprocess_failed": "Dokument-Neuverarbeitung fehlgeschlagen"
+      },
+      "tools": {
+        "fetch_failed": "Tools konnten nicht geladen werden",
+        "create_failed": "Tool konnte nicht erstellt werden",
+        "update_failed": "Tool konnte nicht aktualisiert werden",
+        "delete_failed": "Tool konnte nicht gelöscht werden",
+        "run_failed": "Tool-Ausführung fehlgeschlagen"
+      },
+      "mcp": {
+        "server_connection_failed": "MCP-Server-Verbindung fehlgeschlagen",
+        "tool_execution_failed": "MCP-Tool-Ausführung fehlgeschlagen",
+        "server_not_found": "MCP-Server nicht gefunden"
+      },
+      "validation": {
+        "required_field": "Dieses Feld ist erforderlich",
+        "invalid_email": "Ungültige E-Mail-Adresse",
+        "invalid_url": "Ungültige URL",
+        "min_length": "Mindestlänge nicht erreicht",
+        "max_length": "Maximale Länge überschritten",
+        "invalid_format": "Ungültiges Format"
+      }
+    },
+    "recovery": {
+      "login": "Anmelden",
+      "login_desc": "Bitte melden Sie sich erneut an",
+      "retry": "Wiederholen",
+      "retry_desc": "Versuchen Sie es in wenigen Momenten erneut",
+      "wait": "Warten",
+      "wait_desc": "Bitte warten Sie einige Minuten, bevor Sie es erneut versuchen",
+      "check_connection": "Verbindung prüfen",
+      "check_connection_desc": "Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut",
+      "contact_admin": "Admin kontaktieren",
+      "contact_admin_desc": "Kontaktieren Sie Ihren Administrator für den Zugriff",
+      "refresh": "Aktualisieren",
+      "refresh_desc": "Laden Sie die Seite neu"
+    }
+  },
+  "fr": {
+    "errors": {
+      "general": {
+        "unknown": "Une erreur inconnue s'est produite",
+        "network_error": "Erreur réseau. Veuillez vérifier votre connexion",
+        "timeout": "Délai d'attente dépassé. Veuillez réessayer",
+        "connection_error": "Erreur de connexion. Veuillez réessayer",
+        "server_error": "Erreur serveur. Veuillez réessayer plus tard",
+        "service_unavailable": "Service temporairement indisponible"
+      },
+      "auth": {
+        "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action",
+        "forbidden": "Accès refusé",
+        "token_expired": "Votre session a expiré. Veuillez vous reconnecter",
+        "invalid_credentials": "Identifiants invalides",
+        "login_required": "Connexion requise"
+      },
+      "api": {
+        "bad_request": "Requête invalide",
+        "not_found": "Ressource non trouvée",
+        "conflict": "Conflit de ressources",
+        "validation_error": "Erreur de validation",
+        "rate_limit": "Trop de requêtes. Veuillez réessayer plus tard"
+      },
+      "files": {
+        "file_too_large": "Le fichier est trop volumineux",
+        "invalid_file_type": "Type de fichier invalide",
+        "upload_failed": "Échec du téléchargement",
+        "download_failed": "Échec du téléchargement",
+        "file_not_found": "Fichier non trouvé"
+      },
+      "documents": {
+        "fetch_failed": "Échec du chargement des documents",
+        "upload_failed": "Échec du téléchargement du document",
+        "delete_failed": "Échec de la suppression du document",
+        "update_failed": "Échec de la mise à jour du document",
+        "download_failed": "Échec du téléchargement du document",
+        "reprocess_failed": "Échec du retraitement du document"
+      },
+      "tools": {
+        "fetch_failed": "Échec du chargement des outils",
+        "create_failed": "Échec de la création de l'outil",
+        "update_failed": "Échec de la mise à jour de l'outil",
+        "delete_failed": "Échec de la suppression de l'outil",
+        "run_failed": "Échec de l'exécution de l'outil"
+      },
+      "mcp": {
+        "server_connection_failed": "Échec de la connexion au serveur MCP",
+        "tool_execution_failed": "Échec de l'exécution de l'outil MCP",
+        "server_not_found": "Serveur MCP non trouvé"
+      },
+      "validation": {
+        "required_field": "Ce champ est requis",
+        "invalid_email": "Adresse e-mail invalide",
+        "invalid_url": "URL invalide",
+        "min_length": "Longueur minimale non atteinte",
+        "max_length": "Longueur maximale dépassée",
+        "invalid_format": "Format invalide"
+      }
+    },
+    "recovery": {
+      "login": "Se connecter",
+      "login_desc": "Veuillez vous reconnecter",
+      "retry": "Réessayer",
+      "retry_desc": "Veuillez réessayer dans un moment",
+      "wait": "Attendre",
+      "wait_desc": "Veuillez attendre quelques minutes avant de réessayer",
+      "check_connection": "Vérifier la connexion",
+      "check_connection_desc": "Vérifiez votre connexion internet et réessayez",
+      "contact_admin": "Contacter l'admin",
+      "contact_admin_desc": "Contactez votre administrateur pour l'accès",
+      "refresh": "Actualiser",
+      "refresh_desc": "Rechargez la page"
+    }
+  },
+  "es": {
+    "errors": {
+      "general": {
+        "unknown": "Ha ocurrido un error desconocido",
+        "network_error": "Error de red. Por favor verifique su conexión",
+        "timeout": "Tiempo de espera agotado. Por favor inténtelo de nuevo",
+        "connection_error": "Error de conexión. Por favor inténtelo de nuevo",
+        "server_error": "Error del servidor. Por favor inténtelo más tarde",
+        "service_unavailable": "Servicio temporalmente no disponible"
+      },
+      "auth": {
+        "unauthorized": "No está autorizado para realizar esta acción",
+        "forbidden": "Acceso denegado",
+        "token_expired": "Su sesión ha expirado. Por favor inicie sesión nuevamente",
+        "invalid_credentials": "Credenciales inválidas",
+        "login_required": "Inicio de sesión requerido"
+      },
+      "api": {
+        "bad_request": "Solicitud inválida",
+        "not_found": "Recurso no encontrado",
+        "conflict": "Conflicto de recursos",
+        "validation_error": "Error de validación",
+        "rate_limit": "Demasiadas solicitudes. Por favor inténtelo más tarde"
+      },
+      "files": {
+        "file_too_large": "El archivo es demasiado grande",
+        "invalid_file_type": "Tipo de archivo inválido",
+        "upload_failed": "Error en la carga",
+        "download_failed": "Error en la descarga",
+        "file_not_found": "Archivo no encontrado"
+      },
+      "documents": {
+        "fetch_failed": "Error al cargar documentos",
+        "upload_failed": "Error en la carga del documento",
+        "delete_failed": "Error al eliminar el documento",
+        "update_failed": "Error al actualizar el documento",
+        "download_failed": "Error en la descarga del documento",
+        "reprocess_failed": "Error en el reprocesamiento del documento"
+      },
+      "tools": {
+        "fetch_failed": "Error al cargar herramientas",
+        "create_failed": "Error al crear la herramienta",
+        "update_failed": "Error al actualizar la herramienta",
+        "delete_failed": "Error al eliminar la herramienta",
+        "run_failed": "Error en la ejecución de la herramienta"
+      },
+      "mcp": {
+        "server_connection_failed": "Error en la conexión al servidor MCP",
+        "tool_execution_failed": "Error en la ejecución de la herramienta MCP",
+        "server_not_found": "Servidor MCP no encontrado"
+      },
+      "validation": {
+        "required_field": "Este campo es requerido",
+        "invalid_email": "Dirección de email inválida",
+        "invalid_url": "URL inválida",
+        "min_length": "Longitud mínima no alcanzada",
+        "max_length": "Longitud máxima excedida",
+        "invalid_format": "Formato inválido"
+      }
+    },
+    "recovery": {
+      "login": "Iniciar sesión",
+      "login_desc": "Por favor inicie sesión nuevamente",
+      "retry": "Reintentar",
+      "retry_desc": "Por favor inténtelo de nuevo en un momento",
+      "wait": "Esperar",
+      "wait_desc": "Por favor espere unos minutos antes de intentar de nuevo",
+      "check_connection": "Verificar conexión",
+      "check_connection_desc": "Verifique su conexión a internet e inténtelo de nuevo",
+      "contact_admin": "Contactar admin",
+      "contact_admin_desc": "Contacte a su administrador para el acceso",
+      "refresh": "Actualizar",
+      "refresh_desc": "Recargue la página"
+    }
+  }
+}
