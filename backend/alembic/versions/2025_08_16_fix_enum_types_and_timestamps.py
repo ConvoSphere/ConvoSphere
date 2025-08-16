@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'fix_enum_types'
+revision = '2025_08_16_fix_enum_types_and_timestamps'
 down_revision = 'add_password_reset_fields'
 branch_labels = None
 depends_on = None
@@ -29,19 +29,28 @@ def upgrade() -> None:
         columns = {col['name']: col for col in inspector.get_columns('users')}
         
         if 'role' in columns:
-            # The role column exists, now fix the enum types
-            # Drop the old duplicate enum types if they exist
-            op.execute("DROP TYPE IF EXISTS user_role CASCADE")
+            # Check current enum type
+            current_type = columns['role']['type']
             
-            # Rename userrole to user_role for consistency
-            op.execute("ALTER TYPE userrole RENAME TO user_role")
-            
-            # Update the users table to use the correct enum type
-            op.execute("""
-                ALTER TABLE users 
-                ALTER COLUMN role TYPE user_role 
-                USING role::text::user_role
-            """)
+            # If it's already user_role enum, skip
+            if 'user_role' in str(current_type):
+                pass
+            else:
+                # Create the correct user_role enum if it doesn't exist
+                op.execute("""
+                    DO $$ BEGIN
+                        CREATE TYPE user_role AS ENUM ('ADMIN', 'MANAGER', 'USER', 'GUEST');
+                    EXCEPTION
+                        WHEN duplicate_object THEN null;
+                    END $$;
+                """)
+                
+                # Update the users table to use the correct enum type
+                op.execute("""
+                    ALTER TABLE users 
+                    ALTER COLUMN role TYPE user_role 
+                    USING role::text::user_role
+                """)
     
     # Fix the audit_logs table timestamp constraints if it exists
     if 'audit_logs' in inspector.get_table_names():
@@ -58,35 +67,45 @@ def upgrade() -> None:
             SET created_at = NOW() 
             WHERE created_at IS NULL
         """)
+        
+        # Also fix updated_at column
+        op.execute("""
+            ALTER TABLE audit_logs 
+            ALTER COLUMN updated_at SET NOT NULL,
+            ALTER COLUMN updated_at SET DEFAULT NOW()
+        """)
+        
+        # Update any existing NULL updated_at values
+        op.execute("""
+            UPDATE audit_logs 
+            SET updated_at = NOW() 
+            WHERE updated_at IS NULL
+        """)
 
 
 def downgrade() -> None:
     """Revert the changes."""
     
-    # Revert the role column back to text
-    op.execute("""
-        ALTER TABLE users 
-        ALTER COLUMN role TYPE text
-    """)
+    connection = op.get_bind()
+    inspector = connection.dialect.inspector(connection)
     
-    # Recreate the old user_role enum
-    op.execute("""
-        CREATE TYPE user_role AS ENUM ('admin', 'manager', 'user', 'guest')
-    """)
+    if 'users' in inspector.get_table_names():
+        # Revert the users table role column back to text
+        op.execute("""
+            ALTER TABLE users 
+            ALTER COLUMN role TYPE text
+        """)
     
-    # Revert the users table role column
-    op.execute("""
-        ALTER TABLE users 
-        ALTER COLUMN role TYPE user_role 
-        USING role::text::user_role
-    """)
-    
-    # Revert the audit_logs timestamp constraints
-    op.execute("""
-        ALTER TABLE audit_logs 
-        ALTER COLUMN created_at DROP NOT NULL,
-        ALTER COLUMN created_at DROP DEFAULT
-    """)
-    
-    # Rename user_role back to userrole
-    op.execute("ALTER TYPE user_role RENAME TO userrole")
+    if 'audit_logs' in inspector.get_table_names():
+        # Revert the audit_logs timestamp constraints
+        op.execute("""
+            ALTER TABLE audit_logs 
+            ALTER COLUMN created_at DROP NOT NULL,
+            ALTER COLUMN created_at DROP DEFAULT
+        """)
+        
+        op.execute("""
+            ALTER TABLE audit_logs 
+            ALTER COLUMN updated_at DROP NOT NULL,
+            ALTER COLUMN updated_at DROP DEFAULT
+        """)

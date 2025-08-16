@@ -1,9 +1,9 @@
 from sqlalchemy import Boolean, Column, Float, Integer, String
 
-from .base import Base, get_json_column
+from .base import BaseModel, get_json_column
 
 
-class AIModel(Base):
+class AIModel(BaseModel):
 	__tablename__ = "ai_models"
 
 	name = Column(String(200), nullable=False)

@@ -200,7 +200,7 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user")
     created_tools = relationship("Tool", back_populates="creator")
     audit_logs = relationship("AuditLog", back_populates="user")
-    # extended_audit_logs = relationship("ExtendedAuditLog", back_populates="user")
+    extended_audit_logs = relationship("ExtendedAuditLog", back_populates="user")
     documents = relationship("Document", back_populates="user")
     search_queries = relationship("SearchQuery", back_populates="user")
 

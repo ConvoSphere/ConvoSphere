@@ -1,9 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer, String
 
-from .base import Base, get_json_column
+from .base import BaseModel, get_json_column
 
 
-class KnowledgeSettings(Base):
+class KnowledgeSettings(BaseModel):
 	__tablename__ = "knowledge_settings"
 
 	# Using single-row table for global settings (id from Base UUIDMixin)

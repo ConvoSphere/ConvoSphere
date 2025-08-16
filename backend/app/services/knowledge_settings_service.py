@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.config import get_settings
 from backend.app.models.knowledge_settings import KnowledgeSettings
-from backend.app.api.v1.endpoints.knowledge_settings import KnowledgeBaseSettingsModel
+from backend.app.schemas.knowledge_settings import KnowledgeBaseSettingsModel
 
 
 class KnowledgeSettingsService:
