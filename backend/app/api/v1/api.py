@@ -8,26 +8,29 @@ from fastapi import APIRouter
 
 from backend.app.api.v1 import storage
 from backend.app.api.v1.endpoints import (
-    agents,
-    ai,
-    assistants_management,
-    auth,
-    chat,
-    conversations,
-    domain_groups,
-    health,
-    hybrid_mode,
-    intelligence,
-    knowledge,
-    logs,
-    mcp,
-    monitoring_endpoints,
-    rag,
-    search,
-    statistics_endpoints,
-    tools,
-    users,
-    websocket,
+	agents,
+	ai,
+	assistants_management,
+	auth,
+	chat,
+	conversations,
+	domain_groups,
+	health,
+	hybrid_mode,
+	intelligence,
+	knowledge,
+	logs,
+	mcp,
+	monitoring_endpoints,
+	rag,
+	search,
+	statistics_endpoints,
+	tools,
+	users,
+	websocket,
+	config,
+	backup_endpoints,
+	ai_models,
 )
 from backend.app.api.v1.endpoints.audit import router as audit_router
 
@@ -38,36 +41,37 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["User Management"])
 api_router.include_router(
-    assistants_management.router, prefix="/assistants", tags=["Assistant Management"]
+	assistants_management.router, prefix="/assistants", tags=["Assistant Management"]
 )
 api_router.include_router(agents.router, prefix="/agents", tags=["Agent Management"])
 api_router.include_router(
-    conversations.router, prefix="/conversations", tags=["Conversations"]
+	conversations.router, prefix="/conversations", tags=["Conversations"]
 )
 api_router.include_router(chat.router, prefix="/chat", tags=["Chat"])
 api_router.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 api_router.include_router(
-    knowledge.router, prefix="/knowledge", tags=["Knowledge Base"]
+	knowledge.router, prefix="/knowledge", tags=["Knowledge Base"]
 )
 api_router.include_router(tools.router, prefix="/tools", tags=["Tools"])
 api_router.include_router(mcp.router, prefix="/mcp", tags=["MCP Tools"])
 api_router.include_router(ai.router, prefix="/ai", tags=["AI"])
+api_router.include_router(ai_models.router, prefix="/ai-models", tags=["AI Models"])
 api_router.include_router(rag.router, prefix="/rag", tags=["RAG"])
 api_router.include_router(search.router, prefix="/search", tags=["Search"])
 api_router.include_router(
-    intelligence.router, prefix="/intelligence", tags=["Conversation Intelligence"]
+	intelligence.router, prefix="/intelligence", tags=["Conversation Intelligence"]
 )
 api_router.include_router(
-    domain_groups.router, prefix="/domain-groups", tags=["Domain Groups"]
+	domain_groups.router, prefix="/domain-groups", tags=["Domain Groups"]
 )
 api_router.include_router(audit_router, prefix="/audit", tags=["Audit"])
 
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(
-    hybrid_mode.router, prefix="/hybrid-mode", tags=["Hybrid Mode"]
+	hybrid_mode.router, prefix="/hybrid-mode", tags=["Hybrid Mode"]
 )
 api_router.include_router(
-    monitoring_endpoints.router, prefix="/monitoring", tags=["Monitoring"]
+	monitoring_endpoints.router, prefix="/monitoring", tags=["Monitoring"]
 )
 
 # Logs router
@@ -75,8 +79,14 @@ api_router.include_router(logs.router, prefix="/logs", tags=["Logs"])
 
 # Statistics router (dashboard)
 api_router.include_router(
-    statistics_endpoints.router, prefix="/statistics", tags=["Statistics"]
+	statistics_endpoints.router, prefix="/statistics", tags=["Statistics"]
 )
 
 # Storage router
 api_router.include_router(storage.router, prefix="/storage", tags=["Storage"])
+
+# Config router (frontend configuration under /api/v1/config)
+api_router.include_router(config.router, prefix="/config", tags=["Config"])
+
+# Knowledge backups under /api/v1/knowledge/backups
+api_router.include_router(backup_endpoints.router, prefix="/knowledge", tags=["Knowledge Backups"])

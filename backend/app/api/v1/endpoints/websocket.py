@@ -632,6 +632,41 @@ async def websocket_endpoint(
             await websocket.close(code=4000, reason=f"Connection error: {str(e)}")
 
 
+@router.websocket("/notifications")
+async def websocket_notifications(
+	websocket: WebSocket,
+	token: str,
+	db: Session = Depends(get_db),
+):
+	"""Notifications WebSocket endpoint for realtime events (system health, stats, activity)."""
+	try:
+		# Authenticate user
+		user = await get_current_user_ws(token, db)
+		if not user:
+			await websocket.close(code=4001, reason="Authentication failed")
+			return
+
+		await websocket.accept()
+		await websocket.send_text(json.dumps({"type": "connection_established", "data": {"user_id": str(user.id)}}))
+
+		try:
+			while True:
+				message = await websocket.receive_text()
+				try:
+					payload = json.loads(message)
+					if payload.get("type") == "ping":
+						await websocket.send_text(json.dumps({"type": "pong", "data": {"timestamp": datetime.utcnow().isoformat()}}))
+					# Additional client-driven messages could be handled here
+				except Exception:
+					pass
+		except WebSocketDisconnect:
+			logger.info(f"Notifications WebSocket disconnected for user {user.id}")
+	except Exception as e:
+		logger.error(f"Notifications WebSocket error: {e}")
+		with contextlib.suppress(Exception):
+			await websocket.close(code=4000, reason=f"Connection error: {str(e)}")
+
+
 async def get_current_user_ws(token: str, db: Session) -> User | None:
     """Get current user from WebSocket token."""
     try:

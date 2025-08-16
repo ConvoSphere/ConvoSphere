@@ -85,13 +85,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
-        pip install pytest-cov pytest-xdist pytest-timeout
+        pip install pytest-cov pytest-xdist pytest-timeout alembic
 
     - name: Install Node.js dependencies
       run: |
         cd frontend-react
         npm ci
         npm install --save-dev @testing-library/react @testing-library/jest-dom vitest
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
 
     - name: Run backend unit tests (warnings allowed)
       id: backend-tests
@@ -179,6 +184,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
+        pip install alembic
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
 
     - name: Run integration tests (warnings allowed)
       id: integration-tests
@@ -250,7 +261,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
-        pip install psutil
+        pip install psutil alembic
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
 
     - name: Run performance tests (warnings allowed)
       id: performance-tests
@@ -318,7 +334,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
-        pip install bandit safety
+        pip install bandit safety alembic
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
 
     - name: Run security tests (warnings allowed)
       id: security-tests
@@ -482,7 +503,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
+        pip install alembic
         cd frontend-react && npm ci
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        alembic upgrade head
 
     - name: Start backend server
       run: |
