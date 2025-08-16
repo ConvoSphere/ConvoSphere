@@ -51,58 +51,7 @@
   },
   "auth": {
     "login": "Login",
-    "register": "Register",
-    "backToLogin": "Back to Login",
-    "checkYourEmail": "Check your email",
-    "emailInstructions": "Email Instructions",
-    "emailInstructionsDetail": "We've sent you an email with instructions to reset your password",
-    "emailInvalid": "Invalid email address",
-    "emailPlaceholder": "Enter your email",
-    "emailRequired": "Email is required",
-    "forgotPasswordDescription": "Enter your email address and we'll send you a link to reset your password",
-    "forgotPasswordTitle": "Forgot Password?",
-    "login.button": "Sign In",
-    "login.failed": "Login failed",
-    "login.forgot_password": "Forgot Password?",
-    "login.forgot_password_message": "Enter your email to reset your password",
-    "login.link": "Already have an account? Sign in",
-    "login.password": "Password",
-    "login.password_min_length": "Password must be at least 8 characters",
-    "login.password_placeholder": "Enter your password",
-    "login.password_required": "Password is required",
-    "login.subtitle2": "Welcome back! Please enter your details",
-    "login.title": "Sign in to your account",
-    "login.username": "Username or Email",
-    "login.username_placeholder": "Enter your username or email",
-    "login.username_required": "Username or email is required",
-    "password": "Password",
-    "passwordChanged": "Password changed successfully",
-    "passwordChangedDescription": "Your password has been changed successfully",
-    "passwordChangedTitle": "Password Changed",
-    "passwordConfirm": "Confirm Password",
-    "passwordConfirmPlaceholder": "Confirm your password",
-    "passwordConfirmRequired": "Please confirm your password",
-    "passwordMismatch": "Passwords do not match",
-    "passwordPlaceholder": "Enter your password",
-    "passwordRequired": "Password is required",
-    "passwordReset": "Password Reset",
-    "passwordResetDescription": "Enter your new password below",
-    "passwordResetTitle": "Reset Password",
-    "register.button": "Create Account",
-    "register.failed": "Registration failed",
-    "register.link": "Don't have an account? Sign up",
-    "register.subtitle": "Create your account",
-    "register.title": "Sign up for free",
-    "resetPassword": "Reset Password",
-    "resetPasswordDescription": "Enter your email address and we'll send you a link to reset your password",
-    "resetPasswordTitle": "Forgot Password?",
-    "signOut": "Sign Out",
-    "signOutConfirm": "Are you sure you want to sign out?",
-    "signOutDescription": "You will be signed out of your account",
-    "signOutTitle": "Sign Out",
-    "username": "Username",
-    "usernamePlaceholder": "Enter your username",
-    "usernameRequired": "Username is required"
+    "register": "Register"
   },
   "errors": {
     "unknown": "An unknown error occurred",
@@ -148,7 +97,6 @@
     "delete": "Delete",
     "view_all": "View all notifications"
   },
-
   "chat.title": "Chat",
   "chat.send": "Send",
   "chat.placeholder": "Type your message...",
@@ -181,143 +129,82 @@
   "knowledge.title": "Knowledge Base",
   "knowledge.upload": "Upload Document",
   "assistants": {
-    "title": "Assistants",
-    "add_new": "Add New Assistant",
-    "add_title": "Create New Assistant",
-    "add_failed": "Failed to add assistant",
-    "added_success": "Assistant added successfully",
-    "delete_confirm": "Are you sure you want to delete this assistant?",
-    "delete_failed": "Failed to delete assistant",
-    "deleted_success": "Assistant deleted successfully",
-    "activated": "Assistant activated",
-    "deactivated": "Assistant deactivated",
-    "default_set_success": "Default assistant set successfully",
-    "default_set_failed": "Failed to set default assistant",
-    "all_templates": "All Templates",
-    "create_custom_template": "Create Custom Template",
-    "customize_template": "Customize Template",
-    "examples": "Examples",
-    "preview_template": "Preview Template",
-    "personality": "Personality",
-    "loading_templates": "Loading templates...",
-    "error_loading_templates": "Failed to load templates",
-    "no_templates_found": "No templates found",
-    "no_templates_in_category": "No templates in this category",
-    "actions": {
-      "activate": "Activate",
-      "deactivate": "Deactivate",
-      "edit": "Edit",
-      "delete": "Delete",
-      "set_default": "Set as Default",
-      "default_set": "Set as Default"
+    "edit_title": "Edit Assistant",
+    "form": {
+      "description": "Description",
+      "description_placeholder": "Enter assistant description...",
+      "instructions": "Instructions",
+      "instructions_placeholder": "Enter assistant instructions...",
+      "model": "Model",
+      "model_placeholder": "Select AI model...",
+      "name": "Name",
+      "name_placeholder": "Enter assistant name...",
+      "name_required": "Name is required",
+      "personality": "Personality",
+      "personality_placeholder": "Describe the assistant's personality...",
+      "temperature": "Temperature",
+      "temperature_placeholder": "0.7"
+    },
+    "list": {
+      "empty": "No assistants found",
+      "empty_description": "Create your first assistant to get started",
+      "loading": "Loading assistants...",
+      "search": "Search assistants..."
+    },
+    "templates": {
+      "business": "Business",
+      "creative": "Creative",
+      "educational": "Educational",
+      "technical": "Technical"
     }
   },
   "knowledge.upload.title": "Upload Documents",
   "home": {
-    "quick_start": "Quick Start",
-    "select_assistant": "Select an Assistant",
-    "start_chat": "Start Chat",
-    "initial_message": "Type your message to begin...",
-    "message_placeholder": "Enter your message...",
-    "message_required": "Message is required",
-    "assistant_placeholder": "Choose an assistant...",
-    "assistant_required": "Assistant selection is required",
-    "error_loading_assistants": "Failed to load assistants",
-    "error_starting_chat": "Failed to start chat"
+    "start_chat_button": "Start Chat",
+    "subtitle": "Your AI-powered conversation platform",
+    "view_recent_conversations": "View Recent Conversations",
+    "welcome": "Welcome to ConvoSphere"
   },
   "performance": {
-    "alert_settings": "Alert Settings",
-    "alerts": {
-      "title": "Performance Alerts",
-      "no_alerts": "No alerts",
-      "no_alerts_description": "All systems are running normally",
-      "actions": "Actions",
-      "acknowledge": "Acknowledge",
-      "severity": {
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High"
-      },
-      "timestamp": "Timestamp"
+    "heap_used": "Heap Used",
+    "labels": {
+      "active": "Active",
+      "active_loads": "Active Loads",
+      "entries": "Entries",
+      "hit_rate": "Hit Rate",
+      "loaded": "Loaded",
+      "quality": "Quality",
+      "queue": "Queue",
+      "size": "Size"
     },
-    "cache_performance": "Cache Performance",
-    "title": "Model Performance Monitoring",
-    "select_model": "Select Model",
-    "refresh": "Refresh",
-    "alert_settings": "Alert Settings",
-    "auto_refresh": {
-      "on": "Auto",
-      "off": "Manual"
-    },
-    "time_ranges": {
-      "1h": "1 Hour",
-      "6h": "6 Hours",
-      "24h": "24 Hours",
-      "7d": "7 Days",
-      "30d": "30 Days"
-    },
-    "stats": {
-      "response_time": "Response Time",
-      "success_rate": "Success Rate",
-      "error_rate": "Error Rate",
-      "cost_per_1k": "Cost per 1k"
-    },
-    "charts": {
-      "response_time": "Response Time Trend",
-      "success_rate": "Success Rate Trend",
-      "requests_per_minute": "Requests per Minute",
-      "cost_trend": "Cost Trend"
-    },
-    "alerts": {
-      "title": "Title",
-      "no_alerts": "No Alerts",
-      "no_alerts_description": "All systems are functioning normally",
-      "type": "Type",
-      "severity": {
-        "high": "High",
-        "medium": "Medium",
-        "low": "Low"
-      },
-      "timestamp": "Timestamp",
-      "actions": "Actions",
-      "acknowledge": "Acknowledge",
-      "view": "View",
-      "types": {
-        "error": "Error",
-        "warning": "Warning",
-        "info": "Info"
-      }
-    },
-    "no_model_selected": "No model selected",
-    "select_model_to_view": "Select a model to view performance data"
+    "monitoring": {
+      "cpu_usage": "CPU Usage",
+      "memory_usage": "Memory Usage",
+      "network_io": "Network I/O",
+      "response_time": "Response Time"
+    }
   },
   "overview": {
-    "admin_dashboard": "Admin Dashboard",
-    "admin_section": "Admin Section",
-    "performance": "Performance",
-    "error_loading_stats": "Failed to load statistics",
-    "admin": {
-      "total_users": "Total Users",
-      "system_load": "System Load",
-      "uptime": "Uptime"
+    "quick_actions": {
+      "manage_assistants": "Manage Assistants",
+      "start_chat": "Start Chat",
+      "title": "Quick Actions",
+      "upload_document": "Upload Document"
     },
-    "health": {
-      "healthy": "Healthy",
-      "warning": "Warning",
-      "error": "Error"
+    "recent_activity": {
+      "conversations": "Recent Conversations",
+      "documents": "Recent Documents",
+      "title": "Recent Activity"
+    },
+    "statistics": {
+      "active_users": "Active Users",
+      "total_conversations": "Total Conversations",
+      "total_documents": "Total Documents"
     }
   },
   "dashboard": {
-    "add_first_widget": "Add your first widget",
-    "drop_widgets_here": "Drop widgets here",
-    "edit_mode": "Edit Mode",
-    "edit_mode_active": "Edit mode is active",
-    "edit_mode_description": "Drag and drop widgets to customize your dashboard",
-    "exit_edit_mode": "Exit Edit Mode",
-    "no_widgets": "No widgets yet",
-    "no_widgets_description": "Add widgets to get started",
-    "refresh": "Refresh",
-    "settings": "Settings"
+    "subtitle": "Your AI Assistant Dashboard",
+    "title": "Dashboard"
   },
   "knowledge.search": "Search documents...",
   "knowledge.upload_success": "Document uploaded successfully",
@@ -361,100 +248,24 @@
   "notifications.error": "Error",
   "notifications.warning": "Warning",
   "notifications.info": "Information",
-  "auth": {
-    "login": {
-      "title": "Login",
-      "subtitle2": "Welcome back. Please sign in to continue.",
-      "button": "Login",
-      "username": "Username",
-      "username_placeholder": "Enter your username",
-      "username_required": "Username is required",
-      "username_min_length": "Username must be at least 3 characters",
-      "password": "Password",
-      "password_placeholder": "Enter your password",
-      "password_required": "Password is required",
-      "password_min_length": "Password must be at least 6 characters",
-      "link": "Back to login",
-      "forgot_password": "Forgot password?",
-      "forgot_password_message": "Please contact support or use the password reset function (not yet implemented).",
-      "success": "Login successful",
-      "failed": "Login failed"
-    },
-    "register": {
-      "title": "Register",
-      "subtitle": "Create a new account",
-      "button": "Register",
-      "email": "Email",
-      "email_placeholder": "Enter your email",
-      "email_required": "Email is required",
-      "email_invalid": "Please enter a valid email",
-      "confirm_email": "Confirm Email",
-      "confirm_email_placeholder": "Re-enter your email",
-      "confirm_email_required": "Please confirm your email",
-      "email_mismatch": "Email addresses do not match",
-      "link": "Don't have an account? Register now",
-      "success": "Registration successful",
-      "failed": "Registration failed"
-    },
-    "logout": "Logout",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "forgotPassword": "Forgot Password?",
-    "resetPassword": "Reset Password",
-    "rememberMe": "Remember Me",
-    "loginSuccess": "Login successful",
-    "loginError": "Login failed",
-    "registerSuccess": "Registration successful",
-    "registerError": "Registration failed",
-    "logoutSuccess": "Logout successful",
-    "logoutError": "Logout failed",
-    "passwordResetSent": "Password reset email sent",
-    "passwordResetError": "Password reset failed",
-    "passwordResetSuccess": "Password reset successful",
-    "checkYourEmail": "Check Your Email",
-    "passwordResetEmailSent": "We've sent you an email with a link to reset your password.",
-    "emailInstructions": "Email Instructions",
-    "emailInstructionsDetail": "Please check your inbox and click the link in the email to reset your password. The link is valid for 60 minutes.",
-    "backToLogin": "Back to Login",
-    "tryDifferentEmail": "Try Different Email",
-    "forgotPasswordDescription": "Enter your email address and we'll send you a link to reset your password.",
-    "emailRequired": "Email is required",
-    "emailInvalid": "Please enter a valid email address",
-    "emailPlaceholder": "your.email@example.com",
-    "sendResetEmail": "Send Reset Email",
-    "newPassword": "New Password",
-    "newPasswordPlaceholder": "Your new password",
-    "confirmPasswordPlaceholder": "Confirm your new password",
-    "confirmPasswordRequired": "Password confirmation is required",
-    "passwordRequired": "Password is required",
-    "passwordMinLength": "Password must be at least 8 characters long",
-    "resetPasswordDescription": "Enter your new password.",
-    "validatingToken": "Validating token...",
-    "invalidToken": "Invalid Token",
-    "tokenExpiredOrInvalid": "Token expired or invalid",
-    "tokenExpiredOrInvalidDescription": "The password reset token has expired or is invalid. Please request a new token.",
-    "requestNewToken": "Request New Token",
-    "passwordResetSuccessDescription": "Your password has been successfully reset. You can now log in with your new password.",
-    "invalidCredentials": "Invalid email or password",
-    "emailAlreadyExists": "Email already exists",
-    "passwordMismatch": "Passwords do not match",
-    "weakPassword": "Password is too weak",
-    "invalidEmail": "Invalid email address",
-    "requiredField": "This field is required",
-    "minLength": "Minimum length is {{min}} characters",
-    "maxLength": "Maximum length is {{max}} characters",
-    "passwordRequirements": "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character",
-    "termsAndConditions": "I agree to the Terms and Conditions",
-    "privacyPolicy": "I agree to the Privacy Policy",
-    "termsRequired": "You must agree to the Terms and Conditions",
-    "privacyRequired": "You must agree to the Privacy Policy"
-  },
   "navigation": {
+    "about": "About",
+    "activate": "Activate",
+    "admin": "Admin",
+    "api_docs": "API Documentation",
+    "changelog": "Changelog",
+    "contact": "Contact",
     "dashboard": "Dashboard",
+    "help": "Help",
+    "home": "Home",
+    "integrations": "Integrations",
+    "logout": "Logout",
+    "mcp_tools": "MCP Tools",
     "overview": "Overview",
-    "user": "User",
-    "mcp_tools": "MCP Tools"
+    "profile": "Profile",
+    "settings": "Settings",
+    "support": "Support",
+    "user": "User"
   },
   "system": {
     "title": "System Status & Performance",
@@ -475,12 +286,22 @@
     }
   },
   "sso": {
-    "title": "Single Sign-On",
-    "help": {
-      "configure_env": "Configure Environment Variables",
-      "enable_disable": "Enable/Disable SSO",
-      "test_login": "Test SSO Login",
+    "actions": {
+      "edit_config": "Edit Configuration",
+      "test_login": "Test Login",
       "view_config": "View Configuration"
+    },
+    "providers": {
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "okta": "Okta",
+      "onelogin": "OneLogin"
+    },
+    "status": {
+      "active": "Active",
+      "configured": "Configured",
+      "disabled": "Disabled",
+      "testing": "Testing"
     }
   },
   "intelligence": {
@@ -714,122 +535,166 @@
     "backup": "Backup"
   },
   "ai_models": {
-    "title": "AI Models",
-    "add_model": "Add Model",
-    "add_failed": "Failed to add model",
-    "added_success": "Model added successfully",
-    "delete_failed": "Failed to delete model",
-    "deleted_success": "Model deleted successfully",
-    "edit_model": "Edit Model",
-    "analytics": "Analytics",
-    "analytics_coming_soon": "Analytics coming soon",
-    "columns": {
-      "name": "Name",
+    "form": {
+      "active": "Active",
+      "capabilities": "Capabilities",
+      "capabilities_placeholder": "Enter model capabilities...",
+      "cost_per_1k": "Cost per 1K tokens",
+      "cost_per_1k_placeholder": "0.00",
+      "description": "Description",
+      "description_placeholder": "Enter model description...",
+      "max_tokens": "Max Tokens",
+      "max_tokens_placeholder": "4096",
+      "model_name": "Model Name",
+      "model_name_placeholder": "Enter model name...",
+      "model_name_required": "Model name is required",
+      "provider": "Provider",
+      "provider_placeholder": "Select provider...",
       "status": "Status",
-      "performance": "Performance",
-      "cost": "Cost",
-      "usage": "Usage",
-      "actions": "Actions"
+      "temperature": "Temperature",
+      "temperature_placeholder": "0.7",
+      "usage_count": "Usage Count",
+      "usage_count_placeholder": "0"
     },
-    "actions": {
-      "activate": "Activate",
-      "deactivate": "Deactivate",
-      "edit": "Edit",
-      "delete": "Delete",
-      "test": "Test"
+    "list": {
+      "empty": "No AI models found",
+      "empty_description": "Create your first AI model to get started",
+      "loading": "Loading AI models...",
+      "search": "Search models..."
+    },
+    "details": {
+      "capabilities": "Capabilities",
+      "cost_analysis": "Cost Analysis",
+      "performance_metrics": "Performance Metrics",
+      "usage_statistics": "Usage Statistics"
     }
   },
   "model_selector": {
-    "title": "Model Selector",
-    "compare": "Compare",
-    "compare_models": "Compare Models",
     "comparison": {
-      "model": "Model",
-      "capabilities": "Capabilities",
+      "success_rate": "Success Rate",
+      "title": "Model Comparison",
+      "total_requests": "Total Requests"
+    },
+    "filters": {
+      "cost_range": "Cost Range",
+      "model_type": "Model Type",
       "performance": "Performance",
-      "cost": "Cost",
-      "cost_per_1k": "Cost per 1K tokens",
-      "max_tokens": "Max Tokens",
-      "response_time": "Response Time",
-      "last_used": "Last Used"
+      "provider": "Provider"
+    },
+    "sort": {
+      "by_cost": "Sort by Cost",
+      "by_performance": "Sort by Performance",
+      "by_usage": "Sort by Usage"
     }
   },
   "test": {
-    "title": "Testing",
-    "create_suite": "Create Test Suite",
-    "edit_suite": "Edit Test Suite",
-    "delete_suite": "Delete Test Suite",
-    "clear_results": "Clear Results",
-    "ab_test": "A/B Test",
-    "ab_test_success": "A/B test completed successfully",
-    "ab_test_failed": "A/B test failed",
-    "ab_test.models": "Test Models",
-    "ab_test.quality": "Quality Assessment",
-    "ab_test.response_time": "Response Time",
-    "ab_test.cost": "Cost Analysis"
+    "export_results": "Export Results",
+    "form": {
+      "custom_prompt": "Custom Prompt",
+      "include_metrics": "Include Metrics",
+      "test_name": "Test Name",
+      "test_name_placeholder": "Enter test name..."
+    },
+    "results": {
+      "accuracy": "Accuracy",
+      "confidence": "Confidence",
+      "execution_time": "Execution Time",
+      "score": "Score"
+    },
+    "types": {
+      "automated": "Automated",
+      "manual": "Manual",
+      "performance": "Performance",
+      "regression": "Regression"
+    }
   },
   "configuration": {
-    "title": "Configuration",
-    "default": "Default",
-    "fallback_created": "Fallback configuration created",
-    "fallback_updated": "Fallback configuration updated",
-    "categories": {
-      "general": "General",
-      "creative": "Creative",
-      "analysis": "Analysis",
-      "programming": "Programming"
+    "fallbacks": {
+      "actions": "Actions",
+      "conditions": "Conditions",
+      "create": "Create Fallback",
+      "delete": "Delete Fallback",
+      "edit": "Edit Fallback",
+      "enabled": "Enabled",
+      "name": "Fallback Name",
+      "priority": "Priority",
+      "response": "Response",
+      "triggers": "Triggers"
     },
-    "complexity": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High"
+    "general": {
+      "auto_save": "Auto Save",
+      "default_language": "Default Language",
+      "notifications": "Notifications",
+      "theme": "Theme",
+      "timezone": "Timezone"
+    },
+    "security": {
+      "2fa_enabled": "2FA Enabled",
+      "password_expiry": "Password Expiry",
+      "session_timeout": "Session Timeout",
+      "trusted_devices": "Trusted Devices"
     }
   },
   "favorites": {
-    "title": "Favorites",
-    "add_favorite": "Add to Favorites",
-    "add_first": "Add your first favorite",
-    "add_failed": "Failed to add to favorites",
-    "added_success": "Added to favorites successfully",
-    "all_categories": "All Categories",
     "categories": {
-      "analysis": "Analysis",
-      "analysis_desc": "Data analysis and insights",
-      "creative": "Creative",
-      "creative_desc": "Creative content generation",
-      "efficiency": "Efficiency",
-      "efficiency_desc": "Workflow optimization"
-    }
+      "productivity": "Productivity",
+      "productivity_desc": "Tools to boost your productivity",
+      "research": "Research",
+      "research_desc": "Research and analysis tools",
+      "writing": "Writing",
+      "writing_desc": "Writing and content creation"
+    },
+    "created_success": "Added to favorites successfully",
+    "remove_favorite": "Remove from Favorites",
+    "removed_success": "Removed from favorites successfully"
   },
   "analytics": {
-    "title": "Analytics",
-    "cost_analysis": "Cost Analysis",
-    "detailed_usage": "Detailed Usage",
-    "export": "Export",
-    "export_csv": "Export as CSV",
-    "export_excel": "Export as Excel",
-    "export_data": "Export Data",
-    "charts": {
-      "cost_trend": "Cost Trend",
-      "model_distribution": "Model Distribution",
-      "performance_comparison": "Performance Comparison",
-      "requests_trend": "Requests Trend"
+    "export_failed": "Export failed",
+    "export_json": "Export as JSON",
+    "export_success": "Export successful",
+    "export_xml": "Export as XML",
+    "filter": {
+      "all_time": "All Time",
+      "custom_range": "Custom Range",
+      "last_30_days": "Last 30 Days",
+      "last_7_days": "Last 7 Days",
+      "last_90_days": "Last 90 Days",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "metrics": {
+      "average_response_time": "Average Response Time",
+      "cost_per_request": "Cost per Request",
+      "requests_per_day": "Requests per Day",
+      "success_rate": "Success Rate",
+      "total_cost": "Total Cost",
+      "total_requests": "Total Requests"
+    },
+    "reports": {
+      "daily_summary": "Daily Summary",
+      "monthly_report": "Monthly Report",
+      "performance_report": "Performance Report",
+      "usage_report": "Usage Report"
     }
   },
   "widgets": {
-    "add_widget": "Add Widget",
-    "active_users": "Active Users",
-    "activity_widget": "Activity Widget",
-    "activity_widget_description": "Shows recent activity",
-    "assistants": "Assistants",
     "chart": {
-      "24h": "24h",
-      "7d": "7d",
-      "30d": "30d",
-      "90d": "90d",
-      "bar": "Bar Chart",
-      "line": "Line Chart",
-      "pie": "Pie Chart"
+      "conversations": "Conversations",
+      "doughnut": "Doughnut Chart",
+      "messages": "Messages",
+      "pie": "Pie Chart",
+      "users": "Users"
+    },
+    "data": {
+      "loading": "Loading data...",
+      "no_data": "No data available",
+      "refresh": "Refresh data"
+    },
+    "settings": {
+      "auto_refresh": "Auto Refresh",
+      "chart_type": "Chart Type",
+      "data_source": "Data Source",
+      "update_interval": "Update Interval"
     }
   },
   "validation": {
@@ -837,5 +702,26 @@
     "email": "Please enter a valid email address",
     "password": "Password must be at least 8 characters long",
     "confirm_password": "Passwords do not match"
+  },
+  "chat": {
+    "autoScroll": "Auto-scroll",
+    "blockUser": "Block User",
+    "blockedUsers": "Blocked Users",
+    "clearHistory": "Clear History",
+    "copyMessage": "Copy Message",
+    "deleteMessage": "Delete Message",
+    "editMessage": "Edit Message",
+    "exportChat": "Export Chat",
+    "feedback": "Feedback",
+    "markAsRead": "Mark as Read",
+    "muteNotifications": "Mute Notifications",
+    "pinMessage": "Pin Message",
+    "reportIssue": "Report Issue",
+    "searchMessages": "Search Messages",
+    "shareChat": "Share Chat",
+    "showTimestamp": "Show Timestamp",
+    "translateMessage": "Translate Message",
+    "unblockUser": "Unblock User",
+    "voiceMessage": "Voice Message"
   }
 }

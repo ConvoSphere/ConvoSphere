@@ -155,12 +155,22 @@
     }
   },
   "sso": {
-    "title": "Authentification unique",
-    "help": {
-      "configure_env": "Configurer les variables d'environnement",
-      "enable_disable": "Activer/Désactiver SSO",
-      "test_login": "Tester la connexion SSO",
+    "actions": {
+      "edit_config": "Modifier la configuration",
+      "test_login": "Tester la connexion",
       "view_config": "Voir la configuration"
+    },
+    "providers": {
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "okta": "Okta",
+      "onelogin": "OneLogin"
+    },
+    "status": {
+      "active": "Actif",
+      "configured": "Configuré",
+      "disabled": "Désactivé",
+      "testing": "Test"
     }
   },
   "intelligence": {
@@ -394,76 +404,79 @@
     "backup": "Sauvegarde"
   },
   "performance": {
-    "title": "Moniteur de Performance",
-    "web_vitals": "Web Vitals",
-    "memory_usage": "Utilisation de la Mémoire",
-    "heap_used": "Tas Utilisé",
-    "cache_performance": "Performance du Cache",
-    "network_status": "État du Réseau",
-    "workers": "Workers",
-    "resources": "Ressources",
-    "last_update": "Dernière mise à jour",
-    "online": "En ligne",
-    "offline": "Hors ligne",
-    "metrics": {
-      "fcp": "FCP",
-      "lcp": "LCP",
-      "cls": "CLS"
+    "alert_settings": "Paramètres d'alerte",
+    "alerts": {
+      "title": "Alertes de performance",
+      "no_alerts": "Aucune alerte",
+      "no_alerts_description": "Tous les systèmes fonctionnent normalement",
+      "actions": "Actions",
+      "acknowledge": "Reconnaître",
+      "severity": {
+        "high": "Élevé",
+        "medium": "Moyen",
+        "low": "Faible"
+      },
+      "timestamp": "Horodatage"
     },
+    "cache_performance": "Performance du cache",
+    "heap_used": "Heap utilisé",
     "labels": {
+      "active": "Actif",
+      "active_loads": "Charges actives",
       "entries": "Entrées",
-      "size": "Taille",
       "hit_rate": "Taux de réussite",
-      "status": "Statut",
+      "loaded": "Chargé",
       "quality": "Qualité",
       "queue": "File d'attente",
-      "active": "Actif",
-      "tasks": "Tâches",
-      "loaded": "Chargé",
-      "active_loads": "Chargements actifs"
+      "size": "Taille"
+    },
+    "monitoring": {
+      "cpu_usage": "Utilisation CPU",
+      "memory_usage": "Utilisation mémoire",
+      "network_io": "E/S réseau",
+      "response_time": "Temps de réponse"
     }
   },
   "auth": {
-    "login": "Connexion",
-    "register": "S'inscrire",
-    "logout": "Déconnexion",
-    "email": "E-mail",
+    "backToLogin": "Retour à la connexion",
+    "checkYourEmail": "Vérifiez votre email",
+    "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
+    "confirmPasswordRequired": "La confirmation du mot de passe est requise",
+    "emailInstructions": "Instructions par email",
+    "emailInstructionsDetail": "Nous vous avons envoyé un email avec les instructions pour réinitialiser votre mot de passe",
+    "emailInvalid": "Adresse email invalide",
+    "emailPlaceholder": "Entrez votre email",
+    "emailRequired": "L'email est requis",
+    "forgotPasswordDescription": "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe",
+    "forgotPasswordTitle": "Mot de passe oublié?",
     "password": "Mot de passe",
-    "confirmPassword": "Confirmer le Mot de Passe",
-    "forgotPassword": "Mot de Passe Oublié?",
-    "resetPassword": "Réinitialiser le Mot de Passe",
-    "rememberMe": "Se Souvenir de Moi",
-    "loginSuccess": "Connexion réussie",
-    "loginError": "Échec de la connexion",
-    "registerSuccess": "Inscription réussie",
-    "registerError": "Échec de l'inscription",
-    "logoutSuccess": "Déconnexion réussie",
-    "logoutError": "Échec de la déconnexion",
-    "passwordResetSent": "E-mail de réinitialisation envoyé",
-    "passwordResetError": "Échec de la réinitialisation du mot de passe",
-    "passwordResetSuccess": "Réinitialisation du mot de passe réussie",
-    "invalidCredentials": "E-mail ou mot de passe invalide",
-    "emailAlreadyExists": "L'e-mail existe déjà",
+    "passwordChanged": "Mot de passe modifié avec succès",
+    "passwordChangedDescription": "Votre mot de passe a été modifié avec succès",
+    "passwordChangedTitle": "Mot de passe modifié",
+    "passwordConfirm": "Confirmer le mot de passe",
+    "passwordConfirmPlaceholder": "Confirmez votre mot de passe",
+    "passwordConfirmRequired": "Veuillez confirmer votre mot de passe",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
-    "weakPassword": "Le mot de passe est trop faible",
-    "invalidEmail": "Adresse e-mail invalide",
-    "requiredField": "Ce champ est requis",
-    "minLength": "La longueur minimale est de {{min}} caractères",
-    "maxLength": "La longueur maximale est de {{max}} caractères",
-    "passwordRequirements": "Le mot de passe doit contenir au moins 8 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux",
-    "termsAndConditions": "J'accepte les Termes et Conditions",
-    "privacyPolicy": "J'accepte la Politique de Confidentialité",
-    "termsRequired": "Vous devez accepter les Termes et Conditions",
-    "privacyRequired": "Vous devez accepter la Politique de Confidentialité"
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "passwordRequired": "Le mot de passe est requis",
+    "passwordReset": "Réinitialiser le mot de passe",
+    "passwordResetDescription": "Entrez votre nouveau mot de passe ci-dessous",
+    "passwordResetTitle": "Réinitialiser le mot de passe",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resetPasswordDescription": "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe",
+    "resetPasswordTitle": "Mot de passe oublié?",
+    "signOut": "Se déconnecter",
+    "signOutConfirm": "Êtes-vous sûr de vouloir vous déconnecter?",
+    "signOutDescription": "Vous serez déconnecté de votre compte",
+    "signOutTitle": "Se déconnecter",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Entrez votre nom d'utilisateur",
+    "usernameRequired": "Le nom d'utilisateur est requis"
   },
   "errors": {
-    "network": "Erreur réseau",
-    "server": "Erreur serveur",
-    "unauthorized": "Non autorisé",
-    "forbidden": "Accès refusé",
-    "not_found": "Non trouvé",
-    "validation": "Erreur de validation",
-    "unknown": "Une erreur inattendue s'est produite"
+    "connection_error": "Erreur de connexion. Veuillez réessayer",
+    "service_unavailable": "Service temporairement indisponible",
+    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
   },
   "validation": {
     "required": "Ce champ est requis",
@@ -472,68 +485,35 @@
     "confirm_password": "Les mots de passe ne correspondent pas"
   },
   "navigation": {
+    "about": "À propos",
+    "activate": "Activer",
+    "admin": "Administration",
+    "api_docs": "Documentation API",
+    "changelog": "Journal des modifications",
+    "contact": "Contact",
     "dashboard": "Tableau de bord",
+    "help": "Aide",
+    "home": "Accueil",
+    "integrations": "Intégrations",
+    "logout": "Déconnexion",
+    "mcp_tools": "Outils MCP",
     "overview": "Vue d'ensemble",
-    "user": "Utilisateur",
-    "mcp_tools": "Outils MCP"
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "support": "Support",
+    "user": "Utilisateur"
   },
   "assistants": {
-    "title": "Assistants",
-    "subtitle": "Gérez vos assistants IA et leurs configurations",
-    "tabs": {
-      "all": "Tous",
-      "active": "Actifs",
-      "inactive": "Inactifs"
-    },
-    "add_new": "Nouvel Assistant",
-    "add_title": "Ajouter un Assistant",
-    "edit_title": "Modifier l'Assistant",
-    "status": {
-      "active": "Actif",
-      "inactive": "Inactif",
-      "default": "Par défaut"
-    },
-    "actions": {
-      "edit": "Modifier",
-      "delete": "Supprimer",
-      "activate": "Activer",
-      "deactivate": "Désactiver",
-      "set_default": "Définir par défaut",
-      "default_set": "Est par défaut"
-    },
-    "form": {
-      "name": "Nom",
-      "name_placeholder": "Entrez le nom de l'assistant",
-      "name_required": "Le nom est requis",
-      "description": "Description",
-      "description_placeholder": "Entrez la description",
-      "personality": "Personnalité",
-      "personality_placeholder": "Décrire la personnalité",
-      "model": "Modèle",
-      "model_placeholder": "Sélectionner le modèle",
-      "temperature": "Température",
-      "temperature_placeholder": "Créativité (0.0 - 2.0)",
-      "is_active": "Actif",
-      "knowledge_bases": "Bases de Connaissances",
-      "tools": "Outils",
-      "tags": "Tags"
-    },
-    "knowledge_bases": "Bases de Connaissances",
-    "tools": "Outils",
-    "usage_count": "Compteur d'Utilisation",
-    "added_success": "Assistant ajouté avec succès",
-    "add_failed": "Échec de l'ajout de l'assistant",
-    "updated_success": "Assistant mis à jour avec succès",
-    "update_failed": "Échec de la mise à jour de l'assistant",
-    "deleted_success": "Assistant supprimé avec succès",
-    "delete_failed": "Échec de la suppression de l'assistant",
-    "delete_confirm": "Êtes-vous sûr de vouloir supprimer cet assistant?",
-    "activated": "Assistant activé",
-    "deactivated": "Assistant désactivé",
-    "toggle_failed": "Échec du changement de statut",
-    "load_failed": "Échec du chargement des assistants",
-    "default_set_success": "Assistant par défaut défini avec succès",
-    "default_set_failed": "Échec de la définition de l'assistant par défaut"
+    "all_templates": "Tous les modèles",
+    "create_custom_template": "Créer un modèle personnalisé",
+    "customize_template": "Personnaliser le modèle",
+    "examples": "Exemples",
+    "preview_template": "Aperçu du modèle",
+    "personality": "Personnalité",
+    "loading_templates": "Chargement des modèles...",
+    "error_loading_templates": "Erreur lors du chargement des modèles",
+    "no_templates_found": "Aucun modèle trouvé",
+    "no_templates_in_category": "Aucun modèle dans cette catégorie"
   },
   "chat": {
     "title": "Chat",
@@ -630,122 +610,227 @@
     }
   },
   "ai_models": {
-    "title": "Modèles IA",
-    "add_model": "Ajouter un modèle",
-    "add_failed": "Échec de l'ajout du modèle",
-    "added_success": "Modèle ajouté avec succès",
-    "delete_failed": "Échec de la suppression du modèle",
-    "deleted_success": "Modèle supprimé avec succès",
-    "edit_model": "Modifier le modèle",
-    "analytics": "Analyses",
-    "analytics_coming_soon": "Analyses bientôt disponibles",
-    "columns": {
-      "name": "Nom",
+    "form": {
+      "active": "Actif",
+      "capabilities": "Capacités",
+      "capabilities_placeholder": "Entrez les capacités du modèle...",
+      "cost_per_1k": "Coût par 1K tokens",
+      "cost_per_1k_placeholder": "0.00",
+      "description": "Description",
+      "description_placeholder": "Entrez la description du modèle...",
+      "max_tokens": "Tokens max",
+      "max_tokens_placeholder": "4096",
+      "model_name": "Nom du modèle",
+      "model_name_placeholder": "Entrez le nom du modèle...",
+      "model_name_required": "Le nom du modèle est requis",
+      "provider": "Fournisseur",
+      "provider_placeholder": "Sélectionnez un fournisseur...",
       "status": "Statut",
-      "performance": "Performance",
-      "cost": "Coût",
-      "usage": "Utilisation",
-      "actions": "Actions"
+      "temperature": "Température",
+      "temperature_placeholder": "0.7",
+      "usage_count": "Nombre d'utilisations",
+      "usage_count_placeholder": "0"
     },
-    "actions": {
-      "activate": "Activer",
-      "deactivate": "Désactiver",
-      "edit": "Modifier",
-      "delete": "Supprimer",
-      "test": "Tester"
+    "list": {
+      "empty": "Aucun modèle IA trouvé",
+      "empty_description": "Créez votre premier modèle IA pour commencer",
+      "loading": "Chargement des modèles IA...",
+      "search": "Rechercher des modèles..."
+    },
+    "details": {
+      "capabilities": "Capacités",
+      "cost_analysis": "Analyse des coûts",
+      "performance_metrics": "Métriques de performance",
+      "usage_statistics": "Statistiques d'utilisation"
     }
   },
   "analytics": {
-    "title": "Analyses",
-    "cost_analysis": "Analyse des coûts",
-    "detailed_usage": "Utilisation détaillée",
-    "export": "Exporter",
-    "export_csv": "Exporter en CSV",
-    "export_excel": "Exporter en Excel",
-    "export_data": "Exporter les données",
-    "charts": {
-      "cost_trend": "Tendance des coûts",
-      "model_distribution": "Distribution des modèles",
-      "performance_comparison": "Comparaison des performances",
-      "requests_trend": "Tendance des requêtes"
+    "export_failed": "Échec de l'exportation",
+    "export_json": "Exporter en JSON",
+    "export_success": "Exportation réussie",
+    "export_xml": "Exporter en XML",
+    "filter": {
+      "all_time": "Tout le temps",
+      "custom_range": "Plage personnalisée",
+      "last_30_days": "30 derniers jours",
+      "last_7_days": "7 derniers jours",
+      "last_90_days": "90 derniers jours",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier"
+    },
+    "metrics": {
+      "average_response_time": "Temps de réponse moyen",
+      "cost_per_request": "Coût par requête",
+      "requests_per_day": "Requêtes par jour",
+      "success_rate": "Taux de réussite",
+      "total_cost": "Coût total",
+      "total_requests": "Total des requêtes"
+    },
+    "reports": {
+      "daily_summary": "Résumé quotidien",
+      "monthly_report": "Rapport mensuel",
+      "performance_report": "Rapport de performance",
+      "usage_report": "Rapport d'utilisation"
     }
   },
   "configuration": {
-    "title": "Configuration",
-    "default": "Par défaut",
-    "fallback_created": "Configuration de secours créée",
-    "fallback_updated": "Configuration de secours mise à jour",
-    "categories": {
-      "general": "Général",
-      "creative": "Créatif",
-      "analysis": "Analyse",
-      "programming": "Programmation"
+    "fallbacks": {
+      "actions": "Actions",
+      "conditions": "Conditions",
+      "create": "Créer un fallback",
+      "delete": "Supprimer le fallback",
+      "edit": "Modifier le fallback",
+      "enabled": "Activé",
+      "name": "Nom du fallback",
+      "priority": "Priorité",
+      "response": "Réponse",
+      "triggers": "Déclencheurs"
     },
-    "complexity": {
-      "low": "Faible",
-      "medium": "Moyen",
-      "high": "Élevé"
+    "general": {
+      "auto_save": "Sauvegarde automatique",
+      "default_language": "Langue par défaut",
+      "notifications": "Notifications",
+      "theme": "Thème",
+      "timezone": "Fuseau horaire"
+    },
+    "security": {
+      "2fa_enabled": "2FA activé",
+      "password_expiry": "Expiration du mot de passe",
+      "session_timeout": "Expiration de session",
+      "trusted_devices": "Appareils de confiance"
     }
   },
   "favorites": {
-    "title": "Favoris",
-    "add_favorite": "Ajouter aux favoris",
-    "add_first": "Ajouter votre premier favori",
-    "add_failed": "Échec de l'ajout aux favoris",
-    "added_success": "Ajouté aux favoris avec succès",
-    "all_categories": "Toutes les catégories",
     "categories": {
-      "analysis": "Analyse",
-      "analysis_desc": "Analyse des données et insights",
-      "creative": "Créatif",
-      "creative_desc": "Génération de contenu créatif",
-      "efficiency": "Efficacité",
-      "efficiency_desc": "Optimisation des workflows"
-    }
+      "productivity": "Productivité",
+      "productivity_desc": "Outils pour améliorer votre productivité",
+      "research": "Recherche",
+      "research_desc": "Outils de recherche et d'analyse",
+      "writing": "Écriture",
+      "writing_desc": "Outils d'écriture et de création de contenu"
+    },
+    "created_success": "Ajouté aux favoris avec succès",
+    "remove_favorite": "Retirer des favoris",
+    "removed_success": "Retiré des favoris avec succès"
   },
   "model_selector": {
-    "title": "Sélecteur de modèles",
-    "compare": "Comparer",
-    "compare_models": "Comparer les modèles",
     "comparison": {
-      "model": "Modèle",
-      "capabilities": "Capacités",
+      "success_rate": "Taux de réussite",
+      "title": "Comparaison de modèles",
+      "total_requests": "Total des requêtes"
+    },
+    "filters": {
+      "cost_range": "Fourchette de coût",
+      "model_type": "Type de modèle",
       "performance": "Performance",
-      "cost": "Coût",
-      "cost_per_1k": "Coût par 1K tokens",
-      "max_tokens": "Tokens max",
-      "response_time": "Temps de réponse",
-      "last_used": "Dernière utilisation"
+      "provider": "Fournisseur"
+    },
+    "sort": {
+      "by_cost": "Trier par coût",
+      "by_performance": "Trier par performance",
+      "by_usage": "Trier par utilisation"
     }
   },
   "test": {
-    "title": "Tests",
-    "create_suite": "Créer une suite de tests",
-    "edit_suite": "Modifier la suite de tests",
-    "delete_suite": "Supprimer la suite de tests",
-    "clear_results": "Effacer les résultats",
-    "ab_test": "Test A/B",
-    "ab_test_success": "Test A/B terminé avec succès",
-    "ab_test_failed": "Test A/B échoué",
-    "ab_test.models": "Modèles de test",
-    "ab_test.quality": "Évaluation de la qualité",
-    "ab_test.response_time": "Temps de réponse",
-    "ab_test.cost": "Analyse des coûts"
+    "export_results": "Exporter les résultats",
+    "form": {
+      "custom_prompt": "Invite personnalisée",
+      "include_metrics": "Inclure les métriques",
+      "test_name": "Nom du test",
+      "test_name_placeholder": "Entrez le nom du test..."
+    },
+    "results": {
+      "accuracy": "Précision",
+      "confidence": "Confiance",
+      "execution_time": "Temps d'exécution",
+      "score": "Score"
+    },
+    "types": {
+      "automated": "Automatisé",
+      "manual": "Manuel",
+      "performance": "Performance",
+      "regression": "Régression"
+    }
   },
   "widgets": {
-    "add_widget": "Ajouter un widget",
-    "active_users": "Utilisateurs actifs",
-    "activity_widget": "Widget d'activité",
-    "activity_widget_description": "Affiche l'activité récente",
-    "assistants": "Assistants",
     "chart": {
-      "24h": "24h",
-      "7d": "7j",
-      "30d": "30j",
-      "90d": "90j",
-      "bar": "Graphique en barres",
-      "line": "Graphique linéaire",
-      "pie": "Graphique circulaire"
+      "conversations": "Conversations",
+      "doughnut": "Graphique en anneau",
+      "messages": "Messages",
+      "pie": "Graphique circulaire",
+      "users": "Utilisateurs"
+    },
+    "data": {
+      "loading": "Chargement des données...",
+      "no_data": "Aucune donnée disponible",
+      "refresh": "Actualiser les données"
+    },
+    "settings": {
+      "auto_refresh": "Actualisation automatique",
+      "chart_type": "Type de graphique",
+      "data_source": "Source de données",
+      "update_interval": "Intervalle de mise à jour"
+    }
+  },
+  "dashboard": {
+    "add_first_widget": "Ajoutez votre premier widget",
+    "drop_widgets_here": "Déposez les widgets ici",
+    "edit_mode": "Mode édition",
+    "edit_mode_active": "Le mode édition est actif",
+    "edit_mode_description": "Glissez et déposez des widgets pour personnaliser votre tableau de bord",
+    "exit_edit_mode": "Quitter le mode édition",
+    "no_widgets": "Aucun widget pour le moment",
+    "no_widgets_description": "Ajoutez des widgets pour commencer",
+    "refresh": "Actualiser",
+    "settings": "Paramètres"
+  },
+  "home": {
+    "assistant_placeholder": "Choisissez un assistant...",
+    "assistant_required": "La sélection d'un assistant est requise",
+    "error_loading_assistants": "Erreur lors du chargement des assistants",
+    "error_starting_chat": "Erreur lors du démarrage du chat",
+    "initial_message": "Tapez votre message pour commencer...",
+    "message_placeholder": "Entrez votre message...",
+    "message_required": "Le message est requis",
+    "quick_start": "Démarrage rapide",
+    "select_assistant": "Sélectionnez un assistant",
+    "start_chat": "Démarrer le chat"
+  },
+  "notifications": {
+    "delete": "Supprimer",
+    "important": "Important",
+    "mark_all_read": "Marquer tout comme lu",
+    "mark_as_read": "Marquer comme lu",
+    "settings": "Paramètres",
+    "title": "Notifications",
+    "view_all": "Voir toutes les notifications"
+  },
+  "overview": {
+    "admin": {
+      "system_load": "Charge système",
+      "total_users": "Total des utilisateurs",
+      "uptime": "Temps de fonctionnement"
+    },
+    "health": {
+      "healthy": "Sain",
+      "warning": "Avertissement",
+      "error": "Erreur"
+    },
+    "quick_actions": {
+      "manage_assistants": "Gérer les assistants",
+      "start_chat": "Démarrer le chat",
+      "title": "Actions rapides",
+      "upload_document": "Télécharger un document"
+    },
+    "recent_activity": {
+      "conversations": "Conversations récentes",
+      "documents": "Documents récents",
+      "title": "Activité récente"
+    },
+    "statistics": {
+      "active_users": "Utilisateurs actifs",
+      "total_conversations": "Total des conversations",
+      "total_documents": "Total des documents"
     }
   }
 }
