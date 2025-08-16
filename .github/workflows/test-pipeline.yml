@@ -511,33 +511,49 @@ jobs:
         cd backend
         alembic upgrade head
 
-    - name: Start backend server
-      run: |
-        cd backend
-        python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
-        sleep 10
+      - name: Start backend server
+        run: |
+          cd backend
+          python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
 
-    - name: Start frontend server
-      run: |
-        cd frontend-react
-        npm run dev &
-        sleep 15
+      - name: Start frontend server
+        run: |
+          cd frontend-react
+          npm run dev &
+          sleep 15
 
-    - name: Run E2E tests (warnings allowed)
-      id: e2e-tests
-      run: |
-        cd backend
-        pytest tests/e2e/ -v -m e2e --tb=short -q > test-output.txt 2>&1 || true
-        
-        # Check if there are actual test failures (not just warnings)
-        if grep -q "FAILED\|ERROR" test-output.txt; then
-          echo "Found test failures in E2E tests"
-          cat test-output.txt
-          exit 1
-        else
-          echo "E2E tests passed (warnings are allowed)"
-          cat test-output.txt
-        fi
+      - name: Run Cypress E2E (warnings allowed)
+        id: cypress-e2e
+        run: |
+          cd frontend-react
+          npm run cypress:run > cypress-output.txt 2>&1 || true
+
+          # Check if there are actual test failures (not just warnings)
+          if grep -q "\(Tests Failed\|AssertionError\|CypressError\)" cypress-output.txt; then
+            echo "Found test failures in Cypress E2E"
+            cat cypress-output.txt
+            exit 1
+          else
+            echo "Cypress E2E passed (warnings are allowed)"
+            cat cypress-output.txt
+          fi
+      
+      - name: Run E2E tests (warnings allowed)
+        id: e2e-tests
+        run: |
+          cd backend
+          pytest tests/e2e/ -v -m e2e --tb=short -q > test-output.txt 2>&1 || true
+          
+          # Check if there are actual test failures (not just warnings)
+          if grep -q "FAILED\|ERROR" test-output.txt; then
+            echo "Found test failures in E2E tests"
+            cat test-output.txt
+            exit 1
+          else
+            echo "E2E tests passed (warnings are allowed)"
+            cat test-output.txt
+          fi
 
   # Test Coverage Report
   coverage-report:

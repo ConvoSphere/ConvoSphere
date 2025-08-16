@@ -178,7 +178,6 @@ addopts = [
     "--verbose",
     "--tb=short",
     "--cov=backend",
-    "--cov=frontend",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
