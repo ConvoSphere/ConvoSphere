@@ -339,7 +339,7 @@ def create_application() -> FastAPI:
             "isProduction": not get_settings().debug,
             "enableDebug": get_settings().debug,
             "wsEndpoints": {
-                "chat": "/api/v1/chat/ws/",
+                "chat": "/api/v1/ws",
                 "notifications": "/api/v1/ws/notifications",
             },
             "apiEndpoints": {
@@ -372,6 +372,47 @@ def create_application() -> FastAPI:
 
     # Add routes
     app.include_router(api_router, prefix="/api/v1")
+
+    # Provide system status endpoint expected by frontend
+    @app.get("/api/v1/system/status")
+    async def system_status_adapter() -> dict[str, Any]:
+        """Adapter endpoint that returns the system status in the expected path.
+        Reuses the same information as admin system status, without exposing admin-only details.
+        """
+        try:
+            # Basic system status similar to users.admin/system-status
+            # CPU/MEM and component health
+            from backend.app.core.database import get_db_info
+            from backend.app.core.redis_client import get_redis_info
+            from backend.app.core.weaviate_client import get_weaviate_info
+            import psutil
+
+            cpu = psutil.cpu_percent(interval=0.2)
+            ram = psutil.virtual_memory()._asdict()
+            db_info = get_db_info()
+            redis_info = await get_redis_info()
+            weaviate_info = get_weaviate_info()
+
+            # Determine status
+            status_value = "healthy"
+            return {
+                "system": {"cpu_percent": cpu, "ram": ram},
+                "database": {"healthy": True, "info": db_info},
+                "redis": {"healthy": True, "info": redis_info},
+                "weaviate": {"healthy": True, "info": weaviate_info},
+                "tracing": {"trace_id": None},
+                "status": status_value,
+            }
+        except Exception as e:
+            logger.error(f"System status adapter error: {e}")
+            return {
+                "system": {"cpu_percent": 0, "ram": {}},
+                "database": {"healthy": False, "info": {}},
+                "redis": {"healthy": False, "info": {}},
+                "weaviate": {"healthy": False, "info": {}},
+                "tracing": {"trace_id": None},
+                "status": "degraded",
+            }
 
     # Root endpoint
     @app.get("/")

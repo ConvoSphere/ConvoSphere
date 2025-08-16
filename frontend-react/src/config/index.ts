@@ -22,7 +22,7 @@ export const config = {
   isProduction: typeof import.meta !== "undefined" && !!import.meta.env?.PROD,
   enableDebug: getEnvVar("VITE_ENABLE_DEBUG", "false") === "true",
   wsEndpoints: {
-    chat: "/api/v1/chat/ws/",
+    chat: "/api/v1/ws",
     notifications: "/api/v1/ws/notifications",
     realtime: "/api/v1/ws",
   },
