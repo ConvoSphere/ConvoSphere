@@ -24,8 +24,16 @@ from backend.app.core.security import (
     security,
     verify_password,
 )
+from backend.app.core.csrf_protection import generate_csrf_token
 from backend.app.models.user import User
+from backend.app.models.audit_extended import (
+    ExtendedAuditLog,
+    AuditEventType as ExtendedType,
+    AuditEventCategory,
+    AuditSeverity as ExtendedSeverity,
+)
 from backend.app.services.audit_service import audit_service
+from backend.app.core.security_hardening import sso_security_validator as validator
 
 router = APIRouter()
 
@@ -38,6 +46,20 @@ from backend.app.api.v1.endpoints.auth.models import (
     UserLogin,
     UserResponse,
 )
+
+
+@router.get("/csrf-token")
+async def get_csrf_token(request: Request) -> dict[str, str | int]:
+    """Issue a CSRF token for client sessions.
+
+    Uses optional X-Session-ID to scope the token.
+    """
+    session_id = request.headers.get("X-Session-ID") or str(uuid.uuid4())
+    token = generate_csrf_token(session_id=session_id)
+    # Expose expiration info for clients/tests
+    settings = get_settings()
+    expires_in = getattr(settings.security_features, "csrf_token_expire_minutes", 30) * 60
+    return {"csrf_token": token, "expires_in": expires_in, "session_id": session_id}
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -298,11 +320,8 @@ async def forgot_password(
     request_data: PasswordResetRequest, db: Session = Depends(get_db)
 ):
     """Initiate password reset flow; always return success message."""
-    from backend.app.core.security_hardening import SSOSecurityValidator
     from backend.app.services.email_service import email_service
     from backend.app.services.token_service import token_service
-
-    validator = SSOSecurityValidator()
 
     client_ip = "unknown"
 
@@ -331,8 +350,37 @@ async def forgot_password(
                     reset_url,
                     language=get_settings().default_language,
                 )
+                # Extended audit (compat for tests) - write with current session
+                db.add(
+                    ExtendedAuditLog(
+                        event_id=str(uuid.uuid4()),
+                        event_type=ExtendedType.PASSWORD_RESET_REQUESTED,
+                        event_category=AuditEventCategory.AUTHENTICATION,
+                        severity=ExtendedSeverity.INFO,
+                        user_id=user.id,
+                        action="security_event",
+                        action_result="success",
+                        context={"email": user.email, "success": True},
+                    )
+                )
+                db.commit()
             except Exception:
                 pass
+        else:
+            # Still create a generic audit log for request attempts
+            db.add(
+                ExtendedAuditLog(
+                    event_id=str(uuid.uuid4()),
+                    event_type=ExtendedType.PASSWORD_RESET_REQUESTED,
+                    event_category=AuditEventCategory.AUTHENTICATION,
+                    severity=ExtendedSeverity.INFO,
+                    user_id=None,
+                    action="security_event",
+                    action_result="failure",
+                    context={"email": email_lc, "success": False, "reason": "user_not_found"},
+                )
+            )
+            db.commit()
     except OperationalError:
         # DB not initialized in some test contexts; still return generic success
         pass
@@ -356,6 +404,20 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
         user = None
 
     if not user:
+        # Extended audit fail (write with current session)
+        db.add(
+            ExtendedAuditLog(
+                event_id=str(uuid.uuid4()),
+                event_type=ExtendedType.PASSWORD_RESET_FAILED,
+                event_category=AuditEventCategory.AUTHENTICATION,
+                severity=ExtendedSeverity.WARNING,
+                user_id=None,
+                action="security_event",
+                action_result="failure",
+                context={"reason": "invalid_or_expired_token"},
+            )
+        )
+        db.commit()
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     if not data.new_password or len(data.new_password) < 6:
@@ -364,6 +426,21 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
     user.hashed_password = get_password_hash(data.new_password)
     user.password_reset_token = None
     user.password_reset_expires_at = None
+    db.commit()
+
+    # Extended audit success (write with current session)
+    db.add(
+        ExtendedAuditLog(
+            event_id=str(uuid.uuid4()),
+            event_type=ExtendedType.PASSWORD_RESET_COMPLETED,
+            event_category=AuditEventCategory.AUTHENTICATION,
+            severity=ExtendedSeverity.INFO,
+            user_id=user.id,
+            action="security_event",
+            action_result="success",
+            context={"email": user.email},
+        )
+    )
     db.commit()
 
     return {"status": "success", "message": "Password reset successfully"}

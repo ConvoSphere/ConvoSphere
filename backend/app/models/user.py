@@ -222,6 +222,11 @@ class User(Base):
         """Check if user is active."""
         return self.status == UserStatus.ACTIVE
 
+    @is_active.setter
+    def is_active(self, value: bool) -> None:
+        """Allow setting active status via boolean for compatibility with tests."""
+        self.status = UserStatus.ACTIVE if value else UserStatus.INACTIVE
+
     @property
     def is_locked(self) -> bool:
         """Check if user account is locked."""
