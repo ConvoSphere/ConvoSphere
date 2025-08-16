@@ -199,6 +199,16 @@ REACT_APP_WS_URL=ws://localhost:8000/ws
 
 > **🔧 For complete configuration options, see our [Configuration Guide](docs/configuration.md)**
 
+## 📊 Observability (OpenTelemetry)
+
+To export traces/metrics, set environment variables (defaults shown):
+
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: http://localhost:4317
+- `OTEL_EXPORTER_OTLP_INSECURE`: true
+- `OTEL_SERVICE_NAME`: convosphere-backend
+
+Traces for FastAPI, SQLAlchemy, Redis, HTTP clients are instrumented automatically when the endpoint is set.
+
 ## 🚀 Deployment
 
 ```bash

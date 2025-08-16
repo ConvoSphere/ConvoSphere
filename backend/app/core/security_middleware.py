@@ -65,6 +65,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Allow connections only to self and configured backend/ws endpoints
         backend_http = settings.backend_url
         backend_ws = settings.ws_url
+        frontend_http = getattr(settings, "frontend_url", "http://localhost:5173")
         # Fonts and styles (Ant Design) may require inline styles; keep style 'unsafe-inline'
         return (
             "default-src 'self'; "
@@ -72,7 +73,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            f"connect-src 'self' {backend_http} {backend_ws}; "
+            f"connect-src 'self' {backend_http} {backend_ws} {frontend_http}; "
             "worker-src 'self' blob:; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "

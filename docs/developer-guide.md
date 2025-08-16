@@ -260,6 +260,13 @@ async def rate_limit_middleware(request, call_next):
     return await call_next(request)
 ```
 
+### Security: Rate Limiting & CSP
+
+- Redis-backed rate limiting is available via decorators in `backend/app/core/rate_limiting.py`. For auth endpoints use `@rate_limit_auth`.
+- Content Security Policy headers are set in `backend/app/core/security_middleware.py`. `connect-src` is restricted to `backend_url`, `ws_url`, and `frontend_url` from settings.
+
+Configure `backend_url`, `ws_url`, and `frontend_url` in `.env` to match your deployment (development defaults provided).
+
 ## 📊 Monitoring & Logging
 
 ### Logging Configuration

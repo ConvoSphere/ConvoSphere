@@ -56,8 +56,6 @@ help:
 install:
 	@echo "Installing dependencies..."
 	pip install -r requirements.txt
-	pip install -r backend/requirements.txt
-	pip install -r frontend-react/requirements.txt
 	pip install -r docs/requirements-docs.txt
 
 dev:
@@ -66,7 +64,7 @@ dev:
 	@echo "Starting backend..."
 	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 	@echo "Starting frontend..."
-	cd frontend-react && python -m main
+	cd frontend-react && npm run dev
 
 test:
 	@echo "Running tests..."
@@ -97,7 +95,7 @@ code-quality:
 	@echo "3. Import sorting check..."
 	isort --check-only --diff backend/ frontend-react/
 	@echo "4. Type checking..."
-	mypy backend/ frontend-react/ --ignore-missing-imports
+	mypy backend/ --ignore-missing-imports
 	@echo "5. Security check..."
 	bandit -r backend/ frontend-react/ -f json -o bandit-report.json || true
 	@echo "Code quality checks completed!"
@@ -326,7 +324,7 @@ quality-report:
 	bandit -r backend/ frontend-react/ -f txt >> quality-report.txt 2>&1 || true
 	@echo "" >> quality-report.txt
 	@echo "=== Type Checking ===" >> quality-report.txt
-	mypy backend/ frontend-react/ --ignore-missing-imports >> quality-report.txt 2>&1 || true
+	mypy backend/ --ignore-missing-imports >> quality-report.txt 2>&1 || true
 	@echo "Quality report saved to quality-report.txt"
 
 # Performance testing
@@ -337,7 +335,7 @@ performance-test:
 # Coverage report
 coverage-report:
 	@echo "Generating coverage report..."
-	pytest --cov=backend --cov=frontend-react --cov-report=html --cov-report=term-missing
+	pytest --cov=backend --cov-report=html --cov-report=term-missing
 	@echo "Coverage report generated in htmlcov/"
 
 # All checks (for CI/CD)
