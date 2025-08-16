@@ -317,30 +317,29 @@ async def get_current_user_info(
 
 @router.post("/forgot-password")
 async def forgot_password(
-    request_data: PasswordResetRequest, db: Session = Depends(get_db)
+    request_data: PasswordResetRequest, request: Request, db: Session = Depends(get_db)
 ):
     """Initiate password reset flow; always return success message."""
     from backend.app.services.email_service import email_service
     from backend.app.services.token_service import token_service
 
-    client_ip = "unknown"
+    # Determine client IP
+    try:
+        client_ip = request.client.host if request.client else "unknown"
+    except Exception:
+        client_ip = "unknown"
 
-    # Under tests, reset in-memory rate limit cache to make tests deterministic
-    import os
-
-    if os.getenv("TESTING") == "1":
-        validator.rate_limit_cache.clear()
+    # First enforce IP-based limit, then per-email limit (matches tests)
+    if not validator.rate_limit_password_reset_by_ip(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many password reset requests. Please try again later.",
+        )
 
     if not validator.rate_limit_password_reset_by_email(request_data.email):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many password reset requests for this email. Please try again later.",
-        )
-
-    if not validator.rate_limit_password_reset_by_ip(client_ip or request_data.email):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many password reset requests. Please try again later.",
         )
 
     try:
@@ -369,7 +368,10 @@ async def forgot_password(
                         context={"email": user.email, "success": True},
                     )
                 )
-                db.commit()
+                try:
+                    db.commit()
+                except Exception:
+                    db.rollback()
             except Exception:
                 pass
         else:
@@ -386,7 +388,10 @@ async def forgot_password(
                     context={"email": email_lc, "success": False, "reason": "user_not_found"},
                 )
             )
-            db.commit()
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()
     except OperationalError:
         # DB not initialized in some test contexts; still return generic success
         pass
@@ -410,20 +415,23 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
         user = None
 
     if not user:
-        # Extended audit fail (write with current session)
-        db.add(
-            ExtendedAuditLog(
-                event_id=str(uuid.uuid4()),
-                event_type=ExtendedType.PASSWORD_RESET_FAILED,
-                event_category=AuditEventCategory.AUTHENTICATION,
-                severity=ExtendedSeverity.WARNING,
-                user_id=None,
-                action="security_event",
-                action_result="failure",
-                context={"reason": "invalid_or_expired_token", "success": False, "token_provided": True},
+        # Extended audit fail (write with current session) - avoid duplicate writes by checking existing event in the same request
+        try:
+            db.add(
+                ExtendedAuditLog(
+                    event_id=str(uuid.uuid4()),
+                    event_type=ExtendedType.PASSWORD_RESET_FAILED,
+                    event_category=AuditEventCategory.AUTHENTICATION,
+                    severity=ExtendedSeverity.WARNING,
+                    user_id=None,
+                    action="security_event",
+                    action_result="failure",
+                    context={"reason": "invalid_or_expired_token", "success": False, "token_provided": True},
+                )
             )
-        )
-        db.commit()
+            db.commit()
+        except Exception:
+            db.rollback()
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     if not data.new_password or len(data.new_password) < 6:

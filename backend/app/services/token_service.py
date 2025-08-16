@@ -7,7 +7,7 @@ for password reset operations.
 
 import secrets
 import string
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 from loguru import logger
@@ -84,7 +84,10 @@ class TokenService:
         # Check if token has expired
         if (
             user.password_reset_expires_at
-            and user.password_reset_expires_at < utc_now()
+            and (
+                (user.password_reset_expires_at.tzinfo is None and user.password_reset_expires_at.replace(tzinfo=UTC) < utc_now())
+                or (user.password_reset_expires_at.tzinfo is not None and user.password_reset_expires_at < utc_now())
+            )
         ):
             logger.warning(f"Expired password reset token: {token[:8]}...")
             return None if return_user else False
@@ -118,17 +121,22 @@ class TokenService:
         # Generate new token
         token = self.generate_password_reset_token()
 
-        # Set expiration time
-        expires_at = utc_now() + timedelta(minutes=self.token_expire_minutes)
+        # Set expiration time (store as naive UTC for compatibility with tests)
+        expires_at_aware = utc_now() + timedelta(minutes=self.token_expire_minutes)
+        expires_at = expires_at_aware.replace(tzinfo=None)
 
         # Update user with token and expiration
         user.password_reset_token = token
         user.password_reset_expires_at = expires_at
 
-        # Commit changes
-        db.commit()
-        # Store in memory as well
-        self._memory_tokens[token] = (user.id, expires_at)
+        # Commit changes (in tests with SQLite, minimize lock windows)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        # Store in memory as well (store aware for internal checks but naive persisted)
+        self._memory_tokens[token] = (user.id, expires_at_aware)
 
         logger.info(f"Created password reset token for user {user.email}")
         return token
@@ -143,7 +151,11 @@ class TokenService:
         """
         user.password_reset_token = None
         user.password_reset_expires_at = None
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         # Remove from memory store
         to_delete = [t for t, (uid, _) in self._memory_tokens.items() if uid == str(user.id)]
         for t in to_delete:
@@ -165,11 +177,18 @@ class TokenService:
         expired_users = (
             db.query(User)
             .filter(
-                User.password_reset_expires_at < now,
                 User.password_reset_token.isnot(None),
             )
             .all()
         )
+        # Filter in Python to handle tz-aware vs naive safely
+        expired_users = [
+            u for u in expired_users
+            if (u.password_reset_expires_at is not None and (
+                (u.password_reset_expires_at.tzinfo is None and u.password_reset_expires_at.replace(tzinfo=UTC) < now)
+                or (u.password_reset_expires_at.tzinfo is not None and u.password_reset_expires_at < now)
+            ))
+        ]
 
         count = 0
         for user in expired_users:
