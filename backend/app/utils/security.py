@@ -8,7 +8,7 @@ import string
 
 from fastapi import HTTPException, Request, status
 
-from backend.app.core.redis_client import get_redis
+from ..core.redis_client import get_redis
 
 logger = logging.getLogger(__name__)
 

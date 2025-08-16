@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates
-from backend.app.utils.helpers import parse_datetime
+from ..utils.helpers import parse_datetime
 
 from .base import Base
 
@@ -184,13 +184,13 @@ class User(Base):
         secondary=user_group_association,
         back_populates="users",
     )
-    domain_groups = relationship(
-        "DomainGroup",
-        secondary="domain_group_members",
-        primaryjoin="User.id == domain_group_members.c.user_id",
-        secondaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
-        back_populates="members",
-    )
+    # domain_groups = relationship(
+    #     "DomainGroup",
+    #     secondary="domain_group_members",
+    #     primaryjoin="User.id == domain_group_members.c.user_id",
+    #     secondaryjoin="DomainGroup.id == domain_group_members.c.domain_group_id",
+    #     back_populates="members",
+    # )
     # managed_domains = relationship(
     #     "DomainGroup",
     #     secondary="domain_group_managers",
@@ -200,7 +200,7 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user")
     created_tools = relationship("Tool", back_populates="creator")
     audit_logs = relationship("AuditLog", back_populates="user")
-    extended_audit_logs = relationship("ExtendedAuditLog", back_populates="user")
+    # extended_audit_logs = relationship("ExtendedAuditLog", back_populates="user")
     documents = relationship("Document", back_populates="user")
     search_queries = relationship("SearchQuery", back_populates="user")
 
@@ -327,8 +327,8 @@ class User(Base):
             return True
 
         # Check if user is the creator of the assistant
-        from backend.app.core.database import get_db
-        from backend.app.models.assistant import Assistant
+        from ..core.database import get_db
+        from ..assistant import Assistant
 
         db = next(get_db())
         try:
@@ -361,7 +361,7 @@ class User(Base):
             return True
         if self.role == UserRole.MANAGER:
             # Managers can manage users in their groups
-            from backend.app.core.database import get_db
+            from ..core.database import get_db
 
             db = next(get_db())
             try:
