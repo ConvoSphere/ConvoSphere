@@ -16,7 +16,7 @@ import {
   WifiOutlined,
   ClockCircleOutlined,
   ThunderboltOutlined,
-  MemoryOutlined,
+  HddOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { SystemMetrics } from "../../services/monitoring";
@@ -149,7 +149,7 @@ const SystemMetrics: React.FC<SystemMetricsProps> = ({
               <Statistic
                 title={t("monitoring.memory_used")}
                 value={formatBytes(data.memory.used)}
-                prefix={<MemoryOutlined />}
+                prefix={<HddOutlined />}
               />
               <Text type="secondary">
                 {t("monitoring.of")} {formatBytes(data.memory.total)}
@@ -161,7 +161,7 @@ const SystemMetrics: React.FC<SystemMetricsProps> = ({
               <Statistic
                 title={t("monitoring.memory_available")}
                 value={formatBytes(data.memory.available)}
-                prefix={<MemoryOutlined />}
+                prefix={<HddOutlined />}
                 valueStyle={{ color: "#52c41a" }}
               />
             </div>

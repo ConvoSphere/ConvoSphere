@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, Alert, Spinner, Badge } from "./ui";
+import { Button, Card, Alert, Badge } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import { ssoLink, getSSOProviders } from "../services/auth";
 
 interface SSOProvider {
@@ -92,7 +93,7 @@ export const SSOAccountLinking: React.FC<SSOAccountLinkingProps> = ({
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <Spinner size="lg" />
+          <LoadingOutlined style={{ fontSize: '24px' }} />
           <span className="ml-2">Loading SSO providers...</span>
         </div>
       </Card>

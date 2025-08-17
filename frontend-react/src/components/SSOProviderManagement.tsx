@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Card, Alert, Spinner, Badge, Switch, Modal } from "./ui";
+import { Button, Card, Alert, Badge, Switch, Modal } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import { getSSOProviders } from "../services/auth";
 
 interface SSOProvider {
@@ -142,7 +143,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <Spinner size="lg" />
+          <LoadingOutlined style={{ fontSize: '24px' }} />
           <span className="ml-2">{t("sso.loading_providers")}</span>
         </div>
       </Card>
@@ -227,7 +228,7 @@ export const SSOProviderManagement: React.FC<SSOProviderManagementProps> = ({
 
               {updating === provider.id && (
                 <div className="flex items-center justify-center text-sm text-gray-500">
-                  <Spinner size="sm" className="mr-2" />
+                  <LoadingOutlined style={{ fontSize: '16px' }} className="mr-2" />
                   {t("sso.updating")}
                 </div>
               )}

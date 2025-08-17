@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from backend.app.api.v1.endpoints.auth import get_current_active_user  # assuming available
+from backend.app.core.security import get_current_active_user
 from backend.app.models.dashboard import UserDashboard
 from backend.app.models.base import Base
 from backend.app.core.database import get_db  # assuming exists

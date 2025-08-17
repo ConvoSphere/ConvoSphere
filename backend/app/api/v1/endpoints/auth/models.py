@@ -5,6 +5,7 @@ This module contains shared models used across all authentication endpoints.
 """
 
 from pydantic import BaseModel, EmailStr
+from uuid import UUID
 
 
 class UserLogin(BaseModel):
@@ -43,7 +44,7 @@ class TokenResponse(BaseModel):
 class UserResponse(BaseModel):
     """User response."""
 
-    id: str
+    id: UUID
     email: str
     username: str
     first_name: str | None

@@ -110,8 +110,8 @@ def create_refresh_token(
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
     return jwt.encode(
         to_encode,
-        settings.secret_key,
-        algorithm=settings.jwt_algorithm,
+        settings.security.secret_key,
+        algorithm=settings.security.jwt_algorithm,
     )
 
 
