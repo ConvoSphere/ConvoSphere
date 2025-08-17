@@ -121,6 +121,17 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
             isVisible: true,
             isCollapsed: false,
           },
+          {
+            id: "default-system-metrics",
+            type: "systemMetrics",
+            title: t("monitoring.system_metrics"),
+            description: t("monitoring.system_metrics_description"),
+            size: WIDGET_REGISTRY.systemMetrics.defaultSize,
+            position: { x: 0, y: 1 },
+            settings: WIDGET_REGISTRY.systemMetrics.defaultSettings,
+            isVisible: true,
+            isCollapsed: false,
+          },
         ];
         setWidgets(defaultWidgets);
       }
