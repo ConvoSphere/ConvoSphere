@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from backend.app.api.v1.endpoints.auth import get_current_active_user  # assuming available
+from backend.app.models.dashboard import UserDashboard
+from backend.app.models.base import Base
+from backend.app.core.database import get_db  # assuming exists
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -29,18 +33,23 @@ class DashboardStateDTO(BaseModel):
 	widgets: List[WidgetConfig]
 	layout: List[GridPosition]
 
-# Simple in-memory store as fallback (can be replaced by DB service)
-_user_dashboards: Dict[str, DashboardStateDTO] = {}
-
 @router.get("/me/dashboard", response_model=DashboardStateDTO)
-def get_my_dashboard(current_user=Depends(get_current_active_user)):
+def get_my_dashboard(current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
 	user_id = str(current_user.id)
-	if user_id not in _user_dashboards:
+	record = db.query(UserDashboard).filter(UserDashboard.user_id == user_id).first()
+	if not record:
 		return DashboardStateDTO(widgets=[], layout=[])
-	return _user_dashboards[user_id]
+	return DashboardStateDTO(widgets=record.widgets or [], layout=record.layout or [])
 
 @router.put("/me/dashboard")
-def save_my_dashboard(state: DashboardStateDTO, current_user=Depends(get_current_active_user)):
+def save_my_dashboard(state: DashboardStateDTO, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
 	user_id = str(current_user.id)
-	_user_dashboards[user_id] = state
+	record = db.query(UserDashboard).filter(UserDashboard.user_id == user_id).first()
+	if not record:
+		record = UserDashboard(user_id=user_id, widgets=state.widgets, layout=[lp.dict() for lp in state.layout])
+		db.add(record)
+	else:
+		record.widgets = [w.dict() for w in state.widgets]
+		record.layout = [lp.dict() for lp in state.layout]
+	db.commit()
 	return {"status": "ok"}

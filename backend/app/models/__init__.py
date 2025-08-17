@@ -13,23 +13,25 @@ from .tool import Tool, ToolCategory
 from .user import User, UserRole
 from .knowledge_settings import KnowledgeSettings  # noqa: F401
 from .ai_model import AIModel  # noqa: F401
+from .dashboard import UserDashboard  # noqa: F401
 
 __all__ = [
-    "Base",
-    "User",
-    "UserRole",
-    "Assistant",
-    "AssistantStatus",
-    "Conversation",
-    "Message",
-    "MessageRole",
-    "MessageType",
-    "Tool",
-    "ToolCategory",
-    "AuditLog",
-    "AuditEventType",
-    "AuditSeverity",
-    "Document",
-    "DocumentChunk",
-    "SearchQuery",
+	"Base",
+	"User",
+	"UserRole",
+	"Assistant",
+	"AssistantStatus",
+	"Conversation",
+	"Message",
+	"MessageRole",
+	"MessageType",
+	"Tool",
+	"ToolCategory",
+	"AuditLog",
+	"AuditEventType",
+	"AuditSeverity",
+	"Document",
+	"DocumentChunk",
+	"SearchQuery",
+	"UserDashboard",
 ]
