@@ -182,7 +182,7 @@ async def login(
         access_token=access_token,
         refresh_token=refresh_token,
         token_type="bearer",
-        expires_in=get_settings().jwt_access_token_expire_minutes * 60,
+        expires_in=get_settings().security.jwt_access_token_expire_minutes * 60,
     )
 
 
@@ -237,7 +237,7 @@ async def refresh_token(
             access_token=access_token,
             refresh_token=new_refresh_token,
             token_type="bearer",
-            expires_in=get_settings().jwt_access_token_expire_minutes * 60,
+            expires_in=get_settings().security.jwt_access_token_expire_minutes * 60,
         )
 
     except Exception as e:
@@ -311,6 +311,9 @@ async def get_current_user_info(
             detail="User not found",
         )
 
+    # Safely handle role value
+    role_value = user.role.value if user.role else "user"
+    
     return UserResponse(
         id=user.id,
         email=user.email,
@@ -318,9 +321,9 @@ async def get_current_user_info(
         first_name=user.first_name,
         last_name=user.last_name,
         display_name=user.display_name,
-        role=user.role.value,
+        role=role_value,
         is_active=user.is_active,
-        is_verified=user.email_verified,
+        is_verified=user.is_verified,
     )
 
 

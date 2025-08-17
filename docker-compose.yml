@@ -36,6 +36,8 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost:8081}
       - CSRF_PROTECTION_ENABLED=${CSRF_PROTECTION_ENABLED:-true}
       - CSRF_TOKEN_EXPIRE_MINUTES=${CSRF_TOKEN_EXPIRE_MINUTES:-30}
+    env_file:
+      - .env
     volumes:
       - ./uploads:/app/uploads
       - ./backend/logs:/app/logs

@@ -74,14 +74,14 @@ def create_access_token(
         expire = datetime.now(UTC) + expires_delta
     else:
         expire = datetime.now(UTC) + timedelta(
-            minutes=settings.jwt_access_token_expire_minutes,
+            minutes=settings.security.jwt_access_token_expire_minutes,
         )
 
     to_encode = {"exp": expire, "sub": str(subject)}
     return jwt.encode(
         to_encode,
-        settings.secret_key,
-        algorithm=settings.jwt_algorithm,
+        settings.security.secret_key,
+        algorithm=settings.security.jwt_algorithm,
     )
 
 
@@ -104,7 +104,7 @@ def create_refresh_token(
         expire = datetime.now(UTC) + expires_delta
     else:
         expire = datetime.now(UTC) + timedelta(
-            days=settings.jwt_refresh_token_expire_days,
+            days=settings.security.jwt_refresh_token_expire_days,
         )
 
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
@@ -142,8 +142,8 @@ async def verify_token(token: str) -> str | None:
         settings = get_settings()
         payload = jwt.decode(
             token,
-            settings.secret_key,
-            algorithms=[settings.jwt_algorithm],
+            settings.security.secret_key,
+            algorithms=[settings.security.jwt_algorithm],
         )
         subject: str = payload.get("sub")
         if subject is None:

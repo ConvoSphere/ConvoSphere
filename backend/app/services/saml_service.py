@@ -475,7 +475,7 @@ class SAMLService:
         access_token = create_access_token(
             data={"sub": str(user.id)},
             expires_delta=datetime.timedelta(
-                minutes=self.settings.jwt_access_token_expire_minutes,
+                minutes=self.settings.security.jwt_access_token_expire_minutes,
             ),
         )
 
@@ -486,7 +486,7 @@ class SAMLService:
             "access_token": access_token,
             "refresh_token": refresh_token,
             "token_type": "bearer",
-            "expires_in": self.settings.jwt_access_token_expire_minutes * 60,
+            "expires_in": self.settings.security.jwt_access_token_expire_minutes * 60,
         }
 
 
@@ -504,4 +504,5 @@ class MockSamlSettings:
         self.sso_saml_acs_url = None
         self.sso_saml_cert_file = None
         self.sso_saml_key_file = None
-        self.jwt_access_token_expire_minutes = 30
+        # This is a mock, so we'll keep it simple for testing
+        pass

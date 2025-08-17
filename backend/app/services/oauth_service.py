@@ -337,7 +337,7 @@ class OAuthService:
         access_token = create_access_token(
             data={"sub": str(user.id)},
             expires_delta=datetime.timedelta(
-                minutes=self.settings.jwt_access_token_expire_minutes,
+                minutes=self.settings.security.jwt_access_token_expire_minutes,
             ),
         )
 
@@ -348,7 +348,7 @@ class OAuthService:
             "access_token": access_token,
             "refresh_token": refresh_token,
             "token_type": "bearer",
-            "expires_in": self.settings.jwt_access_token_expire_minutes * 60,
+            "expires_in": self.settings.security.jwt_access_token_expire_minutes * 60,
         }
 
 

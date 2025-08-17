@@ -11,7 +11,7 @@ import time
 from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any
 
 from loguru import logger
@@ -29,7 +29,7 @@ class ConnectionMetrics:
     total_response_time: float = 0.0
     average_response_time: float = 0.0
     last_used: datetime | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 class ConnectionPool:
@@ -79,7 +79,7 @@ class ConnectionPool:
     async def _remove_idle_connections(self):
         """Remove idle connections."""
         async with self._lock:
-            current_time = datetime.utcnow()
+            current_time = datetime.now(UTC)
             idle_connections = []
 
             for conn_id in self._connections:
@@ -120,7 +120,7 @@ class ConnectionPool:
             if conn_id in self._connections:
                 conn = self._connections[conn_id]
                 if await self._is_connection_valid(conn):
-                    self._metrics[conn_id].last_used = datetime.utcnow()
+                    self._metrics[conn_id].last_used = datetime.now(UTC)
                     return conn
 
             # Check if we can create a new connection
@@ -179,7 +179,7 @@ class ConnectionPool:
                 metrics.average_response_time = (
                     metrics.total_response_time / metrics.total_requests
                 )
-                metrics.last_used = datetime.utcnow()
+                metrics.last_used = datetime.now(UTC)
 
                 return result
 

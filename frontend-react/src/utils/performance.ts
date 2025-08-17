@@ -271,6 +271,21 @@ class PerformanceMonitor {
   }
 
   /**
+   * Log error for performance monitoring
+   */
+  logError(message: string, errorData?: any): void {
+    console.error(`[Performance Monitor] ${message}:`, errorData);
+    
+    // Add error to custom metrics for tracking
+    this.addCustomMetric("error_count", (this.metrics.customMetrics["error_count"] || 0) + 1);
+    
+    // Store error details for debugging
+    if (errorData) {
+      this.addCustomMetric(`error_${Date.now()}`, JSON.stringify(errorData).length);
+    }
+  }
+
+  /**
    * Generate performance recommendations
    */
   private generateRecommendations(metrics: PerformanceMetrics): string[] {
