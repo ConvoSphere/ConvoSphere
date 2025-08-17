@@ -6,15 +6,23 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { useSystemStats } from "../hooks/useSystemStats";
+import { useAuthStore } from "../../../store/authStore";
+import { useReportingStore } from "../../../store/reportingStore";
 import ModernCard from "../../../components/ModernCard";
 import ModernButton from "../../../components/ModernButton";
 
 const SystemStats: React.FC = () => {
   const { t } = useTranslation();
-  const { systemStats, loading, refreshStats } = useSystemStats();
+  const { user } = useAuthStore();
+  const { systemSummary, loading, fetchSystemSummary } = useReportingStore();
 
-  if (!systemStats) {
+  React.useEffect(() => {
+    if (user?.token) {
+      fetchSystemSummary(user.token as any);
+    }
+  }, [user?.token, fetchSystemSummary]);
+
+  if (!systemSummary) {
     return <div>Loading...</div>;
   }
 
@@ -37,7 +45,7 @@ const SystemStats: React.FC = () => {
         extra={
           <ModernButton
             icon={<ReloadOutlined />}
-            onClick={refreshStats}
+            onClick={() => user?.token && fetchSystemSummary(user.token as any)}
             loading={loading}
           >
             {t("common.refresh")}
@@ -50,7 +58,7 @@ const SystemStats: React.FC = () => {
             <Card size="small">
               <Statistic
                 title={t("admin.stats.total_users")}
-                value={systemStats.totalUsers}
+                value={systemSummary.totalUsers}
                 prefix={<UserOutlined />}
                 valueStyle={{ color: "#1890ff" }}
               />
@@ -61,7 +69,7 @@ const SystemStats: React.FC = () => {
             <Card size="small">
               <Statistic
                 title={t("admin.stats.active_users")}
-                value={systemStats.activeUsers}
+                value={systemSummary.activeUsers}
                 prefix={<UserOutlined />}
                 valueStyle={{ color: "#52c41a" }}
               />
@@ -72,7 +80,7 @@ const SystemStats: React.FC = () => {
             <Card size="small">
               <Statistic
                 title={t("admin.stats.total_conversations")}
-                value={systemStats.totalConversations}
+                value={systemSummary.totalConversations}
                 prefix={<MessageOutlined />}
                 valueStyle={{ color: "#722ed1" }}
               />
@@ -83,7 +91,7 @@ const SystemStats: React.FC = () => {
             <Card size="small">
               <Statistic
                 title={t("admin.stats.total_messages")}
-                value={systemStats.totalMessages}
+                value={systemSummary.totalMessages}
                 prefix={<MessageOutlined />}
                 valueStyle={{ color: "#13c2c2" }}
               />
@@ -103,11 +111,11 @@ const SystemStats: React.FC = () => {
                     }}
                   >
                     <span>{t("admin.stats.cpu_usage")}</span>
-                    <span>{systemStats.cpuUsage.toFixed(1)}%</span>
+                    <span>{systemSummary.performance.cpuUsage.toFixed(1)}%</span>
                   </div>
                   <Progress
-                    percent={systemStats.cpuUsage}
-                    strokeColor={getUsageColor(systemStats.cpuUsage)}
+                    percent={systemSummary.performance.cpuUsage}
+strokeColor={getUsageColor(systemSummary.performance.cpuUsage)}
                     showInfo={false}
                   />
                 </div>
@@ -121,11 +129,11 @@ const SystemStats: React.FC = () => {
                     }}
                   >
                     <span>{t("admin.stats.memory_usage")}</span>
-                    <span>{systemStats.memoryUsage.toFixed(1)}%</span>
+                    <span>{systemSummary.performance.memoryUsage.toFixed(1)}%</span>
                   </div>
                   <Progress
-                    percent={systemStats.memoryUsage}
-                    strokeColor={getUsageColor(systemStats.memoryUsage)}
+                    percent={systemSummary.performance.memoryUsage}
+strokeColor={getUsageColor(systemSummary.performance.memoryUsage)}
                     showInfo={false}
                   />
                 </div>
@@ -139,11 +147,11 @@ const SystemStats: React.FC = () => {
                     }}
                   >
                     <span>{t("admin.stats.disk_usage")}</span>
-                    <span>{systemStats.diskUsage.toFixed(1)}%</span>
+                    <span>{/* Disk usage is not available in systemSummary; keep placeholder or integrate monitoring */}</span>
                   </div>
                   <Progress
-                    percent={systemStats.diskUsage}
-                    strokeColor={getUsageColor(systemStats.diskUsage)}
+                    percent={0}
+                    strokeColor={getUsageColor(0)}
                     showInfo={false}
                   />
                 </div>
@@ -160,7 +168,7 @@ const SystemStats: React.FC = () => {
                 >
                   <span>{t("admin.stats.system_uptime")}</span>
                   <span style={{ fontWeight: "bold" }}>
-                    {formatUptime(systemStats.systemUptime)}
+                    {formatUptime(systemSummary.performance.uptime)}
                   </span>
                 </div>
 
@@ -169,7 +177,7 @@ const SystemStats: React.FC = () => {
                 >
                   <span>{t("admin.stats.total_documents")}</span>
                   <span style={{ fontWeight: "bold" }}>
-                    {systemStats.totalDocuments.toLocaleString()}
+                    {systemSummary.totalDocuments.toLocaleString()}
                   </span>
                 </div>
 
@@ -178,7 +186,7 @@ const SystemStats: React.FC = () => {
                 >
                   <span>{t("admin.stats.uptime_percentage")}</span>
                   <span style={{ fontWeight: "bold", color: "#52c41a" }}>
-                    {systemStats.systemUptime.toFixed(2)}%
+                    {systemSummary.performance.uptime.toFixed(2)}%
                   </span>
                 </div>
               </Space>
