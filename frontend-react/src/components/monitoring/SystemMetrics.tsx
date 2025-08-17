@@ -16,6 +16,7 @@ import {
   WifiOutlined,
   ClockCircleOutlined,
   ThunderboltOutlined,
+  MemoryOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { SystemMetrics } from "../../services/monitoring";
