@@ -14,13 +14,14 @@ import ModernButton from "../../../components/ModernButton";
 const SystemStats: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { systemSummary, loading, fetchSystemSummary } = useReportingStore();
+  const { systemSummary, systemMetrics, loading, fetchSystemSummary, fetchSystemMetrics } = useReportingStore();
 
   React.useEffect(() => {
     if (user?.token) {
       fetchSystemSummary(user.token as any);
+      fetchSystemMetrics();
     }
-  }, [user?.token, fetchSystemSummary]);
+  }, [user?.token, fetchSystemSummary, fetchSystemMetrics]);
 
   if (!systemSummary) {
     return <div>Loading...</div>;
@@ -147,11 +148,11 @@ strokeColor={getUsageColor(systemSummary.performance.memoryUsage)}
                     }}
                   >
                     <span>{t("admin.stats.disk_usage")}</span>
-                    <span>{/* Disk usage is not available in systemSummary; keep placeholder or integrate monitoring */}</span>
+                    <span>{systemMetrics ? `${systemMetrics.disk.usage.toFixed(1)}%` : "-"}</span>
                   </div>
                   <Progress
-                    percent={0}
-                    strokeColor={getUsageColor(0)}
+                    percent={systemMetrics ? systemMetrics.disk.usage : 0}
+                    strokeColor={getUsageColor(systemMetrics ? systemMetrics.disk.usage : 0)}
                     showInfo={false}
                   />
                 </div>
@@ -168,7 +169,7 @@ strokeColor={getUsageColor(systemSummary.performance.memoryUsage)}
                 >
                   <span>{t("admin.stats.system_uptime")}</span>
                   <span style={{ fontWeight: "bold" }}>
-                    {formatUptime(systemSummary.performance.uptime)}
+                    {systemMetrics ? formatUptime(systemMetrics.uptime) : "-"}
                   </span>
                 </div>
 

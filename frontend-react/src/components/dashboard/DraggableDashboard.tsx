@@ -147,31 +147,36 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
   };
 
   const saveDashboard = async () => {
-  try {
-    localStorage.setItem("dashboard-widgets", JSON.stringify(widgets));
-    localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
-  } catch (error) {
-    console.error("Error saving dashboard:", error);
-  }
-}; // TODO: replace with server-side persistence via dashboardService
+    try {
+      localStorage.setItem("dashboard-widgets", JSON.stringify(widgets));
+      localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
+    } catch (error) {
+      console.error("Error saving dashboard:", error);
+    }
+  }; // TODO: replace with server-side persistence via dashboardService
 
   const addWidget = (template: WidgetTemplate) => {
-  const newWidget: WidgetConfig = {
-    id: `widget-${Date.now()}`,
-    type: template.type,
-    title: template.name,
-    description: template.description,
-    size: template.defaultSize,
-    position: { x: widgets.length % 2, y: Math.floor(widgets.length / 2) },
-    settings: template.defaultSettings,
-    isVisible: true,
-    isCollapsed: false,
-  };
+    const newWidget: WidgetConfig = {
+      id: `widget-${Date.now()}`,
+      type: template.type,
+      title: template.name,
+      description: template.description,
+      size: template.defaultSize,
+      position: { x: widgets.length % 2, y: Math.floor(widgets.length / 2) },
+      settings: template.defaultSettings,
+      isVisible: true,
+      isCollapsed: false,
+    };
 
-  setWidgets([...widgets, newWidget]);
-  setGridLayout((prev) => [...prev, { id: newWidget.id, x: newWidget.position.x, y: newWidget.position.y, width: 1, height: 1 }]);
-  setShowAddWidget(false);
-};
+    setWidgets([...widgets, newWidget]);
+    setGridLayout((prev) => [
+      ...prev,
+      { id: newWidget.id, x: newWidget.position.x, y: newWidget.position.y, width: 1, height: 1 },
+    ]);
+    setShowAddWidget(false);
+    // persist
+    setTimeout(saveDashboard, 0);
+  };
 
   const updateWidget = (widgetId: string, updates: Partial<WidgetConfig>) => {
     setWidgets((prevWidgets) =>
@@ -179,16 +184,20 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
         widget.id === widgetId ? { ...widget, ...updates } : widget,
       ),
     );
+    // persist
+    setTimeout(saveDashboard, 0);
   };
 
   const removeWidget = (widgetId: string) => {
-  setWidgets((prevWidgets) =>
-    prevWidgets.filter((widget) => widget.id !== widgetId),
-  );
-  setGridLayout((prevLayout) =>
-    prevLayout.filter((pos) => pos.id !== widgetId),
-  );
-};
+    setWidgets((prevWidgets) =>
+      prevWidgets.filter((widget) => widget.id !== widgetId),
+    );
+    setGridLayout((prevLayout) =>
+      prevLayout.filter((pos) => pos.id !== widgetId),
+    );
+    // persist
+    setTimeout(saveDashboard, 0);
+  };
 
   const handleWidgetMove = useCallback(
     (widgetId: string, newPosition: { x: number; y: number }) => {
@@ -199,6 +208,8 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
             : widget,
         ),
       );
+      // persist
+      setTimeout(saveDashboard, 0);
     },
     [],
   );
@@ -220,32 +231,39 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
           ];
         }
       });
+      // persist
+      setTimeout(saveDashboard, 0);
     },
     [],
   );
 
-  const renderWidget = (widget: WidgetConfig) => {
-  const commonProps = {
-    config: widget,
-    onConfigChange: (config: WidgetConfig) => updateWidget(widget.id, config),
-    onRemove: removeWidget,
-    onRefresh: () => console.log("Refresh widget:", widget.id),
+  const openWidgetSettings = (widget: WidgetConfig) => {
+    setSelectedWidget(widget);
+    setShowSettings(true);
   };
 
-  const meta = WIDGET_REGISTRY[widget.type as WidgetType];
-  if (meta) {
-    const Component = meta.component as any;
-    return <Component {...commonProps} />;
-  }
+  const renderWidget = (widget: WidgetConfig) => {
+    const commonProps = {
+      config: widget,
+      onConfigChange: (config: WidgetConfig) => updateWidget(widget.id, config),
+      onRemove: removeWidget,
+      onRefresh: () => console.log("Refresh widget:", widget.id),
+    };
 
-  return (
-    <WidgetBase {...commonProps}>
-      <div style={{ textAlign: "center", padding: "20px" }}>
-        <Text type="secondary">{t("widgets.unknown_widget_type")}</Text>
-      </div>
-    </WidgetBase>
-  );
-};
+    const meta = WIDGET_REGISTRY[widget.type as WidgetType];
+    if (meta) {
+      const Component = meta.component as any;
+      return <Component {...commonProps} />;
+    }
+
+    return (
+      <WidgetBase {...commonProps}>
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <Text type="secondary">{t("widgets.unknown_widget_type")}</Text>
+        </div>
+      </WidgetBase>
+    );
+  };
 
   const renderAddWidgetModal = () => (
     <Modal
@@ -323,6 +341,10 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
           variant="primary"
           icon={<SaveOutlined />}
           onClick={() => {
+            if (selectedWidget) {
+              updateWidget(selectedWidget.id, selectedWidget);
+              setTimeout(saveDashboard, 0);
+            }
             setShowSettings(false);
             setSelectedWidget(null);
           }}

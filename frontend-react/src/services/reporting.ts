@@ -1,5 +1,5 @@
 import { statisticsService, type OverviewStats } from "./statistics";
-import { monitoringService, type PerformanceData } from "./monitoring";
+import { monitoringService, type PerformanceData, type SystemMetrics } from "./monitoring";
 
 export type TimeRange = "1h" | "24h" | "7d" | "30d";
 
@@ -31,5 +31,9 @@ export const reportingService = {
 
 	getErrorStats: async (timeRange: TimeRange = "24h"): Promise<any> => {
 		return monitoringService.getErrorStats(timeRange);
+	},
+
+	getSystemMetrics: async (): Promise<SystemMetrics> => {
+		return monitoringService.getSystemMetrics();
 	},
 };
