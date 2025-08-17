@@ -14,6 +14,7 @@ from backend.app.api.v1.endpoints import (
 	auth,
 	chat,
 	conversations,
+	dashboard,
 	domain_groups,
 	health,
 	hybrid_mode,
@@ -84,6 +85,9 @@ api_router.include_router(
 
 # Storage router
 api_router.include_router(storage.router, prefix="/storage", tags=["Storage"])
+
+# Dashboard router
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 
 # Config router (frontend configuration under /api/v1/config)
 api_router.include_router(config.router, prefix="/config", tags=["Config"])

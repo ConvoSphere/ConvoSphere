@@ -29,6 +29,7 @@ import WidgetBase, { type WidgetConfig } from "../widgets/WidgetBase";
 import { WIDGET_REGISTRY, type WidgetType } from "../widgets/registry";
 import DraggableWidget from "./DraggableWidget";
 import DroppableGrid from "./DroppableGrid";
+import { dashboardService, type GridPosition as PersistedGridPosition } from "../../services/dashboard";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -91,53 +92,68 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
 
     try {
       setLoading(true);
-      const savedWidgets = localStorage.getItem("dashboard-widgets");
-      const savedLayout = localStorage.getItem("dashboard-layout");
-
-      if (savedWidgets) {
-        setWidgets(JSON.parse(savedWidgets));
-      } else {
-        // Default widgets
-        const defaultWidgets = [
-          {
-            id: "default-stats",
-            type: "stats",
-            title: t("widgets.system_stats"),
-            description: t("widgets.system_stats_description"),
-            size: WIDGET_REGISTRY.stats.defaultSize,
-            position: { x: 0, y: 0 },
-            settings: WIDGET_REGISTRY.stats.defaultSettings,
-            isVisible: true,
-            isCollapsed: false,
-          },
-          {
-            id: "default-activity",
-            type: "activity",
-            title: t("widgets.recent_activity"),
-            description: t("widgets.recent_activity_description"),
-            size: WIDGET_REGISTRY.activity.defaultSize,
-            position: { x: 1, y: 0 },
-            settings: WIDGET_REGISTRY.activity.defaultSettings,
-            isVisible: true,
-            isCollapsed: false,
-          },
-          {
-            id: "default-system-metrics",
-            type: "systemMetrics",
-            title: t("monitoring.system_metrics"),
-            description: t("monitoring.system_metrics_description"),
-            size: WIDGET_REGISTRY.systemMetrics.defaultSize,
-            position: { x: 0, y: 1 },
-            settings: WIDGET_REGISTRY.systemMetrics.defaultSettings,
-            isVisible: true,
-            isCollapsed: false,
-          },
-        ];
-        setWidgets(defaultWidgets);
-      }
-
-      if (savedLayout) {
-        setGridLayout(JSON.parse(savedLayout));
+      // Try server first
+      try {
+        const serverState = await dashboardService.getMyDashboard();
+        setWidgets(serverState.widgets || []);
+        setGridLayout((serverState.layout || []) as any);
+      } catch (e) {
+        const savedWidgets = localStorage.getItem("dashboard-widgets");
+        const savedLayout = localStorage.getItem("dashboard-layout");
+        if (savedWidgets) {
+          setWidgets(JSON.parse(savedWidgets));
+        } else {
+          const defaultWidgets = [
+            {
+              id: "default-stats",
+              type: "stats",
+              title: t("widgets.system_stats"),
+              description: t("widgets.system_stats_description"),
+              size: WIDGET_REGISTRY.stats.defaultSize,
+              position: { x: 0, y: 0 },
+              settings: WIDGET_REGISTRY.stats.defaultSettings,
+              isVisible: true,
+              isCollapsed: false,
+            },
+            {
+              id: "default-activity",
+              type: "activity",
+              title: t("widgets.recent_activity"),
+              description: t("widgets.recent_activity_description"),
+              size: WIDGET_REGISTRY.activity.defaultSize,
+              position: { x: 1, y: 0 },
+              settings: WIDGET_REGISTRY.activity.defaultSettings,
+              isVisible: true,
+              isCollapsed: false,
+            },
+            {
+              id: "default-system-metrics",
+              type: "systemMetrics",
+              title: t("monitoring.system_metrics"),
+              description: t("monitoring.system_metrics_description"),
+              size: WIDGET_REGISTRY.systemMetrics.defaultSize,
+              position: { x: 0, y: 1 },
+              settings: WIDGET_REGISTRY.systemMetrics.defaultSettings,
+              isVisible: true,
+              isCollapsed: false,
+            },
+          ];
+          setWidgets(defaultWidgets);
+        }
+        if (savedLayout) {
+          setGridLayout(JSON.parse(savedLayout));
+        } else {
+          // initialize layout from widgets if none present
+          setGridLayout(
+            (savedWidgets ? JSON.parse(savedWidgets) : []).map((w: any, idx: number) => ({
+              id: w.id,
+              x: (idx % 12) + 1,
+              y: Math.floor(idx / 12) * 6 + 1,
+              width: 6,
+              height: 6,
+            })),
+          );
+        }
       }
     } catch (error) {
       console.error("Error loading dashboard:", error);
@@ -148,6 +164,8 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
 
   const saveDashboard = async () => {
     try {
+      const state = { widgets, layout: gridLayout as PersistedGridPosition[] };
+      await dashboardService.saveMyDashboard(state);
       localStorage.setItem("dashboard-widgets", JSON.stringify(widgets));
       localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
     } catch (error) {
@@ -485,6 +503,7 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
         {/* Draggable Widget Grid */}
         <DroppableGrid
           widgets={widgets}
+          layout={gridLayout}
           onWidgetMove={handleWidgetMove}
           onWidgetResize={handleWidgetResize}
           editMode={editMode}
