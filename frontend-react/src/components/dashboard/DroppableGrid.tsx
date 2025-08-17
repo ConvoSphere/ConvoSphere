@@ -1,12 +1,21 @@
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { useDrop } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
 import type { WidgetConfig } from "../widgets/WidgetBase";
 import DraggableWidget from "./DraggableWidget";
 
+interface GridPosition {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 interface DroppableGridProps {
   widgets: WidgetConfig[];
+  layout: GridPosition[];
   onWidgetMove: (
     widgetId: string,
     newPosition: { x: number; y: number },
@@ -21,6 +30,7 @@ interface DroppableGridProps {
 
 const DroppableGrid: React.FC<DroppableGridProps> = ({
   widgets,
+  layout,
   onWidgetMove,
   onWidgetResize,
   editMode,
@@ -31,6 +41,12 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
   const colors = getCurrentColors();
   const gridRef = useRef<HTMLDivElement>(null);
 
+  const layoutById = useMemo(() => {
+    const map = new Map<string, GridPosition>();
+    layout.forEach((p) => map.set(p.id, p));
+    return map;
+  }, [layout]);
+
   const [{ isOver }, drop] = useDrop({
     accept: "WIDGET",
     collect: (monitor) => ({
@@ -38,13 +54,12 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
     }),
     drop: (item: { id: string }, monitor) => {
       if (!monitor.didDrop()) {
-        // Widget was dropped on the grid, not on another widget
         const gridRect = gridRef.current?.getBoundingClientRect();
         const dropOffset = monitor.getClientOffset();
-
         if (gridRect && dropOffset) {
-          const x = Math.floor((dropOffset.x - gridRect.left) / 50); // 50px grid size
-          const y = Math.floor((dropOffset.y - gridRect.top) / 50);
+          const cellSize = 50;
+          const x = Math.max(1, Math.floor((dropOffset.x - gridRect.left) / cellSize));
+          const y = Math.max(1, Math.floor((dropOffset.y - gridRect.top) / cellSize));
           onWidgetMove(item.id, { x, y });
         }
       }
@@ -53,8 +68,9 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
 
   const gridStyle: React.CSSProperties = {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: 24,
+    gridTemplateColumns: `repeat(24, 1fr)`,
+    gridAutoRows: "50px",
+    gap: 12,
     padding: "0 0 24px 0",
     minHeight: "400px",
     position: "relative",
@@ -74,14 +90,13 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
   };
 
   const renderGridCell = (widget: WidgetConfig) => {
-    const position = widget.position || { x: 0, y: 0 };
-
+    const pos = layoutById.get(widget.id) || { id: widget.id, x: 1, y: 1, width: 6, height: 6 };
     return (
       <div
         key={widget.id}
         style={{
-          gridColumn: `span ${widget.size === "full" ? 2 : 1}`,
-          gridRow: `span ${widget.size === "full" ? 2 : 1}`,
+          gridColumn: `${pos.x} / span ${pos.width}`,
+          gridRow: `${pos.y} / span ${pos.height}`,
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-start",
@@ -92,7 +107,7 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
           onMove={onWidgetMove}
           onResize={onWidgetResize}
           editMode={editMode}
-          position={position}
+          position={{ x: pos.x, y: pos.y }}
         >
           {renderWidget(widget)}
         </DraggableWidget>
@@ -120,9 +135,7 @@ const DroppableGrid: React.FC<DroppableGridProps> = ({
         }}
       >
         <div style={{ textAlign: "center", color: colors.colorTextSecondary }}>
-          {editMode
-            ? t("dashboard.drop_widgets_here")
-            : t("dashboard.no_widgets")}
+          {editMode ? t("dashboard.drop_widgets_here") : t("dashboard.no_widgets")}
         </div>
       </div>
     );

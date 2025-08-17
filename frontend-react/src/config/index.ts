@@ -44,6 +44,7 @@ export const config = {
     export: "/api/v1/export",
     backup: "/api/v1/backup",
     config: "/api/v1/config",
+    dashboard: "/api/v1/dashboard",
   },
 };
 
