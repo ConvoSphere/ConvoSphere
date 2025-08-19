@@ -73,6 +73,14 @@ npm install
 npm run dev
 ```
 
+#### Frontend environment
+Create a `.env` in `frontend-react/` if needed:
+```env
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
+# WebSocket endpoints are exposed under /api/v1/ws
+```
+
 ## 🐛 Common Issues
 
 ### Port Already in Use

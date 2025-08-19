@@ -20,8 +20,8 @@ docker-compose up --build
 ## ✨ Key Features
 
 ### 💬 **Real-time Chat**
-- WebSocket-based conversations with instant delivery
-- File attachments (PDF, DOCX, TXT, MD) up to 50MB
+- WebSocket-based conversations with instant delivery (WS base: `/api/v1/ws`)
+- File attachments (PDF, DOCX, TXT, MD) – 10MB default (configurable up to 100MB)
 - Audio file processing with speech recognition
 - Typing indicators and real-time status
 
@@ -51,15 +51,14 @@ docker-compose up --build
 - Zustand state management
 - WebSocket for real-time communication
 
-### **Backend**
-- FastAPI with auto-documentation
+- FastAPI with auto-documentation (enabled in development)
 - SQLAlchemy ORM with PostgreSQL
 - Redis for caching and sessions
 - Weaviate vector database for semantic search
 
 ### **DevOps**
 - Docker & Docker Compose
-- Comprehensive testing (90%+ coverage)
+- Comprehensive testing (targets high coverage)
 - GitHub Actions CI/CD
 - MkDocs documentation
 
