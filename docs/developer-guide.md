@@ -265,7 +265,7 @@ async def rate_limit_middleware(request, call_next):
 - Redis-backed rate limiting is available via decorators in `backend/app/core/rate_limiting.py`. For auth endpoints use `@rate_limit_auth`.
 - Content Security Policy headers are set in `backend/app/core/security_middleware.py`. `connect-src` is restricted to `backend_url`, `ws_url`, and `frontend_url` from settings.
 
-Configure `backend_url`, `ws_url`, and `frontend_url` in `.env` to match your deployment (development defaults provided).
+Configure `backend_url`, `ws_url`, and `frontend_url` in `.env` to match your deployment (development defaults provided). Frontend uses Vite env variables `VITE_API_URL` and `VITE_WS_URL`. WebSocket endpoints are exposed under `/api/v1/ws`.
 
 ## 📊 Monitoring & Logging
 

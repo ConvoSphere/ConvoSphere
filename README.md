@@ -25,7 +25,7 @@ Get up and running in under 10 minutes:
 ```bash
 # Clone the repository
 git clone https://github.com/ConvoSphere/ConvoSphere.git
-cd convosphere
+cd ConvoSphere
 
 # Quick setup with Docker (recommended)
 docker-compose up --build
@@ -164,10 +164,10 @@ npm run test:coverage
 
 - **Response Time**: < 500ms for API calls
 - **Concurrent Users**: 100+ connections
-- **File Upload**: Up to 50MB files
+- **File Upload**: 10MB default (configurable up to 100MB)
 - **Real-time Updates**: < 100ms message delivery
 
-> **📈 For detailed performance metrics, see our [Monitoring Documentation](docs/monitoring/)**
+> **📈 For monitoring and logging, see [Developer Guide – Monitoring & Logging](docs/developer-guide.md#-monitoring-logging)**
 
 ## 🔧 Configuration
 
@@ -191,13 +191,14 @@ WEAVIATE_URL=http://localhost:8080
 REDIS_URL=redis://localhost:6379
 ```
 
-#### Frontend (.env)
+#### Frontend (Vite .env)
 ```env
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_WS_URL=ws://localhost:8000/ws
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
+# WebSocket endpoints are exposed under /api/v1/ws
 ```
 
-> **🔧 For complete configuration options, see our [Configuration Guide](docs/configuration.md)**
+> **🔧 For configuration details, see [Developer Guide – Environment Configuration](docs/developer-guide.md#environment-configuration)**
 
 ## 📊 Observability (OpenTelemetry)
 
@@ -207,7 +208,7 @@ To export traces/metrics, set environment variables (defaults shown):
 - `OTEL_EXPORTER_OTLP_INSECURE`: true
 - `OTEL_SERVICE_NAME`: convosphere-backend
 
-Traces for FastAPI, SQLAlchemy, Redis, HTTP clients are instrumented automatically when the endpoint is set.
+Traces for FastAPI, SQLAlchemy, Redis, and HTTP clients are instrumented automatically when the endpoint is set.
 
 ## 🚀 Deployment
 
@@ -219,7 +220,7 @@ docker-compose up --build
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-> **🚀 For detailed deployment instructions, see our [Deployment Guide](docs/deployment.md)**
+> **🚀 For deployment, see [Developer Guide – Deployment](docs/developer-guide.md#-deployment)**
 
 ## 📚 Documentation
 
@@ -236,13 +237,15 @@ Our documentation is organized into several categories:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+Note: API docs are available when `DEBUG=true` (development mode).
+
 > **📖 For complete API documentation, see our [API Reference](docs/api.md)**
 
 ## 🔒 Security
 
 - **JWT Authentication** with refresh tokens
 - **Enterprise SSO** (Google, Microsoft, GitHub, SAML, OIDC)
-- **Role-based Access Control** (User, Admin, Super Admin)
+- **Role-based Access Control** (User, Admin, Super Admin, Manager)
 - **Rate Limiting** and **CORS** protection
 - **Input Validation** and **SQL Injection** prevention
 
@@ -270,7 +273,7 @@ npm test
 5. Commit and push your changes
 6. Open a Pull Request
 
-> **🤝 For detailed contribution guidelines, see our [Contributing Guide](docs/contributing.md)**
+> **🤝 For contribution guidelines, see the [Developer Guide](docs/developer-guide.md)**
 
 ## 📄 License
 
