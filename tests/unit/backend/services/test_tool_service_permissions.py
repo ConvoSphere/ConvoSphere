@@ -37,7 +37,7 @@ class TestToolServicePermissions:
         tool.id = "550e8400-e29b-41d4-a716-446655440000"
         tool.name = "Test Tool"
         tool.description = "A test tool"
-        tool.version = "0.1.0-beta"
+        tool.version = "0.1.2-beta"
         tool.category = ToolCategory.SEARCH
         tool.function_name = "test_function"
         tool.is_enabled = True
@@ -49,7 +49,7 @@ class TestToolServicePermissions:
             "id": "550e8400-e29b-41d4-a716-446655440000",
             "name": "Test Tool",
             "description": "A test tool",
-            "version": "0.1.0-beta",
+            "version": "0.1.2-beta",
             "category": "search",
             "function_name": "test_function",
             "is_enabled": True,

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "convosphere"
-version = "0.1.0-beta"
+version = "0.1.2-beta"
 description = "AI Assistant Platform with multiple assistants and extensive tool support"
 authors = [{name = "AI Assistant Team"}]
 readme = "README.md"

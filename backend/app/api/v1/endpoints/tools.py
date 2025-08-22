@@ -19,7 +19,7 @@ class ToolCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=200, description="Tool name")
     description: str | None = Field(None, description="Tool description")
-    version: str = Field("0.1.0-beta", description="Tool version")
+    version: str = Field("0.1.2-beta", description="Tool version")
     category: str = Field(..., description="Tool category")
     function_name: str = Field(
         ...,
