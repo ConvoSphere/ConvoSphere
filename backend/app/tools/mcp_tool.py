@@ -82,11 +82,11 @@ class MCPClient:
                         "resources": {},
                         "promises": {},
                     },
-                    "clientInfo": {
-                        "name": "ai-assistant-platform",
-                        "version": "0.1.0-beta",
-                    },
-                },
+                                            "clientInfo": {
+                            "name": "ai-assistant-platform",
+                            "version": "0.1.2-beta",
+                        },
+},
             }
 
             async with self.session.post(
@@ -142,7 +142,7 @@ class MCPClient:
                             description=tool.get("description", ""),
                             input_schema=tool.get("inputSchema", {}),
                             server_name=self.server_name,
-                            server_version=tool.get("version", "0.1.0-beta"),
+                            server_version=tool.get("version", "0.1.2-beta"),
                         )
                         for tool in tools_data
                     ]

@@ -18,7 +18,7 @@ docker-compose up --build
 ### 3. Open Browser
 → [http://localhost:8081](http://localhost:8081)
 
-> **⚠️ Beta Version**: This is currently version 0.1.0-beta. Some features may be incomplete or subject to change.
+> **⚠️ Beta Version**: This is currently version 0.1.2 Beta. Some features may be incomplete or subject to change.
 
 **That's it!** 🎉
 
