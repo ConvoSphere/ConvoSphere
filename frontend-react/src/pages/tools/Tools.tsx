@@ -45,6 +45,13 @@ const Tools: React.FC = () => {
     getExecutionStats,
   } = useToolExecution();
 
+  // Map backend tools to UI shape for flags
+  const uiTools = (tools as any[]).map((t) => ({
+    ...t,
+    isActive: t.is_enabled ?? t.isActive,
+    canUse: t.can_use ?? t.canUse,
+  }));
+
   // Get execution statistics
   const executionStats = getExecutionStats();
 
@@ -181,7 +188,7 @@ const Tools: React.FC = () => {
             {/* Main Content */}
             <Col xs={24} lg={16}>
               <ToolList
-                tools={tools}
+                tools={uiTools as any}
                 loading={loading}
                 searchQuery={searchQuery}
                 activeTab={activeTab}
@@ -190,6 +197,7 @@ const Tools: React.FC = () => {
                 onToolClick={handleToolClick}
                 onToggleActive={handleToggleActive}
                 onAddTool={handleAddTool}
+                isAdmin={Boolean(isAdmin)}
               />
 
               <ToolExecution
@@ -206,12 +214,12 @@ const Tools: React.FC = () => {
             {/* Sidebar */}
             <Col xs={24} lg={8}>
               <ToolStats
-                tools={tools}
+                tools={uiTools as any}
                 totalExecutions={executionStats.total}
                 successRate={executionStats.successRate}
-                onAddTool={isAdmin ? handleAddTool : undefined as any}
-                onImportTools={isAdmin ? handleImportTools : undefined as any}
-                onExportTools={isAdmin ? handleExportTools : undefined as any}
+                onAddTool={isAdmin ? handleAddTool : (undefined as any)}
+                onImportTools={isAdmin ? handleImportTools : (undefined as any)}
+                onExportTools={isAdmin ? handleExportTools : (undefined as any)}
                 onRefresh={loadTools}
                 onCategoryClick={handleCategoryClick}
               />

@@ -14,6 +14,7 @@ export interface Tool {
   tags: string[];
   version: string;
   author: string;
+  canUse?: boolean;
 }
 
 export interface ToolParameter {
