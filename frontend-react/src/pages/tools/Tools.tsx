@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Row, Col, Typography, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
+import { useAuthStore } from "../../store/authStore";
 
 import ModernCard from "../../components/ModernCard";
 import CreateToolModal from "../../components/tools/CreateToolModal";
@@ -21,6 +22,8 @@ const { Title, Text } = Typography;
 const Tools: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
 
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState("");
@@ -206,26 +209,28 @@ const Tools: React.FC = () => {
                 tools={tools}
                 totalExecutions={executionStats.total}
                 successRate={executionStats.successRate}
-                onAddTool={handleAddTool}
-                onImportTools={handleImportTools}
-                onExportTools={handleExportTools}
+                onAddTool={isAdmin ? handleAddTool : undefined as any}
+                onImportTools={isAdmin ? handleImportTools : undefined as any}
+                onExportTools={isAdmin ? handleExportTools : undefined as any}
                 onRefresh={loadTools}
                 onCategoryClick={handleCategoryClick}
               />
 
               <div style={{ marginTop: 24 }}>
-                <McpServerManager onServerChange={loadTools} />
+                {isAdmin && <McpServerManager onServerChange={loadTools} />}
               </div>
             </Col>
           </Row>
         </div>
 
         {/* Create Tool Modal */}
-        <CreateToolModal
-          visible={showCreateModal}
-          onCancel={() => setShowCreateModal(false)}
-          onSuccess={handleCreateToolSuccess}
-        />
+        {isAdmin && (
+          <CreateToolModal
+            visible={showCreateModal}
+            onCancel={() => setShowCreateModal(false)}
+            onSuccess={handleCreateToolSuccess}
+          />
+        )}
       </div>
     </div>
   );

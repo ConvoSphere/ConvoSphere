@@ -42,6 +42,7 @@ import {
   setDefaultAssistant,
   getAssistants,
   getAssistantModels,
+  updateAssistant,
 } from "../services/assistants";
 import { getTools } from "../services/tools";
 import { Document, listDocuments } from "../services/knowledge";
@@ -272,22 +273,26 @@ const Assistants: React.FC = () => {
   };
 
   const toggleVisibility = async (assistant: Assistant) => {
-    const next = assistant.visibility === "public" ? "private" : "public";
+    const next = assistant.visibility === "public" ? false : true;
     try {
-      // Simulate PATCH
-      await new Promise((r) => setTimeout(r, 300));
+      const updated = await updateAssistant(String(assistant.id), {
+        is_public: next,
+      } as any);
       setAssistants((prev) =>
         prev.map((a) =>
-          a.id === assistant.id ? { ...a, visibility: next } : a,
+          a.id === assistant.id
+            ? { ...a, visibility: updated.is_public ? "public" : "private" }
+            : a,
         ),
       );
       message.success(
-        next === "public"
+        next
           ? t("assistants.visibility_public", "Sichtbar für andere")
           : t("assistants.visibility_private", "Nur für mich sichtbar"),
       );
-    } catch {
-      message.error(t("assistants.visibility_failed", "Sichtbarkeit fehlgeschlagen"));
+    } catch (e: any) {
+      const msg = e?.response?.status === 403 ? t("errors.forbidden") : t("assistants.visibility_failed", "Sichtbarkeit fehlgeschlagen");
+      message.error(msg as any);
     }
   };
 
