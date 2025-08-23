@@ -136,6 +136,14 @@ services:
       retries: 3
       start_period: 60s
 
+  agentrepo:
+    image: ghcr.io/convosphere/agentrepo:latest
+    restart: unless-stopped
+    ports:
+      - "8010:8000"
+    networks:
+      - convosphere-network
+
 volumes:
   postgres_data:
   weaviate_data:
