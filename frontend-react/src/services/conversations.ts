@@ -1,8 +1,13 @@
 import api from "./api";
 import config from "../config";
 
-export async function getConversations() {
-  const response = await api.get(config.apiEndpoints.conversations);
+export async function getConversations(options?: { mine?: boolean }) {
+  const params = new URLSearchParams();
+  if (options?.mine) params.set("mine", "1");
+  const url = params.toString()
+    ? `${config.apiEndpoints.conversations}?${params.toString()}`
+    : config.apiEndpoints.conversations;
+  const response = await api.get(url);
   return response.data;
 }
 

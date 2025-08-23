@@ -67,7 +67,7 @@ const Conversations: React.FC = () => {
   const loadConversations = async () => {
     setLoading(true);
     try {
-      const data = await getConversations();
+      const data = await getConversations({ mine: true });
       // Enhance conversation data with additional properties
       const enhancedData = data.map((conv: any) => ({
         ...conv,
@@ -464,16 +464,14 @@ const Conversations: React.FC = () => {
                                   style={{ fontSize: "12px" }}
                                 >
                                   <MessageOutlined style={{ marginRight: 4 }} />
-                                  {conv.messageCount}{" "}
-                                  {t("conversations.messages", "Nachrichten")}
+                                  {conv.messageCount} {t("conversations.messages", "Nachrichten")}
                                 </Text>
                                 <Text
                                   type="secondary"
                                   style={{ fontSize: "12px" }}
                                 >
                                   <UserOutlined style={{ marginRight: 4 }} />
-                                  {conv.participants}{" "}
-                                  {t(
+                                  {conv.participants} {t(
                                     "conversations.participants",
                                     "Teilnehmer",
                                   )}
