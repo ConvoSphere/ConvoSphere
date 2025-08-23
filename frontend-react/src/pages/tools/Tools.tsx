@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Row, Col, Typography, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
+import { useAuthStore } from "../../store/authStore";
 
 import ModernCard from "../../components/ModernCard";
 import CreateToolModal from "../../components/tools/CreateToolModal";
@@ -21,6 +22,8 @@ const { Title, Text } = Typography;
 const Tools: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user && (user.role === "admin" || user.role === "super_admin");
 
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,6 +44,13 @@ const Tools: React.FC = () => {
     closeExecutionModal,
     getExecutionStats,
   } = useToolExecution();
+
+  // Map backend tools to UI shape for flags
+  const uiTools = (tools as any[]).map((t) => ({
+    ...t,
+    isActive: t.is_enabled ?? t.isActive,
+    canUse: t.can_use ?? t.canUse,
+  }));
 
   // Get execution statistics
   const executionStats = getExecutionStats();
@@ -178,7 +188,7 @@ const Tools: React.FC = () => {
             {/* Main Content */}
             <Col xs={24} lg={16}>
               <ToolList
-                tools={tools}
+                tools={uiTools as any}
                 loading={loading}
                 searchQuery={searchQuery}
                 activeTab={activeTab}
@@ -187,6 +197,7 @@ const Tools: React.FC = () => {
                 onToolClick={handleToolClick}
                 onToggleActive={handleToggleActive}
                 onAddTool={handleAddTool}
+                isAdmin={Boolean(isAdmin)}
               />
 
               <ToolExecution
@@ -203,29 +214,31 @@ const Tools: React.FC = () => {
             {/* Sidebar */}
             <Col xs={24} lg={8}>
               <ToolStats
-                tools={tools}
+                tools={uiTools as any}
                 totalExecutions={executionStats.total}
                 successRate={executionStats.successRate}
-                onAddTool={handleAddTool}
-                onImportTools={handleImportTools}
-                onExportTools={handleExportTools}
+                onAddTool={isAdmin ? handleAddTool : (undefined as any)}
+                onImportTools={isAdmin ? handleImportTools : (undefined as any)}
+                onExportTools={isAdmin ? handleExportTools : (undefined as any)}
                 onRefresh={loadTools}
                 onCategoryClick={handleCategoryClick}
               />
 
               <div style={{ marginTop: 24 }}>
-                <McpServerManager onServerChange={loadTools} />
+                {isAdmin && <McpServerManager onServerChange={loadTools} />}
               </div>
             </Col>
           </Row>
         </div>
 
         {/* Create Tool Modal */}
-        <CreateToolModal
-          visible={showCreateModal}
-          onCancel={() => setShowCreateModal(false)}
-          onSuccess={handleCreateToolSuccess}
-        />
+        {isAdmin && (
+          <CreateToolModal
+            visible={showCreateModal}
+            onCancel={() => setShowCreateModal(false)}
+            onSuccess={handleCreateToolSuccess}
+          />
+        )}
       </div>
     </div>
   );

@@ -32,6 +32,8 @@ import {
   MessageOutlined,
   PlayCircleOutlined,
   PauseCircleOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../store/themeStore";
@@ -40,12 +42,14 @@ import {
   setDefaultAssistant,
   getAssistants,
   getAssistantModels,
+  updateAssistant,
 } from "../services/assistants";
 import { getTools } from "../services/tools";
 import { Document, listDocuments } from "../services/knowledge";
 import config from "../config";
 import ModelSelector from "../components/ModelSelector";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../store/authStore";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -66,6 +70,8 @@ interface Assistant {
   usageCount: number;
   avgRating: number;
   tags: string[];
+  ownerId?: string;
+  visibility?: "private" | "public";
 }
 
 const Assistants: React.FC = () => {
@@ -73,6 +79,7 @@ const Assistants: React.FC = () => {
   const { getCurrentColors } = useThemeStore();
   const colors = getCurrentColors();
   const queryClient = useQueryClient();
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [visible, setVisible] = useState(false);
@@ -176,6 +183,8 @@ const Assistants: React.FC = () => {
         usageCount: 0,
         avgRating: 0,
         tags: values.tags || [],
+        ownerId: currentUserId || undefined,
+        visibility: "private",
       };
 
       setAssistants((prev) => [...prev, newAssistant]);
@@ -263,6 +272,30 @@ const Assistants: React.FC = () => {
     }
   };
 
+  const toggleVisibility = async (assistant: Assistant) => {
+    const next = assistant.visibility === "public" ? false : true;
+    try {
+      const updated = await updateAssistant(String(assistant.id), {
+        is_public: next,
+      } as any);
+      setAssistants((prev) =>
+        prev.map((a) =>
+          a.id === assistant.id
+            ? { ...a, visibility: updated.is_public ? "public" : "private" }
+            : a,
+        ),
+      );
+      message.success(
+        next
+          ? t("assistants.visibility_public", "Sichtbar für andere")
+          : t("assistants.visibility_private", "Nur für mich sichtbar"),
+      );
+    } catch (e: any) {
+      const msg = e?.response?.status === 403 ? t("errors.forbidden") : t("assistants.visibility_failed", "Sichtbarkeit fehlgeschlagen");
+      message.error(msg as any);
+    }
+  };
+
   const openEditModal = (assistant: Assistant) => {
     setEditingAssistant(assistant);
     form.setFieldsValue(assistant);
@@ -286,6 +319,9 @@ const Assistants: React.FC = () => {
     const model = modelsQuery.data?.find((m) => m.value === modelValue);
     return model ? model.label : modelValue;
   };
+
+  const isOwner = (assistant: Assistant) =>
+    !!currentUserId && (!!assistant.ownerId ? assistant.ownerId === currentUserId : true);
 
   return (
     <div style={{ padding: "24px 0" }}>
@@ -337,13 +373,36 @@ const Assistants: React.FC = () => {
                 <Card
                   hoverable
                   actions={[
-                    <Tooltip title={t("assistants.actions.edit")}>
-                      <Button
-                        type="text"
-                        icon={<EditOutlined />}
-                        onClick={() => openEditModal(assistant)}
-                      />
-                    </Tooltip>,
+                    isOwner(assistant) && (
+                      <Tooltip title={t("assistants.actions.edit")}>
+                        <Button
+                          type="text"
+                          icon={<EditOutlined />}
+                          onClick={() => openEditModal(assistant)}
+                        />
+                      </Tooltip>
+                    ),
+                    isOwner(assistant) && (
+                      <Tooltip
+                        title={
+                          assistant.visibility === "public"
+                            ? t("assistants.make_private", "Privat schalten")
+                            : t("assistants.make_public", "Öffentlich schalten")
+                        }
+                      >
+                        <Button
+                          type="text"
+                          icon={
+                            assistant.visibility === "public" ? (
+                              <EyeInvisibleOutlined />
+                            ) : (
+                              <EyeTwoTone />
+                            )
+                          }
+                          onClick={() => toggleVisibility(assistant)}
+                        />
+                      </Tooltip>
+                    ),
                     <Tooltip
                       title={
                         defaultAssistantId === assistant.id.toString()
@@ -354,9 +413,7 @@ const Assistants: React.FC = () => {
                       <Button
                         type="text"
                         icon={<SettingOutlined />}
-                        onClick={() =>
-                          handleSetDefault(assistant.id.toString())
-                        }
+                        onClick={() => handleSetDefault(assistant.id.toString())}
                         loading={settingDefault === assistant.id.toString()}
                         style={{
                           color:
@@ -366,41 +423,45 @@ const Assistants: React.FC = () => {
                         }}
                       />
                     </Tooltip>,
-                    <Tooltip
-                      title={
-                        assistant.isActive
-                          ? t("assistants.actions.deactivate")
-                          : t("assistants.actions.activate")
-                      }
-                    >
-                      <Button
-                        type="text"
-                        icon={
-                          assistant.isActive ? (
-                            <PauseCircleOutlined />
-                          ) : (
-                            <PlayCircleOutlined />
-                          )
+                    isOwner(assistant) && (
+                      <Tooltip
+                        title={
+                          assistant.isActive
+                            ? t("assistants.actions.deactivate")
+                            : t("assistants.actions.activate")
                         }
-                        onClick={() => handleToggleActive(assistant)}
-                      />
-                    </Tooltip>,
-                    <Tooltip title={t("assistants.actions.delete")}>
-                      <Popconfirm
-                        title={t("assistants.delete_confirm")}
-                        onConfirm={() => handleDelete(assistant.id)}
-                        okText={t("common.yes")}
-                        cancelText={t("common.no")}
                       >
                         <Button
                           type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          loading={deleting === assistant.id}
+                          icon={
+                            assistant.isActive ? (
+                              <PauseCircleOutlined />
+                            ) : (
+                              <PlayCircleOutlined />
+                            )
+                          }
+                          onClick={() => handleToggleActive(assistant)}
                         />
-                      </Popconfirm>
-                    </Tooltip>,
-                  ]}
+                      </Tooltip>
+                    ),
+                    isOwner(assistant) && (
+                      <Tooltip title={t("assistants.actions.delete")}>
+                        <Popconfirm
+                          title={t("assistants.delete_confirm")}
+                          onConfirm={() => handleDelete(assistant.id)}
+                          okText={t("common.yes")}
+                          cancelText={t("common.no")}
+                        >
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            loading={deleting === assistant.id}
+                          />
+                        </Popconfirm>
+                      </Tooltip>
+                    ),
+                  ].filter(Boolean)}
                 >
                   <List.Item.Meta
                     avatar={
@@ -417,6 +478,13 @@ const Assistants: React.FC = () => {
                     title={
                       <Space>
                         <Text strong>{assistant.name}</Text>
+                        {assistant.visibility && (
+                          <Tag color={assistant.visibility === "public" ? "blue" : "default"}>
+                            {assistant.visibility === "public"
+                              ? t("assistants.visibility_public_badge", "Öffentlich")
+                              : t("assistants.visibility_private_badge", "Privat")}
+                          </Tag>
+                        )}
                         <Tag color={assistant.isActive ? "green" : "default"}>
                           {assistant.isActive
                             ? t("assistants.status.active")
@@ -438,8 +506,7 @@ const Assistants: React.FC = () => {
                               {getModelLabel(assistant.model)}
                             </Tag>
                             <Tag icon={<BookOutlined />} color="purple">
-                              {assistant.knowledgeBaseIds.length}{" "}
-                              {t("assistants.knowledge_bases")}
+                              {assistant.knowledgeBaseIds.length} {t("assistants.knowledge_bases")}
                             </Tag>
                             <Tag icon={<ToolOutlined />} color="orange">
                               {assistant.toolIds.length} {t("assistants.tools")}
@@ -449,12 +516,9 @@ const Assistants: React.FC = () => {
                         <div style={{ marginTop: 8 }}>
                           <Space>
                             <Text type="secondary">
-                              <MessageOutlined /> {assistant.usageCount}{" "}
-                              {t("assistants.usage_count")}
+                              <MessageOutlined /> {assistant.usageCount} {t("assistants.usage_count")}
                             </Text>
-                            <Text type="secondary">
-                              ⭐ {assistant.avgRating.toFixed(1)}
-                            </Text>
+                            <Text type="secondary">⭐ {assistant.avgRating.toFixed(1)}</Text>
                           </Space>
                         </div>
                       </div>
@@ -478,9 +542,7 @@ const Assistants: React.FC = () => {
       <Modal
         open={visible}
         title={
-          editingAssistant
-            ? t("assistants.edit_title")
-            : t("assistants.add_title")
+          editingAssistant ? t("assistants.edit_title") : t("assistants.add_title")
         }
         onCancel={() => {
           setVisible(false);
@@ -524,20 +586,14 @@ const Assistants: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item
-            name="description"
-            label={t("assistants.form.description")}
-          >
+          <Form.Item name="description" label={t("assistants.form.description")}>
             <Input.TextArea
               rows={3}
               placeholder={t("assistants.form.description_placeholder")}
             />
           </Form.Item>
 
-          <Form.Item
-            name="personality"
-            label={t("assistants.form.personality")}
-          >
+          <Form.Item name="personality" label={t("assistants.form.personality")}>
             <Input.TextArea
               rows={4}
               placeholder={t("assistants.form.personality_placeholder")}
@@ -551,18 +607,10 @@ const Assistants: React.FC = () => {
                 label={t("assistants.form.temperature")}
               >
                 <Select defaultValue={0.7}>
-                  <Option value={0.1}>
-                    {t("assistants.temperature.focused")} (0.1)
-                  </Option>
-                  <Option value={0.3}>
-                    {t("assistants.temperature.balanced")} (0.3)
-                  </Option>
-                  <Option value={0.7}>
-                    {t("assistants.temperature.creative")} (0.7)
-                  </Option>
-                  <Option value={0.9}>
-                    {t("assistants.temperature.very_creative")} (0.9)
-                  </Option>
+                  <Option value={0.1}>{t("assistants.temperature.focused")} (0.1)</Option>
+                  <Option value={0.3}>{t("assistants.temperature.balanced")} (0.3)</Option>
+                  <Option value={0.7}>{t("assistants.temperature.creative")} (0.7)</Option>
+                  <Option value={0.9}>{t("assistants.temperature.very_creative")} (0.9)</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -577,6 +625,13 @@ const Assistants: React.FC = () => {
             </Col>
           </Row>
 
+          <Form.Item name="visibility" label={t("assistants.form.visibility", "Sichtbarkeit")} initialValue="private">
+            <Select>
+              <Option value="private">{t("assistants.visibility_private_badge", "Privat")}</Option>
+              <Option value="public">{t("assistants.visibility_public_badge", "Öffentlich")}</Option>
+            </Select>
+          </Form.Item>
+
           <Form.Item
             name="knowledgeBaseIds"
             label={t("assistants.form.knowledge_bases")}
@@ -585,7 +640,7 @@ const Assistants: React.FC = () => {
               mode="multiple"
               placeholder={t("assistants.form.knowledge_bases_placeholder")}
             >
-              {knowledgeQuery.data?.map((kb) => (
+              {knowledgeQuery.data?.map((kb: any) => (
                 <Option key={kb.id} value={kb.id}>
                   {kb.name}
                 </Option>
@@ -607,10 +662,7 @@ const Assistants: React.FC = () => {
           </Form.Item>
 
           <Form.Item name="tags" label={t("assistants.form.tags")}>
-            <Select
-              mode="tags"
-              placeholder={t("assistants.form.tags_placeholder")}
-            >
+            <Select mode="tags" placeholder={t("assistants.form.tags_placeholder")}>
               <Option value="support">Support</Option>
               <Option value="technical">Technical</Option>
               <Option value="creative">Creative</Option>

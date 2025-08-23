@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.core.security import get_current_user
 from backend.app.models.user import User
+from backend.app.models.user import UserRole
 from backend.app.schemas.conversation import (
     ConversationCreate,
     ConversationListResponse,
@@ -64,6 +65,7 @@ async def create_conversation(
 async def list_conversations(
     user_id: str | None = Query(None),
     assistant_id: str | None = Query(None),
+    mine: bool | None = Query(False, description="Only current user's conversations"),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
@@ -71,8 +73,16 @@ async def list_conversations(
 ):
     """List conversations (paginated, filterable)."""
     service = ConversationService(db)
-    # For now, only user_id filter is supported
-    user_id = user_id or str(current_user.id)
+    # Default to current user's conversations
+    # If mine=true, force current user; otherwise only allow other user_id for admins
+    if mine:
+        user_id = str(current_user.id)
+    else:
+        if user_id and user_id != str(current_user.id):
+            if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        else:
+            user_id = str(current_user.id)
     conversations = service.get_user_conversations(user_id)
     total = len(conversations)
     start = (page - 1) * size

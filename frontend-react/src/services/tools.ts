@@ -73,6 +73,12 @@ export async function deleteTool(id: string): Promise<void> {
   await api.delete(`/tools/${id}`);
 }
 
+export async function toggleToolEnabled(id: string, enabled?: boolean): Promise<Tool> {
+  const params = enabled === undefined ? "" : `?enabled=${enabled}`;
+  const response = await api.post(`/tools/${id}/toggle${params}`);
+  return response.data;
+}
+
 export async function runTool(id: string, params: any) {
   const response = await api.post(`/tools/${id}/run`, params);
   return response.data;

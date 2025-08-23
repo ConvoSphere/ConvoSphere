@@ -3,12 +3,14 @@ import { useAuthStore } from "../store/authStore";
 import { Navigate } from "react-router-dom";
 import { Spin } from "antd";
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: "admin" | "super_admin" }> = ({
   children,
+  requiredRole,
 }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const validateToken = useAuthStore((s) => s.validateToken);
   const refreshTokenIfNeeded = useAuthStore((s) => s.refreshTokenIfNeeded);
+  const user = useAuthStore((s) => s.user);
   const [isValidating, setIsValidating] = useState(true);
   const [isValid, setIsValid] = useState(false);
 
@@ -59,6 +61,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 
   if (!isValid) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Admin role guard when required
+  if (requiredRole) {
+    const isAdminUser = user && (user.role === "admin" || user.role === "super_admin");
+    if (!isAdminUser) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;

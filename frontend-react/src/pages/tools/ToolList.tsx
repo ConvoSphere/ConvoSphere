@@ -43,6 +43,7 @@ interface ToolListProps {
   onToolClick: (tool: Tool) => void;
   onToggleActive: (tool: Tool) => void;
   onAddTool: () => void;
+  isAdmin?: boolean;
 }
 
 const ToolList: React.FC<ToolListProps> = ({
@@ -55,6 +56,7 @@ const ToolList: React.FC<ToolListProps> = ({
   onToolClick,
   onToggleActive,
   onAddTool,
+  isAdmin,
 }) => {
   const { t } = useTranslation();
   const { colors } = useThemeStore();
@@ -318,20 +320,23 @@ const ToolList: React.FC<ToolListProps> = ({
                       variant="primary"
                       size="sm"
                       icon={<PlayCircleOutlined />}
+                      disabled={tool.canUse === false}
                       onClick={(e) => {
                         e.stopPropagation();
                         onToolClick(tool);
                       }}
                     />
-                    <ModernButton
-                      variant="secondary"
-                      size="sm"
-                      icon={<SettingOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleActive(tool);
-                      }}
-                    />
+                    {isAdmin && (
+                      <ModernButton
+                        variant="secondary"
+                        size="sm"
+                        icon={<SettingOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleActive(tool);
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
               </ModernCard>

@@ -12,6 +12,7 @@ from sqlalchemy import and_, or_
 
 from backend.app.core.database import get_db
 from backend.app.models.assistant import Assistant, AssistantStatus
+from backend.app.models.user import User, UserRole
 
 
 class AssistantService:
@@ -19,6 +20,12 @@ class AssistantService:
 
     def __init__(self, db: Any = None) -> None:
         self.db = db or get_db()
+
+    def _is_admin(self, user_id: str | None) -> bool:
+        if not user_id:
+            return False
+        user = self.db.query(User).filter(User.id == user_id).first()
+        return bool(user and user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN])
 
     def create_assistant(
         self,
@@ -71,7 +78,7 @@ class AssistantService:
         """
         query = self.db.query(Assistant).filter(Assistant.id == assistant_id)
 
-        # If user_id is provided, check permissions
+        # If user_id is provided, check permissions (read access)
         if user_id:
             query = query.filter(
                 or_(Assistant.creator_id == user_id, Assistant.is_public)
@@ -214,7 +221,7 @@ class AssistantService:
         """
         from backend.app.models.user import User
 
-        # Verify the assistant exists and user has access
+        # Verify the assistant exists and user has read access (public or own)
         assistant = self.get_assistant(assistant_id, user_id)
         if not assistant:
             return False
@@ -256,8 +263,11 @@ class AssistantService:
         """
         Update an assistant.
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        # Fetch without read filter, then enforce owner-or-admin for write
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
         if not assistant:
+            return None
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return None
         # Update fields using attribute access
         for field in assistant_data.model_fields:
@@ -280,9 +290,12 @@ class AssistantService:
         Returns:
             bool: True if deleted, False otherwise
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
 
         if not assistant:
+            return False
+
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return False
 
         self.db.delete(assistant)
@@ -302,8 +315,10 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Activated assistant
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
         if not assistant:
+            return None
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return None
 
         assistant.status = AssistantStatus.ACTIVE
@@ -324,8 +339,10 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Deactivated assistant
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
         if not assistant:
+            return None
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return None
 
         assistant.status = AssistantStatus.INACTIVE
@@ -354,9 +371,11 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Updated assistant
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
 
         if not assistant:
+            return None
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return None
 
         assistant.add_tool(tool_id, config)
@@ -383,9 +402,12 @@ class AssistantService:
         Returns:
             Optional[Assistant]: Updated assistant
         """
-        assistant = self.get_assistant(assistant_id, user_id)
+        assistant = self.db.query(Assistant).filter(Assistant.id == assistant_id).first()
 
         if not assistant:
+            return None
+
+        if str(assistant.creator_id) != str(user_id) and not self._is_admin(user_id):
             return None
 
         if assistant.remove_tool(tool_id):

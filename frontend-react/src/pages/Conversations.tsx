@@ -13,6 +13,7 @@ import {
   message,
   Empty,
   Statistic,
+  Pagination,
 } from "antd";
 import {
   MessageOutlined,
@@ -59,24 +60,27 @@ const Conversations: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(20);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     loadConversations();
-  }, []);
+  }, [page, size]);
 
   const loadConversations = async () => {
     setLoading(true);
     try {
-      const data = await getConversations();
-      // Enhance conversation data with additional properties
-      const enhancedData = data.map((conv: any) => ({
+      const data = await getConversations({ mine: true, page, size } as any);
+      const list = (data.conversations || data || []).map((conv: any) => ({
         ...conv,
         type: conv.type || "chat",
         participants: conv.participants || 1,
         messageCount: conv.messageCount || Math.floor(Math.random() * 50) + 1,
         status: conv.status || "active",
       }));
-      setConvos(enhancedData);
+      setConvos(list);
+      setTotal(data.total ?? list.length);
     } catch {
       message.error(
         t("conversations.load_failed", "Fehler beim Laden der Konversationen"),
@@ -464,16 +468,14 @@ const Conversations: React.FC = () => {
                                   style={{ fontSize: "12px" }}
                                 >
                                   <MessageOutlined style={{ marginRight: 4 }} />
-                                  {conv.messageCount}{" "}
-                                  {t("conversations.messages", "Nachrichten")}
+                                  {conv.messageCount} {t("conversations.messages", "Nachrichten")}
                                 </Text>
                                 <Text
                                   type="secondary"
                                   style={{ fontSize: "12px" }}
                                 >
                                   <UserOutlined style={{ marginRight: 4 }} />
-                                  {conv.participants}{" "}
-                                  {t(
+                                  {conv.participants} {t(
                                     "conversations.participants",
                                     "Teilnehmer",
                                   )}
@@ -517,6 +519,18 @@ const Conversations: React.FC = () => {
                       ))}
                     </div>
                   )}
+                 <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                   <Pagination
+                     current={page}
+                     pageSize={size}
+                     total={total}
+                     onChange={(p, s) => {
+                       setPage(p);
+                       setSize(s);
+                     }}
+                     showSizeChanger
+                   />
+                 </div>
                 </ModernCard>
 
                 {/* Conversation Detail */}

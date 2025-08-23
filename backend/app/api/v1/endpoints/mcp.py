@@ -13,8 +13,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user_id
+from backend.app.core.security import get_current_user_id, get_current_user
 from backend.app.tools.mcp_tool import mcp_manager
+from backend.app.models.user import User, UserRole
 
 router = APIRouter()
 
@@ -60,6 +61,7 @@ class MCPToolExecute(BaseModel):
 async def add_mcp_server(
     server_data: MCPServerCreate,
     current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -74,6 +76,9 @@ async def add_mcp_server(
         MCPServerResponse: Server information
     """
     try:
+        # Admin-only
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can add MCP servers")
         success = await mcp_manager.add_server(
             server_id=server_data.server_id,
             server_url=server_data.server_url,
@@ -159,6 +164,7 @@ async def list_mcp_servers(
 async def remove_mcp_server(
     server_id: str,
     current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -173,6 +179,9 @@ async def remove_mcp_server(
         dict: Success message
     """
     try:
+        # Admin-only
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can remove MCP servers")
         success = await mcp_manager.remove_server(server_id)
 
         if not success:

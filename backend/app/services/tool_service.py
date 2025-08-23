@@ -11,6 +11,7 @@ from sqlalchemy import or_
 from backend.app.core.database import get_db
 from backend.app.models.tool import Tool, ToolCategory
 from backend.app.models.user import User
+from backend.app.models.user import UserRole
 
 
 class ToolService:
@@ -444,7 +445,7 @@ class ToolService:
                 return False
 
             # Admin can edit all tools
-            if user.role.value == "admin":
+            if user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
                 return True
 
             # Creator can edit their own tools
@@ -456,6 +457,45 @@ class ToolService:
         except (ValueError, AttributeError) as e:
             logger.error(f"Error checking edit permission for tool: {e}")
             return False
+
+    def toggle_tool_enabled(self, tool_id: str, user_id: str, enabled: bool | None = None) -> dict[str, Any] | None:
+        """
+        Toggle or set the is_enabled flag of a tool (admin-only by default via endpoint).
+
+        Args:
+            tool_id: Tool ID
+            user_id: Acting user
+            enabled: If provided, set to this value; otherwise flip current value
+
+        Returns:
+            Optional[Dict]: Updated tool dict
+        """
+        try:
+            # Validate UUID format
+            try:
+                uuid.UUID(tool_id)
+            except ValueError:
+                logger.warning(f"Invalid tool ID format: {tool_id}")
+                return None
+
+            tool = self.db.query(Tool).filter(Tool.id == tool_id).first()
+            if not tool:
+                return None
+
+            # Check permission using existing logic (admin allowed)
+            if not self._can_edit_tool(tool, user_id):
+                logger.warning(f"User {user_id} cannot toggle tool {tool_id}")
+                return None
+
+            tool.is_enabled = (not tool.is_enabled) if enabled is None else bool(enabled)
+            tool.updated_at = datetime.now(UTC)
+            self.db.commit()
+            self.db.refresh(tool)
+            return tool.to_dict()
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error toggling tool enabled: {e}")
+            return None
 
 
 # Global tool service instance (for static access, e.g. in AIService)

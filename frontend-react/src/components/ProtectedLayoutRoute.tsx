@@ -4,11 +4,12 @@ import Layout from "./Layout";
 import ErrorBoundary from "./ErrorBoundary";
 import { Spin } from "antd";
 
-const ProtectedLayoutRoute: React.FC<{ children: React.ReactNode }> = ({
+const ProtectedLayoutRoute: React.FC<{ children: React.ReactNode; requiredRole?: "admin" | "super_admin" }> = ({
   children,
+  requiredRole,
 }) => {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredRole={requiredRole}>
       <Layout>
         <ErrorBoundary>
           <Suspense
