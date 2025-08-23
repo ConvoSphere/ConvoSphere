@@ -155,6 +155,8 @@ services:
     image: ghcr.io/convosphere/agentrepo:latest
     container_name: convosphere_agentrepo_test
     restart: unless-stopped
+    ports:
+      - "8011:8000"
     networks:
       - convosphere_test_network
 
