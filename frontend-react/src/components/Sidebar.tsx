@@ -133,47 +133,47 @@ const Sidebar: React.FC = () => {
       ),
       label: t("navigation.conversation_intelligence"),
     },
-    {
-      key: "/domain-groups",
-      icon: (
-        <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
-      ),
-      label: t("navigation.domain_groups"),
-    },
-    {
-      key: "/export-backup",
-      icon: (
-        <DownloadOutlined
-          style={{ color: colors?.colorPrimary || "#1890ff" }}
-        />
-      ),
-      label: t("navigation.export_backup"),
-    },
-    {
-      key: "/mcp-tools",
-      icon: (
-        <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
-      ),
-      label: t("navigation.mcp_tools"),
-    },
-    {
-      key: "/settings",
-      icon: (
-        <SettingOutlined
-          style={{ color: colors?.colorTextSecondary || "#cccccc" }}
-        />
-      ),
-      label: t("settings.title"),
-    },
-    {
-      key: "/profile",
-      icon: (
-        <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
-      ),
-      label: t("profile.title"),
-    },
     ...(isAdmin
       ? [
+          {
+            key: "/domain-groups",
+            icon: (
+              <TeamOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+            ),
+            label: t("navigation.domain_groups"),
+          },
+          {
+            key: "/export-backup",
+            icon: (
+              <DownloadOutlined
+                style={{ color: colors?.colorPrimary || "#1890ff" }}
+              />
+            ),
+            label: t("navigation.export_backup"),
+          },
+          {
+            key: "/mcp-tools",
+            icon: (
+              <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+            ),
+            label: t("navigation.mcp_tools"),
+          },
+          {
+            key: "/settings",
+            icon: (
+              <SettingOutlined
+                style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+              />
+            ),
+            label: t("settings.title"),
+          },
+          {
+            key: "/profile",
+            icon: (
+              <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+            ),
+            label: t("profile.title"),
+          },
           {
             key: "/admin",
             icon: (
@@ -184,7 +184,7 @@ const Sidebar: React.FC = () => {
             label: t("admin.title"),
           },
           {
-            key: "/admin/system-status",
+            key: "/system-status",
             icon: (
               <BarChartOutlined
                 style={{ color: colors?.colorTextSecondary || "#cccccc" }}
@@ -193,7 +193,31 @@ const Sidebar: React.FC = () => {
             label: t("admin.system_status"),
           },
         ]
-      : []),
+      : [
+          {
+            key: "/mcp-tools",
+            icon: (
+              <ApiOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+            ),
+            label: t("navigation.mcp_tools"),
+          },
+          {
+            key: "/settings",
+            icon: (
+              <SettingOutlined
+                style={{ color: colors?.colorTextSecondary || "#cccccc" }}
+              />
+            ),
+            label: t("settings.title"),
+          },
+          {
+            key: "/profile",
+            icon: (
+              <UserOutlined style={{ color: colors?.colorPrimary || "#1890ff" }} />
+            ),
+            label: t("profile.title"),
+          },
+        ]),
   ];
 
   return (

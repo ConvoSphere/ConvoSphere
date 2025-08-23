@@ -101,7 +101,7 @@ export const protectedRoutes: AppRoute[] = [
   {
     path: "/admin",
     element: (
-      <ProtectedLayoutRoute>
+      <ProtectedLayoutRoute requiredRole="admin">
         <LazyAdminPage />
       </ProtectedLayoutRoute>
     ),
@@ -133,7 +133,7 @@ export const protectedRoutes: AppRoute[] = [
   {
     path: "/system-status",
     element: (
-      <ProtectedLayoutRoute>
+      <ProtectedLayoutRoute requiredRole="admin">
         <LazySystemStatusPage />
       </ProtectedLayoutRoute>
     ),
@@ -149,7 +149,7 @@ export const protectedRoutes: AppRoute[] = [
   {
     path: "/domain-groups",
     element: (
-      <ProtectedLayoutRoute>
+      <ProtectedLayoutRoute requiredRole="admin">
         <LazyDomainGroupsPage />
       </ProtectedLayoutRoute>
     ),
@@ -157,7 +157,7 @@ export const protectedRoutes: AppRoute[] = [
   {
     path: "/export-backup",
     element: (
-      <ProtectedLayoutRoute>
+      <ProtectedLayoutRoute requiredRole="admin">
         <LazyExportBackupPage />
       </ProtectedLayoutRoute>
     ),

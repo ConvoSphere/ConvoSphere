@@ -5,12 +5,18 @@ import {
   SettingOutlined,
   DashboardOutlined,
   SafetyOutlined,
+  TeamOutlined,
+  ToolOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import UserManagement from "./admin/components/UserManagement";
 import SystemConfig from "./admin/components/SystemConfig";
 import SystemStats from "./admin/components/SystemStats";
 import AuditLogs from "./admin/components/AuditLogs";
+import DomainGroups from "./DomainGroups";
+import Tools from "./tools/Tools";
+import McpTools from "./McpTools";
 
 const { TabPane } = Tabs;
 
@@ -57,6 +63,36 @@ const Admin: React.FC = () => {
         </span>
       ),
       children: <AuditLogs />,
+    },
+    {
+      key: "domain-groups",
+      label: (
+        <span>
+          <TeamOutlined />
+          {t("navigation.domain_groups")}
+        </span>
+      ),
+      children: <DomainGroups />,
+    },
+    {
+      key: "tools-admin",
+      label: (
+        <span>
+          <ToolOutlined />
+          {t("tools.title", "Tools")}
+        </span>
+      ),
+      children: <Tools />,
+    },
+    {
+      key: "mcp-tools-admin",
+      label: (
+        <span>
+          <ApiOutlined />
+          {t("navigation.mcp_tools")}
+        </span>
+      ),
+      children: <McpTools />,
     },
   ];
 
