@@ -151,6 +151,13 @@ services:
       - convosphere_test_network
     command: ["zap-baseline.py", "-t", "http://backend_test:8000", "-J", "/zap/wrk/report.json"]
 
+  agentrepo_test:
+    image: ghcr.io/convosphere/agentrepo:latest
+    container_name: convosphere_agentrepo_test
+    restart: unless-stopped
+    networks:
+      - convosphere_test_network
+
 volumes:
   postgres_test_data:
   redis_test_data:
