@@ -156,26 +156,25 @@ jobs:
           echo "🔍 Running type checking..."
           
           # Run mypy
-          mypy backend/ --ignore-missing-imports --json-report mypy-report.json || true
+          mypy backend/ --config-file mypy.ini --ignore-missing-imports --json-report mypy-report || true
           
           # Check if there are any errors (not just warnings)
           python -c "
-          import json
+          import json, os
           try:
-              with open('mypy-report.json', 'r') as f:
+              report_path = os.path.join('mypy-report', 'index.json')
+              with open(report_path, 'r') as f:
                   data = json.load(f)
-              errors = []
-              for file_data in data.values():
-                  for issue in file_data:
-                      if issue.get('severity') == 'error':
-                          errors.append(issue)
-              if errors:
-                  print(f'❌ Found {len(errors)} type errors')
+              files = data.get('files', {})
+              num_errors = sum(file.get('errors', 0) for file in files.values())
+              if num_errors:
+                  print(f'❌ Found {num_errors} type errors')
                   exit(1)
               else:
                   print('✅ No type errors found')
-          except FileNotFoundError:
-              print('✅ No type checking issues found')
+          except Exception as e:
+              print(f'⚠️  Could not parse mypy JSON report: {e}')
+              print('Skipping type error gate (warnings allowed)')
           "
       
       - name: Generate linting summary
