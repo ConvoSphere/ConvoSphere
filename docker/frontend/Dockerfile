@@ -3,9 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY ../../frontend-react/package.json ../../frontend-react/package-lock.json ./
-RUN npm install --frozen-lockfile || npm install
-COPY ../../frontend-react ./
+COPY frontend-react/package.json frontend-react/package-lock.json ./
+RUN npm ci || npm install
+COPY frontend-react ./
 RUN npm run build
 
 # Stage 2: Serve the built app with nginx for proxy support

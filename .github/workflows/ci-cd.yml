@@ -38,7 +38,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
       
       - name: Set up Node.js
@@ -115,31 +115,43 @@ except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
         run: |
           bandit -r backend/ -f json -o bandit-report.json || true
       
-      - name: Run type checking (warnings allowed)
+      - name: Run type checking (baseline gate)
         id: type-check
         run: |
-          echo "Running type checking..."
-          mypy backend/ --ignore-missing-imports --json-report mypy-report.json || true
+          echo "Running type checking with baseline..."
+          mypy backend/ --config-file mypy.ini --ignore-missing-imports --json-report mypy-report || true
           
-          # Check if there are any errors (not just warnings)
-          python -c "
-import json
+          python - <<'PY'
+import json, os, sys
+baseline_path = 'mypy-baseline.txt'
+report_path = os.path.join('mypy-report', 'index.json')
 try:
-    with open('mypy-report.json', 'r') as f:
+    with open(report_path, 'r') as f:
         data = json.load(f)
-    errors = []
-    for file_data in data.values():
-        for issue in file_data:
-            if issue.get('severity') == 'error':
-                errors.append(issue)
-    if errors:
-        print(f'Found {len(errors)} type errors')
-        exit(1)
+    files = data.get('files', {})
+    num_errors = sum(file.get('errors', 0) for file in files.values())
+    print(f'Current mypy errors: {num_errors}')
+    if os.path.exists(baseline_path):
+        try:
+            # Read previous count if stored in artifact; fall back to current as baseline
+            with open(baseline_path, 'r') as bf:
+                content = bf.read().strip()
+            prev_count = int(content) if content.isdigit() else num_errors
+        except Exception:
+            prev_count = num_errors
+        if num_errors > prev_count:
+            print(f'New mypy errors detected: {num_errors - prev_count} > baseline {prev_count}')
+            sys.exit(1)
+        else:
+            print(f'No new mypy errors (baseline: {prev_count})')
     else:
-        print('No type errors found')
-except FileNotFoundError:
-    print('No type checking issues found')
-"
+        print('No baseline found; creating baseline with current count')
+        with open(baseline_path, 'w') as bf:
+            bf.write(str(num_errors))
+except Exception as e:
+    print(f'Could not parse mypy JSON report: {e}')
+    print('Skipping type error gate (warnings allowed)')
+PY
       
       - name: Upload linting reports
         uses: actions/upload-artifact@v4

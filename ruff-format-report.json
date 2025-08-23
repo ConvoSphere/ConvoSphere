@@ -1,0 +1,43 @@
+warning: The top-level linter settings are deprecated in favour of their counterparts in the `lint` section. Please update the following options in `ruff.toml`:
+  - 'ignore' -> 'lint.ignore'
+  - 'select' -> 'lint.select'
+Would reformat: backend/alembic/versions/2025_08_14_add_agents_table.py
+Would reformat: backend/alembic/versions/2025_08_16_add_ai_models_and_settings_tables.py
+Would reformat: backend/alembic/versions/2025_08_16_fix_enum_types_and_timestamps.py
+Would reformat: backend/app/api/v1/api.py
+Would reformat: backend/app/api/v1/endpoints/ai_models.py
+Would reformat: backend/app/api/v1/endpoints/auth/authentication.py
+Would reformat: backend/app/api/v1/endpoints/dashboard.py
+Would reformat: backend/app/api/v1/endpoints/knowledge_settings.py
+Would reformat: backend/app/api/v1/endpoints/monitoring_endpoints.py
+Would reformat: backend/app/api/v1/endpoints/websocket.py
+Would reformat: backend/app/core/audit_monitoring.py
+Would reformat: backend/app/core/config.py
+Would reformat: backend/app/core/csrf_protection.py
+Would reformat: backend/app/core/security_hardening.py
+Would reformat: backend/app/core/weaviate_client.py
+Would reformat: backend/app/models/__init__.py
+Would reformat: backend/app/models/agent.py
+Would reformat: backend/app/models/ai_model.py
+Would reformat: backend/app/models/dashboard.py
+Would reformat: backend/app/models/knowledge_settings.py
+Would reformat: backend/app/models/user.py
+Would reformat: backend/app/monitoring/database/database_monitor.py
+Would reformat: backend/app/schemas/knowledge_settings.py
+Would reformat: backend/app/services/agents/__init__.py
+Would reformat: backend/app/services/agents/agent_manager.py
+Would reformat: backend/app/services/agents/agent_planner.py
+Would reformat: backend/app/services/agents/agent_registry.py
+Would reformat: backend/app/services/agents/agent_runner.py
+Would reformat: backend/app/services/ai/middleware/rag_middleware.py
+Would reformat: backend/app/services/ai_models_service.py
+Would reformat: backend/app/services/assistants/assistant_tools.py
+Would reformat: backend/app/services/audit_service.py
+Would reformat: backend/app/services/conversation_intelligence_service.py
+Would reformat: backend/app/services/knowledge_settings_service.py
+Would reformat: backend/app/tools/mcp_tool.py
+Would reformat: backend/app/tools/search_tools.py
+Would reformat: backend/cli/commands/assistant.py
+Would reformat: backend/cli/commands/user.py
+Would reformat: backend/cli/main.py
+39 files would be reformatted, 251 files already formatted
