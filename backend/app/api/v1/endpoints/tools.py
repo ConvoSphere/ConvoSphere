@@ -374,6 +374,36 @@ async def delete_tool(
         )
 
 
+@router.post("/{tool_id}/toggle", response_model=ToolResponse)
+async def toggle_tool(
+    tool_id: str,
+    enabled: bool | None = None,
+    current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Toggle or set tool enabled flag (admin only).
+
+    Args:
+        tool_id: Tool ID
+        enabled: Optional explicit enabled state; if omitted, flips current value
+    """
+    try:
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can toggle tools")
+        tool_service = ToolService(db)
+        updated = tool_service.toggle_tool_enabled(tool_id, current_user_id, enabled)
+        if not updated:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found or insufficient permissions")
+        return ToolResponse(**updated)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error toggling tool {tool_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to toggle tool")
+
+
 @router.get("/categories/list")
 async def get_tool_categories():
     """
