@@ -8,8 +8,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
-from backend.app.core.security import get_current_user_id
+from backend.app.core.security import get_current_user_id, get_current_user
 from backend.app.models.tool import ToolCategory
+from backend.app.models.user import User, UserRole
 from backend.app.services.tool_service import ToolService
 
 
@@ -214,6 +215,7 @@ async def get_tool(
 async def create_tool(
     tool_data: ToolCreate,
     current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -231,6 +233,9 @@ async def create_tool(
         HTTPException: If validation fails or tool creation fails
     """
     try:
+        # Enforce admin-only for tool creation
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create tools")
         tool_service = ToolService(db)
 
         # Convert Pydantic model to dict
@@ -267,6 +272,7 @@ async def update_tool(
     tool_id: str,
     tool_data: ToolUpdate,
     current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -285,6 +291,9 @@ async def update_tool(
         HTTPException: If tool not found or update fails
     """
     try:
+        # Enforce admin-only for tool updates
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update tools")
         tool_service = ToolService(db)
 
         # Convert Pydantic model to dict, excluding None values
@@ -322,6 +331,7 @@ async def update_tool(
 async def delete_tool(
     tool_id: str,
     current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -339,6 +349,9 @@ async def delete_tool(
         HTTPException: If tool not found or deletion fails
     """
     try:
+        # Enforce admin-only for tool deletion
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete tools")
         tool_service = ToolService(db)
         success = tool_service.delete_tool(tool_id, current_user_id)
 
