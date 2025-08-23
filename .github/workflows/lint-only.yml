@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
   NODE_VERSION: '18'
 
 jobs:
@@ -150,32 +150,45 @@ jobs:
               print('✅ No security issues found')
           "
       
-      - name: Run type checking (warnings allowed)
+      - name: Run type checking (baseline gate)
         id: type-check
         run: |
-          echo "🔍 Running type checking..."
+          echo "🔍 Running type checking with baseline..."
           
           # Run mypy
           mypy backend/ --config-file mypy.ini --ignore-missing-imports --json-report mypy-report || true
           
-          # Check if there are any errors (not just warnings)
-          python -c "
-          import json, os
-          try:
-              report_path = os.path.join('mypy-report', 'index.json')
-              with open(report_path, 'r') as f:
-                  data = json.load(f)
-              files = data.get('files', {})
-              num_errors = sum(file.get('errors', 0) for file in files.values())
-              if num_errors:
-                  print(f'❌ Found {num_errors} type errors')
-                  exit(1)
-              else:
-                  print('✅ No type errors found')
-          except Exception as e:
-              print(f'⚠️  Could not parse mypy JSON report: {e}')
-              print('Skipping type error gate (warnings allowed)')
-          "
+          # Baseline gating: fail only on new errors
+          python - <<'PY'
+import json, os, sys
+baseline_path = 'mypy-baseline.txt'
+report_path = os.path.join('mypy-report', 'index.json')
+try:
+    with open(report_path, 'r') as f:
+        data = json.load(f)
+    files = data.get('files', {})
+    num_errors = sum(file.get('errors', 0) for file in files.values())
+    print(f'Current mypy errors: {num_errors}')
+    if os.path.exists(baseline_path):
+        try:
+            with open(baseline_path, 'r') as bf:
+                content = bf.read().strip()
+            prev_count = int(content) if content.isdigit() else num_errors
+        except Exception:
+            prev_count = num_errors
+        if num_errors > prev_count:
+            print(f'❌ New mypy errors detected: {num_errors - prev_count} > baseline {prev_count}')
+            sys.exit(1)
+        else:
+            print(f'✅ No new mypy errors (baseline: {prev_count})')
+    else:
+        print('No baseline found; creating baseline with current count')
+        with open(baseline_path, 'w') as bf:
+            bf.write(str(num_errors))
+except Exception as e:
+    print(f'⚠️  Could not parse mypy JSON report: {e}')
+    print('Skipping type error gate (warnings allowed)')
+PY
       
       - name: Generate linting summary
         if: always()

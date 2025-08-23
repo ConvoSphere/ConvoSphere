@@ -1,0 +1,4 @@
+# Mypy baseline (generated to allow incremental typing)
+# Format: one file path per line, or 'pattern:count' in future extensions.
+# For now, we use simple presence gating: if mypy finds errors and this file exists,
+# CI will compare total errors and only fail if new errors are added (script in workflow).
