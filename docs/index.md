@@ -147,7 +147,7 @@ graph TB
 
 - **[Changelog](changelog.md)** - Recent updates and changes
 - **[Security](security.md)** - Security documentation and best practices
-- **[Development](development/)** - Development resources and guidelines
+- **[Development](development/README.md)** - Development resources and guidelines
 
 ---
 
