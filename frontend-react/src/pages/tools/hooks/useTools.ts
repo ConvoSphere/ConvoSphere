@@ -5,6 +5,7 @@ import {
   createTool,
   updateTool as apiUpdateTool,
   deleteTool as apiDeleteTool,
+  toggleToolEnabled,
 } from "../../../services/tools";
 import type { Tool } from "../types/tools.types";
 
@@ -62,16 +63,30 @@ export const useTools = () => {
     },
   });
 
-  const toggleToolActive = async (tool: Tool) => {
-    // Optimistic update pattern
-    const previous = queryClient.getQueryData<Tool[]>(["tools"]);
-    const updated =
-      previous?.map((t) =>
-        t.id === tool.id ? ({ ...t, isActive: !tool.isActive } as any) : t,
-      ) || [];
+  const toggleToolActive = async (tool: any) => {
+    // Optimistic update
+    const previous = queryClient.getQueryData<any>(["tools"]) || [];
+    const updated = previous.map((t: any) =>
+      t.id === tool.id ? { ...t, is_enabled: !t.is_enabled, isActive: !t.isActive } : t,
+    );
     queryClient.setQueryData(["tools"], updated);
-    message.success(tool.isActive ? "Tool deactivated" : "Tool activated");
-    // TODO: call backend if such endpoint exists; otherwise keep as UI only
+
+    try {
+      const res = await toggleToolEnabled(String(tool.id));
+      // Sync with server response
+      const synced = (queryClient.getQueryData<any>(["tools"]) || []).map((t: any) =>
+        t.id === tool.id
+          ? { ...t, is_enabled: res.is_enabled, isActive: Boolean(res.is_enabled) }
+          : t,
+      );
+      queryClient.setQueryData(["tools"], synced);
+      message.success(res.is_enabled ? "Tool aktiviert" : "Tool deaktiviert");
+    } catch (err: any) {
+      // Revert on error
+      queryClient.setQueryData(["tools"], previous);
+      const msg = err?.response?.status === 403 ? "Nicht genügend Rechte" : "Toggle fehlgeschlagen";
+      message.error(msg);
+    }
   };
 
   return {
